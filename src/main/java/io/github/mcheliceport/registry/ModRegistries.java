@@ -1,6 +1,7 @@
 package io.github.mcheliceport.registry;
 
 import io.github.mcheliceport.McheliCePort;
+import io.github.mcheliceport.content.ContentRegistries;
 import java.util.List;
 import java.util.stream.Collectors;
 import net.minecraft.core.particles.ParticleType;
@@ -13,10 +14,9 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
 /**
- * Every deferred register the port uses, all in the {@code mcheli_ce_port} namespace.
- *
- * <p>They are empty for now. M2 fills the item and creative-tab registers from the parsed content
- * packs (PORTING_PLAN.md section 5.1); the vehicle and weapon milestones add the rest.
+ * Every deferred register the port uses, all in the {@code mcheli_ce_port} namespace. The entries
+ * live in {@link ModBlocks}, {@link ModItems}, {@link ModEntityTypes} and {@link ModCreativeTabs};
+ * content-driven items are added from the parsed content packs (PORTING_PLAN.md section 5.1).
  */
 public final class ModRegistries {
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(McheliCePort.MOD_ID);
@@ -41,7 +41,13 @@ public final class ModRegistries {
 
     private ModRegistries() {}
 
-    public static void register(IEventBus modBus) {
+    /** Adds all entries, including one item per vehicle and throwable of {@code content}, and registers. */
+    public static void register(IEventBus modBus, ContentRegistries.Snapshot content) {
+        ModBlocks.init();
+        ModItems.init();
+        ModItems.registerContentItems(content);
+        ModEntityTypes.init();
+        ModCreativeTabs.init();
         ALL.forEach(register -> register.register(modBus));
     }
 
