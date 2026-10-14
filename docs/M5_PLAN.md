@@ -101,7 +101,6 @@ particle sheets), as the M4 helicopter renderer does, so both backends draw them
 | `weapons.infinityAmmo` | COMMON | false | `InfinityAmmo` |
 | `weapons.hurtResistantTime` | COMMON | 0.0 | `HurtResistantTime` |
 | `weapons.bulletBreakableBlocks` | COMMON | glass panes, short grass, tall plants, flowers, vines, wheat, sugar cane, lily pads | `BulletBreakableBlocks` |
-| `weapons.ignoreBulletHit` | COMMON | empty | `IgnoreBulletHit` |
 | `weapons.damageVs*`, `weapons.damage*ByExternal` | COMMON | `1.0`; `3.0, flansmod` and `0.5, flansmod` where upstream writes them | `DamageVs…`, `Damage…ByExternal` |
 | `explosions.destroyBlock` | COMMON | true | `Explosion_DestroyBlock` |
 | `explosions.flamingBlock` | COMMON | true | `Explosion_FlamingBlock` |
@@ -181,7 +180,7 @@ weapon mode (X), reload (R), flare (V), airburst reset (right mouse).
 | # | Question | Default taken |
 |---|---|---|
 | D18 | Explosion: `ServerLevel#explode` with a damage calculator, or our own `Explosion`? | **Our own** implementation of vanilla's `Explosion` interface, transcribing upstream's ray march and damage, so block and entity results match upstream; vanilla hooks (block `onExplosionHit`, NeoForge's detonate event) are still called |
-| D19 | `DamageVs…`, `…ByExternal` and `IgnoreBulletHit` matched Java class names by substring | **Entity type IDs** (PORTING_PLAN deliberate difference 5), still by substring, so `flansmod` keeps matching that mod's entities |
+| D19 | `DamageVs…` and `…ByExternal` matched Java class names by substring | **Entity type IDs** (PORTING_PLAN deliberate difference 5), still by substring, so `flansmod` keeps matching that mod's entities |
 | D20 | Upstream's `MCH_WeaponCAS` never set its shooter (`this.shooter = shooter` assigns the field to itself), so the A-10 belongs to no one | **Fixed**: the A-10 and its bombs belong to the shooter |
 | D21 | Vanilla attack and use while riding a weapon seat | **Held back**, as upstream's mouse handling did, so firing does not also punch the vehicle |
 | D22 | Projectiles are entities with full per-tick logic on the server; the client predicts their flight | **As upstream**: the server is authoritative for hits and explosions; clients move projectiles with the same code between updates |

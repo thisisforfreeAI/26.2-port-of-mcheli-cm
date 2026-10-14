@@ -1,5 +1,6 @@
 package io.github.mcheliceport.config;
 
+import java.util.List;
 import net.neoforged.neoforge.common.ModConfigSpec;
 
 /**
@@ -25,6 +26,22 @@ public final class CommonConfig {
     public static final ModConfigSpec.BooleanValue KILL_PASSENGERS_WHEN_DESTROYED;
     public static final ModConfigSpec.DoubleValue AUTO_REPAIR_HP;
     public static final ModConfigSpec.BooleanValue COLLISION_DESTROY_BLOCK;
+    public static final ModConfigSpec.BooleanValue INFINITY_AMMO;
+    public static final ModConfigSpec.DoubleValue HURT_RESISTANT_TIME;
+    public static final ModConfigSpec.ConfigValue<List<? extends String>> BULLET_BREAKABLE_BLOCKS;
+    public static final ModConfigSpec.ConfigValue<List<? extends String>> DAMAGE_VS_ENTITY;
+    public static final ModConfigSpec.ConfigValue<List<? extends String>> DAMAGE_VS_LIVING;
+    public static final ModConfigSpec.ConfigValue<List<? extends String>> DAMAGE_VS_PLAYER;
+    public static final ModConfigSpec.ConfigValue<List<? extends String>> DAMAGE_VS_AIRCRAFT;
+    public static final ModConfigSpec.ConfigValue<List<? extends String>> DAMAGE_VS_TANK;
+    public static final ModConfigSpec.ConfigValue<List<? extends String>> DAMAGE_VS_VEHICLE;
+    public static final ModConfigSpec.ConfigValue<List<? extends String>> DAMAGE_VS_OTHER;
+    public static final ModConfigSpec.ConfigValue<List<? extends String>> DAMAGE_AIRCRAFT_BY_EXTERNAL;
+    public static final ModConfigSpec.ConfigValue<List<? extends String>> DAMAGE_TANK_BY_EXTERNAL;
+    public static final ModConfigSpec.ConfigValue<List<? extends String>> DAMAGE_VEHICLE_BY_EXTERNAL;
+    public static final ModConfigSpec.ConfigValue<List<? extends String>> DAMAGE_OTHER_BY_EXTERNAL;
+    public static final ModConfigSpec.BooleanValue EXPLOSION_DESTROY_BLOCK;
+    public static final ModConfigSpec.BooleanValue EXPLOSION_FLAMING_BLOCK;
     public static final ModConfigSpec SPEC;
 
     static {
@@ -88,8 +105,74 @@ public final class CommonConfig {
                 .define("collisionDestroyBlock", true);
         builder.pop();
 
+        builder.comment("Weapons (upstream's lines of the same names in mcheli.cfg).").push("weapons");
+        INFINITY_AMMO = builder
+                .comment("Vehicle weapons never run out of ammunition. Upstream: InfinityAmmo.")
+                .define("infinityAmmo", false);
+        HURT_RESISTANT_TIME = builder
+                .comment("Multiplies the invulnerability time a mob gets after each bullet or explosion hit;",
+                        "0 lets every bullet of a burst hurt. Upstream: HurtResistantTime.")
+                .defineInRange("hurtResistantTime", 0.0, 0.0, 10000.0);
+        BULLET_BREAKABLE_BLOCKS = builder
+                .comment("Blocks bullets break and fly through: block IDs, or block tags with a leading '#'.",
+                        "Upstream: BulletBreakableBlocks (1.12 block names).")
+                .defineListAllowEmpty("bulletBreakableBlocks", List.of(
+                        "#c:glass_panes", "minecraft:short_grass", "minecraft:fern", "minecraft:tall_grass",
+                        "minecraft:large_fern", "minecraft:sunflower", "minecraft:lilac", "minecraft:rose_bush",
+                        "minecraft:peony", "#minecraft:small_flowers", "minecraft:vine", "minecraft:wheat",
+                        "minecraft:sugar_cane", "minecraft:lily_pad"), () -> "", CommonConfig::isString);
+        builder.comment("Damage multipliers: each entry is 'factor' (applies to all) or 'factor, name' (applies when the",
+                "entity type ID contains name). Upstream: the lines of the same names in mcheli.cfg, which matched",
+                "Java class names instead.");
+        DAMAGE_VS_ENTITY = damageList(builder, "damageVsEntity", "Damage McHeli weapons do to other entities.",
+                "1.0", "3.0, flansmod");
+        DAMAGE_VS_LIVING = damageList(builder, "damageVsLiving", "Damage McHeli weapons do to mobs.", "1.0");
+        DAMAGE_VS_PLAYER = damageList(builder, "damageVsPlayer", "Damage McHeli weapons do to players.", "1.0");
+        DAMAGE_VS_AIRCRAFT = damageList(builder, "damageVsMCHeliAircraft",
+                "Damage McHeli weapons do to helicopters and planes.", "1.0");
+        DAMAGE_VS_TANK = damageList(builder, "damageVsMCHeliTank", "Damage McHeli weapons do to tanks.", "1.0");
+        DAMAGE_VS_VEHICLE = damageList(builder, "damageVsMCHeliVehicle", "Damage McHeli weapons do to vehicles.",
+                "1.0");
+        DAMAGE_VS_OTHER = damageList(builder, "damageVsMCHeliOther",
+                "Damage McHeli weapons do to McHeli's other entities.", "1.0");
+        DAMAGE_AIRCRAFT_BY_EXTERNAL = damageList(builder, "damageMCHeliAircraftByExternal",
+                "Damage helicopters and planes take from anything, matched against the attacker.", "1.0",
+                "0.5, flansmod");
+        DAMAGE_TANK_BY_EXTERNAL = damageList(builder, "damageMCHeliTankByExternal",
+                "Damage tanks take from anything, matched against the attacker.", "1.0");
+        DAMAGE_VEHICLE_BY_EXTERNAL = damageList(builder, "damageMCHeliVehicleByExternal",
+                "Damage vehicles take from anything, matched against the attacker.", "1.0", "0.5, flansmod");
+        DAMAGE_OTHER_BY_EXTERNAL = damageList(builder, "damageMCHeliOtherByExternal",
+                "Damage McHeli's other entities take from anything, matched against the attacker.", "1.0");
+        builder.pop();
+
+        builder.comment("McHeli's explosions (upstream's lines of the same names in mcheli.cfg).").push("explosions");
+        EXPLOSION_DESTROY_BLOCK = builder
+                .comment("Explosions of weapons and crashes break blocks (the mobGriefing game rule must allow it too).",
+                        "Upstream: Explosion_DestroyBlock.")
+                .define("destroyBlock", true);
+        EXPLOSION_FLAMING_BLOCK = builder
+                .comment("Incendiary explosions set blocks on fire. Upstream: Explosion_FlamingBlock.")
+                .define("flamingBlock", true);
+        builder.pop();
+
         SPEC = builder.build();
     }
 
     private CommonConfig() {}
+
+    /** A config value, or its default while the config is not loaded (unit tests). */
+    public static <T> T get(ModConfigSpec.ConfigValue<T> value) {
+        return SPEC.isLoaded() ? value.get() : value.getDefault();
+    }
+
+    private static boolean isString(Object o) {
+        return o instanceof String;
+    }
+
+    private static ModConfigSpec.ConfigValue<List<? extends String>> damageList(ModConfigSpec.Builder builder,
+            String key, String comment, String... defaults) {
+        return builder.comment(comment).defineListAllowEmpty(key, List.of(defaults), () -> "1.0",
+                o -> o instanceof String s && io.github.mcheliceport.weapon.DamageScaling.Entry.isValid(s));
+    }
 }

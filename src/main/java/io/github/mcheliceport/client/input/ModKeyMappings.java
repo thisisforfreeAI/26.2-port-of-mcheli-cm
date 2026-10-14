@@ -54,14 +54,34 @@ public final class ModKeyMappings {
     public static final KeyMapping CAMERA_DISTANCE_UP = key("camera_distance_up", GLFW.GLFW_KEY_PAGE_UP);
     public static final KeyMapping CAMERA_DISTANCE_DOWN = key("camera_distance_down", GLFW.GLFW_KEY_PAGE_DOWN);
 
+    /** Upstream's fixed {@code KeyUseWeapon} (-100, the left mouse button); bindable here. */
+    public static final KeyMapping USE_WEAPON = mouse("use_weapon", GLFW.GLFW_MOUSE_BUTTON_LEFT);
+    /** Upstream {@code KeySwitchWeapon1} (-98, the middle mouse button). */
+    public static final KeyMapping SWITCH_WEAPON_1 = mouse("switch_weapon_1", GLFW.GLFW_MOUSE_BUTTON_MIDDLE);
+    public static final KeyMapping SWITCH_WEAPON_2 = key("switch_weapon_2", GLFW.GLFW_KEY_G);
+    public static final KeyMapping SWITCH_WEAPON_MODE = key("switch_weapon_mode", GLFW.GLFW_KEY_X);
+    public static final KeyMapping RELOAD_WEAPON = key("reload_weapon", GLFW.GLFW_KEY_R);
+    public static final KeyMapping FLARE = key("flare", GLFW.GLFW_KEY_V);
+    public static final KeyMapping CHAFF = key("chaff", GLFW.GLFW_KEY_V);
+    public static final KeyMapping APS = key("aps", GLFW.GLFW_KEY_V);
+    /** Upstream {@code KeyAirburstDistReset} (-99, the right mouse button). */
+    public static final KeyMapping AIRBURST_RESET = mouse("airburst_reset", GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+
     public static final List<KeyMapping> ALL = List.of(UP, DOWN, RIGHT, LEFT, SWITCH_GUNNER, SWITCH_HOVERING, ZOOM,
-            UNMOUNT, EXTRA, FREE_LOOK, GUI, GEAR_UP_DOWN, CAMERA_MODE, CAMERA_DISTANCE_UP, CAMERA_DISTANCE_DOWN);
+            UNMOUNT, EXTRA, FREE_LOOK, GUI, GEAR_UP_DOWN, CAMERA_MODE, CAMERA_DISTANCE_UP, CAMERA_DISTANCE_DOWN,
+            USE_WEAPON, SWITCH_WEAPON_1, SWITCH_WEAPON_2, SWITCH_WEAPON_MODE, RELOAD_WEAPON, FLARE, CHAFF, APS,
+            AIRBURST_RESET);
 
     private ModKeyMappings() {
     }
 
     private static KeyMapping key(String name, int keyCode) {
         return new KeyMapping("key." + McheliCePort.MOD_ID + "." + name, RIDING, InputConstants.Type.KEYSYM, keyCode,
+                CATEGORY);
+    }
+
+    private static KeyMapping mouse(String name, int button) {
+        return new KeyMapping("key." + McheliCePort.MOD_ID + "." + name, RIDING, InputConstants.Type.MOUSE, button,
                 CATEGORY);
     }
 
