@@ -64,6 +64,8 @@ import net.minecraft.world.scores.Team;
 import net.neoforged.neoforge.entity.IEntityWithComplexSpawn;
 import net.neoforged.neoforge.entity.PartEntity;
 import org.joml.Quaternionf;
+import io.github.mcheliceport.entity.weapon.TvMissileEntity;
+import io.github.mcheliceport.weapon.WeaponSet;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
@@ -86,7 +88,11 @@ public abstract class AircraftEntity extends Entity
     public static final double GLOBAL_SEAT_OFFSET = 0.22443;
 
     /** Common status bits ({@code setCommonStatus}). */
+    /** Upstream status bit 0: a flare pattern started on the server and has not finished. */
+    public static final int STATUS_FLARE = 0;
     public static final int STATUS_FREE_LOOK = 1;
+    /** Upstream status bit 2: the pilot has the vehicle's inventory open, supplying ammunition. */
+    public static final int STATUS_RELOADING = 2;
     public static final int STATUS_INFINITY_AMMO = 3;
     public static final int STATUS_INFINITY_FUEL = 4;
     public static final int STATUS_MOVE_LEFT = 7;
@@ -122,6 +128,9 @@ public abstract class AircraftEntity extends Entity
             SynchedEntityData.defineId(AircraftEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Boolean> DATA_HOVERING =
             SynchedEntityData.defineId(AircraftEntity.class, EntityDataSerializers.BOOLEAN);
+    /** Upstream {@code USE_WEAPON}: which weapons fired this tick, for other clients' effects. */
+    private static final EntityDataAccessor<Integer> DATA_USE_WEAPON =
+            SynchedEntityData.defineId(AircraftEntity.class, EntityDataSerializers.INT);
 
     private static final AircraftHitBox[] NO_HIT_BOXES = new AircraftHitBox[0];
     private static final SeatEntity[] NO_SEATS = new SeatEntity[0];
@@ -183,6 +192,13 @@ public abstract class AircraftEntity extends Entity
     /** Client: a crew member switched their seat to gunner mode (upstream {@code isGunnerModeOtherSeat}). */
     public boolean gunnerModeOtherSeat;
 
+    private final AircraftWeapons weapons;
+    private final AircraftFlares flares;
+    private final AircraftChaff chaff;
+    private final AircraftAps aps;
+    private final AircraftMissileDetector missileDetector;
+    private int currentFlareIndex;
+
     /**
      * What the client side does for vehicles: set by the client entry point, null on a dedicated
      * server. Keeps client classes out of the entity.
@@ -208,6 +224,11 @@ public abstract class AircraftEntity extends Entity
         super(type, level);
         this.currentSpeed = 0.07;
         this.blocksBuilding = true;
+        this.weapons = new AircraftWeapons(this);
+        this.flares = new AircraftFlares(level, this);
+        this.chaff = new AircraftChaff(level, this);
+        this.aps = new AircraftAps(level, this);
+        this.missileDetector = new AircraftMissileDetector(this, level);
     }
 
     // ---- type and content ----
@@ -277,6 +298,8 @@ public abstract class AircraftEntity extends Entity
             this.hitBoxes[i].setInfo(newInfo.extraBoundingBox.get(i));
         }
         this.updateHitBoxPosition();
+        this.weapons.create(newInfo, 1 + this.getSeatNum());
+        this.currentFlareIndex = 0;
         this.onTypeChanged(newInfo);
     }
 
@@ -330,6 +353,7 @@ public abstract class AircraftEntity extends Entity
         builder.define(DATA_THROTTLE, 0);
         builder.define(DATA_PART_STAT, 0);
         builder.define(DATA_HOVERING, false);
+        builder.define(DATA_USE_WEAPON, 0);
     }
 
     @Override
@@ -484,6 +508,14 @@ public abstract class AircraftEntity extends Entity
     private float getRotSeatYaw() {
         Entity pilot = this.getPilot();
         return pilot != null ? pilot.getYRot() : this.lastRiderYaw;
+    }
+
+    /** Upstream {@code calcOnTurretPos}: a body offset on the turret, turned with the pilot's view. */
+    public Vec3 calcOnTurretPos(Vec3 pos) {
+        if (this.info == null) {
+            return McheliMath.rotVec3(pos, -this.getYaw(), -this.getPitch(), -this.getRoll());
+        }
+        return this.getTransformedPosition(pos.x, pos.y, pos.z, 0.0, 0.0, 0.0, true);
     }
 
     // ---- mouse control (upstream setAngles) ----
@@ -1042,6 +1074,7 @@ public abstract class AircraftEntity extends Entity
     }
 
     public void onMountPlayerSeat(SeatEntity seat, Entity entity) {
+        this.weapons.onMountPlayerSeat(entity);
         int sid = this.getSeatIdByEntity(entity);
         if (sid == 1 && (this.info == null || !this.info.isEnableConcurrentGunnerMode)) {
             this.switchGunnerMode(false);
@@ -1419,6 +1452,7 @@ public abstract class AircraftEntity extends Entity
         super.tick();
         this.tickInterpolation();
 
+        this.weapons.supplyAmmoToOtherAircraft();
         this.updateFuel();
         if (this.modeSwitchCooldown > 0) {
             this.modeSwitchCooldown--;
@@ -1451,7 +1485,10 @@ public abstract class AircraftEntity extends Entity
             this.prevLastRiderPitch = pilot.xRotO;
         }
 
+        this.missileDetector.update();
+        this.weapons.updateSupplyAmmo();
         this.autoRepair();
+        this.updateCountermeasures();
         if (pilot == null && this.lastPilot != null) {
             this.unmountEntity();
         }
@@ -1460,6 +1497,10 @@ public abstract class AircraftEntity extends Entity
         boolean prevOnGround = this.onGround();
         double prevMotionY = this.getDeltaMovement().y;
         if (this.info != null) {
+            if (this.lastPilot == null && pilot != null) {
+                this.weapons.initCurrentWeapon(pilot);
+            }
+            this.weapons.tick(this.entityData, DATA_USE_WEAPON);
             this.onUpdateAircraft();
             this.updateParts(this.partStatus());
             this.updatePartRotation();
@@ -1470,6 +1511,13 @@ public abstract class AircraftEntity extends Entity
                 && this.onGround() && prevMotionY < -0.2) {
             this.explosionByCrash(prevMotionY);
             this.damageSinceDestroyed = this.getMaxHP();
+        }
+
+        if (this.weapons.recoilCount > 0) {
+            this.weapons.recoilCount--;
+        }
+        if (!this.isPilotLocalClient()) {
+            this.updateRecoil(1.0F);
         }
 
         this.updateHitBoxPosition();
@@ -1547,6 +1595,7 @@ public abstract class AircraftEntity extends Entity
     /** Upstream {@code onFirstUpdate}. */
     protected void onFirstUpdate() {
         if (!this.level().isClientSide()) {
+            this.setCommonStatus(STATUS_INFINITY_AMMO, CommonConfig.INFINITY_AMMO.get());
             this.setCommonStatus(STATUS_INFINITY_FUEL, CommonConfig.INFINITY_FUEL.get());
         }
     }
@@ -1613,15 +1662,20 @@ public abstract class AircraftEntity extends Entity
         return (this.info.isEnableConcurrentGunnerMode || !seatOccupied) && !this.isHoveringMode();
     }
 
-    /** Upstream {@code switchGunnerMode}, without the weapon and camera parts (M5). */
+    /** Upstream {@code switchGunnerMode}; the camera zoom reset is the client camera's (M4). */
     public void switchGunnerMode(boolean mode) {
+        Entity pilot = this.getEntityBySeatId(0);
         if (!mode || this.canSwitchGunnerMode()) {
             if (this.gunnerMode && !mode) {
                 this.setCurrentThrottle(this.beforeHoverThrottle);
                 this.gunnerMode = false;
+                this.weapons.getCurrentWeapon(pilot).onSwitchWeapon(this.level().isClientSide(),
+                        this.isInfinityAmmo(pilot));
             } else if (!this.gunnerMode && mode) {
                 this.beforeHoverThrottle = this.getCurrentThrottle();
                 this.gunnerMode = true;
+                this.weapons.getCurrentWeapon(pilot).onSwitchWeapon(this.level().isClientSide(),
+                        this.isInfinityAmmo(pilot));
             }
         }
     }
@@ -2419,6 +2473,7 @@ public abstract class AircraftEntity extends Entity
         this.lastRiderYaw = yaw;
         this.prevLastRiderYaw = yaw;
         this.orientation = null;
+        this.weapons.initRotation();
     }
 
     // ---- removal ----
@@ -2448,6 +2503,207 @@ public abstract class AircraftEntity extends Entity
         this.discard();
     }
 
+    // ---- weapons ----
+
+    public AircraftWeapons weapons() {
+        return this.weapons;
+    }
+
+    /** Upstream {@code canLockEntity}: the vehicle's own riders cannot be locked by its weapons. */
+    public boolean canLockEntity(Entity entity) {
+        return !this.isMountedEntity(entity);
+    }
+
+    /** Upstream {@code isInfinityAmmo}: creative riders and the {@code InfinityAmmo} setting. */
+    public boolean isInfinityAmmo(@Nullable Entity player) {
+        return this.isCreative(player) || this.getCommonStatus(STATUS_INFINITY_AMMO);
+    }
+
+    public float getStealth() {
+        return this.info != null ? this.info.stealth : 0.0F;
+    }
+
+    public WeaponSet getCurrentWeapon(@Nullable Entity entity) {
+        return this.weapons.getCurrentWeapon(entity);
+    }
+
+    public WeaponSet getWeapon(int id) {
+        return this.weapons.getWeapon(id);
+    }
+
+    public int getWeaponNum() {
+        return this.weapons.getWeaponNum();
+    }
+
+    public int getCurrentWeaponID(@Nullable Entity entity) {
+        return this.weapons.getCurrentWeaponID(entity);
+    }
+
+    public float[] getCurrentWeaponShotDir(@Nullable Entity entity) {
+        return this.weapons.getCurrentWeaponShotDir(entity);
+    }
+
+    public @Nullable TvMissileEntity getTVMissile() {
+        return this.weapons.getTVMissile();
+    }
+
+    public void setTVMissile(@Nullable TvMissileEntity missile) {
+        this.weapons.setTVMissile(missile);
+    }
+
+    /** Upstream {@code isMissileCameraMode}: the rider watches through the TV missile. */
+    public boolean isMissileCameraMode(@Nullable Entity entity) {
+        return this.getTVMissile() != null && this.isCameraView(entity);
+    }
+
+    /** Upstream {@code hitBullet}: shows the vehicle's hit marker. */
+    public void hitBullet() {
+        this.weapons.hitBullet();
+    }
+
+    public int getHitStatus() {
+        return this.weapons.hitStatus;
+    }
+
+    public boolean isPilotReloading() {
+        return this.weapons.isPilotReloading();
+    }
+
+    /**
+     * Upstream {@code updateRecoil}: a gun with {@code Recoil} kicks the vehicle's pitch and roll
+     * for the first 18 of 30 ticks after it fires.
+     */
+    public void updateRecoil(float partialTicks) {
+        AircraftWeapons w = this.weapons;
+        if (w.recoilCount > 0 && w.recoilCount >= 12) {
+            float pitch = Mth.cos((float) ((w.recoilYaw - this.getRoll()) * Math.PI / 180.0));
+            float roll = Mth.sin((float) ((w.recoilYaw - this.getRoll()) * Math.PI / 180.0));
+            float recoil = Mth.cos((float) (w.recoilCount * 6 * Math.PI / 180.0)) * w.recoilValue;
+            this.setPitch(this.getPitch() + recoil * pitch * partialTicks);
+            this.setRoll(this.getRoll() + recoil * roll * partialTicks);
+        }
+    }
+
+    // ---- countermeasures ----
+
+    /** Upstream's flare, chaff and APS updates in {@code onUpdate}. */
+    private void updateCountermeasures() {
+        int ft = this.flares.tick;
+        this.flares.update();
+        if (this.info != null) {
+            this.chaff.chaffUseTime = this.info.chaffUseTime;
+            this.chaff.chaffWaitTime = this.info.chaffWaitTime;
+            this.chaff.onUpdate();
+            this.aps.useTime = this.info.apsUseTime;
+            this.aps.waitTime = this.info.apsWaitTime;
+            this.aps.range = this.info.apsRange;
+            this.aps.onUpdate();
+        }
+        if (!this.level().isClientSide() && this.flares.tick == 0 && ft != 0) {
+            this.setCommonStatus(STATUS_FLARE, false);
+        }
+    }
+
+    public AircraftFlares flares() {
+        return this.flares;
+    }
+
+    public AircraftChaff chaff() {
+        return this.chaff;
+    }
+
+    public boolean haveFlare() {
+        return this.info != null && this.info.haveFlare();
+    }
+
+    /** Upstream {@code useFlare}: starts a pattern the vehicle has. */
+    public boolean useFlare(int type) {
+        if (!this.haveFlare()) {
+            return false;
+        }
+        for (int i : this.info.flare.types) {
+            if (i == type) {
+                this.setCommonStatus(STATUS_FLARE, true);
+                if (this.flares.use(type)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public int getCurrentFlareType() {
+        if (!this.haveFlare() || this.info.flare.types.length == 0) {
+            return 0;
+        }
+        return this.info.flare.types[this.currentFlareIndex % this.info.flare.types.length];
+    }
+
+    public void nextFlareType() {
+        if (this.haveFlare() && this.info.flare.types.length > 0) {
+            this.currentFlareIndex = (this.currentFlareIndex + 1) % this.info.flare.types.length;
+        }
+    }
+
+    public boolean canUseFlare() {
+        return this.haveFlare() && !this.getCommonStatus(STATUS_FLARE) && this.flares.tick == 0;
+    }
+
+    public boolean isFlarePreparation() {
+        return this.flares.isInPreparation();
+    }
+
+    /** Upstream {@code isFlareUsing}: the first part of a flare pattern (both sides). */
+    public boolean isFlareUsing() {
+        return this.flares.isUsing();
+    }
+
+    /** Upstream's "FlareUsing" entity flag, set by the server's flare pattern: missiles in flight lose it. */
+    public boolean isFlareDecoying() {
+        return this.flares.isFlareUsing();
+    }
+
+    public int getFlareTick() {
+        return this.flares.tick;
+    }
+
+    public boolean canUseChaff() {
+        return this.info != null && this.info.haveChaff() && this.chaff.tick == 0;
+    }
+
+    public boolean useChaff() {
+        return this.info != null && this.info.haveChaff() && this.chaff.onUse();
+    }
+
+    public boolean isChaffUsing() {
+        return this.chaff.isUsing();
+    }
+
+    /** Ticks chaff is still being dispensed; radar locks fail while it is above zero. */
+    public int getChaffUseTime() {
+        return this.chaff.useTick;
+    }
+
+    public int getChaffTick() {
+        return this.chaff.tick;
+    }
+
+    public boolean haveAPS() {
+        return this.info != null && this.info.haveAPS();
+    }
+
+    public boolean canUseAPS() {
+        return this.haveAPS() && this.aps.tick == 0;
+    }
+
+    public boolean useAPS() {
+        return this.haveAPS() && this.aps.onUse();
+    }
+
+    public int getApsTick() {
+        return this.aps.tick;
+    }
+
     // ---- save data ----
 
     @Override
@@ -2469,6 +2725,7 @@ public abstract class AircraftEntity extends Entity
         this.setGunnerStatus(input.getBooleanOr("AcGunnerStatus", true));
         this.setFuel(input.getIntOr("AcFuel", 0));
         this.setFuelType(input.getStringOr("AcFuelType", AircraftFuel.DEFAULT_FUEL_TYPE));
+        input.getIntArray("AcWeaponsAmmo").ifPresent(this.weapons::loadAmmo);
         if (this.getDespawnCount() > 0) {
             this.setDamageTaken(this.getMaxHP());
         } else {
@@ -2502,6 +2759,7 @@ public abstract class AircraftEntity extends Entity
             items.set(i, this.inventory.getItem(i));
         }
         ContainerHelper.saveAllItems(output.child("ItemsAC"), items);
+        output.putIntArray("AcWeaponsAmmo", this.weapons.saveAmmo());
         output.putInt("AcDamage", this.getDamageTaken());
         output.putDouble("AcThrottle", this.getCurrentThrottle());
         output.putBoolean("AcHoveringMode", this.hoveringMode);

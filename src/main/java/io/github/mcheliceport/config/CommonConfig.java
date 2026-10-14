@@ -27,6 +27,7 @@ public final class CommonConfig {
     public static final ModConfigSpec.DoubleValue AUTO_REPAIR_HP;
     public static final ModConfigSpec.BooleanValue COLLISION_DESTROY_BLOCK;
     public static final ModConfigSpec.BooleanValue INFINITY_AMMO;
+    public static final ModConfigSpec.IntValue TV_MISSILE_MAX_RANGE;
     public static final ModConfigSpec.DoubleValue HURT_RESISTANT_TIME;
     public static final ModConfigSpec.ConfigValue<List<? extends String>> BULLET_BREAKABLE_BLOCKS;
     public static final ModConfigSpec.ConfigValue<List<? extends String>> DAMAGE_VS_ENTITY;
@@ -109,6 +110,10 @@ public final class CommonConfig {
         INFINITY_AMMO = builder
                 .comment("Vehicle weapons never run out of ammunition. Upstream: InfinityAmmo.")
                 .define("infinityAmmo", false);
+        TV_MISSILE_MAX_RANGE = builder
+                .comment("A TV missile farther than this from its shooter self-destructs; -1 for no limit.",
+                        "Upstream: tvMissileMaxRange (wingman settings).")
+                .defineInRange("tvMissileMaxRange", 500, -1, 100000);
         HURT_RESISTANT_TIME = builder
                 .comment("Multiplies the invulnerability time a mob gets after each bullet or explosion hit;",
                         "0 lets every bullet of a burst hurt. Upstream: HurtResistantTime.")

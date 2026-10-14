@@ -5,6 +5,11 @@ import io.github.mcheliceport.config.ServerConfig;
 import io.github.mcheliceport.config.ServerSettings;
 import io.github.mcheliceport.effect.McheliEffects;
 import io.github.mcheliceport.entity.aircraft.AircraftEntity;
+import io.github.mcheliceport.entity.aircraft.AircraftWeapons;
+import io.github.mcheliceport.entity.weapon.TvMissileEntity;
+import io.github.mcheliceport.weapon.WeaponClientHooks;
+import io.github.mcheliceport.weapon.WeaponParam;
+import io.github.mcheliceport.weapon.WeaponSet;
 import io.github.mcheliceport.entity.heli.HeliEntity;
 import io.github.mcheliceport.entity.seat.SeatEntity;
 import net.minecraft.server.MinecraftServer;
@@ -12,6 +17,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.event.config.ModConfigEvent;
@@ -33,7 +39,7 @@ public final class ModNetwork {
 
     private static final Logger LOGGER = LogUtils.getLogger();
     /** Bump when a payload's encoding changes. */
-    public static final String VERSION = "1";
+    public static final String VERSION = "2";
 
     private ModNetwork() {
     }
@@ -60,6 +66,43 @@ public final class ModNetwork {
                         p.size(), p.inWater(), p.affectedBlocks()));
         registrar.playToClient(ServerSettingsPayload.TYPE, ServerSettingsPayload.CODEC,
                 (payload, context) -> ServerSettings.setClient(payload.toValues()));
+        registrar.playToServer(WeaponControlPayload.TYPE, WeaponControlPayload.CODEC, ModNetwork::handleWeaponControl);
+        registrar.playToServer(AmmoRequestPayload.TYPE, AmmoRequestPayload.CODEC, ModNetwork::handleAmmoRequest);
+        registrar.playToServer(AirburstDistPayload.TYPE, AirburstDistPayload.CODEC, ModNetwork::handleAirburstDist);
+        registrar.playToClient(WeaponSyncPayload.TYPE, WeaponSyncPayload.CODEC, ModNetwork::handleWeaponSync);
+        registrar.playToClient(NotifyAmmoPayload.TYPE, NotifyAmmoPayload.CODEC, (p, context) -> {
+            if (context.player().level().getEntity(p.aircraftId()) instanceof AircraftEntity ac) {
+                ac.weapons().applyAmmo(p);
+            }
+        });
+        registrar.playToClient(SyncReloadPayload.TYPE, SyncReloadPayload.CODEC, (p, context) -> {
+            if (context.player().level().getEntity(p.aircraftId()) instanceof AircraftEntity ac) {
+                ac.weapons().manualReloadForPlayer(context.player());
+            }
+        });
+        registrar.playToClient(NotifyHitPayload.TYPE, NotifyHitPayload.CODEC, (p, context) -> {
+            if (p.aircraftId() <= 0) {
+                WeaponClientHooks.hitMarker();
+            } else if (context.player().level().getEntity(p.aircraftId()) instanceof AircraftEntity ac) {
+                ac.hitBullet();
+            }
+        });
+        registrar.playToClient(TvMissilePayload.TYPE, TvMissilePayload.CODEC, (p, context) -> {
+            Level level = context.player().level();
+            if (level.getEntity(p.aircraftId()) instanceof AircraftEntity ac
+                    && level.getEntity(p.missileId()) instanceof TvMissileEntity missile) {
+                ac.setTVMissile(missile);
+            }
+        });
+        registrar.playToClient(ChaffUsePayload.TYPE, ChaffUsePayload.CODEC, (p, context) -> {
+            if (context.player().level().getEntity(p.aircraftId()) instanceof AircraftEntity ac) {
+                ac.chaff().start(p.useTick());
+            }
+        });
+        registrar.playToClient(LaserShotPayload.TYPE, LaserShotPayload.CODEC,
+                (p, context) -> WeaponClientHooks.laserShot(p));
+        registrar.playToClient(ClientSoundPayload.TYPE, ClientSoundPayload.CODEC,
+                (p, context) -> WeaponClientHooks.clientSound(p));
     }
 
     // ---- server settings ----
@@ -244,6 +287,98 @@ public final class ModNetwork {
         }
     }
 
+    // ---- weapons ----
+
+    static void handleWeaponControl(WeaponControlPayload p, IPayloadContext context) {
+        Player player = context.player();
+        AircraftEntity aircraft = riddenAircraft(player);
+        if (aircraft == null || aircraft.getId() != p.entityId()) {
+            return;
+        }
+        applyWeaponControl(aircraft, player, p);
+    }
+
+    /** Upstream {@code PacketPlayerControlBase}'s weapon switch, use weapon and flare handling. */
+    public static void applyWeaponControl(AircraftEntity aircraft, Player player, WeaponControlPayload p) {
+        if (aircraft.isDestroyed()) {
+            return;
+        }
+        AircraftWeapons weapons = aircraft.weapons();
+        if (p.switchWeapon() >= 0) {
+            weapons.switchWeapon(player, p.switchWeapon());
+        }
+        if (p.reload()) {
+            weapons.manualReloadForPlayer(player);
+        }
+        if (p.useWeapon() && Double.isFinite(p.x()) && Double.isFinite(p.y()) && Double.isFinite(p.z())
+                && Float.isFinite(p.userYaw()) && Float.isFinite(p.userPitch())) {
+            WeaponParam prm = new WeaponParam();
+            prm.entity = aircraft;
+            prm.user = player;
+            // The client fires from where it saw the vehicle; a position far from the server's is not trusted.
+            double dx = p.x() - aircraft.getX();
+            double dy = p.y() - aircraft.getY();
+            double dz = p.z() - aircraft.getZ();
+            if (dx * dx + dy * dy + dz * dz < 16.0 * 16.0) {
+                prm.setPosAndRot(p.x(), p.y(), p.z(), 0.0F, 0.0F);
+            } else {
+                prm.setPosAndRot(aircraft.getX(), aircraft.getY(), aircraft.getZ(), 0.0F, 0.0F);
+            }
+            prm.option1 = p.option1();
+            prm.option2 = p.option2();
+            weapons.setPacketWeaponUserAim(player, p.userYaw(), p.userPitch());
+            boolean fired;
+            try {
+                weapons.updateWeaponsRotation();
+                fired = weapons.useCurrentWeapon(prm);
+            } finally {
+                weapons.clearPacketWeaponUserAim();
+            }
+            if (!fired && player instanceof ServerPlayer mp) {
+                weapons.syncCurrentWeapon(mp);
+            }
+        }
+        // The client only offers countermeasures to the pilot and seat 1.
+        if (aircraft.getSeatIdByEntity(player) <= 1) {
+            if (p.flareType() > 0) {
+                aircraft.useFlare(p.flareType());
+            }
+            if (p.useChaff()) {
+                aircraft.useChaff();
+            }
+            if (p.useAps()) {
+                aircraft.useAPS();
+            }
+        }
+    }
+
+    static void handleAmmoRequest(AmmoRequestPayload p, IPayloadContext context) {
+        if (context.player() instanceof ServerPlayer player && riddenAircraft(player) instanceof AircraftEntity ac
+                && ac.getId() == p.aircraftId()) {
+            if (p.weaponId() >= 0) {
+                ac.weapons().sendAmmoNum(player, p.weaponId());
+            } else {
+                ac.weapons().sendAllAmmoNum(player);
+            }
+        }
+    }
+
+    static void handleAirburstDist(AirburstDistPayload p, IPayloadContext context) {
+        Player player = context.player();
+        if (riddenAircraft(player) instanceof AircraftEntity ac && ac.getId() == p.aircraftId()) {
+            WeaponSet ws = ac.getCurrentWeapon(player);
+            if (ws.getCurrentWeapon() != null) {
+                ws.getCurrentWeapon().airburstDist = Math.max(0, p.dist());
+            }
+        }
+    }
+
+    static void handleWeaponSync(WeaponSyncPayload p, IPayloadContext context) {
+        if (context.player().level().getEntity(p.aircraftId()) instanceof AircraftEntity ac) {
+            ac.weapons().applySync(p, ac.getEntityBySeatId(p.seatId()) == context.player());
+        }
+    }
+
     static void handleStatusRequest(AircraftStatusRequestPayload p, IPayloadContext context) {
         Player player = context.player();
         if (player instanceof ServerPlayer serverPlayer
@@ -257,14 +392,22 @@ public final class ModNetwork {
     public static AircraftStatusResponsePayload statusOf(AircraftEntity aircraft) {
         byte seatNum = (byte) (aircraft.getSeatNum() + 1);
         byte[] weapons = new byte[Math.max(seatNum, 1)];
-        java.util.Arrays.fill(weapons, (byte) -1);
+        for (int i = 0; i < weapons.length; i++) {
+            weapons[i] = (byte) aircraft.weapons().getWeaponIDBySeatID(i);
+        }
         return new AircraftStatusResponsePayload(aircraft.getId(), seatNum, weapons);
     }
 
+    /** Upstream {@code PacketStatusResponse#onReceive}: every seat's selected weapon. */
     static void handleStatusResponse(AircraftStatusResponsePayload p, IPayloadContext context) {
-        // Seat weapons come with M5; until then the response only confirms the seat count.
         if (p.seatNum() <= 0 || p.weaponIds().length != p.seatNum()) {
             LOGGER.debug("Vehicle status response for entity {} has a bad seat count {}", p.entityId(), p.seatNum());
+            return;
+        }
+        if (context.player().level().getEntity(p.entityId()) instanceof AircraftEntity ac) {
+            for (int i = 0; i < p.seatNum(); i++) {
+                ac.weapons().updateWeaponID(i, p.weaponIds()[i]);
+            }
         }
     }
 }

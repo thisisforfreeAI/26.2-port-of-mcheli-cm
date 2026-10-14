@@ -5,6 +5,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.Level;
 
 /**
  * Plays McHeli's sound events (the {@code mcheli} namespace of the generated {@code sounds.json})
@@ -32,5 +33,24 @@ public final class McheliSounds {
         }
         entity.level().playSound(null, entity.getX(), entity.getY(), entity.getZ(), event(name),
                 SoundSource.NEUTRAL, volume, pitch);
+    }
+
+    /**
+     * Upstream {@code MCH_SoundEvents#playSound}: a sound at a position for everyone nearby, in the
+     * master category; does nothing on the client.
+     */
+    public static void play(Level level, double x, double y, double z, String name, float volume, float pitch) {
+        if (level.isClientSide() || name == null || name.isEmpty()) {
+            return;
+        }
+        level.playSound(null, x, y, z, event(name), SoundSource.MASTER, volume, pitch);
+    }
+
+    /** A sound only this client hears ({@code World#playSound(..., false)} on the client). */
+    public static void playLocal(Level level, double x, double y, double z, String name, SoundSource source,
+            float volume, float pitch) {
+        if (level.isClientSide() && name != null && !name.isEmpty()) {
+            level.playLocalSound(x, y, z, event(name).value(), source, volume, pitch, false);
+        }
     }
 }
