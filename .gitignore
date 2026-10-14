@@ -1,0 +1,13 @@
+# Upstream reference clone (re-create with scripts/fetch-upstream.sh)
+/upstream/
+
+# Gradle / IDE / run dirs
+.gradle/
+build/
+run/
+run-data/
+out/
+.idea/
+*.iml
+.vscode/
+src/generated/resources/.cache/
