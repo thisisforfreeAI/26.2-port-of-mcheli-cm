@@ -1,8 +1,8 @@
 # M3 plan: placing and flying helicopters (0.3.0)
 
 > **Status:** approved, not started. Decisions D10 to D13 were approved as recommended on
-> 2026-10-14. Starts after M2 ([PR #2](https://github.com/thisisforfreeAI/26.2-port-of-mcheli-cm/pull/2))
-> is merged; the M3 branch is cut from `main` at that point. NeoForge stays pinned at 26.2.0.88.
+> 2026-10-14. M2 ([PR #2](https://github.com/thisisforfreeAI/26.2-port-of-mcheli-cm/pull/2)) is
+> merged; the M3 branch is cut from `main`. NeoForge stays pinned at 26.2.0.88.
 > This file expands the M3 row of [PORTING_PLAN.md](../PORTING_PLAN.md) §6. Its decisions are in
 > [§9](#9-decisions).
 
