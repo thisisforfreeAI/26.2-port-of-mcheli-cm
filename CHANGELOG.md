@@ -8,6 +8,81 @@ Versions stay below 1.0.0 until the port is feature-complete, and each milestone
 McHeli CE 1.5.1 (`master` @ `cbaff7f`). Where it deliberately differs from upstream, the difference is
 listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 
+## [0.3.0] - unreleased (M3: placing and flying helicopters)
+
+### Added
+
+- **Helicopters can be placed, boarded, flown, landed and picked up.** All 34 stock helicopters
+  (and addon helicopters) share one entity, as upstream (decision D10); the AH-64 is the test
+  reference. The `helicopter` and `seat` entity types are real; the other entity types stay
+  placeholders.
+- **Placement** from the helicopter's item, as upstream: a 5-block ray trace, the helicopter one
+  block above the clicked block, yaw snapped to a quarter turn, refused when blocks are in the way,
+  creative-only content refused in survival, target drones refused ("Please use the UAV station"),
+  the `placeableOnSpongeOnly` rules, and the item used up outside creative. Dispensers place
+  helicopters two blocks in front of them.
+- **Item data**: fuel, damage and the destroy command move between the item and the helicopter
+  (new `aircraft_fuel` and `aircraft_command` data components), gated by `itemFuel` and
+  `itemDamage`.
+- **Riding**: use to board the pilot's seat, then the free crew seats; the first use opens a closed
+  canopy. Seat switching (free-look key with the GUI or extra key), upstream's dismount positions,
+  the unmount key (Y), and no fall damage for the crew when landing.
+- **Flight**: upstream's helicopter physics (`HeliFlightModel`): manual throttle, the auto
+  throttle-down band, hovering mode, rotor spin, lift, gravity and water, the speed limit and
+  `currentSpeed`, ground friction and on-ground pitch, auto-levelling, server rotation limits,
+  hovering drift, destroyed spin and fall. Fold blades (F) and taxiing with folded blades. Canopy,
+  landing gear and hatch state.
+- **Mouse flight**: upstream's mouse stick, `invertMouse` and `mouseSensitivity`, the stick and
+  flight-sim modes, and both rotation paths (Euler and the quaternion path of
+  `experimentalQuaternionRotation`). The pilot's view rolls with the helicopter and the hand is
+  hidden while piloting.
+- **Keys** in the Controls screen under "McHeli CE (26.2 Port)", with upstream's defaults: W/S
+  throttle, A/D strafe, Space hovering, H gunner mode, Y unmount, F extra (fold blades), Left Ctrl
+  free look, I menu, Z hatch, B landing gear. They only act while riding a McHeli vehicle.
+- **Fuel**: consumption every 20 ticks with upstream's rates, `infinityFuel`, creative crews fly
+  free, and an empty tank means the throttle runs down. Refuelling from fuel cans.
+- **Aircraft menu** (sneak-use or the GUI key, decision D12): the fuel input and output slots and
+  the trunk (`InventorySize`).
+- **Damage**: upstream's armour maths and bounding-box damage factors, lava and fire rules,
+  invulnerable content, punching to pick up (`preventingBroken`, `breakableOnlyPickaxe`,
+  `dropItemInCreativeMode`, sneaking in creative), destruction with a vanilla explosion of
+  upstream's power 2 (decision D13), crash explosions, ground-collision and submersion damage,
+  auto-repair and the destroy command.
+- **Authority** (decision D2): by default the pilot's client flies its helicopter and the server
+  checks the moves (horizontal speed at most 1.5 × the helicopter's speed, climb at most one block
+  per tick, logged at most once a minute). `vehicles.serverAuthoritativeMovement` switches to
+  upstream's server-side flight.
+- **Networking**: payloads for helicopter controls, attitude, motion, seat control, status
+  request and response, and server settings, with CE's encodings (enum ordinals as bytes, the
+  14 control switches as a short).
+- A **stand-in renderer** that draws the helicopter's boxes (the main box, the content bounding
+  boxes rotated with the helicopter, and a nose line) until M4 draws models (decision D11).
+- Config: COMMON `vehicles.placeableOnSpongeOnly`, `itemDamage`, `itemFuel`, `infinityFuel`,
+  `preventingBroken`, `dropItemInCreativeMode`, `breakableOnlyPickaxe`, `allHeliSpeed`,
+  `autoThrottleDownHeli`, `experimentalQuaternionRotation`, `despawnCount`,
+  `killPassengersWhenDestroyed`, `autoRepairHP`, `collisionDestroyBlock`; SERVER
+  `rotationLimits.*` (synced to clients); CLIENT `mouse.*`. `vehicles.serverAuthoritativeMovement`
+  now works.
+- Tests:
+  - JUnit: `HeliFlightModelTest` runs the port's flight model and a line-for-line transcription of
+    upstream's helicopter code side by side for 13 scenarios and requires the same state every
+    tick (tolerance 1e-9); `AircraftAttitudeTest`, `GroundProbeTest`, `AircraftFuelTest`,
+    `AircraftDamageTest` and `PayloadCodecTest` (including the switch bits against CE's).
+  - GameTests (24, run by `./gradlew runGameTestServer` and in CI): placement, dispensers,
+    riding, seat switching, unmounting, take-off, hover and landing in both authority modes and at
+    negative coordinates, crash explosions, fuel use and refuelling, pick-up, item data, save and
+    load, and every stock helicopter created from its item.
+
+### Changed from upstream
+
+- The ground probe (`MCH_Lib.getBlockY`) works over 26.2's whole build height and rounds
+  correctly at negative coordinates; upstream treated everything outside y 0 to 255 as air and
+  probed one block off at negative coordinates.
+- Placement centres the helicopter on the block in double precision; upstream's float maths put it
+  on a block edge past about 8 million blocks from the origin.
+- Seat switching wraps correctly from the last seat and skips exclusion seats.
+- The crew's unmount key lets a crew member out; upstream sent it but only acted on the pilot.
+
 ## [0.2.0] - unreleased (M2: content and registries)
 
 ### Added

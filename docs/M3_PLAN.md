@@ -1,8 +1,8 @@
 # M3 plan: placing and flying helicopters (0.3.0)
 
-> **Status:** approved, not started. Decisions D10 to D13 were approved as recommended on
-> 2026-10-14. M2 ([PR #2](https://github.com/thisisforfreeAI/26.2-port-of-mcheli-cm/pull/2)) is
-> merged; the M3 branch is cut from `main`. NeoForge stays pinned at 26.2.0.88.
+> **Status:** implemented (0.3.0). Decisions D10 to D13 were approved as recommended on
+> 2026-10-14. NeoForge stays pinned at 26.2.0.88. Where the implementation differs from this plan,
+> the difference is listed in [§11](#11-as-built).
 > This file expands the M3 row of [PORTING_PLAN.md](../PORTING_PLAN.md) §6. Its decisions are in
 > [§9](#9-decisions).
 
@@ -305,3 +305,31 @@ PORTING_PLAN.md §10's numbering.
 | `CalculatePlayerTurnEvent` gives per-frame mouse deltas while upstream integrated per render frame with `deltaSeconds` | The attitude code takes `deltaSeconds` as upstream; `AircraftAttitudeTest` covers 30, 60 and 144 fps |
 | PartEntity hit boxes and vanilla collision differ from upstream's custom `move` | Port upstream's `move` collision order (Y, X, Z with step-up) against the main box only, as upstream; parts take no part in terrain collision |
 | API names beyond PORTING_PLAN §2.3 (dispenser registration, menu screen registration, GameTest helpers) are not yet verified for 26.2.0.88 | Checked against the decompiled 26.2.0.88 sources on the first day of M3, before commit 3 |
+
+## 11. As built
+
+What changed from this plan while implementing it:
+
+- `AircraftEntity` keeps its synced data, seats and parts in one class (with `AircraftPart` for the
+  canopy, gear and hatch); `AircraftData`, `AircraftSeats` and `AircraftParts` were not split out.
+  `GroundProbe`, `AircraftItemData` and `AircraftMotionPayload` were added.
+- Mouse input goes through `Entity#onPassengerTurned`, which sees every frame's raw mouse movement,
+  rather than `CalculatePlayerTurnEvent`.
+- In the client-authoritative mode the pilot's client sends `AircraftMotionPayload` (its motion and
+  throttle) next to vanilla's vehicle move; the server's checks are the horizontal cap from §4 and
+  a climb cap of one block per tick.
+- Fuel comes from fuel cans only; fluid containers wait for a fuel fluid (M6). The menu uses a
+  plain container background.
+- `AllHelicoptersSpawnTest` and `AircraftItemDataTest` are GameTests
+  (`all_helicopters_spawn`, `pickup_item_data`), because creating entities and item components
+  needs a running game. The GameTests are grouped by topic as `PlacementGameTests`,
+  `RidingGameTests`, `FlightGameTests`, `FuelGameTests`, `PickUpGameTests`,
+  `PersistenceGameTests` and `AllHelicoptersGameTests`, in the main source set under
+  `io.github.mcheliceport.gametest`; the test structure is written by
+  `scripts/make-test-structure.py`.
+- `FlightGameTests` flies at y -59 (where `runGameTestServer` puts every test) and at x and z
+  -4,000, rather than on a separate pad at y -50. No stock helicopter has exclusion seats, so
+  skipping them is covered by code review only.
+- Also ported: `DespawnCount`, `KillPassengersWhenDestroyed`, `AutoRepairHP` and
+  `Collision_DestroyBlock` (COMMON `vehicles.*`), which the destruction and collision code reads.
+
