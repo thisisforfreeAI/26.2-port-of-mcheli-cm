@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "B": "#c:storage_blocks/iron",
+    "D": "#c:gems/diamond",
+    "I": "#c:ingots/iron",
+    "R": "#c:dusts/redstone"
+  },
+  "pattern": [
+    " B ",
+    "IDI",
+    "IRI"
+  ],
+  "result": {
+    "id": "mcheli_ce_port:gltd"
+  }
+}

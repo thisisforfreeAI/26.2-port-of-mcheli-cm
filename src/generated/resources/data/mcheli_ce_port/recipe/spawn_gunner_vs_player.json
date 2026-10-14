@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "key": {
+    "E": "#c:eggs",
+    "G": "#c:storage_blocks/gold"
+  },
+  "pattern": [
+    "EG"
+  ],
+  "result": {
+    "id": "mcheli_ce_port:spawn_gunner_vs_player"
+  }
+}

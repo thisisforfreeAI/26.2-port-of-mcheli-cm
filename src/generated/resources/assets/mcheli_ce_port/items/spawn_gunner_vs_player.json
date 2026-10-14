@@ -1,0 +1,16 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "mcheli_ce_port:item/spawn_gunner_vs_player",
+    "tints": [
+      {
+        "type": "minecraft:constant",
+        "value": -4144992
+      },
+      {
+        "type": "minecraft:constant",
+        "value": -16728064
+      }
+    ]
+  }
+}

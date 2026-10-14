@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "D": "#c:gems/diamond",
+    "I": "#c:ingots/iron",
+    "R": "#c:storage_blocks/redstone"
+  },
+  "pattern": [
+    "III",
+    "IDI",
+    "IRI"
+  ],
+  "result": {
+    "id": "mcheli_ce_port:uav_station"
+  }
+}

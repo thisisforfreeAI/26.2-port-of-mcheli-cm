@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "key": {
+    "C": [
+      "minecraft:coal",
+      "minecraft:charcoal"
+    ],
+    "I": "#c:ingots/iron"
+  },
+  "pattern": [
+    "ICI",
+    "III"
+  ],
+  "result": {
+    "id": "mcheli_ce_port:fuel"
+  }
+}
