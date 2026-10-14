@@ -452,6 +452,11 @@ public class HeliEntity extends AircraftEntity implements HeliFlightModel.Body {
         return this.random;
     }
 
+    /** The fastest horizontal speed per tick the server accepts from the pilot. */
+    public double getMaxSpeedForChecks() {
+        return this.getSpeedLimitForChecks() * 1.5;
+    }
+
     @Override
     protected double getSpeedLimitForChecks() {
         return this.heliInfo != null ? this.heliInfo.speed * CommonConfig.ALL_HELI_SPEED.get() : 1.0;
