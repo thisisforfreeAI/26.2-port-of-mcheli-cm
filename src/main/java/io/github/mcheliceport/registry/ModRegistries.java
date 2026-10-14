@@ -47,6 +47,8 @@ public final class ModRegistries {
         ModItems.init();
         ModItems.registerContentItems(content);
         ModEntityTypes.init();
+        ModDataComponents.init();
+        ModMenuTypes.init();
         ModCreativeTabs.init();
         ALL.forEach(register -> register.register(modBus));
     }

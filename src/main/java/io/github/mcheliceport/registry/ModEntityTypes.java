@@ -1,6 +1,8 @@
 package io.github.mcheliceport.registry;
 
 import io.github.mcheliceport.entity.PlaceholderEntity;
+import io.github.mcheliceport.entity.heli.HeliEntity;
+import io.github.mcheliceport.entity.seat.SeatEntity;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -14,8 +16,8 @@ import net.neoforged.neoforge.registries.DeferredHolder;
  * rounded up to whole chunks (the server's view distance still caps them, as it did upstream
  * without its tracking mixin).
  *
- * <p>All of them use {@link PlaceholderEntity} until their entity is ported: vehicles and seats in
- * M3 and M6, weapons in M5, the rest in M6. Upstream's two hit box types ({@code MCH.E.HitBox} and
+ * <p>Helicopters and seats are real since M3. The others use {@link PlaceholderEntity} until their
+ * entity is ported: weapons in M5, the other vehicles and the rest in M6. Upstream's two hit box types ({@code MCH.E.HitBox} and
  * {@code MCH.E.PSeat}) are not registered: hit boxes become parts of the vehicle entity
  * (PORTING_PLAN.md section 5.2).
  */
@@ -24,8 +26,21 @@ public final class ModEntityTypes {
     private static final List<DeferredHolder<EntityType<?>, ? extends EntityType<?>>> ALL =
             new ArrayList<>();
 
-    public static final DeferredHolder<EntityType<?>, EntityType<PlaceholderEntity>> SEAT = placeholder("seat", 1.0f, 1.0f, 1200, 2);
-    public static final DeferredHolder<EntityType<?>, EntityType<PlaceholderEntity>> HELICOPTER = placeholder("helicopter", 2.0f, 0.7f, 1200, 2);
+    /** A crew seat; it rides its vehicle, so it is never summoned on its own. */
+    public static final DeferredHolder<EntityType<?>, EntityType<SeatEntity>> SEAT = register("seat",
+            ModRegistries.ENTITY_TYPES.registerEntityType("seat", SeatEntity::new, MobCategory.MISC, builder -> builder
+                    .sized(1.0f, 1.0f)
+                    .clientTrackingRange(toChunks(1200))
+                    .updateInterval(2)
+                    .fireImmune()
+                    .noSummon()));
+    /** Every helicopter; its content type (a saved and synced type name) picks the definition. */
+    public static final DeferredHolder<EntityType<?>, EntityType<HeliEntity>> HELICOPTER = register("helicopter",
+            ModRegistries.ENTITY_TYPES.registerEntityType("helicopter", HeliEntity::new, MobCategory.MISC,
+                    builder -> builder
+                            .sized(2.0f, 0.7f)
+                            .clientTrackingRange(toChunks(1200))
+                            .updateInterval(2)));
     public static final DeferredHolder<EntityType<?>, EntityType<PlaceholderEntity>> GLTD = placeholder("gltd", 0.5f, 0.5f, 1200, 10);
     public static final DeferredHolder<EntityType<?>, EntityType<PlaceholderEntity>> PLANE = placeholder("plane", 2.0f, 0.7f, 1200, 2);
     public static final DeferredHolder<EntityType<?>, EntityType<PlaceholderEntity>> SHIP = placeholder("ship", 2.0f, 0.7f, 1200, 2);
@@ -64,6 +79,12 @@ public final class ModEntityTypes {
     /** Upstream's tracking range in blocks as whole chunks, rounded up. */
     static int toChunks(int blocks) {
         return (blocks + 15) / 16;
+    }
+
+    private static <T extends net.minecraft.world.entity.Entity> DeferredHolder<EntityType<?>, EntityType<T>> register(
+            String name, DeferredHolder<EntityType<?>, EntityType<T>> holder) {
+        ALL.add(holder);
+        return holder;
     }
 
     private static DeferredHolder<EntityType<?>, EntityType<PlaceholderEntity>> placeholder(String name, float width,

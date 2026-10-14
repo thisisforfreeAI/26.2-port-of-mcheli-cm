@@ -5,21 +5,31 @@ McHeli CE 1.5.1. This file is updated with every milestone (PORTING_PLAN.md, sec
 
 ## Not ported yet
 
-As of 0.2.0 (M2), the mod loads all content and registers its items, blocks, entity types and
-creative tabs, but nothing can be used yet:
+As of 0.3.0 (M3), helicopters can be placed, flown, refuelled and picked up. Everything else that
+needs a vehicle or a weapon is still to come:
 
 | Area | Planned milestone |
 |---|---|
-| Placing and flying helicopters: riding, controls, flight physics, fuel | M3 |
-| Model rendering (OBJ/MQO), HUD, camera and zoom, night vision | M4 |
-| Weapons, throwing grenades, flares and chaff, explosions, particles | M5 |
-| Planes, ships, tanks, vehicles, UAVs, gunner NPCs, containers, chains, parachutes, GLTD, hand-held weapons, drafting table screen, charger, tools, multiplayer teams | M6 |
+| Model rendering (OBJ/MQO), rotor and part animation, HUD, camera modes and zoom, third-person distance, night vision, engine and rotor sounds | M4 |
+| Weapons and gunner weapon use, throwing grenades, flares and chaff, APS and ECM, McHeli's own explosions, particles (damage smoke, sand clouds) | M5 |
+| Planes, ships, tanks, vehicles, UAVs, gunner NPCs and mobs in seats, racks and rappelling, containers, chains, parachutes, GLTD, hand-held weapons, the rest of the aircraft GUI, drafting table screen, charger, tools, supply vehicles, multiplayer teams | M6 |
 | Wingman (AI wingmen, marker block screens and types, missions, `/wingman`) | M6b |
-| Remaining `/mcheli` commands (including reloading content with `reconfig`), long-distance tracking and rendering, thermal vision, HBM:NTM stubs, performance work | M7 |
+| Remaining `/mcheli` commands (including reloading content with `reconfig`), advancement triggers, long-distance tracking and rendering, thermal vision, HBM:NTM stubs, performance work | M7 |
 
 Until then:
 
-- Items do nothing when used, and all entity types are inert placeholders that cannot be summoned.
+- Helicopters are drawn as boxes: the main box, the content bounding boxes and a nose line
+  (decision D11). Models come with M4.
+- Planes, ships, tanks, vehicles and throwables do nothing when used, and their entity types are
+  inert placeholders that cannot be summoned.
+- A destroyed helicopter explodes with a vanilla explosion of upstream's power (decision D13);
+  McHeli's explosion comes with M5.
+- The aircraft menu has the fuel slots and the trunk only, on a plain container background; the
+  rest of upstream's aircraft GUI (weapons, parachutes, the menu buttons) comes with M6.
+- Fuel comes from fuel cans only. Refuelling from fluid containers, which upstream also allowed,
+  needs a fuel fluid and comes with the supply vehicles (M6).
+- External damage factors (`DamageFactor` config lines and weapon damage factors against vehicles)
+  apply once weapons are ported (M5).
 - The drafting table is drawn with a simple block model; upstream drew a 3D model with a block
   entity renderer (M6). The rangefinder, wrench, GLTD and hand-held launchers show as flat items in
   the hand; upstream drew 3D models (M6).
@@ -27,9 +37,8 @@ Until then:
   those items (M6).
 - Every placed wingman marker is a waypoint until the marker screen is ported (M6b).
 
-These config entries already exist but have no effect yet:
+This config entry already exists but has no effect yet:
 
-- SERVER `vehicles.serverAuthoritativeMovement` (needs vehicles, M3)
 - CLIENT `privacy.allowScreenCapture` (needs `/mcheli sendss`, M7)
 
 ## Deliberate differences from upstream
@@ -77,6 +86,33 @@ These follow from how Minecraft 26.2 works or from decisions approved in PORTING
 19. Sound files that only a resource pack (not the mod or an addon pack) adds do not count when the
     port decides between `<name>.ogg` and `<name>_snd.ogg` for a content sound event. A resource
     pack can still define such events in its own `sounds.json`.
+20. Helicopters move with vanilla's entity movement and collisions (`Entity#move`) instead of 1.12's.
+    Collision boxes and step-up differ slightly at block edges.
+21. The ground probe (upstream's `MCH_Lib.getBlockY`) covers 26.2's whole build height and rounds
+    correctly at negative coordinates. Upstream treated everything outside y 0 to 255 as air and
+    probed one block off at negative x and z, so helicopters there did not level out or find the
+    ground (M3_PLAN.md section 3.3).
+22. Placement centres a helicopter on the clicked block in double precision. Upstream used float
+    maths, which put it on a block edge far from the world origin.
+23. Seat switching wraps from the last seat back to seat 1 and skips exclusion seats. The unmount
+    key works for the crew too; upstream only acted on it for the pilot (the crew got out with
+    sneak, which still works).
+24. Crew seats are passengers of the helicopter, so vanilla saves, tracks and positions them with
+    it; upstream's seats were separate entities that found their helicopter again by UUID.
+25. The content bounding boxes are NeoForge part entities with an axis-aligned box that encloses
+    the rotated box. Hits, use and damage factors work on them as upstream, but players cannot stand
+    on them, and a hit near a corner of a strongly rotated box can count that box.
+26. In the default authority mode (decision D2) the pilot's client sends its helicopter's motion and
+    throttle in a new `AircraftMotionPayload`, so the server can check the moves and other players
+    see the throttle. Other players get the yaw and pitch through vanilla's entity tracking and the
+    roll through synced data; upstream relayed all three in its rotation packet.
+27. Hovering mode is synced to clients and saved with the helicopter; upstream kept it on the
+    server and the pilot's client only.
+28. The aircraft menu has two fuel slots (in and out); upstream's had three fuel slots. The trunk
+    and the fuel slots share one screen; upstream opened the trunk separately.
+29. The mouse turns the helicopter through `Entity#onPassengerTurned`, which sees every frame's
+    raw mouse movement, instead of upstream's tick handler; free look follows vanilla's
+    "invert mouse" option as well as `mouse.invertMouse`.
 
 ## Upstream content issues kept as they are
 
@@ -91,5 +127,7 @@ its stock content from TXT to YAML lost or changed (the full list, checked by a 
   its sign flipped).
 - Eleven sound events named by stock content have no sound file (for example `railgun` and the
   smoke dispensers' fire sounds), so they play nothing, as upstream.
+- Two stock plane files (`b29.yml`, `fuel_truck.yml`) name their `Author` twice; SnakeYAML logs a
+  "duplicate keys found" warning while loading them, and the second name wins, as upstream.
 - Upstream's legacy TXT files (not shipped, used as test fixtures) contain three recipes that cannot
   work: two use a pattern letter without a key, and one needs a 1.12 potion by metadata.

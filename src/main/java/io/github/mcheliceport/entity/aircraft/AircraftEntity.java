@@ -1,0 +1,2297 @@
+package io.github.mcheliceport.entity.aircraft;
+
+import com.mojang.logging.LogUtils;
+import io.github.mcheliceport.config.CommonConfig;
+import io.github.mcheliceport.config.ServerSettings;
+import io.github.mcheliceport.content.ContentType;
+import io.github.mcheliceport.content.aircraft.AircraftInfo;
+import io.github.mcheliceport.content.aircraft.BoundingBoxInfo;
+import io.github.mcheliceport.content.aircraft.SeatInfo;
+import io.github.mcheliceport.content.aircraft.SeatRackInfo;
+import io.github.mcheliceport.entity.seat.SeatEntity;
+import io.github.mcheliceport.item.AircraftItem;
+import io.github.mcheliceport.menu.AircraftMenu;
+import io.github.mcheliceport.registry.ModEntityTypes;
+import io.github.mcheliceport.registry.ModItems;
+import io.github.mcheliceport.util.McheliMath;
+import io.github.mcheliceport.util.McheliSounds;
+import java.util.ArrayList;
+import java.util.List;
+import net.minecraft.core.NonNullList;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerEntity;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.tags.DamageTypeTags;
+import net.minecraft.tags.ItemTags;
+import net.minecraft.util.Mth;
+import net.minecraft.world.ContainerHelper;
+import net.minecraft.world.Difficulty;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.damagesource.DamageTypes;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityDimensions;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.InterpolationHandler;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.MoverType;
+import net.minecraft.world.entity.Pose;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.scores.Team;
+import net.neoforged.neoforge.entity.IEntityWithComplexSpawn;
+import net.neoforged.neoforge.entity.PartEntity;
+import org.joml.Quaternionf;
+import org.jspecify.annotations.Nullable;
+import org.slf4j.Logger;
+
+/**
+ * The common part of every McHeli vehicle: upstream's {@code MCH_EntityAircraft}, limited to what
+ * milestone M3 flies with (docs/M3_PLAN.md section 3.1). Weapons, radar, flares, supply, UAVs and
+ * racks stay with their milestones.
+ *
+ * <p>Seat 0 (the pilot) rides this entity directly; every other seat is a {@link SeatEntity}
+ * passenger. The content's bounding boxes become {@link AircraftHitBox} parts.
+ */
+public abstract class AircraftEntity extends Entity
+        implements IEntityWithComplexSpawn, AircraftAttitude.Rotatable, AircraftPart.Host {
+
+    private static final Logger LOGGER = LogUtils.getLogger();
+
+    /** Upstream {@code W_Entity.GLOBAL_Y_OFFSET}, added to the pilot's riding height. */
+    public static final double GLOBAL_Y_OFFSET = 0.35;
+    /** Upstream {@code GLOBAL_SEAT_OFFSET}, added to the crew seats' height. */
+    public static final double GLOBAL_SEAT_OFFSET = 0.22443;
+
+    /** Common status bits ({@code setCommonStatus}). */
+    public static final int STATUS_FREE_LOOK = 1;
+    public static final int STATUS_INFINITY_AMMO = 3;
+    public static final int STATUS_INFINITY_FUEL = 4;
+    public static final int STATUS_MOVE_LEFT = 7;
+    public static final int STATUS_MOVE_RIGHT = 8;
+    public static final int STATUS_THROTTLE_UP = 9;
+    public static final int STATUS_THROTTLE_DOWN = 10;
+    public static final int STATUS_GUNNER = 12;
+
+    /** Fuel can slots of the aircraft inventory; the trunk follows them. */
+    public static final int SLOT_FUEL_IN = 0;
+    public static final int SLOT_FUEL_OUT = 1;
+    public static final int FIXED_SLOTS = 2;
+
+    private static final EntityDataAccessor<String> DATA_TYPE_NAME =
+            SynchedEntityData.defineId(AircraftEntity.class, EntityDataSerializers.STRING);
+    private static final EntityDataAccessor<Integer> DATA_DAMAGE =
+            SynchedEntityData.defineId(AircraftEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> DATA_STATUS =
+            SynchedEntityData.defineId(AircraftEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> DATA_FUEL =
+            SynchedEntityData.defineId(AircraftEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<String> DATA_FUEL_TYPE =
+            SynchedEntityData.defineId(AircraftEntity.class, EntityDataSerializers.STRING);
+    private static final EntityDataAccessor<String> DATA_TEXTURE_NAME =
+            SynchedEntityData.defineId(AircraftEntity.class, EntityDataSerializers.STRING);
+    private static final EntityDataAccessor<Float> DATA_ROLL =
+            SynchedEntityData.defineId(AircraftEntity.class, EntityDataSerializers.FLOAT);
+    private static final EntityDataAccessor<String> DATA_COMMAND =
+            SynchedEntityData.defineId(AircraftEntity.class, EntityDataSerializers.STRING);
+    private static final EntityDataAccessor<Integer> DATA_THROTTLE =
+            SynchedEntityData.defineId(AircraftEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> DATA_PART_STAT =
+            SynchedEntityData.defineId(AircraftEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Boolean> DATA_HOVERING =
+            SynchedEntityData.defineId(AircraftEntity.class, EntityDataSerializers.BOOLEAN);
+
+    private static final AircraftHitBox[] NO_HIT_BOXES = new AircraftHitBox[0];
+    private static final SeatEntity[] NO_SEATS = new SeatEntity[0];
+
+    protected @Nullable AircraftInfo info;
+    private final InterpolationHandler interpolation = new InterpolationHandler(this);
+    private AircraftHitBox[] hitBoxes = NO_HIT_BOXES;
+    private SeatEntity[] seats = NO_SEATS;
+    private SimpleContainer inventory = new SimpleContainer(FIXED_SLOTS);
+    private final AircraftFuel.Meter fuelMeter = new AircraftFuel.Meter();
+
+    public @Nullable AircraftPart partCanopy;
+    public @Nullable AircraftPart partLandingGear;
+    public @Nullable AircraftPart partHatch;
+
+    private double currentThrottle;
+    private double prevCurrentThrottle;
+    public double currentSpeed;
+    private float roll;
+    public float prevRoll;
+    private @Nullable Quaternionf orientation;
+    public boolean throttleUp;
+    public boolean throttleDown;
+    public boolean moveLeft;
+    public boolean moveRight;
+    private int commonStatus;
+    private int despawnCount;
+    private int countOnUpdate;
+    private int modeSwitchCooldown;
+    public int timeSinceHit;
+    private int repairCount;
+    private int beforeDamageTaken;
+    public int damageSinceDestroyed;
+    public float rotDestroyedYaw;
+    public float rotDestroyedPitch;
+    public float rotDestroyedRoll;
+    private boolean hoveringMode;
+    protected boolean gunnerMode;
+    public double beforeHoverThrottle;
+    public float lastRiderYaw;
+    public float prevLastRiderYaw;
+    public float lastRiderPitch;
+    public float prevLastRiderPitch;
+    private float lastHitBoxFactor = 1.0F;
+    private @Nullable Entity lastPilot;
+    private boolean keepOnRideRotation;
+    /** Client: the pilot turned the vehicle this tick, so its attitude goes to the server. */
+    public boolean rotationChanged;
+    public boolean rollReversed;
+    public float thirdPersonDist = 4.0F;
+    private boolean switchSeat;
+
+    /**
+     * What the client side does for vehicles: set by the client entry point, null on a dedicated
+     * server. Keeps client classes out of the entity.
+     */
+    public interface ClientHooks {
+        /** The local player turned the mouse while riding {@code aircraft} directly. */
+        void onPassengerTurned(AircraftEntity aircraft, Entity passenger);
+
+        void sendToServer(net.minecraft.network.protocol.common.custom.CustomPacketPayload payload);
+    }
+
+    private static volatile @Nullable ClientHooks clientHooks;
+
+    public static void setClientHooks(@Nullable ClientHooks hooks) {
+        clientHooks = hooks;
+    }
+
+    protected static @Nullable ClientHooks clientHooks() {
+        return clientHooks;
+    }
+
+    protected AircraftEntity(EntityType<? extends AircraftEntity> type, Level level) {
+        super(type, level);
+        this.currentSpeed = 0.07;
+        this.blocksBuilding = true;
+    }
+
+    // ---- type and content ----
+
+    /** The content definition for a type name of this vehicle kind, or null if none is loaded. */
+    protected abstract @Nullable AircraftInfo lookupInfo(String typeName);
+
+    /** The content type of this vehicle kind, which picks its item. */
+    public abstract ContentType getContentType();
+
+    public @Nullable AircraftInfo getAcInfo() {
+        return this.info;
+    }
+
+    public String getAircraftTypeName() {
+        return this.entityData.get(DATA_TYPE_NAME);
+    }
+
+    /** Sets the content type; upstream {@code setTypeName} followed by {@code changeType}. */
+    public void setAircraftTypeName(String typeName) {
+        if (!typeName.equals(this.getAircraftTypeName())) {
+            this.entityData.set(DATA_TYPE_NAME, typeName);
+        }
+        if (this.info == null || !typeName.equals(this.info.name)) {
+            this.changeType(typeName);
+        }
+    }
+
+    /** Upstream {@code changeType}: loads the definition and builds seats, parts and hit boxes. */
+    protected void changeType(String typeName) {
+        if (typeName.isEmpty()) {
+            return;
+        }
+        AircraftInfo newInfo = this.lookupInfo(typeName);
+        if (newInfo == null) {
+            LOGGER.warn("Vehicle {} has unknown type '{}'", this.getId(), typeName);
+            if (!this.level().isClientSide()) {
+                this.discard();
+            }
+            return;
+        }
+        this.info = newInfo;
+        this.thirdPersonDist = newInfo.thirdPersonDist;
+        this.refreshDimensions();
+        this.partCanopy = newInfo.haveCanopy() ? AircraftPart.canopy(this) : null;
+        this.partLandingGear = newInfo.haveLandingGear() ? AircraftPart.landingGear(this) : null;
+        this.partHatch = newInfo.haveHatch() ? AircraftPart.hatch(this) : null;
+        SeatEntity[] oldSeats = this.seats;
+        this.seats = new SeatEntity[this.getSeatNum()];
+        for (SeatEntity seat : oldSeats) {
+            this.registerSeat(seat);
+        }
+        for (Entity passenger : this.getPassengers()) {
+            if (passenger instanceof SeatEntity seat) {
+                this.registerSeat(seat);
+            }
+        }
+        this.resizeInventory(FIXED_SLOTS + Math.max(newInfo.inventorySize, 0));
+        if (!this.level().isClientSide() || this.hitBoxes.length != newInfo.extraBoundingBox.size()) {
+            if (this.hitBoxes.length != newInfo.extraBoundingBox.size()) {
+                this.hitBoxes = this.createHitBoxes(newInfo.extraBoundingBox.size());
+            }
+        }
+        for (int i = 0; i < this.hitBoxes.length; i++) {
+            this.hitBoxes[i].setInfo(newInfo.extraBoundingBox.get(i));
+        }
+        this.updateHitBoxPosition();
+        this.onTypeChanged(newInfo);
+    }
+
+    /** Vehicle kinds add their own parts (rotors, wheels) here. */
+    protected void onTypeChanged(AircraftInfo newInfo) {
+    }
+
+    private AircraftHitBox[] createHitBoxes(int count) {
+        AircraftHitBox[] boxes = new AircraftHitBox[count];
+        for (int i = 0; i < count; i++) {
+            boxes[i] = new AircraftHitBox(this);
+        }
+        return boxes;
+    }
+
+    private void resizeInventory(int size) {
+        if (this.inventory.getContainerSize() == size) {
+            return;
+        }
+        SimpleContainer resized = new SimpleContainer(size);
+        for (int i = 0; i < Math.min(size, this.inventory.getContainerSize()); i++) {
+            resized.setItem(i, this.inventory.getItem(i));
+        }
+        for (int i = size; i < this.inventory.getContainerSize(); i++) {
+            ItemStack lost = this.inventory.getItem(i);
+            if (!lost.isEmpty() && !this.level().isClientSide()) {
+                this.spawnAtLocation((ServerLevel) this.level(), lost);
+            }
+        }
+        this.inventory = resized;
+    }
+
+    @Override
+    public EntityDimensions getDimensions(Pose pose) {
+        if (this.info != null) {
+            return EntityDimensions.scalable(this.info.bodyWidth, this.info.bodyHeight);
+        }
+        return super.getDimensions(pose);
+    }
+
+    @Override
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        builder.define(DATA_TYPE_NAME, "");
+        builder.define(DATA_DAMAGE, 0);
+        builder.define(DATA_STATUS, 0);
+        builder.define(DATA_FUEL, 0);
+        builder.define(DATA_FUEL_TYPE, "");
+        builder.define(DATA_TEXTURE_NAME, "");
+        builder.define(DATA_ROLL, 0.0F);
+        builder.define(DATA_COMMAND, "");
+        builder.define(DATA_THROTTLE, 0);
+        builder.define(DATA_PART_STAT, 0);
+        builder.define(DATA_HOVERING, false);
+    }
+
+    @Override
+    public void onSyncedDataUpdated(EntityDataAccessor<?> accessor) {
+        super.onSyncedDataUpdated(accessor);
+        if (DATA_TYPE_NAME.equals(accessor) && this.level().isClientSide()) {
+            String name = this.getAircraftTypeName();
+            if (this.info == null || !name.equals(this.info.name)) {
+                this.changeType(name);
+            }
+        }
+    }
+
+    // ---- spawn data and hit box parts ----
+
+    @Override
+    public Packet<ClientGamePacketListener> getAddEntityPacket(ServerEntity serverEntity) {
+        // The number of hit boxes travels in the add packet: the client must create the parts
+        // before the entity joins its level, which is before the spawn data arrives.
+        return new ClientboundAddEntityPacket(this, serverEntity, this.hitBoxes.length);
+    }
+
+    @Override
+    public void recreateFromPacket(ClientboundAddEntityPacket packet) {
+        super.recreateFromPacket(packet);
+        int count = Mth.clamp(packet.getData(), 0, 1024);
+        this.hitBoxes = this.createHitBoxes(count);
+        for (int i = 0; i < count; i++) {
+            this.hitBoxes[i].setId(packet.getId() + i + 1);
+        }
+    }
+
+    @Override
+    public void writeSpawnData(RegistryFriendlyByteBuf buffer) {
+        buffer.writeUtf(this.getAircraftTypeName());
+        buffer.writeVarInt(this.hitBoxes.length);
+        for (AircraftHitBox box : this.hitBoxes) {
+            buffer.writeVarInt(box.getId());
+        }
+        buffer.writeFloat(this.roll);
+    }
+
+    @Override
+    public void readSpawnData(RegistryFriendlyByteBuf buffer) {
+        String type = buffer.readUtf();
+        int count = buffer.readVarInt();
+        int[] ids = new int[count];
+        for (int i = 0; i < count; i++) {
+            ids[i] = buffer.readVarInt();
+        }
+        this.setRoll(buffer.readFloat());
+        this.prevRoll = this.roll;
+        for (int i = 0; i < Math.min(count, this.hitBoxes.length); i++) {
+            this.hitBoxes[i].setId(ids[i]);
+        }
+        this.setAircraftTypeName(type);
+    }
+
+    @Override
+    public boolean isMultipartEntity() {
+        return this.hitBoxes.length > 0;
+    }
+
+    @Override
+    public PartEntity<?>[] getParts() {
+        return this.hitBoxes;
+    }
+
+    public AircraftHitBox[] getHitBoxes() {
+        return this.hitBoxes;
+    }
+
+    public void updateHitBoxPosition() {
+        for (AircraftHitBox box : this.hitBoxes) {
+            box.updatePosition(this.getX(), this.getY(), this.getZ(), this.getYaw(), this.getPitch(), this.getRoll());
+        }
+    }
+
+    // ---- attitude ----
+
+    @Override
+    public float getYaw() {
+        return this.getYRot();
+    }
+
+    @Override
+    public void setYaw(float yaw) {
+        this.setYRot(yaw);
+    }
+
+    @Override
+    public float getPitch() {
+        return this.getXRot();
+    }
+
+    @Override
+    public void setPitch(float pitch) {
+        this.setXRot(pitch);
+    }
+
+    @Override
+    public float getRoll() {
+        return this.roll;
+    }
+
+    @Override
+    public void setRoll(float roll) {
+        this.roll = roll;
+    }
+
+    public float getRoll(float partialTick) {
+        return Mth.rotLerp(partialTick, this.prevRoll, this.roll);
+    }
+
+    @Override
+    public @Nullable Quaternionf getOrientation() {
+        return this.orientation;
+    }
+
+    @Override
+    public void setOrientation(@Nullable Quaternionf orientation) {
+        this.orientation = orientation;
+    }
+
+    /** The roll the server last sent (upstream {@code getServerRoll}). */
+    public float getSyncedRoll() {
+        return this.entityData.get(DATA_ROLL);
+    }
+
+    /** Upstream {@code getTransformedPosition}: a body offset turned into a world position. */
+    public Vec3 getTransformedPosition(double x, double y, double z, double px, double py, double pz) {
+        Vec3 v = McheliMath.rotVec3(x, y, z, -this.getYaw(), -this.getPitch(), -this.getRoll());
+        return v.add(px, py, pz);
+    }
+
+    public Vec3 getTransformedPosition(Vec3 v) {
+        return this.getTransformedPosition(v.x, v.y, v.z, this.getX(), this.getY(), this.getZ());
+    }
+
+    private Vec3 getTransformedPosition(double x, double y, double z, double px, double py, double pz,
+            boolean rotSeat) {
+        if (rotSeat && this.info != null) {
+            Vec3 turretPos = this.info.turretPosition;
+            Vec3 relative = new Vec3(x, y, z).subtract(turretPos);
+            Vec3 rotated = McheliMath.rotVec3(relative, this.getYaw() - this.getRotSeatYaw(), 0.0F, 0.0F);
+            return McheliMath.rotVec3(rotated.add(turretPos), -this.getYaw(), -this.getPitch(), -this.getRoll())
+                    .add(px, py, pz);
+        }
+        return this.getTransformedPosition(x, y, z, px, py, pz);
+    }
+
+    private float getRotSeatYaw() {
+        Entity pilot = this.getPilot();
+        return pilot != null ? pilot.getYRot() : this.lastRiderYaw;
+    }
+
+    // ---- mouse control (upstream setAngles) ----
+
+    /** Upstream {@code canMouseRot}. */
+    public boolean canMouseRot() {
+        return !this.isRemoved() && this.getPilot() != null && !this.isDestroyed();
+    }
+
+    /** Upstream {@code canUpdateYaw}: not in the first 30 ticks, nor near the ground. */
+    public boolean canUpdateYaw() {
+        if (this.getVehicle() != null) {
+            return false;
+        }
+        return this.getCountOnUpdate() >= 30 && !this.blockWithin(3, -2);
+    }
+
+    public boolean canUpdatePitch() {
+        return this.getCountOnUpdate() >= 30 && !this.blockWithin(3, -2);
+    }
+
+    public boolean canUpdateRoll() {
+        if (this.getVehicle() != null) {
+            return false;
+        }
+        return this.getCountOnUpdate() >= 30 && !this.blockWithin(3, -2);
+    }
+
+    /** Upstream {@code isOverridePlayerYaw}: the pilot looks where the vehicle points unless in free look. */
+    public boolean isOverridePlayerYaw() {
+        return !this.isFreeLookMode();
+    }
+
+    public boolean isOverridePlayerPitch() {
+        return !this.isFreeLookMode();
+    }
+
+    public double getAddRotationYawLimit() {
+        return this.info != null ? 40.0 * this.info.mobilityYaw : 40.0;
+    }
+
+    public double getAddRotationPitchLimit() {
+        return this.info != null ? 40.0 * this.info.mobilityPitch : 40.0;
+    }
+
+    public double getAddRotationRollLimit() {
+        return this.info != null ? 40.0 * this.info.mobilityRoll : 40.0;
+    }
+
+    public float getYawFactor() {
+        return 1.0F;
+    }
+
+    public float getPitchFactor() {
+        return 1.0F;
+    }
+
+    public float getRollFactor() {
+        return 1.0F;
+    }
+
+    /** Upstream {@code getControlRotYaw/Pitch/Roll}: which stick axis drives each rotation. */
+    protected float getControlRotYaw(float inputX, float inputY) {
+        return 0.0F;
+    }
+
+    protected float getControlRotPitch(float inputX, float inputY) {
+        return 0.0F;
+    }
+
+    protected float getControlRotRoll(float inputX, float inputY) {
+        return 0.0F;
+    }
+
+    /** The vehicle kind's own attitude rules after the control rotation (upstream {@code onUpdateAngles}). */
+    protected abstract void onUpdateAngles(float deltaSeconds);
+
+    public AircraftAttitude.Limits getAttitudeLimits() {
+        if (this.info == null) {
+            return AircraftAttitude.Limits.NONE;
+        }
+        return new AircraftAttitude.Limits(this.info.limitRotation, this.info.minRotationPitch,
+                this.info.maxRotationPitch, this.info.minRotationRoll, this.info.maxRotationRoll);
+    }
+
+    /**
+     * Upstream {@code setAngles} without the player half: turns the vehicle by one frame of stick
+     * input. The caller (the pilot's client) then points the player as {@link #isOverridePlayerYaw()}
+     * and {@link #isOverridePlayerPitch()} say. Sets {@link #rotationChanged} when the attitude moved.
+     */
+    public void setAngles(float inputX, float inputY, float deltaSeconds) {
+        float prevPitch = this.getPitch();
+        float prevYaw = this.getYaw();
+        float prevRoll = this.getRoll();
+        float[] d = AircraftAttitude.controlDelta(this.isFreeLookMode(), this.canUpdateYaw(), this.canUpdatePitch(),
+                this.canUpdateRoll(), this.getControlRotYaw(inputX, inputY), this.getControlRotPitch(inputX, inputY),
+                this.getControlRotRoll(inputX, inputY), this.getAddRotationYawLimit(),
+                this.getAddRotationPitchLimit(), this.getAddRotationRollLimit(), this.getYawFactor(),
+                this.getPitchFactor(), this.getRollFactor(), deltaSeconds);
+        boolean quaternion = this.info != null && CommonConfig.EXPERIMENTAL_QUATERNION_ROTATION.get();
+        AircraftAttitude.apply(this, d[0], d[1], d[2], deltaSeconds, quaternion, this.getAttitudeLimits(),
+                this::onUpdateAngles);
+        // Upstream: the pilot's client turns the vehicle every frame, so nothing is interpolated.
+        this.prevRoll = this.getRoll();
+        this.xRotO = this.getXRot();
+        if (this.getVehicle() == null) {
+            this.yRotO = this.getYRot();
+        }
+        if (this.getVehicle() == null && prevYaw != this.getYaw() || prevPitch != this.getPitch()
+                || prevRoll != this.getRoll()) {
+            this.rotationChanged = true;
+        }
+    }
+
+    /** Sets the attitude from the pilot's client (upstream {@code PacketIndRotation}). */
+    public void setAttitudeFromPilot(float yaw, float pitch, float roll) {
+        this.setYRot(yaw);
+        this.setXRot(Mth.clamp(pitch, -90.0F, 90.0F));
+        this.setRoll(Mth.wrapDegrees(roll));
+        this.orientation = null;
+    }
+
+    // ---- synced state ----
+
+    public int getMaxHP() {
+        return this.info != null ? this.info.maxHp : 100;
+    }
+
+    public int getHP() {
+        return Math.max(this.getMaxHP() - this.getDamageTaken(), 0);
+    }
+
+    public int getDamageTaken() {
+        return this.entityData.get(DATA_DAMAGE);
+    }
+
+    public void setDamageTaken(int damage) {
+        this.entityData.set(DATA_DAMAGE, Mth.clamp(damage, 0, this.getMaxHP()));
+    }
+
+    public int getFuel() {
+        return this.entityData.get(DATA_FUEL);
+    }
+
+    /** Upstream {@code setFuel}: server only, clamped to the tank. */
+    public void setFuel(int fuel) {
+        if (this.level().isClientSide()) {
+            return;
+        }
+        fuel = Mth.clamp(fuel, 0, Math.max(this.getMaxFuel(), 0));
+        if (fuel != this.getFuel()) {
+            this.entityData.set(DATA_FUEL, fuel);
+        }
+    }
+
+    public int getMaxFuel() {
+        return this.info != null ? this.info.maxFuel : 0;
+    }
+
+    public float getFuelPercentage() {
+        int max = this.getMaxFuel();
+        return max == 0 ? 0.0F : (float) this.getFuel() / max;
+    }
+
+    public String getFuelType() {
+        return this.entityData.get(DATA_FUEL_TYPE);
+    }
+
+    public void setFuelType(String type) {
+        this.entityData.set(DATA_FUEL_TYPE, type);
+    }
+
+    public String getTextureName() {
+        return this.entityData.get(DATA_TEXTURE_NAME);
+    }
+
+    /** Upstream {@code setTextureName}: an empty name keeps the current texture. */
+    public void setTextureName(String name) {
+        if (!name.isEmpty()) {
+            this.entityData.set(DATA_TEXTURE_NAME, name);
+        }
+    }
+
+    /** Upstream {@code switchNextTextureName} (wrench and sneak). */
+    public void switchNextTextureName() {
+        if (this.info != null) {
+            this.setTextureName(this.info.getNextTextureName(this.getTextureName()));
+        }
+    }
+
+    public String getCommand() {
+        return this.entityData.get(DATA_COMMAND);
+    }
+
+    public void setCommandForce(String command) {
+        if (!this.level().isClientSide()) {
+            this.entityData.set(DATA_COMMAND, command);
+        }
+    }
+
+    /** Upstream {@code getThrottle}: the synced throttle in steps of 0.05. */
+    public double getThrottle() {
+        return 0.05 * this.entityData.get(DATA_THROTTLE);
+    }
+
+    /** Upstream {@code setThrottle}: any running engine syncs as at least one step. */
+    public void setThrottle(double throttle) {
+        int n = (int) (throttle * 20.0);
+        if (n == 0 && throttle > 0.0) {
+            n = 1;
+        }
+        this.entityData.set(DATA_THROTTLE, n);
+    }
+
+    public double getCurrentThrottle() {
+        return this.currentThrottle;
+    }
+
+    public void setCurrentThrottle(double throttle) {
+        this.currentThrottle = throttle;
+    }
+
+    public void addCurrentThrottle(double throttle) {
+        this.setCurrentThrottle(this.getCurrentThrottle() + throttle);
+    }
+
+    public double getPrevCurrentThrottle() {
+        return this.prevCurrentThrottle;
+    }
+
+    @Override
+    public int partStatus() {
+        return this.entityData.get(DATA_PART_STAT);
+    }
+
+    @Override
+    public void setPartStatus(int status) {
+        this.entityData.set(DATA_PART_STAT, status);
+    }
+
+    @Override
+    public boolean isClientSide() {
+        return this.level().isClientSide();
+    }
+
+    @Override
+    public void playPartSound(String name, float volume, float pitch) {
+        McheliSounds.playAt(this, name, volume, pitch);
+    }
+
+    public boolean getCommonStatus(int bit) {
+        return (this.commonStatus >> bit & 1) != 0;
+    }
+
+    public void setCommonStatus(int bit, boolean value) {
+        this.setCommonStatus(bit, value, false);
+    }
+
+    /** Upstream {@code setCommonStatus}; {@code writeClient} lets a client change its own copy. */
+    public void setCommonStatus(int bit, boolean value, boolean writeClient) {
+        if (!this.level().isClientSide() || writeClient) {
+            int before = this.commonStatus;
+            int mask = 1 << bit;
+            this.commonStatus = value ? this.commonStatus | mask : this.commonStatus & ~mask;
+            if (before != this.commonStatus && !this.level().isClientSide()) {
+                this.entityData.set(DATA_STATUS, this.commonStatus);
+            }
+        }
+    }
+
+    public int getDespawnCount() {
+        return this.despawnCount;
+    }
+
+    public void setDespawnCount(int count) {
+        this.despawnCount = count;
+    }
+
+    public int getCountOnUpdate() {
+        return this.countOnUpdate;
+    }
+
+    public int getModeSwitchCooldown() {
+        return this.modeSwitchCooldown;
+    }
+
+    public void setModeSwitchCooldown(int cooldown) {
+        this.modeSwitchCooldown = cooldown;
+    }
+
+    public boolean isDestroyed() {
+        return this.getDespawnCount() > 0;
+    }
+
+    public boolean isExploded() {
+        return this.isDestroyed() && this.damageSinceDestroyed > this.getMaxHP() / 10 + 1;
+    }
+
+    public SimpleContainer getInventory() {
+        return this.inventory;
+    }
+
+    // ---- riders and seats ----
+
+    /** Seat 0's rider: upstream {@code getRiddenByEntity}. */
+    public @Nullable Entity getPilot() {
+        for (Entity passenger : this.getPassengers()) {
+            if (!(passenger instanceof SeatEntity)) {
+                return passenger;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public @Nullable LivingEntity getControllingPassenger() {
+        return this.getPilot() instanceof Player player ? player : null;
+    }
+
+    @Override
+    protected boolean canAddPassenger(Entity passenger) {
+        if (passenger instanceof SeatEntity) {
+            return true;
+        }
+        return this.getPilot() == null;
+    }
+
+    @Override
+    protected void addPassenger(Entity passenger) {
+        super.addPassenger(passenger);
+        if (passenger instanceof SeatEntity seat) {
+            this.registerSeat(seat);
+        }
+    }
+
+    @Override
+    protected void removePassenger(Entity passenger) {
+        super.removePassenger(passenger);
+        if (passenger instanceof SeatEntity seat) {
+            for (int i = 0; i < this.seats.length; i++) {
+                if (this.seats[i] == seat) {
+                    this.seats[i] = null;
+                }
+            }
+        }
+    }
+
+    private void registerSeat(SeatEntity seat) {
+        int index = seat.getSeatIndex();
+        if (seat.getVehicle() == this && index >= 0 && index < this.seats.length) {
+            this.seats[index] = seat;
+        }
+    }
+
+    /** The crew seats (seat IDs 1 and up); entries are null while a seat is missing. */
+    public SeatEntity[] getSeats() {
+        return this.seats;
+    }
+
+    /** Upstream {@code getSeatNum}: crew seats besides the pilot's. */
+    public int getSeatNum() {
+        if (this.info == null) {
+            return 0;
+        }
+        int s = this.info.getNumSeatAndRack();
+        return s >= 1 ? s - 1 : 1;
+    }
+
+    public @Nullable SeatInfo getSeatInfo(int seatId) {
+        if (this.info == null || seatId < 0 || seatId >= this.info.seatList.size()) {
+            return null;
+        }
+        return this.info.seatList.get(seatId);
+    }
+
+    public @Nullable Entity getEntityBySeatId(int seatId) {
+        if (seatId == 0) {
+            return this.getPilot();
+        }
+        int index = seatId - 1;
+        if (index >= 0 && index < this.seats.length && this.seats[index] != null) {
+            return this.seats[index].getRider();
+        }
+        return null;
+    }
+
+    public int getSeatIdByEntity(@Nullable Entity entity) {
+        if (entity == null) {
+            return -1;
+        }
+        if (entity == this.getPilot()) {
+            return 0;
+        }
+        for (int i = 0; i < this.seats.length; i++) {
+            SeatEntity seat = this.seats[i];
+            if (seat != null && seat.getRider() == entity) {
+                return i + 1;
+            }
+        }
+        return -1;
+    }
+
+    public boolean isPilot(@Nullable Entity entity) {
+        return entity != null && entity == this.getPilot();
+    }
+
+    public boolean isMountedEntity(@Nullable Entity entity) {
+        return this.getSeatIdByEntity(entity) >= 0;
+    }
+
+    /** Upstream {@code isRidePlayer}: a player sits in any seat. */
+    public boolean isRidePlayer() {
+        if (this.getPilot() instanceof Player) {
+            return true;
+        }
+        for (SeatEntity seat : this.seats) {
+            if (seat != null && seat.getRider() instanceof Player) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** Creates the crew seats a vehicle is missing (upstream {@code createSeats}/{@code searchSeat}). */
+    private void ensureSeats() {
+        if (this.level().isClientSide() || this.info == null || this.isRemoved()) {
+            return;
+        }
+        for (int i = 0; i < this.seats.length; i++) {
+            if (this.seats[i] == null || this.seats[i].isRemoved()) {
+                SeatEntity seat = ModEntityTypes.SEAT.get().create(this.level(), net.minecraft.world.entity.EntitySpawnReason.LOAD);
+                if (seat == null) {
+                    return;
+                }
+                seat.setSeatIndex(i);
+                seat.setPos(this.getX(), this.getY() + 1.0, this.getZ());
+                if (this.level().addFreshEntity(seat)) {
+                    seat.startRiding(this, true, false);
+                    this.seats[i] = seat;
+                }
+            }
+        }
+    }
+
+    @Override
+    protected void positionRider(Entity passenger, Entity.MoveFunction moveFunction) {
+        if (!this.hasPassenger(passenger)) {
+            return;
+        }
+        Vec3 v;
+        if (passenger instanceof SeatEntity seat) {
+            v = this.getSeatPosition(seat.getSeatIndex() + 1);
+        } else {
+            // Upstream updateRiderPosition.
+            SeatInfo seatInfo = this.getSeatInfo(0);
+            if (seatInfo != null) {
+                v = this.getTransformedPosition(seatInfo.pos.x, seatInfo.pos.y - 0.5, seatInfo.pos.z, this.getX(),
+                        this.getY() + GLOBAL_Y_OFFSET, this.getZ(), seatInfo.rotSeat);
+            } else {
+                v = this.getTransformedPosition(0.0, -1.0, 0.0, this.getX(), this.getY(), this.getZ());
+            }
+        }
+        moveFunction.accept(passenger, v.x, v.y, v.z);
+    }
+
+    /** Upstream {@code updateSeatsPosition}: where crew seat {@code seatId} (1 and up) sits. */
+    public Vec3 getSeatPosition(int seatId) {
+        SeatInfo si = this.getSeatInfo(seatId);
+        if (si == null) {
+            si = this.getSeatInfo(0);
+        }
+        if (si == null) {
+            return this.position();
+        }
+        return this.getTransformedPosition(si.pos.x, si.pos.y - 0.5, si.pos.z, this.getX(),
+                this.getY() + GLOBAL_SEAT_OFFSET, this.getZ(), si.rotSeat);
+    }
+
+    @Override
+    public Vec3 getDismountLocationForPassenger(LivingEntity passenger) {
+        Vec3 pos = this.getUnmountPosition(passenger, 0);
+        return pos != null ? pos : super.getDismountLocationForPassenger(passenger);
+    }
+
+    /** Upstream {@code getUnmountPos}: the dismount point of a seat in body coordinates. */
+    public Vec3 getUnmountOffset(SeatInfo seatInfo) {
+        if (seatInfo.unmountPos != null) {
+            return seatInfo.unmountPos;
+        }
+        if (this.info != null && this.info.unmountPosition != null) {
+            return this.info.unmountPosition;
+        }
+        double x = seatInfo.pos.x;
+        x = x >= 0.0 ? x + 3.0 : x - 3.0;
+        return new Vec3(x, 2.0, seatInfo.pos.z);
+    }
+
+    /**
+     * Upstream {@code setUnmountPosition}: the seat's dismount point, pulled back one block towards
+     * the rider when a block is in the way.
+     */
+    public @Nullable Vec3 getUnmountPosition(Entity rider, int seatId) {
+        SeatInfo seatInfo = this.getSeatInfo(seatId);
+        if (seatInfo == null) {
+            return null;
+        }
+        Vec3 desired = this.getTransformedPosition(this.getUnmountOffset(seatInfo));
+        Vec3 from = rider.position();
+        BlockHitResult hit = this.level().clip(new ClipContext(from, desired, ClipContext.Block.COLLIDER,
+                ClipContext.Fluid.NONE, rider));
+        if (hit.getType() == HitResult.Type.MISS) {
+            return desired;
+        }
+        Vec3 dir = desired.subtract(from).normalize();
+        return hit.getLocation().subtract(dir);
+    }
+
+    /** Upstream {@code canRideSeatOrRack}: the content's exclusion lists. */
+    public boolean canRideSeatOrRack(int seatId, Entity entity) {
+        if (this.info == null) {
+            return false;
+        }
+        for (Integer[] list : this.info.exclusionSeatList) {
+            boolean listed = false;
+            for (Integer id : list) {
+                if (id != null && id == seatId) {
+                    listed = true;
+                    break;
+                }
+            }
+            if (listed) {
+                for (Integer id : list) {
+                    if (id != null && this.getEntityBySeatId(id) != null) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
+    /** Upstream {@code interactFirstSeat}: boards the first free crew seat. */
+    public boolean interactFirstSeat(Player player) {
+        int seatId = 1;
+        for (SeatEntity seat : this.seats) {
+            if (seat != null && seat.getRider() == null && !this.isMountedEntity(player)
+                    && this.canRideSeatOrRack(seatId, player)) {
+                if (!this.level().isClientSide()) {
+                    player.startRiding(seat);
+                }
+                break;
+            }
+            seatId++;
+        }
+        return true;
+    }
+
+    public void onMountPlayerSeat(SeatEntity seat, Entity entity) {
+        int sid = this.getSeatIdByEntity(entity);
+        if (sid == 1 && (this.info == null || !this.info.isEnableConcurrentGunnerMode)) {
+            this.switchGunnerMode(false);
+        }
+    }
+
+    public void onUnmountPlayerSeat(SeatEntity seat, Entity entity) {
+        if (!this.isRidePlayer()) {
+            this.switchGunnerMode(false);
+            this.switchHoveringMode(false);
+        }
+    }
+
+    /** Upstream {@code unmountEntity}: the pilot got out. */
+    public void unmountEntity() {
+        if (!this.isRidePlayer()) {
+            this.switchHoveringMode(false);
+        }
+        this.moveLeft = this.moveRight = this.throttleDown = this.throttleUp = false;
+        Entity pilot = this.getPilot();
+        if (pilot != null && !this.level().isClientSide()) {
+            pilot.stopRiding();
+        }
+        if (!this.isRidePlayer()) {
+            this.switchGunnerMode(false);
+        }
+        this.setCommonStatus(STATUS_FREE_LOOK, false);
+        this.lastPilot = null;
+    }
+
+    /**
+     * Upstream {@code switchNextSeat}. Upstream's wrap-around branch called
+     * {@code onMountPlayerSeat} instead of seating the rider, so wrapping did nothing; the port
+     * seats the rider. Seats blocked by the content's exclusion lists are skipped (KNOWN_ISSUES).
+     */
+    public void switchNextSeat(Entity entity) {
+        if (this.seats.length == 0 || !this.isMountedEntity(entity)) {
+            return;
+        }
+        boolean found = false;
+        int sid = 1;
+        for (SeatEntity seat : this.seats) {
+            if (seat != null) {
+                if (this.getSeatInfo(sid) instanceof SeatRackInfo) {
+                    break;
+                }
+                if (seat.getRider() == entity) {
+                    found = true;
+                } else if (found && seat.getRider() == null && this.canRideSeatOrRack(sid, entity)) {
+                    entity.startRiding(seat, true, true);
+                    return;
+                }
+                sid++;
+            }
+        }
+        sid = 1;
+        for (SeatEntity seat : this.seats) {
+            if (seat != null && seat.getRider() == null) {
+                if (!(this.getSeatInfo(sid) instanceof SeatRackInfo)) {
+                    if (this.canRideSeatOrRack(sid, entity)) {
+                        entity.startRiding(seat, true, true);
+                        return;
+                    }
+                } else {
+                    break;
+                }
+            }
+            sid++;
+        }
+    }
+
+    /** Upstream {@code switchPrevSeat}. */
+    public void switchPrevSeat(Entity entity) {
+        if (this.seats.length == 0 || !this.isMountedEntity(entity)) {
+            return;
+        }
+        boolean found = false;
+        for (int i = this.seats.length - 1; i >= 0; i--) {
+            SeatEntity seat = this.seats[i];
+            if (seat != null) {
+                if (seat.getRider() == entity) {
+                    found = true;
+                } else if (found && seat.getRider() == null && this.canRideSeatOrRack(i + 1, entity)) {
+                    entity.startRiding(seat, true, true);
+                    return;
+                }
+            }
+        }
+        for (int i = this.seats.length - 1; i >= 0; i--) {
+            SeatEntity seat = this.seats[i];
+            if (!(this.getSeatInfo(i + 1) instanceof SeatRackInfo) && seat != null && seat.getRider() == null
+                    && this.canRideSeatOrRack(i + 1, entity)) {
+                entity.startRiding(seat, true, true);
+                return;
+            }
+        }
+    }
+
+    /** Upstream {@code notOnSameTeam}: a rider is on a team the player is not on. */
+    public boolean notOnSameTeam(Player player) {
+        for (int i = 0; i < 1 + this.getSeatNum(); i++) {
+            Entity entity = this.getEntityBySeatId(i);
+            if (entity instanceof LivingEntity rider) {
+                Team team = rider.getTeam();
+                if (team != null && !rider.isAlliedTo(player)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /** Items whose use on a seat goes to the vehicle (upstream's wrench and gunner spawn items). */
+    public static boolean isParentInteractItem(ItemStack stack) {
+        return !stack.isEmpty() && (stack.is(ModItems.WRENCH.get()) || stack.is(ModItems.SPAWN_GUNNER_VS_MONSTER.get())
+                || stack.is(ModItems.SPAWN_GUNNER_VS_PLAYER.get()));
+    }
+
+    /** Upstream {@code processInitialInteract} with {@code switchSeat} set (the seat menu's dismount). */
+    public InteractionResult interactSwitchingSeat(Player player, InteractionHand hand) {
+        this.switchSeat = true;
+        try {
+            return this.interact(player, hand, Vec3.ZERO);
+        } finally {
+            this.switchSeat = false;
+        }
+    }
+
+    /** Upstream {@code processInitialInteract}. */
+    @Override
+    public InteractionResult interact(Player player, InteractionHand hand, Vec3 location) {
+        if (this.isDestroyed() || this.info == null || this.notOnSameTeam(player)) {
+            return InteractionResult.PASS;
+        }
+        ItemStack stack = player.getItemInHand(hand);
+        if (!stack.isEmpty()) {
+            if (stack.is(ModItems.WRENCH.get())) {
+                if (!this.level().isClientSide() && player.isShiftKeyDown()) {
+                    this.switchNextTextureName();
+                }
+                return InteractionResult.PASS;
+            }
+            if (isParentInteractItem(stack)) {
+                return InteractionResult.PASS;
+            }
+        }
+        if (player.isShiftKeyDown()) {
+            this.openContainer(player);
+            return InteractionResult.PASS;
+        }
+        if (!this.info.canRide) {
+            return InteractionResult.PASS;
+        }
+        if (this.getPilot() != null) {
+            return this.interactFirstSeat(player) ? InteractionResult.SUCCESS : InteractionResult.PASS;
+        }
+        if (player.getVehicle() instanceof SeatEntity) {
+            return InteractionResult.PASS;
+        }
+        if (!this.canRideSeatOrRack(0, player)) {
+            return InteractionResult.PASS;
+        }
+        if (!this.switchSeat) {
+            if (this.info.haveCanopy() && this.isCanopyClose()) {
+                this.openCanopy();
+                return InteractionResult.PASS;
+            }
+            if (this.getModeSwitchCooldown() > 0) {
+                return InteractionResult.PASS;
+            }
+        }
+        this.closeCanopy();
+        this.lastPilot = null;
+        if (!this.level().isClientSide()) {
+            player.startRiding(this);
+        }
+        return InteractionResult.SUCCESS;
+    }
+
+    /** Upstream {@code openContainer}/{@code openGui}: the trunk and fuel slots (decision D12). */
+    public void openContainer(Player player) {
+        if (!this.level().isClientSide() && this.info != null && player instanceof ServerPlayer serverPlayer) {
+            AircraftMenu.open(serverPlayer, this);
+        }
+    }
+
+    /** Upstream {@code isUsableByPlayer}. */
+    public boolean stillValid(Player player) {
+        if (this.isRemoved()) {
+            return false;
+        }
+        return this.getSeatIdByEntity(player) >= 0 ? player.distanceToSqr(this) <= 4096.0
+                : player.distanceToSqr(this) <= 64.0;
+    }
+
+    @Override
+    public boolean isPickable() {
+        return !this.isRemoved();
+    }
+
+    @Override
+    public boolean canBeCollidedWith(@Nullable Entity other) {
+        return !this.isRemoved();
+    }
+
+    @Override
+    public boolean isPushable() {
+        return false;
+    }
+
+    @Override
+    public void push(Entity entity) {
+        // Upstream applyEntityCollision does nothing.
+    }
+
+    @Override
+    public void onPassengerTurned(Entity passenger) {
+        ClientHooks hooks = clientHooks;
+        if (hooks != null && this.level().isClientSide()) {
+            hooks.onPassengerTurned(this, passenger);
+        }
+    }
+
+    @Override
+    public boolean isFlyingVehicle() {
+        return true;
+    }
+
+    @Override
+    public @Nullable ItemStack getPickResult() {
+        AircraftItem item = this.getItem();
+        return item != null ? new ItemStack(item) : null;
+    }
+
+    /** Upstream named a vehicle by its item; the port's entity types are shared by every vehicle of a kind. */
+    @Override
+    protected Component getTypeName() {
+        AircraftItem item = this.getItem();
+        return item != null ? Component.translatable(item.getDescriptionId()) : super.getTypeName();
+    }
+
+    /** The vehicle's item, or null if its content has none. */
+    public @Nullable AircraftItem getItem() {
+        if (this.info == null) {
+            return null;
+        }
+        for (ModItems.ContentItem contentItem : ModItems.contentItems()) {
+            if (contentItem.type() == this.getContentType() && contentItem.contentName().equals(this.info.name)
+                    && contentItem.item().get() instanceof AircraftItem aircraftItem) {
+                return aircraftItem;
+            }
+        }
+        return null;
+    }
+
+    // ---- authority (decision D2) ----
+
+    /** Whether the pilot's client moves this vehicle (the port's default) rather than the server. */
+    @Override
+    public boolean isClientAuthoritative() {
+        return !ServerSettings.forSide(this.level().isClientSide()).serverAuthoritativeMovement()
+                && !this.isDestroyed() && super.isClientAuthoritative();
+    }
+
+    @Override
+    protected boolean isLocalClientAuthoritative() {
+        return !ServerSettings.client().serverAuthoritativeMovement() && !this.isDestroyed()
+                && super.isLocalClientAuthoritative();
+    }
+
+    /** Whether this side moves the vehicle (upstream's {@code !world.isRemote}). */
+    public boolean simulates() {
+        return this.isLocalInstanceAuthoritative();
+    }
+
+    /** Whether this is the pilot's own client (upstream {@code W_Lib.isClientPlayer(getRiddenByEntity())}). */
+    public boolean isPilotLocalClient() {
+        return this.level().isClientSide() && this.getPilot() instanceof Player player && player.isLocalPlayer();
+    }
+
+    @Override
+    public InterpolationHandler getInterpolation() {
+        return this.interpolation;
+    }
+
+    /**
+     * The server's check of a pilot's move in client-authoritative mode (decision D2): limits the
+     * horizontal step to {@code Speed × 1.5} per tick and the climb to one block, which makes
+     * vanilla reject the move and snap the vehicle back.
+     */
+    @Override
+    public void move(MoverType type, Vec3 movement) {
+        if (type == MoverType.PLAYER && !this.level().isClientSide() && this.info != null) {
+            double limit = this.getSpeedLimitForChecks() * 1.5;
+            double horizontal = movement.horizontalDistance();
+            boolean clamped = false;
+            if (horizontal > limit && horizontal > 0.0) {
+                double f = limit / horizontal;
+                movement = new Vec3(movement.x * f, movement.y, movement.z * f);
+                clamped = true;
+            }
+            if (movement.y > 1.0) {
+                movement = new Vec3(movement.x, 1.0, movement.z);
+                clamped = true;
+            }
+            if (clamped) {
+                this.logRejectedMove();
+            }
+        }
+        super.move(type, movement);
+    }
+
+    private long lastRejectLogTime;
+
+    private void logRejectedMove() {
+        long now = this.level().getGameTime();
+        if (now - this.lastRejectLogTime >= 1200 || this.lastRejectLogTime == 0) {
+            this.lastRejectLogTime = now;
+            LOGGER.info("Vehicle {} of {} moved faster than it can fly; it was moved back", this.getAircraftTypeName(),
+                    this.getPilot() != null ? this.getPilot().getPlainTextName() : "nobody");
+        }
+    }
+
+    /** The content speed the server checks a pilot's movement against. */
+    protected double getSpeedLimitForChecks() {
+        return this.info != null ? this.info.speed : 1.0;
+    }
+
+    // ---- tick ----
+
+    @Override
+    public void tick() {
+        this.prevCurrentThrottle = this.getCurrentThrottle();
+        this.lastHitBoxFactor = 1.0F;
+        if (this.info == null && !this.getAircraftTypeName().isEmpty()) {
+            this.changeType(this.getAircraftTypeName());
+        }
+        this.updateControl();
+
+        Entity pilot = this.getPilot();
+        if (this.isDestroyed() && this.getCountOnUpdate() % 20 == 0) {
+            for (int sid = 0; sid < this.getSeatNum() + 1; sid++) {
+                Entity rider = this.getEntityBySeatId(sid);
+                if (rider != null && !rider.fireImmune()) {
+                    rider.igniteForSeconds(5.0F);
+                }
+            }
+        }
+
+        if (!this.level().isClientSide() && (int) this.prevRoll != (int) this.getRoll()) {
+            this.entityData.set(DATA_ROLL, Mth.wrapDegrees(this.getRoll()));
+        } else if (!this.level().isClientSide() && Math.abs(this.getSyncedRoll() - Mth.wrapDegrees(this.getRoll())) > 0.01F) {
+            this.entityData.set(DATA_ROLL, Mth.wrapDegrees(this.getRoll()));
+        }
+        this.prevRoll = this.getRoll();
+
+        if (this.level().isClientSide() && this.info != null && this.getHP() <= 0 && this.getDespawnCount() <= 0) {
+            this.destroyAircraft();
+        }
+        if (!this.level().isClientSide() && this.getDespawnCount() > 0) {
+            this.setDespawnCount(this.getDespawnCount() - 1);
+            if (this.getDespawnCount() <= 1) {
+                this.discard();
+                return;
+            }
+        }
+
+        super.tick();
+        this.tickInterpolation();
+
+        this.updateFuel();
+        if (this.modeSwitchCooldown > 0) {
+            this.modeSwitchCooldown--;
+        }
+        if (this.lastPilot == null && pilot != null) {
+            this.onRidePilotFirstUpdate();
+        }
+        if (this.countOnUpdate == 0) {
+            this.onFirstUpdate();
+        }
+        this.countOnUpdate++;
+        if (this.countOnUpdate >= 1000000) {
+            this.countOnUpdate = 1;
+        }
+        if (this.level().isClientSide()) {
+            this.commonStatus = this.entityData.get(DATA_STATUS);
+            if (!this.isPilotLocalClient()) {
+                this.hoveringMode = this.entityData.get(DATA_HOVERING);
+            }
+        }
+
+        this.resetFallDistance();
+        if (pilot != null) {
+            pilot.resetFallDistance();
+        }
+        if (pilot != null && !pilot.isRemoved() && !this.isDestroyed()) {
+            this.lastRiderYaw = pilot.getYRot();
+            this.prevLastRiderYaw = pilot.yRotO;
+            this.lastRiderPitch = pilot.getXRot();
+            this.prevLastRiderPitch = pilot.xRotO;
+        }
+
+        this.autoRepair();
+        if (pilot == null && this.lastPilot != null) {
+            this.unmountEntity();
+        }
+        this.ensureSeats();
+
+        boolean prevOnGround = this.onGround();
+        double prevMotionY = this.getDeltaMovement().y;
+        if (this.info != null) {
+            this.onUpdateAircraft();
+            this.updateParts(this.partStatus());
+        }
+
+        if (!this.level().isClientSide() && this.isDestroyed() && !this.isExploded() && !prevOnGround
+                && this.onGround() && prevMotionY < -0.2) {
+            this.explosionByCrash(prevMotionY);
+            this.damageSinceDestroyed = this.getMaxHP();
+        }
+
+        this.updateHitBoxPosition();
+        this.onUpdateCollisionGroundDamage();
+        this.lastPilot = this.getPilot();
+        if (this.isPilotLocalClient()) {
+            this.sendPilotState();
+        }
+    }
+
+    /** The pilot's client sends its attitude when it changed, and its motion while it moves the vehicle. */
+    private void sendPilotState() {
+        ClientHooks hooks = clientHooks;
+        if (hooks == null) {
+            return;
+        }
+        if (this.rotationChanged) {
+            this.rotationChanged = false;
+            hooks.sendToServer(new io.github.mcheliceport.net.AircraftAttitudePayload(this.getId(), this.getYaw(),
+                    this.getPitch(), this.getRoll(), this.rollReversed));
+            this.rollReversed = false;
+        }
+        if (this.simulates()) {
+            Vec3 motion = this.getDeltaMovement();
+            hooks.sendToServer(new io.github.mcheliceport.net.AircraftMotionPayload(this.getId(), motion.x, motion.y,
+                    motion.z, (float) this.getCurrentThrottle()));
+        }
+    }
+
+    /**
+     * Applies the server's position to vehicles this side does not move. The pilot's own client
+     * keeps the attitude it is steering, and a destroyed vehicle keeps its client-side spin, as
+     * upstream's {@code applyServerPositionAndRotation}.
+     */
+    private void tickInterpolation() {
+        if (this.simulates()) {
+            this.interpolation.cancel();
+            return;
+        }
+        boolean keepRotation = this.isDestroyed() || this.isPilotLocalClient();
+        float yaw = this.getYRot();
+        float pitch = this.getXRot();
+        this.interpolation.interpolate();
+        if (keepRotation) {
+            this.setYRot(yaw);
+            this.setXRot(pitch);
+        }
+        if (this.level().isClientSide() && !this.isPilotLocalClient() && !this.isDestroyed()) {
+            float diff = Mth.wrapDegrees(this.getSyncedRoll() - this.getRoll());
+            this.setRoll(this.getRoll() + diff / 3.0F);
+        }
+        if (this.level().isClientSide()) {
+            this.setDeltaMovement(Vec3.ZERO);
+        }
+    }
+
+    /** Vehicle kinds run their control and movement here (upstream {@code onUpdateAircraft}). */
+    protected abstract void onUpdateAircraft();
+
+    /** Upstream {@code updateControl}: the pilot's switches go to other clients as status bits. */
+    private void updateControl() {
+        if (!this.level().isClientSide()) {
+            this.setCommonStatus(STATUS_MOVE_LEFT, this.moveLeft);
+            this.setCommonStatus(STATUS_MOVE_RIGHT, this.moveRight);
+            this.setCommonStatus(STATUS_THROTTLE_UP, this.throttleUp);
+            this.setCommonStatus(STATUS_THROTTLE_DOWN, this.throttleDown);
+        } else if (!this.isPilotLocalClient()) {
+            this.moveLeft = this.getCommonStatus(STATUS_MOVE_LEFT);
+            this.moveRight = this.getCommonStatus(STATUS_MOVE_RIGHT);
+            this.throttleUp = this.getCommonStatus(STATUS_THROTTLE_UP);
+            this.throttleDown = this.getCommonStatus(STATUS_THROTTLE_DOWN);
+        }
+    }
+
+    /** Upstream {@code onFirstUpdate}. */
+    protected void onFirstUpdate() {
+        if (!this.level().isClientSide()) {
+            this.setCommonStatus(STATUS_INFINITY_FUEL, CommonConfig.INFINITY_FUEL.get());
+        }
+    }
+
+    /** Upstream {@code onRidePilotFirstUpdate}. */
+    protected void onRidePilotFirstUpdate() {
+        Entity pilot = this.getPilot();
+        if (pilot != null) {
+            pilot.setYRot(this.lastRiderYaw);
+            pilot.setXRot(this.lastRiderPitch);
+        }
+        this.keepOnRideRotation = false;
+        if (this.isPilotLocalClient()) {
+            this.hoveringMode = this.entityData.get(DATA_HOVERING);
+        }
+        if (this.info != null) {
+            this.setCommonStatus(STATUS_FREE_LOOK, this.info.defaultFreelook, true);
+        }
+    }
+
+    // ---- hovering and gunner mode ----
+
+    public boolean isHoveringMode() {
+        return this.hoveringMode;
+    }
+
+    public boolean isGunnerMode() {
+        return this.gunnerMode;
+    }
+
+    public boolean isHovering() {
+        return this.gunnerMode || this.isHoveringMode();
+    }
+
+    public boolean canSwitchHoveringMode() {
+        return this.info != null && !this.gunnerMode;
+    }
+
+    /** Upstream {@code switchHoveringMode}. */
+    public void switchHoveringMode(boolean mode) {
+        if (this.canSwitchHoveringMode() && this.isHoveringMode() != mode) {
+            if (mode) {
+                this.beforeHoverThrottle = this.getCurrentThrottle();
+            } else {
+                this.setCurrentThrottle(this.beforeHoverThrottle);
+            }
+            this.hoveringMode = mode;
+            if (!this.level().isClientSide()) {
+                this.entityData.set(DATA_HOVERING, mode);
+            }
+            Entity pilot = this.getPilot();
+            if (pilot != null) {
+                pilot.setXRot(0.0F);
+                pilot.xRotO = 0.0F;
+            }
+        }
+    }
+
+    public boolean canSwitchGunnerMode() {
+        if (this.info == null || !this.info.isEnableGunnerMode || !this.isCanopyClose()) {
+            return false;
+        }
+        boolean seatOccupied = this.getEntityBySeatId(1) instanceof Player;
+        return (this.info.isEnableConcurrentGunnerMode || !seatOccupied) && !this.isHoveringMode();
+    }
+
+    /** Upstream {@code switchGunnerMode}, without the weapon and camera parts (M5). */
+    public void switchGunnerMode(boolean mode) {
+        if (!mode || this.canSwitchGunnerMode()) {
+            if (this.gunnerMode && !mode) {
+                this.setCurrentThrottle(this.beforeHoverThrottle);
+                this.gunnerMode = false;
+            } else if (!this.gunnerMode && mode) {
+                this.beforeHoverThrottle = this.getCurrentThrottle();
+                this.gunnerMode = true;
+            }
+        }
+    }
+
+    public boolean isFreeLookMode() {
+        return this.getCommonStatus(STATUS_FREE_LOOK);
+    }
+
+    public void switchFreeLookMode(boolean value) {
+        this.setCommonStatus(STATUS_FREE_LOOK, value);
+    }
+
+    public void switchFreeLookModeClient(boolean value) {
+        this.setCommonStatus(STATUS_FREE_LOOK, value, true);
+    }
+
+    public boolean getGunnerStatus() {
+        return this.getCommonStatus(STATUS_GUNNER);
+    }
+
+    public void setGunnerStatus(boolean value) {
+        if (!this.level().isClientSide()) {
+            this.setCommonStatus(STATUS_GUNNER, value);
+        }
+    }
+
+    // ---- moving parts ----
+
+    /** Upstream {@code updateParts}, with its landing gear logic. */
+    protected void updateParts(int stat) {
+        if (this.isDestroyed()) {
+            return;
+        }
+        for (AircraftPart part : new AircraftPart[] {this.partHatch, this.partCanopy, this.partLandingGear}) {
+            if (part != null) {
+                part.updateStatusClient(stat);
+                part.update();
+            }
+        }
+        if (this.level().isClientSide() || this.partLandingGear == null || this.info == null) {
+            return;
+        }
+        float gearFactor = this.partLandingGear.getFactor();
+        boolean folded = this.isLandingGearFolded();
+        if (!folded && gearFactor <= 0.1F) {
+            boolean blockBelow = this.blockWithin(3, -20);
+            boolean safeToFold = (this.getCurrentThrottle() <= 0.8F || this.onGround() || blockBelow)
+                    && this.info.isFloat && (this.isInWater() || this.firstBlockBelowIsWater(3, -20));
+            if (safeToFold) {
+                this.partLandingGear.setStatusServer(true);
+            }
+        } else if (folded && gearFactor >= 0.9F) {
+            boolean blockBelow = this.blockWithin(3, -10);
+            boolean shouldUnfold = false;
+            if (this.getCurrentThrottle() < this.getUnfoldLandingGearThrottle() && blockBelow) {
+                shouldUnfold = true;
+                if (this.info.isFloat && GroundProbe.find((x, y, z) -> GroundProbe.isWater(
+                        this.level().getBlockState(new net.minecraft.core.BlockPos(x, y, z))), this.level().getMinY(),
+                        this.level().getMaxY(), this.getX(), this.getY() + 1.0 + this.info.floatOffset, this.getZ(), 1,
+                        65386)) {
+                    shouldUnfold = false;
+                }
+            }
+            if (shouldUnfold) {
+                this.partLandingGear.setStatusServer(false);
+            }
+        }
+    }
+
+    private boolean firstBlockBelowIsWater(int size, int lenY) {
+        BlockState[] first = new BlockState[1];
+        net.minecraft.core.BlockPos.MutableBlockPos pos = new net.minecraft.core.BlockPos.MutableBlockPos();
+        GroundProbe.find((x, y, z) -> {
+            BlockState state = this.level().getBlockState(pos.set(x, y, z));
+            if (GroundProbe.counts(state, true)) {
+                first[0] = state;
+                return true;
+            }
+            return false;
+        }, this.level().getMinY(), this.level().getMaxY(), this.getX(), this.getY(), this.getZ(), size, lenY);
+        return first[0] != null && GroundProbe.isWater(first[0]);
+    }
+
+    public float getUnfoldLandingGearThrottle() {
+        return 0.8F;
+    }
+
+    public boolean isLandingGearFolded() {
+        return this.partLandingGear != null && this.partLandingGear.getStatus();
+    }
+
+    public boolean canFoldLandingGear() {
+        if (this.partLandingGear == null || this.partLandingGear.rotation >= 1.0F) {
+            return false;
+        }
+        return !this.isLandingGearFolded() && !this.blockWithin(3, -10, false);
+    }
+
+    public boolean canUnfoldLandingGear() {
+        return this.partLandingGear != null && !(this.partLandingGear.rotation < 89.0F) && this.isLandingGearFolded();
+    }
+
+    public void foldLandingGear() {
+        if (this.partLandingGear != null && this.getModeSwitchCooldown() <= 0) {
+            this.partLandingGear.setStatusServer(true);
+            this.setModeSwitchCooldown(20);
+        }
+    }
+
+    public void unfoldLandingGear() {
+        if (this.partLandingGear != null && this.getModeSwitchCooldown() <= 0 && this.isLandingGearFolded()) {
+            this.partLandingGear.setStatusServer(false);
+            this.setModeSwitchCooldown(20);
+        }
+    }
+
+    public void openCanopy() {
+        if (this.partCanopy != null && this.getModeSwitchCooldown() <= 0) {
+            this.partCanopy.setStatusServer(true);
+            this.setModeSwitchCooldown(20);
+        }
+    }
+
+    public void closeCanopy() {
+        if (this.partCanopy != null && this.getModeSwitchCooldown() <= 0 && this.partCanopy.getStatus()) {
+            this.partCanopy.setStatusServer(false);
+            this.setModeSwitchCooldown(20);
+        }
+    }
+
+    /** Upstream {@code isCanopyClose}: no canopy, or closed and done moving. */
+    public boolean isCanopyClose() {
+        return this.partCanopy == null || !this.partCanopy.getStatus() && this.partCanopy.rotation <= 0.01F;
+    }
+
+    public boolean canUnfoldHatch() {
+        return this.partHatch != null && this.modeSwitchCooldown <= 0 && this.partHatch.isOFF();
+    }
+
+    public boolean canFoldHatch() {
+        return this.partHatch != null && this.modeSwitchCooldown <= 0 && this.partHatch.isON();
+    }
+
+    public void foldHatch(boolean fold) {
+        if (this.partHatch != null && this.modeSwitchCooldown <= 0) {
+            this.partHatch.setStatusServer(fold);
+            this.modeSwitchCooldown = 20;
+        }
+    }
+
+    /** Upstream {@code getLastPartStatusMask}: the bits saved with the vehicle (gear and hatch). */
+    public int getLastPartStatusMask() {
+        return 24;
+    }
+
+    // ---- ground probe and water ----
+
+    /** Upstream {@code MCH_Lib.getBlockIdY(this, size, lenY) > 0}. */
+    public boolean blockWithin(int size, int lenY) {
+        return this.blockWithin(size, lenY, true);
+    }
+
+    public boolean blockWithin(int size, int lenY, boolean collidableOnly) {
+        return GroundProbe.find(this.level(), this.getX(), this.getY(), this.getZ(), size, lenY, collidableOnly);
+    }
+
+    public boolean canFloatWater() {
+        return this.info != null && this.info.isFloat && !this.isDestroyed();
+    }
+
+    /** Upstream {@code getWaterDepth}: the fraction of five horizontal slices of the box that hold water. */
+    public double getWaterDepth() {
+        if (this.info == null) {
+            return 0.0;
+        }
+        AABB box = this.getBoundingBox();
+        double height = box.maxY - box.minY;
+        double depth = 0.0;
+        for (int i = 0; i < 5; i++) {
+            double yMin = box.minY + height * i / 5 + -0.125 + this.info.floatOffset;
+            double yMax = box.minY + height * (i + 1) / 5 + -0.125 + this.info.floatOffset;
+            AABB slice = new AABB(box.minX, yMin, box.minZ, box.maxX, yMax, box.maxZ);
+            if (this.containsWater(slice)) {
+                depth += 1.0 / 5;
+            }
+        }
+        return depth;
+    }
+
+    private boolean containsWater(AABB box) {
+        int x0 = Mth.floor(box.minX);
+        int x1 = Mth.ceil(box.maxX);
+        int y0 = Mth.floor(box.minY);
+        int y1 = Mth.ceil(box.maxY);
+        int z0 = Mth.floor(box.minZ);
+        int z1 = Mth.ceil(box.maxZ);
+        net.minecraft.core.BlockPos.MutableBlockPos pos = new net.minecraft.core.BlockPos.MutableBlockPos();
+        for (int x = x0; x < x1; x++) {
+            for (int y = y0; y < y1; y++) {
+                for (int z = z0; z < z1; z++) {
+                    if (this.level().getFluidState(pos.set(x, y, z)).is(net.minecraft.tags.FluidTags.WATER)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    // ---- fuel ----
+
+    public boolean isCreative(@Nullable Entity entity) {
+        return entity instanceof Player player && player.isCreative();
+    }
+
+    /** Upstream {@code isInfinityFuel}. */
+    public boolean isInfinityFuel(@Nullable Entity player, boolean checkOtherSeats) {
+        if (this.isCreative(player) || this.getCommonStatus(STATUS_INFINITY_FUEL)) {
+            return true;
+        }
+        if (checkOtherSeats) {
+            for (SeatEntity seat : this.seats) {
+                if (seat != null && this.isCreative(seat.getRider())) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public boolean canUseFuel(boolean checkOtherSeats) {
+        return AircraftFuel.canUseFuel(this.getMaxFuel(), this.getFuel(),
+                this.isInfinityFuel(this.getPilot(), checkOtherSeats));
+    }
+
+    public boolean canUseFuel() {
+        return this.canUseFuel(false);
+    }
+
+    /** Upstream {@code canSupply}: refuelling needs the vehicle on (or just above) the ground. */
+    public boolean canSupply() {
+        return this.canFloatWater() ? this.blockWithin(1, -3) : this.blockWithin(1, -3) && !this.isInWater();
+    }
+
+    public float getFuelConsumptionFactor() {
+        return this.info != null ? this.info.getFuelConsumption(this.getFuelType()) : 1.0F;
+    }
+
+    /** Upstream {@code updateFuel}: consumption, then refuelling from a fuel can in the menu. */
+    private void updateFuel() {
+        if (this.getMaxFuel() == 0 || this.isDestroyed() || this.level().isClientSide() || this.info == null) {
+            return;
+        }
+        int fuel = AircraftFuel.consume(this.fuelMeter, this.getCountOnUpdate(), this.getFuel(), this.getThrottle(),
+                this.info.fuelConsumption, this.getFuelConsumptionFactor());
+        if (fuel != this.getFuel()) {
+            this.setFuel(fuel);
+        }
+        if (this.info.electric) {
+            return;
+        }
+        int current = this.getFuel();
+        int max = this.getMaxFuel();
+        if (this.canSupply() && this.getCountOnUpdate() % 10 == 0 && current < max) {
+            ItemStack input = this.inventory.getItem(SLOT_FUEL_IN);
+            if (!input.isEmpty() && input.is(ModItems.FUEL.get())) {
+                this.refuelFromCan(input, current, max);
+            }
+        }
+    }
+
+    /** Upstream {@code handleItemFuelRefuel}. */
+    private void refuelFromCan(ItemStack stack, int current, int max) {
+        String type = AircraftFuel.DEFAULT_FUEL_TYPE;
+        if (!this.info.isFuelValid(type) || (current > 0 && !this.getFuelType().isEmpty()
+                && !this.getFuelType().equals(type))) {
+            return;
+        }
+        int amount = AircraftFuel.refuelAmount(current, max, stack.getDamageValue(), stack.getMaxDamage());
+        if (amount <= 0) {
+            return;
+        }
+        stack.setDamageValue(stack.getDamageValue() + amount);
+        this.setFuelType(type);
+        this.setFuel(current + amount);
+        if (stack.getDamageValue() >= stack.getMaxDamage()) {
+            ItemStack empty = new ItemStack(stack.getItem());
+            empty.setDamageValue(stack.getMaxDamage());
+            ItemStack out = this.inventory.getItem(SLOT_FUEL_OUT);
+            if (out.isEmpty()) {
+                this.inventory.setItem(SLOT_FUEL_OUT, empty);
+                stack.shrink(1);
+            } else if (ItemStack.isSameItemSameComponents(out, empty) && out.getCount() < out.getMaxStackSize()) {
+                out.grow(1);
+                stack.shrink(1);
+            }
+        }
+        this.inventory.setChanged();
+    }
+
+    // ---- damage ----
+
+    /** A hit on one of the content's bounding boxes, with that box's damage factor. */
+    public boolean hurtFromHitBox(ServerLevel level, AircraftHitBox box, DamageSource source, float damage) {
+        this.lastHitBoxFactor = box.getDamageFactor();
+        return this.hurtServer(level, source, damage);
+    }
+
+    private static AircraftDamage.Kind kindOf(DamageSource source) {
+        if (source.is(DamageTypes.LAVA)) {
+            return AircraftDamage.Kind.LAVA;
+        }
+        if (source.is(DamageTypeTags.IS_EXPLOSION)) {
+            return AircraftDamage.Kind.EXPLOSION;
+        }
+        if (source.is(DamageTypes.ON_FIRE)) {
+            return AircraftDamage.Kind.ON_FIRE;
+        }
+        if (source.is(DamageTypes.IN_FIRE) || source.is(DamageTypes.CACTUS)) {
+            return AircraftDamage.Kind.IGNORED;
+        }
+        if (source.is(DamageTypes.PLAYER_ATTACK)) {
+            return AircraftDamage.Kind.PLAYER;
+        }
+        return AircraftDamage.Kind.OTHER;
+    }
+
+    /** Upstream {@code attackEntityFrom}. */
+    @Override
+    public boolean hurtServer(ServerLevel level, DamageSource source, float originalDamage) {
+        AircraftDamage.Kind kind = kindOf(source);
+        if (this.isInvulnerableToBase(source) || this.isRemoved() || this.timeSinceHit > 0
+                || kind == AircraftDamage.Kind.IGNORED) {
+            return false;
+        }
+        Entity attacker = source.getEntity();
+        boolean playDamageSound = !(attacker instanceof Player);
+
+        float factor = this.lastHitBoxFactor;
+        this.lastHitBoxFactor = 1.0F;
+        float damage = 0.0F;
+        if (this.canBeAttackedBy(attacker) && this.info != null) {
+            AircraftDamage.Result result = AircraftDamage.calculate(kind, originalDamage, factor,
+                    new AircraftDamage.Armor(this.info.armorMinDamage, this.info.armorMaxDamage,
+                            this.info.armorDamageFactor, this.info.invulnerable),
+                    this.random, this.timeSinceHit);
+            damage = result.damage();
+            this.timeSinceHit = result.timeSinceHit();
+        }
+
+        boolean isPlayerAttack = false;
+        if (attacker instanceof Player player) {
+            playDamageSound = true;
+            if (kind == AircraftDamage.Kind.PLAYER) {
+                isPlayerAttack = AircraftDamage.isPickUp(player.isCreative(), this.info != null && this.info.creativeOnly,
+                        CommonConfig.PREVENTING_BROKEN.get(), CommonConfig.BREAKABLE_ONLY_PICKAXE.get(),
+                        player.getMainHandItem().is(ItemTags.PICKAXES), this.isRidePlayer());
+            }
+            if (!isPlayerAttack) {
+                McheliSounds.playAt(this, "hit", damage > 0.0F ? 1.0F : 0.5F, 1.0F);
+            }
+            if (isPlayerAttack && player.isCreative()) {
+                this.removeByPlayer(player);
+                this.playDamageSound();
+                return true;
+            }
+        }
+
+        if (damage <= 0.0F) {
+            return false;
+        }
+
+        if (!this.isDestroyed()) {
+            if (!isPlayerAttack) {
+                this.setDamageTaken(this.getDamageTaken() + (int) damage);
+            }
+            this.markHurt();
+            if (this.getDamageTaken() >= this.getMaxHP() || isPlayerAttack) {
+                if (!isPlayerAttack) {
+                    this.setDamageTaken(this.getMaxHP());
+                    this.destroyAircraft();
+                    this.timeSinceHit = 20;
+                    this.runDestroyCommand(level);
+                    if (source.is(DamageTypes.IN_WALL)) {
+                        this.explosionByCrash(0.0);
+                        this.damageSinceDestroyed = this.getMaxHP();
+                    } else {
+                        level.explode(attacker, this.getX(), this.getY(), this.getZ(), 2.0F, true,
+                                Level.ExplosionInteraction.TNT);
+                    }
+                } else {
+                    this.removeByPlayer((Player) attacker);
+                }
+            }
+        }
+
+        if (playDamageSound) {
+            this.playDamageSound();
+        }
+        return true;
+    }
+
+    /** Upstream {@code MCH_Multiplay.canAttackEntity}: player-versus-player rules for the pilot. */
+    private boolean canBeAttackedBy(@Nullable Entity attacker) {
+        if (attacker instanceof Player attackingPlayer && this.getPilot() instanceof Player pilot) {
+            return attackingPlayer.canHarmPlayer(pilot);
+        }
+        return true;
+    }
+
+    /** A player's pick-up: drops the item as {@code dropItemIfNeeded} decides and removes the vehicle. */
+    private void removeByPlayer(Player player) {
+        AircraftItem item = this.getItem();
+        if (item != null && AircraftDamage.dropsItem(player.isCreative(), player.isShiftKeyDown(),
+                CommonConfig.DROP_ITEM_IN_CREATIVE_MODE.get()) && this.level() instanceof ServerLevel serverLevel) {
+            ItemStack stack = new ItemStack(item);
+            this.writeDataToItem(stack);
+            this.spawnAtLocation(serverLevel, stack);
+        }
+        this.removeVehicle(true);
+    }
+
+    private void playDamageSound() {
+        McheliSounds.playAt(this, "helidmg", 1.0F, 0.9F + this.random.nextFloat() * 0.1F);
+    }
+
+    private void runDestroyCommand(ServerLevel level) {
+        String cmd = this.getCommand().trim();
+        if (cmd.startsWith("/")) {
+            cmd = cmd.substring(1);
+        }
+        if (!cmd.isEmpty()) {
+            level.getServer().getCommands().performPrefixedCommand(
+                    level.getServer().createCommandSourceStack().withSuppressedOutput(), cmd);
+        }
+    }
+
+    /** Upstream {@code destroyAircraft}. */
+    public void destroyAircraft() {
+        this.switchHoveringMode(false);
+        this.switchGunnerMode(false);
+        this.setDespawnCount(20 * CommonConfig.DESPAWN_COUNT.get());
+        this.rotDestroyedPitch = this.random.nextFloat() - 0.5F;
+        this.rotDestroyedRoll = (this.random.nextFloat() - 0.5F) * 0.5F;
+        this.rotDestroyedYaw = 0.0F;
+        if (this.level() instanceof ServerLevel level) {
+            float dmg = CommonConfig.KILL_PASSENGERS_WHEN_DESTROYED.get() ? 100000.0F : 0.001F;
+            DamageSource source;
+            if (level.getDifficulty() == Difficulty.PEACEFUL) {
+                source = this.lastAttacker instanceof Player player ? this.damageSources().playerAttack(player)
+                        : this.damageSources().generic();
+            } else {
+                source = this.damageSources().explosion(this, this.lastAttacker);
+            }
+            for (int sid = 0; sid < this.getSeatNum() + 1; sid++) {
+                Entity rider = this.getEntityBySeatId(sid);
+                if (rider != null) {
+                    rider.hurtServer(level, source, dmg);
+                }
+            }
+        }
+    }
+
+    private @Nullable Entity lastAttacker;
+
+    @Override
+    public boolean hurtClient(DamageSource source) {
+        return true;
+    }
+
+    /** Upstream {@code explosionByCrash}: power from the tank size, 1 to 15. */
+    public void explosionByCrash(double prevMotionY) {
+        float exp = this.info != null ? this.info.maxFuel / 400.0F : 2.0F;
+        exp = Mth.clamp(exp, 1.0F, 15.0F);
+        this.level().explode(null, this.getX(), this.getY(), this.getZ(), exp, true, Level.ExplosionInteraction.TNT);
+    }
+
+    /** Upstream {@code onUpdate_CollisionGroundDamage}. */
+    private void onUpdateCollisionGroundDamage() {
+        if (this.isDestroyed() || !(this.level() instanceof ServerLevel level) || this.info == null) {
+            return;
+        }
+        if (this.blockWithin(3, -3)) {
+            float roll = Mth.abs(Mth.wrapDegrees(this.getRoll()));
+            float pitch = Mth.abs(Mth.wrapDegrees(this.getPitch()));
+            if (roll > 40.0F || pitch > 40.0F) {
+                float dmg = Mth.abs(roll) + Mth.abs(pitch);
+                if (dmg < 90.0F) {
+                    dmg *= 0.4F * (float) Math.sqrt(this.distanceToSqr(this.xo, this.yo, this.zo));
+                } else {
+                    dmg *= 0.4F;
+                }
+                if (dmg > 1.0F && this.random.nextInt(4) == 0) {
+                    this.hurtServer(level, this.damageSources().inWall(), dmg);
+                }
+            }
+        }
+        if (this.getCountOnUpdate() % 30 == 0 && !this.info.isFloat) {
+            net.minecraft.core.BlockPos pos = net.minecraft.core.BlockPos.containing(this.getX() + 0.5,
+                    this.getY() + 1.5 + this.info.submergedDamageHeight, this.getZ() + 0.5);
+            if (this.level().getFluidState(pos).is(net.minecraft.tags.FluidTags.WATER)) {
+                int hp = Math.max(this.getMaxHP() / 10, 1);
+                this.hurtServer(level, this.damageSources().inWall(), hp);
+            }
+        }
+    }
+
+    /** Upstream {@code autoRepair}. */
+    private void autoRepair() {
+        if (this.timeSinceHit > 0) {
+            this.timeSinceHit--;
+        }
+        if (this.getMaxHP() <= 0 || this.level().isClientSide()) {
+            return;
+        }
+        if (!this.isDestroyed()) {
+            if (this.getDamageTaken() > this.beforeDamageTaken) {
+                this.repairCount = 600;
+            } else if (this.repairCount > 0) {
+                this.repairCount--;
+            } else {
+                this.repairCount = 40;
+                double hpp = (double) this.getHP() / this.getMaxHP();
+                if (hpp >= CommonConfig.AUTO_REPAIR_HP.get()) {
+                    this.repair(this.getMaxHP() / 100);
+                }
+            }
+        }
+        this.beforeDamageTaken = this.getDamageTaken();
+    }
+
+    /** Upstream {@code repair}. */
+    public boolean repair(int amount) {
+        if (amount < 1) {
+            amount = 1;
+        }
+        int damage = this.getDamageTaken();
+        if (damage > 0 && !this.level().isClientSide()) {
+            this.setDamageTaken(damage - amount);
+            return true;
+        }
+        return false;
+    }
+
+    /** Upstream {@code onUpdate_updateBlock}: breaks snow layers, lily pads and cakes. */
+    protected void breakSoftBlocks() {
+        if (!CommonConfig.COLLISION_DESTROY_BLOCK.get() || this.level().isClientSide()) {
+            return;
+        }
+        int baseY = Mth.floor(this.getY());
+        for (int corner = 0; corner < 4; corner++) {
+            int x = Mth.floor(this.getX() + (corner % 2 - 0.5) * 0.8);
+            int z = Mth.floor(this.getZ() + (corner / 2.0 - 0.5) * 0.8);
+            for (int dy = 0; dy < 2; dy++) {
+                net.minecraft.core.BlockPos pos = new net.minecraft.core.BlockPos(x, baseY + dy, z);
+                BlockState state = this.level().getBlockState(pos);
+                if (state.is(Blocks.SNOW)) {
+                    this.level().removeBlock(pos, false);
+                } else if (state.is(Blocks.LILY_PAD) || state.is(Blocks.CAKE)) {
+                    this.level().destroyBlock(pos, false);
+                }
+            }
+        }
+    }
+
+    // ---- item data ----
+
+    /** Upstream {@code setAcDataToItem}: the vehicle's command, fuel and damage go to its item. */
+    public void writeDataToItem(ItemStack stack) {
+        AircraftItemData.write(stack, this.getCommand(), this.getFuel(), this.getDamageTaken(),
+                CommonConfig.ITEM_FUEL.get(), CommonConfig.ITEM_DAMAGE.get());
+    }
+
+    /** Upstream {@code getAcDataFromItem}. */
+    public void readDataFromItem(ItemStack stack) {
+        AircraftItemData.Values values = AircraftItemData.read(stack, CommonConfig.ITEM_FUEL.get(),
+                CommonConfig.ITEM_DAMAGE.get());
+        if (values == null) {
+            return;
+        }
+        this.setCommandForce(values.command());
+        if (values.fuel() != null) {
+            this.setFuel(values.fuel());
+        }
+        if (values.damage() != null) {
+            this.setDamageTaken(values.damage());
+        }
+    }
+
+    /** Upstream {@code initRotationYaw}: the attitude of a vehicle just placed. */
+    public void initRotationYaw(float yaw) {
+        this.setYRot(yaw);
+        this.yRotO = yaw;
+        this.lastRiderYaw = yaw;
+        this.prevLastRiderYaw = yaw;
+        this.orientation = null;
+    }
+
+    // ---- removal ----
+
+    @Override
+    public void remove(Entity.RemovalReason reason) {
+        if (reason.shouldDestroy() && !this.level().isClientSide()) {
+            for (SeatEntity seat : this.seats) {
+                if (seat != null) {
+                    seat.ejectPassengers();
+                    seat.discard();
+                }
+            }
+            if (this.dropsContents) {
+                net.minecraft.world.Containers.dropContents(this.level(), this, this.inventory);
+            }
+        }
+        super.remove(reason);
+    }
+
+    private boolean dropsContents = true;
+
+    /** Removes the vehicle like upstream {@code setDead(dropItems)}. */
+    public void removeVehicle(boolean dropContents) {
+        this.dropsContents = dropContents;
+        this.ejectPassengers();
+        this.discard();
+    }
+
+    // ---- save data ----
+
+    @Override
+    protected void readAdditionalSaveData(ValueInput input) {
+        this.setDespawnCount(input.getIntOr("AcDespawnCount", 0));
+        this.setTextureName(input.getStringOr("TextureName", ""));
+        this.setRoll(input.getFloatOr("AcRoll", 0.0F));
+        this.prevRoll = this.getRoll();
+        this.prevLastRiderYaw = this.lastRiderYaw = input.getFloatOr("AcLastRYaw", 0.0F);
+        this.prevLastRiderPitch = this.lastRiderPitch = input.getFloatOr("AcLastRPitch", 0.0F);
+        this.setPartStatus(input.getIntOr("PartStatus", 0));
+        this.setAircraftTypeName(input.getStringOr("TypeName", ""));
+        NonNullList<ItemStack> items = NonNullList.withSize(this.inventory.getContainerSize(), ItemStack.EMPTY);
+        ContainerHelper.loadAllItems(input.childOrEmpty("ItemsAC"), items);
+        for (int i = 0; i < items.size(); i++) {
+            this.inventory.setItem(i, items.get(i));
+        }
+        this.setCommandForce(input.getStringOr("AcCommand", ""));
+        this.setGunnerStatus(input.getBooleanOr("AcGunnerStatus", true));
+        this.setFuel(input.getIntOr("AcFuel", 0));
+        this.setFuelType(input.getStringOr("AcFuelType", AircraftFuel.DEFAULT_FUEL_TYPE));
+        if (this.getDespawnCount() > 0) {
+            this.setDamageTaken(this.getMaxHP());
+        } else {
+            input.getInt("AcDamage").ifPresent(this::setDamageTaken);
+        }
+        this.setCurrentThrottle(input.getDoubleOr("AcThrottle", 0.0));
+        boolean hovering = input.getBooleanOr("AcHoveringMode", false);
+        if (hovering != this.hoveringMode) {
+            this.beforeHoverThrottle = input.getDoubleOr("AcBeforeHoverThrottle", 0.0);
+            this.hoveringMode = hovering;
+            this.entityData.set(DATA_HOVERING, hovering);
+        }
+        this.orientation = null;
+    }
+
+    @Override
+    protected void addAdditionalSaveData(ValueOutput output) {
+        output.putString("TextureName", this.getTextureName());
+        output.putString("TypeName", this.getAircraftTypeName());
+        output.putInt("PartStatus", this.partStatus() & this.getLastPartStatusMask());
+        output.putInt("AcFuel", this.getFuel());
+        output.putString("AcFuelType", this.getFuelType());
+        output.putInt("AcDespawnCount", this.getDespawnCount());
+        output.putFloat("AcRoll", this.getRoll());
+        output.putFloat("AcLastRYaw", this.lastRiderYaw);
+        output.putFloat("AcLastRPitch", this.lastRiderPitch);
+        output.putString("AcCommand", this.getCommand());
+        output.putBoolean("AcGunnerStatus", this.getGunnerStatus());
+        NonNullList<ItemStack> items = NonNullList.withSize(this.inventory.getContainerSize(), ItemStack.EMPTY);
+        for (int i = 0; i < items.size(); i++) {
+            items.set(i, this.inventory.getItem(i));
+        }
+        ContainerHelper.saveAllItems(output.child("ItemsAC"), items);
+        output.putInt("AcDamage", this.getDamageTaken());
+        output.putDouble("AcThrottle", this.getCurrentThrottle());
+        output.putBoolean("AcHoveringMode", this.hoveringMode);
+        output.putDouble("AcBeforeHoverThrottle", this.beforeHoverThrottle);
+    }
+
+    /** Remembers who hit the vehicle last, for the passengers' death message. */
+    public void setLastAttacker(@Nullable Entity attacker) {
+        this.lastAttacker = attacker;
+    }
+
+    /** All vehicles of a level near a point, for commands and tests. */
+    public static List<AircraftEntity> findNear(Level level, AABB box) {
+        return new ArrayList<>(level.getEntitiesOfClass(AircraftEntity.class, box));
+    }
+}

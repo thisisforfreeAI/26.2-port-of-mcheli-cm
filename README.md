@@ -10,10 +10,11 @@ An unofficial community port of [McHeli: Community Edition](https://github.com/W
 
 ## Status
 
-**Work in progress (milestone M2):** the mod loads all of McHeli CE's content (vehicles, weapons,
-throwables and HUDs, from YAML and legacy TXT files, including addon packs) and registers its items,
-blocks, entity types and creative tabs. Nothing can be used yet: vehicles cannot be placed or flown,
-and weapons do not fire. That starts with milestone M3.
+**Work in progress (milestone M3):** helicopters can be placed, boarded, flown with the keyboard
+and mouse, refuelled from fuel cans, landed and picked up again, in single player and multiplayer.
+They are still drawn as boxes, and weapons do not fire: models and the HUD come with milestone M4,
+weapons with M5, and the other vehicle types with M6. The mod also loads all of McHeli CE's content
+(vehicles, weapons, throwables and HUDs, from YAML and legacy TXT files, including addon packs).
 
 - [PORTING_PLAN.md](PORTING_PLAN.md): the roadmap and the decisions behind it
 - [CHANGELOG.md](CHANGELOG.md): what each milestone added

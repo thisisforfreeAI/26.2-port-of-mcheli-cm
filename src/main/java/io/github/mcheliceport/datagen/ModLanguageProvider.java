@@ -37,6 +37,9 @@ public class ModLanguageProvider extends LanguageProvider {
             add(tab.translationKey(), tab.title);
         }
         add("pack.source.mcheli_ce_port.addon", "McHeli addon");
+        add("entity.mcheli_ce_port.helicopter", "Helicopter");
+        add("entity.mcheli_ce_port.seat", "Seat");
+        keys();
         addItem(ModItems.SPAWN_GUNNER_VS_MONSTER, "Gunner (vs Monster)");
         addItem(ModItems.SPAWN_GUNNER_VS_PLAYER, "Gunner (vs Player of other team)");
         addItem(ModItems.RANGEFINDER, "Laser Rangefinder");
@@ -62,6 +65,24 @@ public class ModLanguageProvider extends LanguageProvider {
         addBlock(ModBlocks.WINGMAN_MARKER, "Marker Block");
     }
 
+    /** The vehicle key mappings (upstream's key names in its config GUI). */
+    private void keys() {
+        add("key.category.mcheli_ce_port.vehicles", "McHeli CE (26.2 Port)");
+        String prefix = "key." + McheliCePort.MOD_ID + ".";
+        add(prefix + "up", "Throttle Up / Forward");
+        add(prefix + "down", "Throttle Down / Back");
+        add(prefix + "right", "Right");
+        add(prefix + "left", "Left");
+        add(prefix + "switch_gunner", "Gunner Mode");
+        add(prefix + "switch_hovering", "Hovering Mode");
+        add(prefix + "zoom", "Zoom / Hatch");
+        add(prefix + "unmount", "Get Out");
+        add(prefix + "extra", "Extra (Fold Blades)");
+        add(prefix + "free_look", "Free Look");
+        add(prefix + "gui", "Vehicle Menu");
+        add(prefix + "gear_up_down", "Landing Gear");
+    }
+
     /** NeoForge's config screen: section titles and one name per option. */
     private void configScreen() {
         String prefix = McheliCePort.MOD_ID + ".configuration.";
@@ -75,6 +96,30 @@ public class ModLanguageProvider extends LanguageProvider {
         add(prefix + "debugLog", "Debug Logging");
         add(prefix + "vehicles", "Vehicles");
         add(prefix + "serverAuthoritativeMovement", "Server-Side Movement");
+        add(prefix + "placeableOnSpongeOnly", "Placeable on Sponge Only");
+        add(prefix + "itemDamage", "Keep Damage on the Item");
+        add(prefix + "itemFuel", "Keep Fuel on the Item");
+        add(prefix + "infinityFuel", "Infinite Fuel");
+        add(prefix + "preventingBroken", "Prevent Pick-Up in Survival");
+        add(prefix + "dropItemInCreativeMode", "Drop Item in Creative Mode");
+        add(prefix + "breakableOnlyPickaxe", "Pick Up Only with a Pickaxe");
+        add(prefix + "allHeliSpeed", "Helicopter Speed");
+        add(prefix + "autoThrottleDownHeli", "Helicopter Auto Throttle");
+        add(prefix + "experimentalQuaternionRotation", "Quaternion Rotation");
+        add(prefix + "despawnCount", "Wreck Despawn Time");
+        add(prefix + "killPassengersWhenDestroyed", "Kill Passengers When Destroyed");
+        add(prefix + "autoRepairHP", "Auto Repair Threshold");
+        add(prefix + "collisionDestroyBlock", "Break Soft Blocks");
+        add(prefix + "rotationLimits", "Rotation Limits");
+        add(prefix + "enableRotationLimit", "Enable Rotation Limit");
+        add(prefix + "pitchLimitMax", "Pitch Limit (Down)");
+        add(prefix + "pitchLimitMin", "Pitch Limit (Up)");
+        add(prefix + "rollLimit", "Roll Limit");
+        add(prefix + "mouse", "Mouse Flight");
+        add(prefix + "invertMouse", "Invert Mouse");
+        add(prefix + "mouseSensitivity", "Mouse Sensitivity");
+        add(prefix + "mouseControlStickModeHeli", "Stick Mode (Helicopters)");
+        add(prefix + "mouseControlFlightSimMode", "Flight Sim Mode");
         add(prefix + "privacy", "Privacy");
         add(prefix + "allowScreenCapture", "Allow Screen Capture");
         add(prefix + "creativeTabIcons", "Creative Tab Icons");
