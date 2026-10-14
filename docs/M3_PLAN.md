@@ -92,6 +92,24 @@ auto-level, client/server movement), extra bounding boxes, parts, crash explosio
 positions, ground collision damage, unmount reserve. Skipped steps (weapons, radar, flares, supply,
 repair, UAV) are left as named, empty hooks so later milestones slot in without reordering.
 
+### 3.3 Ground probe
+
+Most heli rules ask "is there ground within N blocks below?" through upstream's
+`MCH_Lib.getBlockY`/`getBlockIdY` (auto-levelling, on-ground pitch, strafing roll, destroyed
+throttle, fold-blade taxiing). Upstream's probe has two 1.12 assumptions that break on 26.2:
+
+- It treats any `y` outside 0 to 255 as air. A 26.2 overworld runs from -64 to 319, so below
+  y 0 a heli never finds ground and above y 255 it never finds blocks.
+- It converts positions with `(int) (pos + 0.5)`, which truncates toward zero, so at negative
+  coordinates it probes one block off. (Its range check also tests `py + y` even when it probes
+  downwards at `py - y`.)
+
+The port's `GroundProbe` keeps upstream's footprint (`size`), length and collidable-only rule but
+uses `Mth.floor(pos + 0.5)` and the level's `getMinY()`/`getMaxY()`. This is a deliberate fix of
+a 1.12-only limit, not a behaviour change inside 0 to 255 at positive coordinates; it gets a
+KNOWN_ISSUES entry and its own tests (`GroundProbeTest`, `FlightGameTest`). The oracle in §8.1
+calls the same probe through an interface, so the formula comparison is unaffected.
+
 ## 4. Authority (decision D2)
 
 Upstream already lets the pilot's client own **rotation** (`PacketIndRotation`) while the server
@@ -164,7 +182,7 @@ criterion names the test that proves it, and in-game checks are listed with what
 
 | # | Exit criterion | Proved by |
 |---|---|---|
-| E1 | Flight maths match upstream formula by formula | `HeliFlightModelTest`, `AircraftAttitudeTest` (§8.1) |
+| E1 | Flight maths match upstream formula by formula; the ground probe works over 26.2's full height and at negative coordinates | `HeliFlightModelTest`, `AircraftAttitudeTest`, `GroundProbeTest` (§8.1) |
 | E2 | Fuel and damage rules match upstream | `AircraftFuelTest`, `AircraftDamageTest` (§8.1) |
 | E3 | Every payload round-trips, and the switch byte matches upstream's bit layout | `PayloadCodecTest` (§8.2) |
 | E4 | Every one of the 34 stock helicopters can be created from its item, with the content's seat count and hit boxes | `AllHelicoptersSpawnTest` (§8.2) |
@@ -202,6 +220,9 @@ criterion names the test that proves it, and in-game checks are listed with what
 - **`AircraftFuelTest`**: consumption per 20 ticks (`fuelConsumption`, throttle × 1.4 capped at 1,
   fractional carry), `InfinityFuel`, creative pilot, refuel from a fuel can and from a fluid
   container to `MaxFuel` and no further.
+- **`GroundProbeTest`**: the probe matches upstream's results for positive coordinates inside
+  y 0 to 255, finds ground at negative x/z on the right block, and finds ground below y 0 and
+  blocks above y 255 (a stubbed block getter, no world).
 - **`AircraftDamageTest`**: armour maths (`armorMaxDamage` cap, factor ≤ 1 before and > 1 after
   `armorMinDamage`), lava multiplier and hit cooldowns, `invulnerable`, the pick-up decision table
   (creative × sneak × `DropItemInCreativeMode`, `BreakableOnlyPickaxe`, `PreventingBroken`,
@@ -234,7 +255,8 @@ CI. Players are mock players.
   ground; a destroyed heli cannot be boarded; landing does not hurt the pilot.
 - **`FlightGameTest`**, run once per authority mode with a server-side scripted pilot: full
   throttle for 100 ticks gains height; hovering mode holds height within ±1 block over 200 ticks;
-  throttle down lands it; a landing at normal descent does no damage, and a drop from 30 blocks
+  throttle down lands it; the same take-off, hover and landing works on a pad at y -50 and at
+  negative x/z (§3.3); a landing at normal descent does no damage, and a drop from 30 blocks
   with the heli destroyed explodes on impact.
 - **`FuelGameTest`**: a running heli loses fuel at upstream's rate; at 1 fuel it cannot climb; a
   fuel can in the menu's fuel slot refuels it.
