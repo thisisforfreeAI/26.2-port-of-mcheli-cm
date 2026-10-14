@@ -1,6 +1,6 @@
 # M5 plan: weapons (0.5.0)
 
-> **Status:** in progress. This file expands the M5 row of [PORTING_PLAN.md](../PORTING_PLAN.md) §6.
+> **Status:** built (0.5.0). This file expands the M5 row of [PORTING_PLAN.md](../PORTING_PLAN.md) §6.
 > Its decisions (D18 to D23, continuing the numbering of the earlier plans) were taken as the
 > recommended defaults so the work could go straight on; each can be revisited in review. Where
 > the implementation differs from this plan, the difference is listed in [§10](#10-as-built).
@@ -188,4 +188,27 @@ weapon mode (X), reload (R), flare (V), airburst reset (right mouse).
 
 ## 10. As built
 
-What changed from this plan while implementing it (filled in as the work goes).
+What changed from this plan while implementing it. Each difference from upstream is also in
+[KNOWN_ISSUES.md](../KNOWN_ISSUES.md) (items 42 to 61).
+
+- **Networking.** The weapon fields went into a new `WeaponControlPayload` that any vehicle kind
+  can send, instead of extending `HeliControlPayload`. `NotifyLockPayload` was not needed: each
+  client's seeker gives it the lock state. Extra payloads carry what upstream sent in other
+  packets: `AmmoRequestPayload`, `SyncReloadPayload`, `AirburstDistPayload`, `ChaffUsePayload`,
+  `LaserShotPayload` and `ClientSoundPayload`. Sends skip connections without the channel, which
+  GameTest fake players lack.
+- **Layout.** Cartridges are a client-side list in `client/weapon/WeaponEffects` rather than an
+  entity; the projectile, A-10, flare and throwable renderers are in `client/render`, the bullet
+  models in `client/model/BulletModels`.
+- **Rendering.** Laser beams are depth tested. CCIP is projected onto the HUD layer rather than
+  drawn in the world. Team spotting markers (`MCH_GuiTargetMarker`) and turret ballistics lines
+  are not drawn (M6, M7); lock-on shows through the HUD's `lock` variable.
+- **Weapon parts.** Every part counts towards the missile index, fixing upstream's `HideGM` skip.
+- **Throwables** trace blocks only and are not saved.
+- **Projectile floor.** Upstream's `checkValid` dropped projectiles below y -10. The GameTests
+  found it in a superflat world at y -60; the limit now follows the world's floor.
+- **Tests.** `AllWeaponsTest` checks that every weapon type has a factory and every vehicle's sets
+  resolve; creating each weapon needs a level, so `WeaponGameTests` does that part. The per-type
+  GameTests fire from a mock player rather than a helicopter (the AH-64 is used for flares,
+  ammunition and destruction), and the types without a stock definition (`buckshot`, `railgun`,
+  `laser`) borrow the M230's.

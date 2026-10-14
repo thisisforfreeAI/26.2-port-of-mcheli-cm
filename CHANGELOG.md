@@ -8,6 +8,60 @@ Versions stay below 1.0.0 until the port is feature-complete, and each milestone
 McHeli CE 1.5.1 (`master` @ `cbaff7f`). Where it deliberately differs from upstream, the difference is
 listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 
+## [0.5.0] - unreleased (M5: weapons)
+
+### Added
+
+- **Weapons.** Every seat fires the weapons its content gives it, with upstream's weapon sets:
+  magazine and reserve ammunition, reloads (automatic and with R), heat, cooldown, recoil, barrel
+  spin, weapon modes (X), group sharing between seats and gunner turret limits. All 18 weapon types
+  are ported: `machinegun1`, `machinegun2`, `buckshot`, `railgun`, `rocket`, `mkrocket`,
+  `tvmissile`, `aamissile`, `atmissile`, `asmissile`, `torpedo`, `bomb` (with bomblets and mines),
+  `cas`, `dummy`, `smoke`, `dispenser`, `targetingpod` and `laser`.
+- **Projectiles** as entities with upstream's flight: gravity in air and water, piercing, delay,
+  time and proximity fuses, airburst, spreaders, splash, bounce, block hits
+  (`weapons.bulletBreakableBlocks`), entity hits with damage factors, potion effects and their own
+  explosions. Bullets, rockets, AA, AT, AS and TV missiles, bombs, torpedoes, marker rockets,
+  dispensed items and the close air support A-10 are drawn with their bullet models, tints and
+  missile flames.
+- **Guidance**: lock-on with upstream's seeker angle, range, target kinds, ground clutter and lock
+  tones; homing per tick; TV missiles steered through their own camera with its noise overlay; laser
+  guidance from the targeting pod.
+- **Countermeasures**: flares with upstream's dispensing patterns, chaff and the active protection
+  system (V), the missile detector's warning, and their cooldowns and sounds.
+- **McHeli's explosion** (decision D18): upstream's block ray march, entity damage and radius,
+  through-wall damage, fire, damage factors and hit markers, with its own smoke, flash, splash and
+  block dust particles (or vanilla's with `effects.defaultExplosionParticle`). Crashes and destroyed
+  helicopters use it in place of M3's vanilla explosion.
+- **Client effects**: tracers, laser beams, ejected cartridges (`effects.aliveTimeOfCartridge`),
+  muzzle smoke, recoil of the view, and the weapon parts of helicopter models animated (turret yaw
+  and pitch, recoil, barrel spin, missiles on rails disappearing as they are fired, weapon bays).
+- **HUD weapon values**: weapon name, ammunition, reserve, reload, heat, lock, sight type, mortar
+  and airburst distances and the barrel direction, the hit marker (`hud.hitMarkColor`), CCIP for
+  bombs, and the flare, weapon and weapon-mode key hints.
+- **Input**: fire (left mouse), switch weapon (G, middle mouse, or the mouse wheel with
+  `controls.switchWeaponWithMouseWheel`), weapon mode (X), reload (R), flare, chaff and APS (V),
+  airburst distance reset (right mouse). Vanilla attack and use are held back on a weapon seat
+  (decision D21).
+- **Ammunition** is saved with the vehicle and supplied from round items through the aircraft
+  menu; `weapons.infinityAmmo` and creative players never run out.
+- **Throwables**: grenades and smoke grenades are thrown by holding use, bounce, and explode or
+  smoke when their fuse runs out; dispensers throw them.
+- Config: `weapons.infinityAmmo`, `weapons.hurtResistantTime`, `weapons.bulletBreakableBlocks`,
+  the `weapons.damageVs…` and `…ByExternal` lists (decision D19), `explosions.destroyBlock`,
+  `explosions.flamingBlock`, `effects.defaultExplosionParticle`, `effects.aliveTimeOfCartridge`,
+  `hud.hitMarkColor`, `controls.switchWeaponWithMouseWheel`.
+- Tests: damage scaling, explosion maths and weapon sets checked tick by tick against upstream
+  oracles, round trips for the new payloads, every stock weapon and vehicle weapon set resolving,
+  and GameTests in which every weapon type fires and hits, flares decoy a heat seeker, ammunition
+  is used, reloaded and saved, infinite ammunition stays full, and a destroyed helicopter explodes.
+
+### Fixed
+
+- The close air support A-10 and its bombs now belong to the shooter (upstream never set it,
+  decision D20).
+- Projectiles below y -10 are no longer dropped; the limit follows 26.2's world floor.
+
 ## [0.4.0] - unreleased (M4: models, HUD and camera)
 
 ### Added

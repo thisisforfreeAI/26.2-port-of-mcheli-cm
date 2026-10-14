@@ -5,38 +5,34 @@ McHeli CE 1.5.1. This file is updated with every milestone (PORTING_PLAN.md, sec
 
 ## Not ported yet
 
-As of 0.4.0 (M4), helicopters can be placed, flown, refuelled and picked up, and are drawn with
-their models, HUD and gunner camera. Everything else that needs a vehicle or a weapon is still to
-come:
+As of 0.5.0 (M5), helicopters can be placed, flown, refuelled and picked up, are drawn with their
+models, HUD and gunner camera, and fight with their weapons. Everything else is still to come:
 
 | Area | Planned milestone |
 |---|---|
-| Weapons and gunner weapon use, the weapon parts of models (aiming, recoil, barrel spin, missiles on rails), the HUD's weapon values, sight dot, hit and lock-on markers, TV missile camera, BVR, GPS, mortar and RWR overlays, throwing grenades, flares and chaff, APS and ECM, McHeli's own explosions, particles (damage smoke, sand clouds) | M5 |
-| Planes, ships, tanks, vehicles, UAVs (and the UAV camera), camera position switching, search lights, ropes and rappelling, crawler tracks and track rollers, ERA tiles, gunner NPCs and mobs in seats, racks, containers, chains, parachutes, GLTD, hand-held weapons, the rest of the aircraft GUI, drafting table screen, charger, tools, supply vehicles, multiplayer teams | M6 |
+| Planes, ships, tanks, vehicles, UAVs (and the UAV camera), camera position switching, search lights, ropes and rappelling, crawler tracks and track rollers, ERA tiles, gunner NPCs and mobs in seats (and their weapon use), racks, containers, chains, parachutes, GLTD, hand-held weapons (Stinger, Javelin), the rest of the aircraft GUI, drafting table screen, charger, tools, supply vehicles, multiplayer teams and team spotting markers (`MCH_GuiTargetMarker`) | M6 |
+| BVR and passive radar, GPS panel and GPS missiles, mortar radar and RWR overlays, ECM jammer, the pulse-Doppler notch, the APS "iron curtain", data link, anti-radiation missiles, `Destruct` bombs (UAVs), the targeting pod's spotting | M6 (with the vehicles that use them) |
 | Wingman (AI wingmen, marker block screens and types, missions, `/wingman`) | M6b |
-| Remaining `/mcheli` commands (including reloading content with `reconfig`), advancement triggers, long-distance tracking and rendering, thermal vision (the third camera mode), GPU-buffer model rendering, HBM:NTM stubs, performance work | M7 |
+| Remaining `/mcheli` commands (including reloading content with `reconfig`), advancement triggers, long-distance tracking and rendering, thermal vision (the third camera mode), GPU-buffer model rendering, projectile chunk loading (`ProjectileChunkLoad`), HBM:NTM stubs, performance work | M7 |
 
 Until then:
 
-- Weapon parts are drawn at rest, missiles always show, and the HUD shows upstream's values for a
-  vehicle without weapons (M5). The key hints for flares, weapons, racks and search lights come
-  with those features (M5, M6).
-- Planes, ships, tanks, vehicles and throwables do nothing when used, and their entity types are
-  inert placeholders that cannot be summoned.
-- A destroyed helicopter explodes with a vanilla explosion of upstream's power (decision D13);
-  McHeli's explosion comes with M5.
+- The key hints for racks and search lights come with those features (M6).
+- Planes, ships, tanks and vehicles do nothing when used, and their entity types are inert
+  placeholders that cannot be summoned.
 - The aircraft menu has the fuel slots and the trunk only, on a plain container background; the
   rest of upstream's aircraft GUI (weapons, parachutes, the menu buttons) comes with M6.
 - Fuel comes from fuel cans only. Refuelling from fluid containers, which upstream also allowed,
   needs a fuel fluid and comes with the supply vehicles (M6).
-- External damage factors (`DamageFactor` config lines and weapon damage factors against vehicles)
-  apply once weapons are ported (M5).
 - The drafting table is drawn with a simple block model; upstream drew a 3D model with a block
   entity renderer (M6). The rangefinder, wrench, GLTD and hand-held launchers show as flat items in
   the hand; upstream drew 3D models (M6).
 - Upstream's two special crafting recipes, refilling fuel and recharging the rangefinder, come with
   those items (M6).
 - Every placed wingman marker is a waypoint until the marker screen is ported (M6b).
+- The targeting pod only plays its refusal sound when fired, until team spotting comes (M6).
+- An APS with upstream's "iron curtain" range (100) only plays its sounds (M6).
+- Turret ballistics lines (upstream `drawTurretBallistics`) are not drawn yet (M7).
 
 This config entry already exists but has no effect yet:
 
@@ -144,6 +140,42 @@ These follow from how Minecraft 26.2 works or from decisions approved in PORTING
     outline pass does not cover custom model geometry.
 41. Vanilla's vignette still darkens the screen edges while riding; upstream hid it. In 26.2 it
     shares a layer with the pumpkin, spyglass and portal overlays, which should stay.
+42. Weapon input reaches the server in a new `WeaponControlPayload` used by every vehicle kind;
+    upstream folded it into each vehicle's control packet. The server takes the rider's predicted
+    shot position only within 16 blocks of the vehicle, and accepts flares, chaff and APS from the
+    pilot and seat 1 only, as upstream's client did.
+43. Lock notifications (`PacketNotifyLock`) are not sent; the lock state each client shows comes
+    from its own seeker, as the HUD's `lock` variable does.
+44. A weapon seat always uses its seat ID, and upstream's off-by-default quaternion aim
+    (`ExperimentalQuaternionRotation`) is not ported.
+45. A weapon a set names that does not exist becomes a dummy weapon (with a log line). Round items
+    are matched by item only; 1.12 metadata is ignored.
+46. Flare, chaff and APS share one default key (V); one refusal sound plays only when none of them
+    could be used (upstream played one for each). Chaff is drawn with the flare texture, as
+    upstream's chaff renderer did.
+47. Ammunition is supplied through the open aircraft menu.
+48. Flare patterns are kept per side, so clients wait their intended extra 50 ticks; upstream
+    shared one table between the sides in single player. "Using flares" is not saved.
+49. Chaff in use is known on both sides and runs out, so radar seekers can lock on again
+    afterwards. Upstream set its flag only on clients and never cleared it: there a vehicle that
+    once used chaff could never be locked again, while on the server chaff did nothing.
+50. The close air support A-10 and its bombs belong to the shooter (decision D20).
+51. Projectiles are not saved with the world, except mines; throwables are not saved either.
+    Projectiles live down to 10 blocks below the world's floor (upstream: y -10).
+52. A projectile whose shooter is gone uses its vehicle for its validity check; upstream crashed.
+53. Laser beams are depth tested, so walls hide them; upstream drew them through everything.
+54. Ejected cartridges are client-only effects, not entities.
+55. The bombing CCIP is drawn on the HUD by projecting the predicted impact point; upstream drew
+    it in the world with depth testing off. It is turned by the vehicle's roll.
+56. Every weapon part counts towards the missile index of the parts after it; upstream skipped
+    hidden `HideGM` parts, so the wrong missile could disappear from the rails.
+57. APS activation sounds are played by the server for everyone, so the user no longer hears them
+    twice. Other mods' projectiles count for the APS and seekers by their entity type ID.
+58. Dispensed items act on blocks through NeoForge's fake player, made once per server.
+59. A thrown grenade ignores entity hits, which never changed its flight upstream.
+60. The texture `9M113.png` is lowercased (`9m113.png`), since resource paths must be lower case.
+61. Server-to-client packets skip connections that do not have the mod's channel (fake players,
+    for example); upstream sent them regardless.
 
 ## Upstream content issues kept as they are
 
