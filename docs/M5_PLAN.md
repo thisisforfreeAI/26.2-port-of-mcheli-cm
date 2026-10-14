@@ -212,3 +212,14 @@ What changed from this plan while implementing it. Each difference from upstream
   GameTests fire from a mock player rather than a helicopter (the AH-64 is used for flares,
   ammunition and destruction), and the types without a stock definition (`buckshot`, `railgun`,
   `laser`) borrow the M230's.
+- **Manual checks** (§8.4) ran under Xvfb with Mesa on OpenGL (llvmpipe) and Vulkan (lavapipe),
+  with a temporary scripted driver that was not committed (as in M4). It boards an AH-64 in a
+  flat world, fires Hydra rockets as the pilot, drops flares, fires the M230 and a locked Hellfire
+  from the gunner seat, and throws an M18 smoke grenade. Both backends gave the same pictures
+  (`docs/screens/m5-*.png`, `m5-vulkan-*.png`) and values: the HUD ammunition counts down
+  (Hydra 19 to 17, M230 down to a reload with the reserve shown), the Hellfire draws its lock box
+  and lock bar while the trigger is held and fires once locked, rockets and the Hellfire explode
+  with McHeli's smoke and fire, and the hit marker counter rose on rocket hits on husks. Flares
+  were dispensed on both sides (four per release in the log) but fall under the airframe, so the
+  screenshot shows their smoke beside the wings. Cartridges and barrel recoil are too small to
+  see at the screenshot size. No sound device under Xvfb, so sounds were not heard.
