@@ -174,6 +174,7 @@ final class WeaponGameTests {
         Vec3 eye = shooter.getEyePosition();
         lookAt(shooter, eye, c.fromAbove() ? husk.position() : husk.position().add(0.0, 0.3, 0.0));
         WeaponSet ws = weaponOf(helper, c);
+        Runnable release = c.type().equals("cas") ? forceA10Chunks(helper, husk.position()) : () -> { };
         boolean[] firedOnce = new boolean[1];
         helper.onEachTick(() -> {
             ws.update(shooter, true, false);
@@ -193,11 +194,37 @@ final class WeaponGameTests {
         helper.succeedWhen(() -> {
             switch (c.expect()) {
                 case DAMAGE -> check(helper, hurt(husk), c.weapon() + " (" + c.type() + ") has not hurt the target");
-                case SPAWN -> check(helper, spawned(helper, shooter, c.type()),
-                        c.weapon() + " (" + c.type() + ") has not launched its projectile");
+                case SPAWN -> {
+                    check(helper, spawned(helper, shooter, c.type()),
+                            c.weapon() + " (" + c.type() + ") has not launched its projectile");
+                    release.run();
+                }
                 case FIRE_ONLY -> check(helper, helper.getTick() > 20, "fired for a second without failing");
             }
         });
+    }
+
+    /**
+     * The A-10 appears 90 blocks from the strike point, on a random side; the test level may not
+     * have those chunks loaded, and an entity added to an unloaded chunk is dropped. Keeps the four
+     * candidate chunks (and their neighbours) loaded until the A-10 is seen; the returned action
+     * releases them.
+     */
+    private static Runnable forceA10Chunks(GameTestHelper helper, Vec3 target) {
+        var level = helper.getLevel();
+        List<long[]> forced = new ArrayList<>();
+        for (int[] d : new int[][] {{0, -90}, {90, 0}, {0, 90}, {-90, 0}}) {
+            int cx = Mth.floor(target.x + d[0]) >> 4;
+            int cz = Mth.floor(target.z + d[1]) >> 4;
+            for (int dx = -1; dx <= 1; dx++) {
+                for (int dz = -1; dz <= 1; dz++) {
+                    if (level.setChunkForced(cx + dx, cz + dz, true)) {
+                        forced.add(new long[] {cx + dx, cz + dz});
+                    }
+                }
+            }
+        }
+        return () -> forced.forEach(c -> level.setChunkForced((int) c[0], (int) c[1], false));
     }
 
     private static boolean spawned(GameTestHelper helper, Player shooter, String type) {
