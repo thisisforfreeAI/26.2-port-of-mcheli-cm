@@ -102,6 +102,13 @@ neoForge {
     }
 }
 
+// Pass the terminal through to the dev server so console commands such as "stop" work from
+// ./gradlew runServer. A script that pipes in "stop" must wait for the server's "Done" line:
+// vanilla builds the console command source before the world exists, so earlier input fails.
+tasks.withType(JavaExec).named { it == 'runServer' }.configureEach {
+    standardInput = System.in
+}
+
 // Sets up a dependency configuration called 'localRuntime'.
 // This configuration should be used instead of 'runtimeOnly' to declare
 // a dependency that will be present for runtime testing but that is
@@ -166,7 +173,7 @@ publishing {
     }
     repositories {
         maven {
-            url "file://${project.projectDir}/repo"
+            url = "file://${project.projectDir}/repo"
         }
     }
 }
