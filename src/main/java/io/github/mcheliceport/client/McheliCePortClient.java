@@ -3,6 +3,8 @@ package io.github.mcheliceport.client;
 import io.github.mcheliceport.McheliCePort;
 import io.github.mcheliceport.config.ClientConfig;
 import io.github.mcheliceport.client.gui.AircraftScreen;
+import io.github.mcheliceport.client.hud.AircraftHudLayer;
+import io.github.mcheliceport.client.hud.GuiHudCanvas;
 import io.github.mcheliceport.client.input.ModKeyMappings;
 import io.github.mcheliceport.client.model.AircraftModels;
 import io.github.mcheliceport.client.render.HeliRenderer;
@@ -35,9 +37,15 @@ public final class McheliCePortClient {
         modBus.addListener(ModKeyMappings::register);
         modBus.addListener(McheliCePortClient::registerScreens);
         modBus.addListener(RiderTilt::registerModifiers);
-        modBus.addListener((AddClientReloadListenersEvent event) -> event.addListener(
-                Identifier.fromNamespaceAndPath(McheliCePort.MOD_ID, "aircraft_models"),
-                new AircraftModels.ReloadListener()));
+        modBus.addListener(AircraftHudLayer::register);
+        modBus.addListener(AircraftHudLayer::registerPipelines);
+        modBus.addListener((AddClientReloadListenersEvent event) -> {
+            event.addListener(Identifier.fromNamespaceAndPath(McheliCePort.MOD_ID, "aircraft_models"),
+                    new AircraftModels.ReloadListener());
+            event.addListener(Identifier.fromNamespaceAndPath(McheliCePort.MOD_ID, "hud_textures"),
+                    (net.minecraft.server.packs.resources.ResourceManagerReloadListener) manager ->
+                            GuiHudCanvas.clearTextureSizes());
+        });
         AircraftClientEvents.register();
     }
 

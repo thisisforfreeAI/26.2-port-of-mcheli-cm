@@ -1,5 +1,6 @@
 package io.github.mcheliceport.client;
 
+import io.github.mcheliceport.client.hud.AircraftHudLayer;
 import io.github.mcheliceport.client.input.HeliClientControl;
 import io.github.mcheliceport.client.input.MouseFlight;
 import io.github.mcheliceport.client.model.AircraftModels;
@@ -46,6 +47,7 @@ public final class AircraftClientEvents {
         NeoForge.EVENT_BUS.addListener((RenderFrameEvent.Pre event) -> MouseFlight.onFrameWithoutTurn());
         NeoForge.EVENT_BUS.addListener(AircraftClientEvents::onCameraAngles);
         NeoForge.EVENT_BUS.addListener(AircraftClientEvents::onRenderHand);
+        NeoForge.EVENT_BUS.addListener(AircraftHudLayer::onRenderLayer);
         NeoForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.LoggingOut event) -> {
             ServerSettings.setClient(ServerSettings.Values.DEFAULT);
             MouseFlight.reset();

@@ -94,7 +94,7 @@ final class RidingGameTests {
             HeliControlPayload unmount = new HeliControlPayload(heli.getId(),
                     HeliControlPayload.UnmountAction.UNMOUNT_SELF, HeliControlPayload.ModeSwitch.NONE,
                     HeliControlPayload.HatchSwitch.NONE, HeliControlPayload.GearSwitch.NONE,
-                    PlayerControlSwitches.NONE, (byte) 0, HeliControlPayload.BladeStatus.NONE);
+                    PlayerControlSwitches.NONE, (byte) 0, HeliControlPayload.BladeStatus.NONE, (byte) 0);
             ModNetwork.applyHeliControl(heli, gunner, unmount);
             check(helper, gunner.getVehicle() == null, "the gunner's unmount key lets the gunner out (port fix)");
             check(helper, heli.getPilot() == pilot, "and leaves the pilot aboard");

@@ -31,7 +31,7 @@ class HudExpressionTest {
     private static final AviatorEvaluatorInstance AVIATOR = AviatorEvaluator.newInstance();
 
     /** Upstream's HUD variables with the Java types {@code MCH_HudItem#updateVarMap} gave them. */
-    private static final Map<String, Function<Random, Object>> VARIABLES = new LinkedHashMap<>();
+    static final Map<String, Function<Random, Object>> VARIABLES = new LinkedHashMap<>();
 
     static {
         double[] edges = {0.0, 1.0, -1.0, 0.5, 2.0, 10.0, 0.01, 0.2, 0.1, 0.7, 13000, 90, -90, 180, -180};

@@ -171,6 +171,9 @@ public final class ModNetwork {
         if (p.switches().switchGunnerStatus()) {
             heli.setGunnerStatus(!heli.getGunnerStatus());
         }
+        if (p.switchCameraMode() > 0 && heli.canSwitchCameraMode(heli.getSeatIdByEntity(player))) {
+            heli.switchCameraMode(player, p.switchCameraMode() - 1);
+        }
     }
 
     static void handleAttitude(AircraftAttitudePayload p, IPayloadContext context) {
