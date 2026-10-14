@@ -3,6 +3,8 @@ package io.github.mcheliceport;
 import com.mojang.logging.LogUtils;
 import io.github.mcheliceport.config.CommonConfig;
 import io.github.mcheliceport.config.ServerConfig;
+import io.github.mcheliceport.item.AircraftDispenseBehavior;
+import io.github.mcheliceport.net.ModNetwork;
 import io.github.mcheliceport.registry.ModRegistries;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
@@ -31,9 +33,11 @@ public final class McheliCePort {
         container.registerConfig(ModConfig.Type.SERVER, ServerConfig.SPEC);
 
         modBus.addListener(this::commonSetup);
+        ModNetwork.register(modBus);
     }
 
     private void commonSetup(FMLCommonSetupEvent event) {
+        event.enqueueWork(AircraftDispenseBehavior::register);
         if (CommonConfig.DEBUG_LOG.getAsBoolean()) {
             ModRegistries.logSummary();
         }
