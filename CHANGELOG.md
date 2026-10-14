@@ -45,6 +45,9 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
   upstream's night-vision shader as a vanilla post effect, and the green noise overlay.
 - **Third-person distance**: the content's `ThirdPersonDist` while riding; Page Up and Page Down
   change it in steps of 4 when the server allows it (SERVER `camera.enableCamDistChange`, synced).
+- **Pilot's eye**: in first person the pilot's eye moves with the helicopter's attitude, as
+  upstream's camera setup does, so the view stays put in the cockpit when the nose goes down;
+  while hovering or in free look it leans with the camera roll only, as upstream.
 - Config: CLIENT `render.*`, `hud.*` and `debug.testMode`; SERVER `camera.enableCamDistChange`.
   Keys: camera mode (C), camera distance up and down (Page Up, Page Down).
 - Tests:

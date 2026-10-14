@@ -9,6 +9,7 @@ import io.github.mcheliceport.entity.aircraft.AircraftCamera;
 import io.github.mcheliceport.entity.aircraft.AircraftEntity;
 import io.github.mcheliceport.entity.heli.HeliEntity;
 import io.github.mcheliceport.util.McheliMath;
+import net.minecraft.client.Camera;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
@@ -25,6 +26,9 @@ import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.client.event.CalculateDetachedCameraDistanceEvent;
 import net.neoforged.neoforge.client.event.RenderNameTagEvent;
 import net.neoforged.neoforge.client.event.ViewportEvent;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
+import org.joml.Vector3fc;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -52,6 +56,7 @@ public final class AircraftCameraClient {
     private static @Nullable ViewMarker viewEntity;
     private static boolean wasRiding;
     private static float thirdPersonDistance = DEFAULT_THIRD_PERSON_DISTANCE;
+    private static @Nullable Vec3 lastCockpitEye;
 
     private AircraftCameraClient() {
     }
@@ -224,13 +229,61 @@ public final class AircraftCameraClient {
         event.setPitch(player.getViewXRot(partial));
     }
 
-    /** Upstream {@code onFOVModifierEvent}: the camera view narrows by the zoom. */
+    /**
+     * Upstream {@code onFOVModifierEvent}: the camera view narrows by the zoom. Also places the
+     * pilot's eye, since this is the first event after vanilla has positioned the camera.
+     */
     public static void onComputeFov(ViewportEvent.ComputeFov event) {
+        placeCockpitEye(event.getCamera(), (float) event.getPartialTick());
         Entity view = viewEntity();
         AircraftEntity aircraft = AircraftClientEvents.riddenAircraft(Minecraft.getInstance().player);
         if (view != null && aircraft != null && event.getCamera().entity() == view) {
             event.setFOV(event.getFOV() / aircraft.camera.getCameraZoom());
         }
+    }
+
+    /**
+     * Upstream {@code onCameraSetupEvent} turns the pilot's first-person view about a point one eye
+     * height below the eye, so the eye moves with the vehicle: with the vehicle's attitude while
+     * that drives the view, else with the camera roll alone (hovering, free look). Vanilla puts the
+     * eye straight above the rider, so without this the view slides back in the cockpit as the nose
+     * goes down. Runs at most once per frame, as the FOV event fires twice.
+     */
+    static void placeCockpitEye(Camera camera, float partialTick) {
+        Minecraft mc = Minecraft.getInstance();
+        LocalPlayer player = mc.player;
+        if (player == null || camera.entity() != player || camera.isDetached()
+                || camera.position().equals(lastCockpitEye)) {
+            return;
+        }
+        AircraftEntity aircraft = AircraftClientEvents.riddenAircraft(player);
+        if (aircraft == null || !aircraft.isPilot(player)) {
+            return;
+        }
+        Vec3 feet = player.getPosition(partialTick);
+        double eyeHeight = camera.position().y - feet.y;
+        float[] ypr = McheliMath.slerpOrientationYPR(aircraft.yRotO, aircraft.xRotO, aircraft.prevRoll,
+                aircraft.getYaw(), aircraft.getPitch(), aircraft.getRoll(), partialTick);
+        Vec3 eye = feet.add(cockpitEyeOffset(aircraft.isOverridePlayerPitch(), ypr, camera.yRot(), camera.xRot(),
+                camera.upVector(), eyeHeight));
+        camera.setPosition(eye);
+        lastCockpitEye = eye;
+    }
+
+    /**
+     * Where the pilot's eye sits above the rider's position. With {@code bodyLocked} the eye height
+     * turns with the vehicle's attitude {@code ypr}; otherwise it leans with the camera's roll, the
+     * difference between the camera's up vector and its up vector without roll.
+     */
+    static Vec3 cockpitEyeOffset(boolean bodyLocked, float[] ypr, float cameraYRot, float cameraXRot,
+            Vector3fc cameraUp, double eyeHeight) {
+        if (bodyLocked) {
+            return McheliMath.rotVec3(0.0, eyeHeight, 0.0, -ypr[0], -ypr[1], -ypr[2]);
+        }
+        Vector3f unrolledUp = new Vector3f(0.0F, 1.0F, 0.0F).rotate(new Quaternionf().rotationYXZ(
+                (float) Math.PI - cameraYRot * Mth.DEG_TO_RAD, -cameraXRot * Mth.DEG_TO_RAD, 0.0F));
+        return new Vec3(eyeHeight * (cameraUp.x() - unrolledUp.x),
+                eyeHeight * (1.0 + cameraUp.y() - unrolledUp.y), eyeHeight * (cameraUp.z() - unrolledUp.z));
     }
 
     /** Upstream's {@code CameraSetup} translation: third person sits at the vehicle's distance. */

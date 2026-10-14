@@ -219,6 +219,12 @@ What changed from this plan while implementing it:
   float rotations lose precision near half turns.
 - The view entity is a `Marker` that keeps the rider's eye height and sits that far below the
   camera, so vanilla's eye-height smoothing does not slide the view when it switches.
+- The pilot's first-person eye is placed as upstream's `onCameraSetupEvent` puts it (turned with
+  the vehicle's attitude, or with the camera roll while hovering or in free look). It was missed
+  at first and reported by the user (the view slid back in the cockpit in forward flight). There
+  is no camera-position event in NeoForge 26.2, so an access transformer opens
+  `Camera#setPosition` and the eye is placed from the FOV event, the first one after vanilla
+  positions the camera.
 - Crew gunner mode (upstream's `gunnerModeOtherSeat`) and the camera-mode key for crew seat 1 were
   needed for `heli_gnr` and the key hints, so they came with M4. Destroying a helicopter puts its
   crew's cameras back to normal, as upstream.
