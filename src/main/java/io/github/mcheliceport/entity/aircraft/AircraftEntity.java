@@ -14,6 +14,8 @@ import io.github.mcheliceport.menu.AircraftMenu;
 import io.github.mcheliceport.registry.ModEntityTypes;
 import io.github.mcheliceport.registry.ModItems;
 import io.github.mcheliceport.util.McheliMath;
+import io.github.mcheliceport.weapon.DamageScaling;
+import io.github.mcheliceport.weapon.explosion.McheliExplosion;
 import io.github.mcheliceport.util.McheliSounds;
 import java.util.ArrayList;
 import java.util.List;
@@ -2100,7 +2102,9 @@ public abstract class AircraftEntity extends Entity
         this.lastHitBoxFactor = 1.0F;
         float damage = 0.0F;
         if (this.canBeAttackedBy(attacker) && this.info != null) {
-            AircraftDamage.Result result = AircraftDamage.calculate(kind, originalDamage, factor,
+            // Upstream calculateDamage: the config's ...ByExternal factors first.
+            float external = DamageScaling.applyDamageByExternal(this, source, originalDamage);
+            AircraftDamage.Result result = AircraftDamage.calculate(kind, external, factor,
                     new AircraftDamage.Armor(this.info.armorMinDamage, this.info.armorMaxDamage,
                             this.info.armorDamageFactor, this.info.invulnerable),
                     this.random, this.timeSinceHit);
@@ -2145,8 +2149,8 @@ public abstract class AircraftEntity extends Entity
                         this.explosionByCrash(0.0);
                         this.damageSinceDestroyed = this.getMaxHP();
                     } else {
-                        level.explode(attacker, this.getX(), this.getY(), this.getZ(), 2.0F, true,
-                                Level.ExplosionInteraction.TNT);
+                        McheliExplosion.newExplosion(level, null, attacker, this.getX(), this.getY(), this.getZ(),
+                                2.0F, 2.0F, true, true, true, 5);
                     }
                 } else {
                     this.removeByPlayer((Player) attacker);
@@ -2233,11 +2237,67 @@ public abstract class AircraftEntity extends Entity
         return true;
     }
 
+    /**
+     * Upstream {@code onUpdate_ParticleSandCloud}: the dust (or, with {@code seaOnly}, sea spray)
+     * a vehicle's downwash raises from the ground below it. Client only.
+     */
+    protected void onUpdateParticleSandCloud(boolean seaOnly) {
+        if (!this.level().isClientSide() || this.info == null || seaOnly && !this.info.enableSeaSurfaceParticle) {
+            return;
+        }
+        double particlePosY = (int) this.getY();
+        boolean found = false;
+        float scale = this.info.particlesScale * 3.0F;
+        if (seaOnly) {
+            scale *= 2.0F;
+        }
+        double throttle = Math.min(this.getCurrentThrottle() * 2.0, 1.0);
+        int count = seaOnly ? (int) (scale * 7.0F) : 0;
+        int rangeY = (int) (scale * 10.0F) + 1;
+        int y;
+        for (y = 0; y < rangeY && !found; y++) {
+            for (int x = -1; x <= 1; x++) {
+                for (int z = -1; z <= 1; z++) {
+                    net.minecraft.world.level.block.state.BlockState state = this.level().getBlockState(new net.minecraft.core.BlockPos(
+                            (int) (this.getX() + 0.5) + x, (int) (this.getY() + 0.5) - y, (int) (this.getZ() + 0.5) + z));
+                    if (!found && !state.isAir()) {
+                        if (seaOnly && state.is(net.minecraft.world.level.block.Blocks.WATER)) {
+                            count--;
+                        }
+                        if (count <= 0) {
+                            particlePosY = this.getY() + 1.0 + scale / 5.0F - y;
+                            found = true;
+                            x += 100;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        double pn = (rangeY - y + 1) / (5.0 * scale) / 2.0;
+        if (found && this.info.particlesScale > 0.01F) {
+            for (int k = 0; k < (int) (throttle * 6.0 * pn); k++) {
+                float r = (float) (this.random.nextDouble() * Math.PI * 2.0);
+                double dx = Mth.cos(r);
+                double dz = Mth.sin(r);
+                io.github.mcheliceport.effect.ParticleParam prm = new io.github.mcheliceport.effect.ParticleParam(
+                        "smoke", this.getX() + dx * scale * 3.0,
+                        particlePosY + (this.random.nextDouble() - 0.5) * scale, this.getZ() + dz * scale * 3.0,
+                        scale * (dx * 0.3), scale * -0.4 * 0.05, scale * (dz * 0.3), scale * 5.0F);
+                prm.setColor(prm.a * 0.6F, prm.r, prm.g, prm.b);
+                prm.age = (int) (10.0F * scale);
+                prm.motionYUpAge = seaOnly ? 0.2F : 0.1F;
+                io.github.mcheliceport.effect.McheliEffects.spawnParticle(this.level(), prm);
+            }
+        }
+    }
+
     /** Upstream {@code explosionByCrash}: power from the tank size, 1 to 15. */
     public void explosionByCrash(double prevMotionY) {
         float exp = this.info != null ? this.info.maxFuel / 400.0F : 2.0F;
         exp = Mth.clamp(exp, 1.0F, 15.0F);
-        this.level().explode(null, this.getX(), this.getY(), this.getZ(), exp, true, Level.ExplosionInteraction.TNT);
+        McheliExplosion.newExplosion(this.level(), null, null, this.getX(), this.getY(), this.getZ(), exp,
+                exp >= 2.0F ? exp * 0.5F : 1.0F, true, true, true, 5);
     }
 
     /** Upstream {@code onUpdate_CollisionGroundDamage}. */

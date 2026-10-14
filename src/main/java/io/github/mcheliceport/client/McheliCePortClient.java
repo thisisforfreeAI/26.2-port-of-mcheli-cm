@@ -7,6 +7,8 @@ import io.github.mcheliceport.client.hud.AircraftHudLayer;
 import io.github.mcheliceport.client.hud.GuiHudCanvas;
 import io.github.mcheliceport.client.input.ModKeyMappings;
 import io.github.mcheliceport.client.model.AircraftModels;
+import io.github.mcheliceport.client.particle.ClientEffects;
+import io.github.mcheliceport.effect.McheliEffects;
 import io.github.mcheliceport.client.render.HeliRenderer;
 import io.github.mcheliceport.client.render.RiderTilt;
 import io.github.mcheliceport.registry.ModEntityTypes;
@@ -47,6 +49,7 @@ public final class McheliCePortClient {
                             GuiHudCanvas.clearTextureSizes());
         });
         AircraftClientEvents.register();
+        McheliEffects.setSink(ClientEffects.INSTANCE);
     }
 
     private static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {

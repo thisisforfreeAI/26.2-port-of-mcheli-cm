@@ -1,0 +1,12 @@
+{
+  "sources": [
+    {
+      "type": "minecraft:single",
+      "resource": "mcheli:particles/smoke"
+    },
+    {
+      "type": "minecraft:single",
+      "resource": "mcheli:flash"
+    }
+  ]
+}

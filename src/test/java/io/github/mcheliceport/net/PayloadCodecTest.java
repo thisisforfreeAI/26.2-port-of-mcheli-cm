@@ -43,6 +43,16 @@ class PayloadCodecTest {
     }
 
     @Test
+    void explosionEffectRoundTrips() {
+        java.util.List<net.minecraft.core.BlockPos> blocks = java.util.List.of(new net.minecraft.core.BlockPos(10, 64, -3),
+                new net.minecraft.core.BlockPos(-120, -60, 300), new net.minecraft.core.BlockPos(5, 70, 0));
+        ExplosionEffectPayload p = new ExplosionEffectPayload(4.5, 66.2, -1.25, 3.5F, true, blocks);
+        assertEquals(p, roundTrip(ExplosionEffectPayload.CODEC, p));
+        ExplosionEffectPayload empty = new ExplosionEffectPayload(0, 0, 0, 0, false, java.util.List.of());
+        assertEquals(empty, roundTrip(ExplosionEffectPayload.CODEC, empty));
+    }
+
+    @Test
     void unknownEnumValuesReadAsNone() {
         RegistryFriendlyByteBuf buf = new RegistryFriendlyByteBuf(Unpooled.buffer(), RegistryAccess.EMPTY);
         buf.writeVarInt(1);

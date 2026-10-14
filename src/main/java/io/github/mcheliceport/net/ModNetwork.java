@@ -3,6 +3,7 @@ package io.github.mcheliceport.net;
 import com.mojang.logging.LogUtils;
 import io.github.mcheliceport.config.ServerConfig;
 import io.github.mcheliceport.config.ServerSettings;
+import io.github.mcheliceport.effect.McheliEffects;
 import io.github.mcheliceport.entity.aircraft.AircraftEntity;
 import io.github.mcheliceport.entity.heli.HeliEntity;
 import io.github.mcheliceport.entity.seat.SeatEntity;
@@ -54,6 +55,9 @@ public final class ModNetwork {
                 ModNetwork::handleStatusRequest);
         registrar.playToClient(AircraftStatusResponsePayload.TYPE, AircraftStatusResponsePayload.CODEC,
                 ModNetwork::handleStatusResponse);
+        registrar.playToClient(ExplosionEffectPayload.TYPE, ExplosionEffectPayload.CODEC,
+                (p, context) -> McheliEffects.explosionEffects(context.player().level(), p.x(), p.y(), p.z(),
+                        p.size(), p.inWater(), p.affectedBlocks()));
         registrar.playToClient(ServerSettingsPayload.TYPE, ServerSettingsPayload.CODEC,
                 (payload, context) -> ServerSettings.setClient(payload.toValues()));
     }
