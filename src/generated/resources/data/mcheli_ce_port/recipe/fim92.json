@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "G": "#c:glass_blocks",
+    "I": "#c:ingots/iron",
+    "R": "#c:dusts/redstone"
+  },
+  "pattern": [
+    "G  ",
+    "III",
+    "RI "
+  ],
+  "result": {
+    "id": "mcheli_ce_port:fim92"
+  }
+}

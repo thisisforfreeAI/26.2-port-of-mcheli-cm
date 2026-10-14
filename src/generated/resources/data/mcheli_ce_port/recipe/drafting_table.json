@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "key": {
+    "C": "#c:player_workstations/crafting_tables",
+    "F": "#c:fences/wooden",
+    "P": "#minecraft:planks",
+    "R": "#c:dusts/redstone"
+  },
+  "pattern": [
+    "R  ",
+    "PCP",
+    "F F"
+  ],
+  "result": {
+    "id": "mcheli_ce_port:drafting_table"
+  }
+}

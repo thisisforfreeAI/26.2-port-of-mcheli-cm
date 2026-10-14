@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "mcheli_ce_port:item/uav_pairing_device"
+  }
+}

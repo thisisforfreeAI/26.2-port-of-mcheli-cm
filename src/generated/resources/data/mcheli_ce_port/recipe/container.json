@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "key": {
+    "C": "minecraft:chest",
+    "I": "#c:ingots/iron"
+  },
+  "pattern": [
+    "CCI"
+  ],
+  "result": {
+    "id": "mcheli_ce_port:container"
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "variants": {
+    "direction8=east": {
+      "model": "mcheli_ce_port:block/drafting_table",
+      "y": 270
+    },
+    "direction8=north": {
+      "model": "mcheli_ce_port:block/drafting_table",
+      "y": 180
+    },
+    "direction8=northeast": {
+      "model": "mcheli_ce_port:block/drafting_table",
+      "y": 180
+    },
+    "direction8=northwest": {
+      "model": "mcheli_ce_port:block/drafting_table",
+      "y": 90
+    },
+    "direction8=south": {
+      "model": "mcheli_ce_port:block/drafting_table"
+    },
+    "direction8=southeast": {
+      "model": "mcheli_ce_port:block/drafting_table",
+      "y": 270
+    },
+    "direction8=southwest": {
+      "model": "mcheli_ce_port:block/drafting_table"
+    },
+    "direction8=west": {
+      "model": "mcheli_ce_port:block/drafting_table",
+      "y": 90
+    }
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "key": {
+    "I": "#c:ingots/iron"
+  },
+  "pattern": [
+    "I I",
+    "III",
+    "I I"
+  ],
+  "result": {
+    "id": "mcheli_ce_port:chain"
+  }
+}

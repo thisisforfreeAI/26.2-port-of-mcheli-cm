@@ -1,0 +1,16 @@
+{
+  "block.mcheli_ce_port.drafting_table": "製図台",
+  "block.mcheli_ce_port.lit_drafting_table": "製図台",
+  "block.mcheli_ce_port.wingman_marker": "マーカーブロック",
+  "item.mcheli_ce_port.chain": "鎖",
+  "item.mcheli_ce_port.container": "コンテナ",
+  "item.mcheli_ce_port.fuel": "燃料",
+  "item.mcheli_ce_port.gltd": "GLTD:レーザー目標指示装置",
+  "item.mcheli_ce_port.parachute": "パラシュート",
+  "item.mcheli_ce_port.rangefinder": "レーザー レンジ ファインダー",
+  "item.mcheli_ce_port.spawn_gunner_vs_monster": "対モンスター 射撃手",
+  "item.mcheli_ce_port.spawn_gunner_vs_player": "対他チームプレイヤー 射撃手",
+  "item.mcheli_ce_port.uav_station": "UAVステーション",
+  "item.mcheli_ce_port.uav_station2": "携帯UAV制御端末",
+  "item.mcheli_ce_port.wrench": "レンチ"
+}

@@ -1,0 +1,358 @@
+{
+  "parent": "minecraft:block/block",
+  "elements": [
+    {
+      "faces": {
+        "down": {
+          "texture": "#board",
+          "uv": [
+            8.5,
+            0.2,
+            9.0,
+            5.3
+          ]
+        },
+        "east": {
+          "texture": "#board",
+          "uv": [
+            8.5,
+            0.2,
+            9.0,
+            5.3
+          ]
+        },
+        "north": {
+          "texture": "#board",
+          "uv": [
+            8.5,
+            0.2,
+            9.0,
+            5.3
+          ]
+        },
+        "south": {
+          "texture": "#board",
+          "uv": [
+            8.5,
+            0.2,
+            9.0,
+            5.3
+          ]
+        },
+        "up": {
+          "texture": "#board",
+          "uv": [
+            8.5,
+            0.2,
+            9.0,
+            5.3
+          ]
+        },
+        "west": {
+          "texture": "#board",
+          "uv": [
+            8.5,
+            0.2,
+            9.0,
+            5.3
+          ]
+        }
+      },
+      "from": [
+        1,
+        0,
+        2
+      ],
+      "to": [
+        2,
+        9,
+        3
+      ]
+    },
+    {
+      "faces": {
+        "down": {
+          "texture": "#board",
+          "uv": [
+            8.5,
+            0.2,
+            9.0,
+            5.3
+          ]
+        },
+        "east": {
+          "texture": "#board",
+          "uv": [
+            8.5,
+            0.2,
+            9.0,
+            5.3
+          ]
+        },
+        "north": {
+          "texture": "#board",
+          "uv": [
+            8.5,
+            0.2,
+            9.0,
+            5.3
+          ]
+        },
+        "south": {
+          "texture": "#board",
+          "uv": [
+            8.5,
+            0.2,
+            9.0,
+            5.3
+          ]
+        },
+        "up": {
+          "texture": "#board",
+          "uv": [
+            8.5,
+            0.2,
+            9.0,
+            5.3
+          ]
+        },
+        "west": {
+          "texture": "#board",
+          "uv": [
+            8.5,
+            0.2,
+            9.0,
+            5.3
+          ]
+        }
+      },
+      "from": [
+        14,
+        0,
+        2
+      ],
+      "to": [
+        15,
+        9,
+        3
+      ]
+    },
+    {
+      "faces": {
+        "down": {
+          "texture": "#board",
+          "uv": [
+            8.5,
+            0.2,
+            9.0,
+            5.3
+          ]
+        },
+        "east": {
+          "texture": "#board",
+          "uv": [
+            8.5,
+            0.2,
+            9.0,
+            5.3
+          ]
+        },
+        "north": {
+          "texture": "#board",
+          "uv": [
+            8.5,
+            0.2,
+            9.0,
+            5.3
+          ]
+        },
+        "south": {
+          "texture": "#board",
+          "uv": [
+            8.5,
+            0.2,
+            9.0,
+            5.3
+          ]
+        },
+        "up": {
+          "texture": "#board",
+          "uv": [
+            8.5,
+            0.2,
+            9.0,
+            5.3
+          ]
+        },
+        "west": {
+          "texture": "#board",
+          "uv": [
+            8.5,
+            0.2,
+            9.0,
+            5.3
+          ]
+        }
+      },
+      "from": [
+        1,
+        0,
+        13
+      ],
+      "to": [
+        2,
+        9,
+        14
+      ]
+    },
+    {
+      "faces": {
+        "down": {
+          "texture": "#board",
+          "uv": [
+            8.5,
+            0.2,
+            9.0,
+            5.3
+          ]
+        },
+        "east": {
+          "texture": "#board",
+          "uv": [
+            8.5,
+            0.2,
+            9.0,
+            5.3
+          ]
+        },
+        "north": {
+          "texture": "#board",
+          "uv": [
+            8.5,
+            0.2,
+            9.0,
+            5.3
+          ]
+        },
+        "south": {
+          "texture": "#board",
+          "uv": [
+            8.5,
+            0.2,
+            9.0,
+            5.3
+          ]
+        },
+        "up": {
+          "texture": "#board",
+          "uv": [
+            8.5,
+            0.2,
+            9.0,
+            5.3
+          ]
+        },
+        "west": {
+          "texture": "#board",
+          "uv": [
+            8.5,
+            0.2,
+            9.0,
+            5.3
+          ]
+        }
+      },
+      "from": [
+        14,
+        0,
+        13
+      ],
+      "to": [
+        15,
+        9,
+        14
+      ]
+    },
+    {
+      "faces": {
+        "down": {
+          "texture": "#board",
+          "uv": [
+            1.2,
+            0.4,
+            8.1,
+            5.3
+          ]
+        },
+        "east": {
+          "texture": "#board",
+          "uv": [
+            1.2,
+            0.4,
+            8.1,
+            5.3
+          ]
+        },
+        "north": {
+          "texture": "#board",
+          "uv": [
+            1.2,
+            0.4,
+            8.1,
+            5.3
+          ]
+        },
+        "south": {
+          "texture": "#board",
+          "uv": [
+            1.2,
+            0.4,
+            8.1,
+            5.3
+          ]
+        },
+        "up": {
+          "texture": "#board",
+          "uv": [
+            0.7,
+            9.95,
+            11.0,
+            15.5
+          ]
+        },
+        "west": {
+          "texture": "#board",
+          "uv": [
+            1.2,
+            0.4,
+            8.1,
+            5.3
+          ]
+        }
+      },
+      "from": [
+        0,
+        9,
+        1
+      ],
+      "rotation": {
+        "angle": -22.5,
+        "axis": "x",
+        "origin": [
+          8,
+          9.5,
+          8
+        ]
+      },
+      "to": [
+        16,
+        10,
+        15
+      ]
+    }
+  ],
+  "textures": {
+    "board": "mcheli:blocks/drafting_table",
+    "particle": "mcheli:blocks/drafting_table"
+  }
+}
