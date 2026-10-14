@@ -116,7 +116,7 @@ public class AircraftMenu extends AbstractContainerMenu {
     }
 
     public int getPlayerInventoryY() {
-        return 18 + this.getTrunkRows() * 18 + 14;
+        return 18 + this.getTrunkRows() * 18 + 13;
     }
 
     @Override

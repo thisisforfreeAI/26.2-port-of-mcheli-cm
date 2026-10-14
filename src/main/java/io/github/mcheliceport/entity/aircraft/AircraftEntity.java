@@ -172,6 +172,27 @@ public abstract class AircraftEntity extends Entity
     public float thirdPersonDist = 4.0F;
     private boolean switchSeat;
 
+    /**
+     * What the client side does for vehicles: set by the client entry point, null on a dedicated
+     * server. Keeps client classes out of the entity.
+     */
+    public interface ClientHooks {
+        /** The local player turned the mouse while riding {@code aircraft} directly. */
+        void onPassengerTurned(AircraftEntity aircraft, Entity passenger);
+
+        void sendToServer(net.minecraft.network.protocol.common.custom.CustomPacketPayload payload);
+    }
+
+    private static volatile @Nullable ClientHooks clientHooks;
+
+    public static void setClientHooks(@Nullable ClientHooks hooks) {
+        clientHooks = hooks;
+    }
+
+    protected static @Nullable ClientHooks clientHooks() {
+        return clientHooks;
+    }
+
     protected AircraftEntity(EntityType<? extends AircraftEntity> type, Level level) {
         super(type, level);
         this.currentSpeed = 0.07;
@@ -552,6 +573,12 @@ public abstract class AircraftEntity extends Entity
         boolean quaternion = this.info != null && CommonConfig.EXPERIMENTAL_QUATERNION_ROTATION.get();
         AircraftAttitude.apply(this, d[0], d[1], d[2], deltaSeconds, quaternion, this.getAttitudeLimits(),
                 this::onUpdateAngles);
+        // Upstream: the pilot's client turns the vehicle every frame, so nothing is interpolated.
+        this.prevRoll = this.getRoll();
+        this.xRotO = this.getXRot();
+        if (this.getVehicle() == null) {
+            this.yRotO = this.getYRot();
+        }
         if (this.getVehicle() == null && prevYaw != this.getYaw() || prevPitch != this.getPitch()
                 || prevRoll != this.getRoll()) {
             this.rotationChanged = true;
@@ -1215,6 +1242,14 @@ public abstract class AircraftEntity extends Entity
     }
 
     @Override
+    public void onPassengerTurned(Entity passenger) {
+        ClientHooks hooks = clientHooks;
+        if (hooks != null && this.level().isClientSide()) {
+            hooks.onPassengerTurned(this, passenger);
+        }
+    }
+
+    @Override
     public boolean isFlyingVehicle() {
         return true;
     }
@@ -1408,6 +1443,28 @@ public abstract class AircraftEntity extends Entity
         this.updateHitBoxPosition();
         this.onUpdateCollisionGroundDamage();
         this.lastPilot = this.getPilot();
+        if (this.isPilotLocalClient()) {
+            this.sendPilotState();
+        }
+    }
+
+    /** The pilot's client sends its attitude when it changed, and its motion while it moves the vehicle. */
+    private void sendPilotState() {
+        ClientHooks hooks = clientHooks;
+        if (hooks == null) {
+            return;
+        }
+        if (this.rotationChanged) {
+            this.rotationChanged = false;
+            hooks.sendToServer(new io.github.mcheliceport.net.AircraftAttitudePayload(this.getId(), this.getYaw(),
+                    this.getPitch(), this.getRoll(), this.rollReversed));
+            this.rollReversed = false;
+        }
+        if (this.simulates()) {
+            Vec3 motion = this.getDeltaMovement();
+            hooks.sendToServer(new io.github.mcheliceport.net.AircraftMotionPayload(this.getId(), motion.x, motion.y,
+                    motion.z, (float) this.getCurrentThrottle()));
+        }
     }
 
     /**

@@ -7,6 +7,7 @@ import io.github.mcheliceport.content.ContentType;
 import io.github.mcheliceport.content.aircraft.AircraftInfo;
 import io.github.mcheliceport.content.aircraft.HeliInfo;
 import io.github.mcheliceport.entity.aircraft.AircraftEntity;
+import io.github.mcheliceport.net.AircraftStatusRequestPayload;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -43,8 +44,6 @@ public class HeliEntity extends AircraftEntity implements HeliFlightModel.Body {
     private int lastFoldBladeStat = -1;
     private float prevRollFactor;
     private boolean requestedSyncStatus;
-    /** Client: the status request of the first tick is waiting to be sent. */
-    public boolean statusRequestPending;
 
     public HeliEntity(EntityType<? extends HeliEntity> type, Level level) {
         super(type, level);
@@ -141,7 +140,7 @@ public class HeliEntity extends AircraftEntity implements HeliFlightModel.Body {
         return true;
     }
 
-    protected void foldBlades() {
+    public void foldBlades() {
         if (this.heliInfo != null && this.rotors.length > 0) {
             this.setCurrentThrottle(0.0);
             for (HeliRotor r : this.rotors) {
@@ -263,7 +262,10 @@ public class HeliEntity extends AircraftEntity implements HeliFlightModel.Body {
                 if (stat == BLADES_FOLDING || stat == BLADES_FOLDED) {
                     this.forceFoldBlade();
                 }
-                this.statusRequestPending = true;
+                ClientHooks hooks = clientHooks();
+                if (hooks != null) {
+                    hooks.sendToServer(new AircraftStatusRequestPayload(this.getId()));
+                }
             }
         }
 
