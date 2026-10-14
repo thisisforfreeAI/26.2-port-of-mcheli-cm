@@ -4,6 +4,7 @@ import com.mojang.logging.LogUtils;
 import io.github.mcheliceport.config.CommonConfig;
 import io.github.mcheliceport.config.ServerConfig;
 import io.github.mcheliceport.item.AircraftDispenseBehavior;
+import io.github.mcheliceport.item.ThrowableDispenseBehavior;
 import io.github.mcheliceport.gametest.ModGameTests;
 import io.github.mcheliceport.net.ModNetwork;
 import io.github.mcheliceport.registry.ModRegistries;
@@ -40,6 +41,7 @@ public final class McheliCePort {
 
     private void commonSetup(FMLCommonSetupEvent event) {
         event.enqueueWork(AircraftDispenseBehavior::register);
+        event.enqueueWork(ThrowableDispenseBehavior::register);
         if (CommonConfig.DEBUG_LOG.getAsBoolean()) {
             ModRegistries.logSummary();
         }

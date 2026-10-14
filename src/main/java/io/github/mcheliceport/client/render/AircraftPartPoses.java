@@ -14,9 +14,9 @@ import org.joml.Matrix4f;
  * {@code MCH_RenderAircraft#renderCommonPart}, ported call for call onto a {@link GlMatrixStack}.
  *
  * <p>Pure computation from a {@link Input} snapshot, so {@code PartTransformTest} can check it.
- * Parts that need later milestones are drawn at rest: weapon parts (M5: no weapon aims or recoils
- * yet, and missiles always show), crawler tracks and track rollers (M6), light hatches (search
- * lights, M6), wheels and steering wheels (ground vehicles, M6).
+ * Parts that need later milestones are drawn at rest: crawler tracks and track rollers (M6),
+ * light hatches (search lights, M6), wheels and steering wheels (ground vehicles, M6). Weapon parts
+ * and weapon bays are drawn at rest when the input carries no poses for them.
  */
 public final class AircraftPartPoses {
 
@@ -49,7 +49,23 @@ public final class AircraftPartPoses {
             float cameraPitch,
             boolean hideGunnerWeapons,
             float[][] bladeRotation,
-            float[][] prevBladeRotation) {
+            float[][] prevBladeRotation,
+            WeaponPartPose[] weaponParts,
+            float[] weaponBayRotation) {
+    }
+
+    /**
+     * One {@code PartWeapon}'s angles at the partial tick, taken by the renderer as upstream's
+     * {@code renderWeapon} reads them: {@code yaw} and {@code pitch} from the weapon set, else the
+     * rider, else the last rider; {@code turretYaw} the smoothed turret angle and
+     * {@code turretSetYaw} the set's own turret yaw; {@code recoil} the largest recoil of the
+     * linked sets; {@code childRecoil} the same for each child.
+     *
+     * @param hidden {@code HideGM} hides it from its own user in first person
+     * @param drawn  false for a missile part whose missile just fired
+     */
+    public record WeaponPartPose(boolean hidden, boolean drawn, boolean hasSet, float turretYaw, float turretSetYaw,
+            float yaw, float pitch, float defYaw, float recoil, float barrelRot, float[] childRecoil) {
     }
 
     private AircraftPartPoses() {
@@ -123,7 +139,7 @@ public final class AircraftPartPoses {
         throttles(info, models, in, gl, out);
         cameras(info, models, in, gl, out);
         landingGear(info, models, in, gl, out);
-        restParts(info.partWeaponBay, models, gl, out);
+        weaponBays(info, models, in, gl, out);
         canopies(info, models, in, gl, out);
     }
 
@@ -149,19 +165,122 @@ public final class AircraftPartPoses {
     }
 
     /**
-     * Upstream {@code renderWeapon} with no weapon set: the parts at rest, the children at rest,
-     * and {@code HideGM} parts hidden from a rider in first person.
+     * Upstream {@code renderWeapon}: each weapon part aimed, recoiled and its barrel spun with its
+     * weapon set. Without poses the parts and children are drawn at rest, and {@code HideGM} parts
+     * are hidden from a rider in first person.
      */
     static void weapons(AircraftInfo info, AircraftModels.VehicleModels models, Input in, GlMatrixStack gl,
             List<Draw> out) {
-        for (AircraftInfo.PartWeapon part : info.partWeapon) {
-            if (part.hideGM && in.hideGunnerWeapons) {
+        boolean posed = in.weaponParts != null && in.weaponParts.length == info.partWeapon.size();
+        for (int i = 0; i < info.partWeapon.size(); i++) {
+            AircraftInfo.PartWeapon part = info.partWeapon.get(i);
+            if (!posed) {
+                if (part.hideGM && in.hideGunnerWeapons) {
+                    continue;
+                }
+                add(out, gl, models.part(part.modelName));
+                for (AircraftInfo.PartWeaponChild child : part.child) {
+                    add(out, gl, models.part(child.modelName));
+                }
                 continue;
             }
-            add(out, gl, models.part(part.modelName));
-            for (AircraftInfo.PartWeaponChild child : part.child) {
-                add(out, gl, models.part(child.modelName));
+            WeaponPartPose p = in.weaponParts[i];
+            if (p.hidden) {
+                continue;
             }
+            gl.pushMatrix();
+            Vec3 tp = info.turretPosition;
+            if (part.turret) {
+                gl.translate(tp.x, tp.y, tp.z);
+                gl.rotate(p.turretYaw, 0.0F, -1.0F, 0.0F);
+                gl.translate(-tp.x, -tp.y, -tp.z);
+            }
+            gl.translate(part.pos.x, part.pos.y, part.pos.z);
+            if (part.yaw) {
+                gl.rotate(p.yaw, 0.0F, -1.0F, 0.0F);
+            }
+            if (part.turret) {
+                gl.rotate(-(p.turretYaw - (p.hasSet ? p.turretSetYaw : 0.0F)), 0.0F, -1.0F, 0.0F);
+            }
+            boolean invertPitch = turnFromDefYaw(p, gl);
+            if (part.pitch) {
+                gl.rotate(invertPitch ? -p.pitch : p.pitch, 1.0F, 0.0F, 0.0F);
+            }
+            if (p.hasSet && part.recoilBuf != 0.0F) {
+                gl.translate(0.0, 0.0, part.recoilBuf * p.recoil);
+            }
+            if (p.hasSet) {
+                gl.rotate(p.defYaw, 0.0F, -1.0F, 0.0F);
+                if (part.rotBarrel) {
+                    gl.rotate(p.barrelRot, (float) part.rot.x, (float) part.rot.y, (float) part.rot.z);
+                }
+            }
+            gl.translate(-part.pos.x, -part.pos.y, -part.pos.z);
+            if (p.drawn) {
+                add(out, gl, models.part(part.modelName));
+                for (int c = 0; c < part.child.size(); c++) {
+                    gl.pushMatrix();
+                    weaponChild(part.child.get(c), models, p, c < p.childRecoil.length ? p.childRecoil[c] : 0.0F,
+                            gl, out);
+                    gl.popMatrix();
+                }
+            }
+            gl.popMatrix();
+        }
+    }
+
+    /**
+     * Upstream: a set aimed off the nose turns back by its default yaw, and when that is sideways
+     * (45 to 135 degrees either way) its pitch is inverted. Returns whether to invert.
+     */
+    private static boolean turnFromDefYaw(WeaponPartPose p, GlMatrixStack gl) {
+        if (!p.hasSet || (int) p.defYaw == 0) {
+            return false;
+        }
+        float t = Math.abs(Mth.wrapDegrees(p.defYaw));
+        gl.rotate(-p.defYaw, 0.0F, -1.0F, 0.0F);
+        return t >= 45.0F && t <= 135.0F;
+    }
+
+    /** Upstream {@code renderWeaponChild}: the parent's set's angles, its own recoil (opposite way). */
+    private static void weaponChild(AircraftInfo.PartWeaponChild w, AircraftModels.VehicleModels models,
+            WeaponPartPose p, float recoil, GlMatrixStack gl, List<Draw> out) {
+        gl.translate(w.pos.x, w.pos.y, w.pos.z);
+        if (w.yaw) {
+            gl.rotate(p.yaw, 0.0F, -1.0F, 0.0F);
+        }
+        boolean invertPitch = turnFromDefYaw(p, gl);
+        if (w.pitch) {
+            gl.rotate(invertPitch ? -p.pitch : p.pitch, 1.0F, 0.0F, 0.0F);
+        }
+        if (p.hasSet && w.recoilBuf != 0.0F) {
+            gl.translate(0.0, 0.0, -w.recoilBuf * recoil);
+        }
+        if (p.hasSet) {
+            gl.rotate(p.defYaw, 0.0F, -1.0F, 0.0F);
+        }
+        gl.translate(-w.pos.x, -w.pos.y, -w.pos.z);
+        add(out, gl, models.part(w.modelName));
+    }
+
+    /** Upstream {@code renderWeaponBay}: doors turn (or slide) open by their angle out of 90. */
+    static void weaponBays(AircraftInfo info, AircraftModels.VehicleModels models, Input in, GlMatrixStack gl,
+            List<Draw> out) {
+        boolean posed = in.weaponBayRotation != null && in.weaponBayRotation.length == info.partWeaponBay.size();
+        for (int i = 0; i < info.partWeaponBay.size(); i++) {
+            AircraftInfo.WeaponBay w = info.partWeaponBay.get(i);
+            float rot = posed ? in.weaponBayRotation[i] : 0.0F;
+            gl.pushMatrix();
+            if (w.isSlide) {
+                float f = rot / 90.0F;
+                gl.translate(w.pos.x * f, w.pos.y * f, w.pos.z * f);
+            } else {
+                gl.translate(w.pos.x, w.pos.y, w.pos.z);
+                gl.rotate(rot * w.maxRotFactor, (float) w.rot.x, (float) w.rot.y, (float) w.rot.z);
+                gl.translate(-w.pos.x, -w.pos.y, -w.pos.z);
+            }
+            add(out, gl, models.part(w.modelName));
+            gl.popMatrix();
         }
     }
 

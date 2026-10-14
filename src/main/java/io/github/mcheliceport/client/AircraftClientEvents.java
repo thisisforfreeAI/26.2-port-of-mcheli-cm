@@ -4,8 +4,11 @@ import io.github.mcheliceport.client.camera.AircraftCameraClient;
 import io.github.mcheliceport.client.hud.AircraftHudLayer;
 import io.github.mcheliceport.client.input.HeliClientControl;
 import io.github.mcheliceport.client.input.MouseFlight;
+import io.github.mcheliceport.client.input.WeaponClientControl;
 import io.github.mcheliceport.client.model.AircraftModels;
 import io.github.mcheliceport.client.sound.AircraftEngineSound;
+import io.github.mcheliceport.client.weapon.WeaponClient;
+import io.github.mcheliceport.client.weapon.WeaponEffects;
 import io.github.mcheliceport.config.ServerSettings;
 import io.github.mcheliceport.entity.aircraft.AircraftEntity;
 import io.github.mcheliceport.entity.seat.SeatEntity;
@@ -42,11 +45,14 @@ public final class AircraftClientEvents {
         });
         NeoForge.EVENT_BUS.addListener((ClientTickEvent.Post event) -> {
             AircraftCameraClient.handleKeys();
+            WeaponClientControl.onClientTick();
             HeliClientControl.onClientTick();
             AircraftCameraClient.tick();
             AircraftModels.tick();
             AircraftEngineSound.tickAll();
+            WeaponClient.tick();
         });
+        NeoForge.EVENT_BUS.addListener(WeaponEffects::onSubmitGeometry);
         NeoForge.EVENT_BUS.addListener((RenderFrameEvent.Pre event) -> MouseFlight.onFrameWithoutTurn());
         NeoForge.EVENT_BUS.addListener((RenderFrameEvent.Post event) -> HeliClientControl.applyRotLimit());
         NeoForge.EVENT_BUS.addListener(AircraftCameraClient::onCameraAngles);
@@ -55,11 +61,14 @@ public final class AircraftClientEvents {
         NeoForge.EVENT_BUS.addListener(AircraftCameraClient::onDetachedDistance);
         NeoForge.EVENT_BUS.addListener(AircraftCameraClient::onNameTag);
         NeoForge.EVENT_BUS.addListener(AircraftClientEvents::onRenderHand);
+        NeoForge.EVENT_BUS.addListener(WeaponClientControl::onInteractionKey);
+        NeoForge.EVENT_BUS.addListener(WeaponClientControl::onMouseScroll);
         NeoForge.EVENT_BUS.addListener(AircraftHudLayer::onRenderLayer);
         NeoForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.LoggingOut event) -> {
             ServerSettings.setClient(ServerSettings.Values.DEFAULT);
             MouseFlight.reset();
             AircraftCameraClient.reset();
+            WeaponClient.reset();
         });
     }
 
@@ -86,6 +95,11 @@ public final class AircraftClientEvents {
         float roll = Mth.wrapDegrees(aircraft.getRoll(partial));
         float yaw = Mth.wrapDegrees(aircraft.getViewYRot(partial) - player.getViewYRot(partial));
         roll *= Mth.cos((float) (yaw * Math.PI / 180.0));
+        // Upstream: no roll while steering one's own TV missile from the gunner view.
+        if (aircraft.getTVMissile() != null && aircraft.getTVMissile().shootingEntity == player
+                && aircraft.isGunnerMode(player)) {
+            roll = 0.0F;
+        }
         event.setRoll(event.getRoll() + roll);
     }
 

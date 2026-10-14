@@ -22,6 +22,7 @@ import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.Marker;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.level.Level;
+import io.github.mcheliceport.entity.weapon.TvMissileEntity;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.client.event.CalculateDetachedCameraDistanceEvent;
 import net.neoforged.neoforge.client.event.RenderNameTagEvent;
@@ -155,6 +156,16 @@ public final class AircraftCameraClient {
         wasRiding = true;
 
         Vec3 pos = cameraPosition(aircraft, player);
+        TvMissileEntity tvm = aircraft.getTVMissile();
+        if (tvm != null) {
+            // Upstream updateCamera: the camera rides the TV missile, unzoomed, which hides its smoke
+            // from the operator watching through it.
+            aircraft.camera.setCameraZoom(1.0F);
+            tvm.isSpawnParticle = !aircraft.isMissileCameraMode(tvm.shootingEntity);
+            if (tvm.shootingEntity == player) {
+                pos = tvm.position();
+            }
+        }
         aircraft.camera.setPosition(pos.x, pos.y, pos.z);
         ViewMarker view = viewEntity(mc, player);
         // MCH_ViewEntityDummy#update: last tick's camera is where this tick's view starts.

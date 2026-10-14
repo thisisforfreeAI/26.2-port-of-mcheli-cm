@@ -84,6 +84,15 @@ public class ModLanguageProvider extends LanguageProvider {
         add(prefix + "camera_mode", "Camera Mode (Night Vision)");
         add(prefix + "camera_distance_up", "Camera Distance Up");
         add(prefix + "camera_distance_down", "Camera Distance Down");
+        add(prefix + "use_weapon", "Use Weapon");
+        add(prefix + "switch_weapon_1", "Switch Weapon 1");
+        add(prefix + "switch_weapon_2", "Switch Weapon 2");
+        add(prefix + "switch_weapon_mode", "Switch Weapon Mode");
+        add(prefix + "reload_weapon", "Reload Weapon");
+        add(prefix + "flare", "Flare");
+        add(prefix + "chaff", "Chaff");
+        add(prefix + "aps", "Active Protection (APS)");
+        add(prefix + "airburst_reset", "Reset Airburst Distance");
     }
 
     /** NeoForge's config screen: section titles and one name per option. */
@@ -113,6 +122,24 @@ public class ModLanguageProvider extends LanguageProvider {
         add(prefix + "killPassengersWhenDestroyed", "Kill Passengers When Destroyed");
         add(prefix + "autoRepairHP", "Auto Repair Threshold");
         add(prefix + "collisionDestroyBlock", "Break Soft Blocks");
+        add(prefix + "weapons", "Weapons");
+        add(prefix + "infinityAmmo", "Infinite Ammunition");
+        add(prefix + "hurtResistantTime", "Invulnerability After Hits");
+        add(prefix + "bulletBreakableBlocks", "Blocks Bullets Break");
+        add(prefix + "damageVsEntity", "Damage vs Other Entities");
+        add(prefix + "damageVsLiving", "Damage vs Mobs");
+        add(prefix + "damageVsPlayer", "Damage vs Players");
+        add(prefix + "damageVsMCHeliAircraft", "Damage vs Aircraft");
+        add(prefix + "damageVsMCHeliTank", "Damage vs Tanks");
+        add(prefix + "damageVsMCHeliVehicle", "Damage vs Vehicles");
+        add(prefix + "damageVsMCHeliOther", "Damage vs Other McHeli Entities");
+        add(prefix + "damageMCHeliAircraftByExternal", "Damage to Aircraft");
+        add(prefix + "damageMCHeliTankByExternal", "Damage to Tanks");
+        add(prefix + "damageMCHeliVehicleByExternal", "Damage to Vehicles");
+        add(prefix + "damageMCHeliOtherByExternal", "Damage to Other McHeli Entities");
+        add(prefix + "explosions", "Explosions");
+        add(prefix + "destroyBlock", "Explosions Break Blocks");
+        add(prefix + "flamingBlock", "Explosions Start Fires");
         add(prefix + "rotationLimits", "Rotation Limits");
         add(prefix + "enableRotationLimit", "Enable Rotation Limit");
         add(prefix + "pitchLimitMax", "Pitch Limit (Down)");
@@ -134,6 +161,11 @@ public class ModLanguageProvider extends LanguageProvider {
         add(prefix + "displayInThirdPerson", "HUD in Third Person");
         add(prefix + "hideKeyHints", "Hide Key Hints");
         add(prefix + "autoScale", "Auto-Scale the HUD");
+        add(prefix + "hitMarkColor", "Hit Marker Colour");
+        add(prefix + "switchWeaponWithMouseWheel", "Switch Weapons with the Mouse Wheel");
+        add(prefix + "effects", "Weapon Effects");
+        add(prefix + "defaultExplosionParticle", "Vanilla Explosion Particles");
+        add(prefix + "aliveTimeOfCartridge", "Cartridge Lifetime");
         add(prefix + "debug", "Debug");
         add(prefix + "testMode", "Test Mode");
         add(prefix + "camera", "Camera");

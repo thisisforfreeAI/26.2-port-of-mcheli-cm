@@ -27,6 +27,10 @@ public final class ClientConfig {
     public static final ModConfigSpec.BooleanValue HUD_IN_THIRD_PERSON;
     public static final ModConfigSpec.BooleanValue HIDE_KEY_HINTS;
     public static final ModConfigSpec.BooleanValue HUD_AUTO_SCALE;
+    public static final ModConfigSpec.ConfigValue<String> HIT_MARK_COLOR;
+    public static final ModConfigSpec.BooleanValue DEFAULT_EXPLOSION_PARTICLE;
+    public static final ModConfigSpec.IntValue ALIVE_TIME_OF_CARTRIDGE;
+    public static final ModConfigSpec.BooleanValue SWITCH_WEAPON_WITH_MOUSE_WHEEL;
     private static final Map<ModTab, ModConfigSpec.ConfigValue<String>> TAB_ICONS = new EnumMap<>(ModTab.class);
     public static final ModConfigSpec SPEC;
 
@@ -56,6 +60,9 @@ public final class ClientConfig {
                 .comment("Flight simulator mouse mode for planes and ships. Has no effect yet: planes and ships are not ported.",
                         "Upstream: MouseControlFlightSimMode.")
                 .define("mouseControlFlightSimMode", false);
+        SWITCH_WEAPON_WITH_MOUSE_WHEEL = builder
+                .comment("The mouse wheel switches weapons while riding a vehicle. Upstream: SwitchWeaponWithMouseWheel.")
+                .define("switchWeaponWithMouseWheel", true);
         builder.pop();
 
         builder.comment("Drawing vehicles (upstream's lines of the same names in mcheli.cfg).").push("render");
@@ -85,6 +92,18 @@ public final class ClientConfig {
         HUD_AUTO_SCALE = builder
                 .comment("Scale HUDs to the screen instead of drawing them at a fixed size. Upstream: ExperimentalAutoScaleAircraftGui.")
                 .define("autoScale", false);
+        HIT_MARK_COLOR = builder
+                .comment("Colour of the hit marker as 'alpha, red, green, blue' (0 to 255 each). Upstream: HitMarkColor.")
+                .define("hitMarkColor", "255, 255, 0, 0");
+        builder.pop();
+
+        builder.comment("Weapon effects (upstream's lines of the same names in mcheli.cfg).").push("effects");
+        DEFAULT_EXPLOSION_PARTICLE = builder
+                .comment("Draw McHeli's explosions with vanilla's explosion particles. Upstream: DefaultExplosionParticle.")
+                .define("defaultExplosionParticle", false);
+        ALIVE_TIME_OF_CARTRIDGE = builder
+                .comment("Ticks an ejected cartridge stays on the ground. Upstream: AliveTimeOfCartridge.")
+                .defineInRange("aliveTimeOfCartridge", 200, 0, 1000);
         builder.pop();
 
         builder.push("debug");
@@ -112,6 +131,26 @@ public final class ClientConfig {
     /** A config value, or its default while the config is not loaded (tests, servers). */
     public static <T> T get(ModConfigSpec.ConfigValue<T> value) {
         return SPEC.isLoaded() ? value.get() : value.getDefault();
+    }
+
+    /**
+     * The hit marker colour as ARGB. Upstream {@code MCH_Config} read {@code HitMarkColor} as four
+     * 0..255 values, alpha first; a malformed value gives upstream's default.
+     */
+    public static int hitMarkColor() {
+        String[] split = get(HIT_MARK_COLOR).split("\\s*,\\s*");
+        if (split.length == 4) {
+            try {
+                int argb = 0;
+                for (String part : split) {
+                    argb = argb << 8 | Math.clamp(Integer.parseInt(part.trim()), 0, 255);
+                }
+                return argb;
+            } catch (NumberFormatException ignored) {
+                // fall through to the default
+            }
+        }
+        return 0xFFFF0000;
     }
 
     /** The configured icon item name of a tab, or the default if the config is not loaded (servers). */

@@ -1,5 +1,9 @@
 package io.github.mcheliceport.content.weapon;
 
+import java.util.Optional;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.effect.MobEffectInstance;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -32,5 +36,15 @@ public record PotionEffectInfo(String effectId, int duration, int amplifier, int
     /** Returns the effect ID for a 1.12 numeric potion ID, or null if there was no such potion. */
     public static @Nullable String fromLegacyId(int id) {
         return id > 0 && id < LEGACY_IDS.length ? LEGACY_IDS[id] : null;
+    }
+
+    /** A fresh effect instance (non-ambient, particles shown), or empty when the ID names no effect. */
+    public Optional<MobEffectInstance> toInstance() {
+        Identifier id = Identifier.tryParse(this.effectId);
+        if (id == null) {
+            return Optional.empty();
+        }
+        return BuiltInRegistries.MOB_EFFECT.get(id)
+                .map(effect -> new MobEffectInstance(effect, this.duration, this.amplifier, false, true));
     }
 }

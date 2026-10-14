@@ -1,6 +1,20 @@
 package io.github.mcheliceport.registry;
 
 import io.github.mcheliceport.entity.PlaceholderEntity;
+import io.github.mcheliceport.entity.flare.ChaffEntity;
+import io.github.mcheliceport.entity.throwable.ThrowableEntity;
+import io.github.mcheliceport.entity.flare.FlareEntity;
+import io.github.mcheliceport.entity.weapon.A10Entity;
+import io.github.mcheliceport.entity.weapon.AAMissileEntity;
+import io.github.mcheliceport.entity.weapon.ASMissileEntity;
+import io.github.mcheliceport.entity.weapon.ATMissileEntity;
+import io.github.mcheliceport.entity.weapon.BombEntity;
+import io.github.mcheliceport.entity.weapon.BulletEntity;
+import io.github.mcheliceport.entity.weapon.DispensedItemEntity;
+import io.github.mcheliceport.entity.weapon.MarkerRocketEntity;
+import io.github.mcheliceport.entity.weapon.RocketEntity;
+import io.github.mcheliceport.entity.weapon.TorpedoEntity;
+import io.github.mcheliceport.entity.weapon.TvMissileEntity;
 import io.github.mcheliceport.entity.heli.HeliEntity;
 import io.github.mcheliceport.entity.seat.SeatEntity;
 import java.util.ArrayList;
@@ -17,7 +31,7 @@ import net.neoforged.neoforge.registries.DeferredHolder;
  * without its tracking mixin).
  *
  * <p>Helicopters and seats are real since M3. The others use {@link PlaceholderEntity} until their
- * entity is ported: weapons in M5, the other vehicles and the rest in M6. Upstream's two hit box types ({@code MCH.E.HitBox} and
+ * entity is ported: the weapon entities are real since M5, the other vehicles and the rest come in M6. Upstream's two hit box types ({@code MCH.E.HitBox} and
  * {@code MCH.E.PSeat}) are not registered: hit boxes become parts of the vehicle entity
  * (PORTING_PLAN.md section 5.2).
  */
@@ -52,21 +66,35 @@ public final class ModEntityTypes {
     public static final DeferredHolder<EntityType<?>, EntityType<PlaceholderEntity>> UAV_STATION = placeholder("uav_station", 2.0f, 0.7f, 400, 10);
     /** Upstream's {@code MCH_EntityHide}, which carries a player down a rope from a helicopter. */
     public static final DeferredHolder<EntityType<?>, EntityType<PlaceholderEntity>> HIDE = placeholder("hide", 1.0f, 1.0f, 200, 10);
-    public static final DeferredHolder<EntityType<?>, EntityType<PlaceholderEntity>> ROCKET = placeholder("rocket", 1.0f, 1.0f, 530, 5);
-    public static final DeferredHolder<EntityType<?>, EntityType<PlaceholderEntity>> TV_MISSILE = placeholder("tv_missile", 1.0f, 1.0f, 530, 5);
-    public static final DeferredHolder<EntityType<?>, EntityType<PlaceholderEntity>> BULLET = placeholder("bullet", 1.0f, 1.0f, 530, 5);
-    public static final DeferredHolder<EntityType<?>, EntityType<PlaceholderEntity>> A10 = placeholder("a10", 5.0f, 3.0f, 530, 5);
-    public static final DeferredHolder<EntityType<?>, EntityType<PlaceholderEntity>> AA_MISSILE = placeholder("aa_missile", 1.0f, 1.0f, 530, 5);
-    public static final DeferredHolder<EntityType<?>, EntityType<PlaceholderEntity>> AS_MISSILE = placeholder("as_missile", 1.0f, 1.0f, 530, 5);
-    public static final DeferredHolder<EntityType<?>, EntityType<PlaceholderEntity>> TORPEDO = placeholder("torpedo", 1.0f, 1.0f, 530, 5);
-    public static final DeferredHolder<EntityType<?>, EntityType<PlaceholderEntity>> AT_MISSILE = placeholder("at_missile", 1.0f, 1.0f, 530, 5);
-    public static final DeferredHolder<EntityType<?>, EntityType<PlaceholderEntity>> BOMB = placeholder("bomb", 1.0f, 1.0f, 530, 5);
-    public static final DeferredHolder<EntityType<?>, EntityType<PlaceholderEntity>> MARKER_ROCKET = placeholder("marker_rocket", 1.0f, 1.0f, 530, 5);
-    public static final DeferredHolder<EntityType<?>, EntityType<PlaceholderEntity>> DISPENSED_ITEM = placeholder("dispensed_item", 1.0f, 1.0f, 530, 5);
-    public static final DeferredHolder<EntityType<?>, EntityType<PlaceholderEntity>> FLARE = placeholder("flare", 1.0f, 1.0f, 330, 10);
-    public static final DeferredHolder<EntityType<?>, EntityType<PlaceholderEntity>> THROWABLE = placeholder("throwable", 0.25f, 0.25f, 330, 10);
+    public static final DeferredHolder<EntityType<?>, EntityType<RocketEntity>> ROCKET = weapon("rocket",
+            RocketEntity::new, 1.0f, 1.0f, 530, 5);
+    public static final DeferredHolder<EntityType<?>, EntityType<TvMissileEntity>> TV_MISSILE = weapon("tv_missile",
+            TvMissileEntity::new, 1.0f, 1.0f, 530, 5);
+    public static final DeferredHolder<EntityType<?>, EntityType<BulletEntity>> BULLET = weapon("bullet",
+            BulletEntity::new, 1.0f, 1.0f, 530, 5);
+    public static final DeferredHolder<EntityType<?>, EntityType<A10Entity>> A10 = weapon("a10",
+            A10Entity::new, 5.0f, 3.0f, 530, 5);
+    public static final DeferredHolder<EntityType<?>, EntityType<AAMissileEntity>> AA_MISSILE = weapon("aa_missile",
+            AAMissileEntity::new, 1.0f, 1.0f, 530, 5);
+    public static final DeferredHolder<EntityType<?>, EntityType<ASMissileEntity>> AS_MISSILE = weapon("as_missile",
+            ASMissileEntity::new, 1.0f, 1.0f, 530, 5);
+    public static final DeferredHolder<EntityType<?>, EntityType<TorpedoEntity>> TORPEDO = weapon("torpedo",
+            TorpedoEntity::new, 1.0f, 1.0f, 530, 5);
+    public static final DeferredHolder<EntityType<?>, EntityType<ATMissileEntity>> AT_MISSILE = weapon("at_missile",
+            ATMissileEntity::new, 1.0f, 1.0f, 530, 5);
+    public static final DeferredHolder<EntityType<?>, EntityType<BombEntity>> BOMB = weapon("bomb",
+            BombEntity::new, 1.0f, 1.0f, 530, 5);
+    public static final DeferredHolder<EntityType<?>, EntityType<MarkerRocketEntity>> MARKER_ROCKET = weapon("marker_rocket",
+            MarkerRocketEntity::new, 1.0f, 1.0f, 530, 5);
+    public static final DeferredHolder<EntityType<?>, EntityType<DispensedItemEntity>> DISPENSED_ITEM = weapon("dispensed_item",
+            DispensedItemEntity::new, 1.0f, 1.0f, 530, 5);
+    public static final DeferredHolder<EntityType<?>, EntityType<FlareEntity>> FLARE = weapon("flare",
+            FlareEntity::new, 1.0f, 1.0f, 330, 10);
+    public static final DeferredHolder<EntityType<?>, EntityType<ThrowableEntity>> THROWABLE = weapon("throwable",
+            ThrowableEntity::new, 0.25f, 0.25f, 330, 10);
     public static final DeferredHolder<EntityType<?>, EntityType<PlaceholderEntity>> GUNNER = placeholder("gunner", 0.6f, 1.8f, 530, 5);
-    public static final DeferredHolder<EntityType<?>, EntityType<PlaceholderEntity>> CHAFF = placeholder("chaff", 1.0f, 1.0f, 330, 10);
+    public static final DeferredHolder<EntityType<?>, EntityType<ChaffEntity>> CHAFF = weapon("chaff",
+            ChaffEntity::new, 1.0f, 1.0f, 330, 10);
 
     private ModEntityTypes() {
     }
@@ -83,6 +111,23 @@ public final class ModEntityTypes {
 
     private static <T extends net.minecraft.world.entity.Entity> DeferredHolder<EntityType<?>, EntityType<T>> register(
             String name, DeferredHolder<EntityType<?>, EntityType<T>> holder) {
+        ALL.add(holder);
+        return holder;
+    }
+
+    /**
+     * A projectile, flare or chaff (M5). The server sends their velocity, which they keep moving
+     * with between updates; each entity decides whether it is saved (only mines are).
+     */
+    private static <T extends net.minecraft.world.entity.Entity> DeferredHolder<EntityType<?>, EntityType<T>> weapon(
+            String name, EntityType.EntityFactory<T> factory, float width, float height, int trackingRangeBlocks,
+            int updateInterval) {
+        DeferredHolder<EntityType<?>, EntityType<T>> holder = ModRegistries.ENTITY_TYPES
+                .registerEntityType(name, factory, MobCategory.MISC, builder -> builder
+                        .sized(width, height)
+                        .clientTrackingRange(toChunks(trackingRangeBlocks))
+                        .updateInterval(updateInterval)
+                        .setShouldReceiveVelocityUpdates(true));
         ALL.add(holder);
         return holder;
     }

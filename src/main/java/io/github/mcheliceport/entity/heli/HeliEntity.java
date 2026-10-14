@@ -6,7 +6,11 @@ import io.github.mcheliceport.content.ContentRegistries;
 import io.github.mcheliceport.content.ContentType;
 import io.github.mcheliceport.content.aircraft.AircraftInfo;
 import io.github.mcheliceport.content.aircraft.HeliInfo;
+import io.github.mcheliceport.effect.McheliEffects;
+import io.github.mcheliceport.effect.ParticleParam;
 import io.github.mcheliceport.entity.aircraft.AircraftEntity;
+import io.github.mcheliceport.entity.aircraft.AircraftHitBox;
+import io.github.mcheliceport.util.McheliMath;
 import io.github.mcheliceport.net.AircraftStatusRequestPayload;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -18,6 +22,7 @@ import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
@@ -375,7 +380,7 @@ public class HeliEntity extends AircraftEntity implements HeliFlightModel.Body {
         }
     }
 
-    /** The rotation half of upstream's {@code onUpdate_Client}: a destroyed heli spins as it falls. */
+    /** Upstream's {@code onUpdate_Client}: a destroyed heli spins as it falls; downwash and damage smoke. */
     private void onUpdateClient() {
         if (this.isDestroyed()) {
             if (this.rotDestroyedYaw < 15.0F) {
@@ -389,6 +394,68 @@ public class HeliEntity extends AircraftEntity implements HeliFlightModel.Body {
                 this.setRoll(this.getRoll() + this.rotDestroyedRoll);
             }
         }
+        this.onUpdateParticleSandCloud(false);
+        this.onUpdateDamageSmoke();
+    }
+
+    private Vec3 @Nullable [] prevDamageSmokePos;
+    private boolean isFirstDamageSmoke = true;
+
+    /**
+     * Upstream {@code onUpdate_Particle2}: below half its hit points, smoke trails from each rotor
+     * (and from a random hit box below 30%), thicker the more damage it has taken.
+     */
+    private void onUpdateDamageSmoke() {
+        if (this.getHP() > this.getMaxHP() * 0.5 || this.heliInfo == null) {
+            return;
+        }
+        int rotorNum = this.heliInfo.rotorList.size();
+        if (rotorNum <= 0) {
+            return;
+        }
+        if (this.isFirstDamageSmoke || this.prevDamageSmokePos == null || this.prevDamageSmokePos.length != rotorNum) {
+            this.prevDamageSmokePos = new Vec3[rotorNum];
+        }
+        AircraftHitBox[] boxes = this.getHitBoxes();
+        for (int ri = 0; ri < rotorNum; ri++) {
+            Vec3 pos = McheliMath.rotVec3(this.heliInfo.rotorList.get(ri).pos, -this.getYaw(), -this.getPitch(),
+                    -this.getRoll());
+            double x = this.getX() + pos.x;
+            double y = this.getY() + pos.y;
+            double z = this.getZ() + pos.z;
+            if (this.isFirstDamageSmoke || this.prevDamageSmokePos[ri] == null) {
+                this.prevDamageSmokePos[ri] = new Vec3(x, y, z);
+            }
+            Vec3 prev = this.prevDamageSmokePos[ri];
+            double dx = x - prev.x;
+            double dy = y - prev.y;
+            double dz = z - prev.z;
+            int num = (int) (Mth.sqrt((float) (dx * dx + dy * dy + dz * dz)) * 2.0F) + 1;
+            for (double i = 0.0; i < num; i++) {
+                double p = (double) this.getHP() / this.getMaxHP();
+                if (p < this.random.nextFloat() / 2.0F) {
+                    float c = 0.2F + this.random.nextFloat() * 0.3F;
+                    ParticleParam prm = new ParticleParam("smoke", prev.x + (x - prev.x) * (i / num),
+                            prev.y + (y - prev.y) * (i / num), prev.z + (z - prev.z) * (i / num));
+                    prm.motionX = (this.random.nextDouble() - 0.5) * 0.3;
+                    prm.motionY = this.random.nextDouble() * 0.1;
+                    prm.motionZ = (this.random.nextDouble() - 0.5) * 0.3;
+                    prm.size = this.random.nextInt(5) + 5.0F;
+                    prm.setColor(0.7F + this.random.nextFloat() * 0.1F, c, c, c);
+                    McheliEffects.spawnParticle(this.level(), prm);
+                    int ebi = this.random.nextInt(1 + boxes.length);
+                    if (p < 0.3 && ebi > 0) {
+                        AABB bb = boxes[ebi - 1].getBoundingBox();
+                        prm.posX = (bb.maxX + bb.minX) / 2.0;
+                        prm.posY = (bb.maxY + bb.minY) / 2.0;
+                        prm.posZ = (bb.maxZ + bb.minZ) / 2.0;
+                        McheliEffects.spawnParticle(this.level(), prm);
+                    }
+                }
+            }
+            this.prevDamageSmokePos[ri] = new Vec3(x, y, z);
+        }
+        this.isFirstDamageSmoke = false;
     }
 
     /** Upstream {@code onUpdate_Server}, run by whichever side moves the heli. */

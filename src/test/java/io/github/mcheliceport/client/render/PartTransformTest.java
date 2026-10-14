@@ -122,7 +122,7 @@ class PartTransformTest {
                 b.prevCanopyRotation(), b.canopyRotationMax(), b.hasCanopy(), b.hatchRotation(), b.prevHatchRotation(),
                 b.hatchRotationMax(), b.hasHatch(), b.landingGearRotation(), b.prevLandingGearRotation(),
                 b.hasLandingGear(), b.throttle(), b.prevThrottle(), b.rotPartRotation(), b.prevRotPartRotation(),
-                b.cameraYaw(), b.cameraPitch(), false, rot, prev);
+                b.cameraYaw(), b.cameraPitch(), false, rot, prev, b.weaponParts(), b.weaponBayRotation());
     }
 
     private static void cover(AircraftInfo info, Map<String, Integer> covered) {
@@ -199,7 +199,8 @@ class PartTransformTest {
                 r.nextFloat() * hatchMax, r.nextFloat() * hatchMax, hatchMax, true,
                 r.nextFloat() * 90.0F, r.nextFloat() * 90.0F, true,
                 r.nextDouble(), r.nextDouble(), rotPart, prevRotPart,
-                r.nextFloat() * 180.0F - 90.0F, r.nextFloat() * 60.0F - 30.0F, false, blades, prevBlades);
+                r.nextFloat() * 180.0F - 90.0F, r.nextFloat() * 60.0F - 30.0F, false, blades, prevBlades,
+                new AircraftPartPoses.WeaponPartPose[0], new float[0]);
     }
 
     /** The port: the body stack, the blades, then the common parts this test checks. */

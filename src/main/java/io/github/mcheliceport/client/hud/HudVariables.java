@@ -13,6 +13,11 @@ import java.util.Map;
 import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
+import io.github.mcheliceport.content.weapon.SightType;
+import io.github.mcheliceport.content.weapon.WeaponInfo;
+import io.github.mcheliceport.weapon.WeaponBase;
+import io.github.mcheliceport.weapon.WeaponSet;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
@@ -24,8 +29,8 @@ import net.neoforged.fml.ModList;
  * of {@code MCH_HudItemString}. As upstream, the altitude is probed every 30 frames, the low-fuel
  * warning blinks on a 280-frame cycle and the stick position is averaged over four frames.
  *
- * <p>Weapons come in M5: until then the weapon values are upstream's values for a vehicle
- * without weapons, so weapon strings are not drawn.
+ * <p>The weapon values are upstream's {@code updateWeapon} and {@code updateVarMap_Weapon} for
+ * the rider's current weapon set.
  */
 public final class HudVariables {
 
@@ -36,8 +41,15 @@ public final class HudVariables {
     private static int altitude;
     private static float prevRadarRot;
     private static int countFuelWarn;
-    /** Upstream's {@code MortarDist}, left at its initial value without weapons. */
-    private static final float MORTAR_DIST = 0.0F;
+    /** Upstream's {@code MortarDist}: the horizontal distance to the impact, or -1. */
+    private static float mortarDist = 0.0F;
+    private static String weaponName = "";
+    private static String weaponAmmo = "";
+    private static String weaponAllAmmo = "";
+    private static float reloadPer = 0.0F;
+    private static float reloadSec = 0.0F;
+    private static String airburstDist = "";
+    private static @org.jspecify.annotations.Nullable WeaponSet currentWeapon;
 
     private HudVariables() {
     }
@@ -54,8 +66,10 @@ public final class HudVariables {
         updateAltitude(ac);
         frame.entityRadar = ac.radar.entities();
         frame.enemyRadar = ac.radar.enemies();
-        frame.hasWeapon = false;
-        frame.weaponMagSize = 0;
+        WeaponSet ws = ac.getCurrentWeapon(player);
+        updateWeapon(ac, player, ws);
+        frame.hasWeapon = currentWeapon != null;
+        frame.weaponMagSize = currentWeapon != null ? currentWeapon.getMagSize() : 0;
         frame.aircraftYaw = ac.getYaw();
         frame.cameraYaw = ac.camera.rotationYaw;
         frame.cameraPitch = ac.camera.rotationPitch;
@@ -69,9 +83,9 @@ public final class HudVariables {
         v.put("test_mode", frame.testMode);
         v.put("plyr_yaw", Mth.wrapDegrees(player.getYRot()));
         v.put("plyr_pitch", player.getXRot());
-        // getCurrentWeaponShotDir without a weapon: the user's own look.
-        v.put("brl_yaw", player.getYRot());
-        v.put("brl_pitch", player.getXRot());
+        float[] brlDir = ac.getCurrentWeaponShotDir(player);
+        v.put("brl_yaw", brlDir[0]);
+        v.put("brl_pitch", brlDir[1]);
         v.put("yaw", Mth.wrapDegrees(ac.getYaw()));
         v.put("pitch", ac.getPitch());
         v.put("roll", Mth.wrapDegrees(ac.getRoll()));
@@ -94,16 +108,7 @@ public final class HudVariables {
         v.put("low_fuel", isLowFuel(ac, player));
         v.put("stick_x", stickAverage(STICK_X));
         v.put("stick_y", stickAverage(STICK_Y));
-        // updateVarMap_Weapon with no weapon set.
-        v.put("reloading", false);
-        v.put("reload_time", 0.0F);
-        v.put("wpn_heat", 0.0);
-        v.put("is_heat_wpn", false);
-        v.put("sight_type", 0);
-        v.put("lock", 0.0);
-        v.put("dsp_mt_dist", false);
-        v.put("mt_dist", MORTAR_DIST);
-        v.put("has_airburst", 0);
+        putWeaponVars(v, ws);
         v.put("vtol_stat", 0);
         v.put("free_look", ac.isPilot(player) && ac.isFreeLookMode() ? 1 : 0);
         v.put("gunner_mode", ac.isGunnerMode(player));
@@ -111,8 +116,7 @@ public final class HudVariables {
         v.put("cam_zoom", ac.camera.getCameraZoom());
         v.put("auto_pilot", 0);
         v.put("have_flare", info != null && info.haveFlare());
-        // canUseFlare: ready while no flare is in use (flares come in M5).
-        v.put("can_flare", info != null && info.haveFlare());
+        v.put("can_flare", ac.canUseFlare());
         v.put("inventory", info != null ? info.inventorySize : 0);
         v.put("hovering", ac instanceof HeliEntity && ac.isHoveringMode());
         v.put("is_uav", ac.isUAV());
@@ -142,12 +146,12 @@ public final class HudVariables {
         s.put(HudStringArg.MOTION_Y, motion.y);
         s.put(HudStringArg.MOTION_Z, motion.z);
         s.put(HudStringArg.INVENTORY, info != null ? info.inventorySize : 0);
-        s.put(HudStringArg.WPN_NAME, "");
-        s.put(HudStringArg.WPN_AMMO, "");
-        s.put(HudStringArg.WPN_RM_AMMO, "");
-        s.put(HudStringArg.RELOAD_PER, 0.0F);
-        s.put(HudStringArg.RELOAD_SEC, 0.0F);
-        s.put(HudStringArg.MORTAR_DIST, MORTAR_DIST);
+        s.put(HudStringArg.WPN_NAME, weaponName);
+        s.put(HudStringArg.WPN_AMMO, weaponAmmo);
+        s.put(HudStringArg.WPN_RM_AMMO, weaponAllAmmo);
+        s.put(HudStringArg.RELOAD_PER, reloadPer);
+        s.put(HudStringArg.RELOAD_SEC, reloadSec);
+        s.put(HudStringArg.MORTAR_DIST, mortarDist);
         s.put(HudStringArg.MC_VER, SharedConstants.getCurrentVersion().name());
         s.put(HudStringArg.MOD_VER, ModList.get().getModContainerById(McheliCePort.MOD_ID)
                 .map(c -> c.getModInfo().getVersion().toString()).orElse(""));
@@ -157,15 +161,92 @@ public final class HudVariables {
         s.put(HudStringArg.ROLL, Mth.wrapDegrees(ac.getRoll()));
         s.put(HudStringArg.PLYR_YAW, HudInterpreter.getRotate360(player.getYRot() + 180.0F));
         s.put(HudStringArg.PLYR_PITCH, -player.getXRot());
-        s.put(HudStringArg.TVM_POS_X, 0.0);
-        s.put(HudStringArg.TVM_POS_Y, 0.0);
-        s.put(HudStringArg.TVM_POS_Z, 0.0);
-        s.put(HudStringArg.TVM_DIFF, 0.0);
+        Entity tvm = ac.getTVMissile();
+        s.put(HudStringArg.TVM_POS_X, tvm != null ? tvm.getX() : 0.0);
+        s.put(HudStringArg.TVM_POS_Y, tvm != null ? tvm.getY() : 0.0);
+        s.put(HudStringArg.TVM_POS_Z, tvm != null ? tvm.getZ() : 0.0);
+        s.put(HudStringArg.TVM_DIFF, tvm != null ? Math.sqrt(tvm.distanceToSqr(ac)) : 0.0);
         s.put(HudStringArg.CAM_ZOOM, ac.camera.getCameraZoom());
         s.put(HudStringArg.UAV_DIST, 0.0);
         s.put(HudStringArg.KEY_GUI, ModKeyMappings.GUI.getTranslatedKeyMessage().getString());
         s.put(HudStringArg.THROTTLE, ac.getCurrentThrottle() * 100.0);
-        s.put(HudStringArg.AIRBURST_DIST, "---");
+        s.put(HudStringArg.AIRBURST_DIST, airburstDist);
+    }
+
+    /** Upstream {@code updateWeapon}: the weapon strings and reload progress, kept from the last weapon. */
+    private static void updateWeapon(AircraftEntity ac, Player player, WeaponSet ws) {
+        if (ac.getWeaponNum() <= 0) {
+            return;
+        }
+        currentWeapon = ws;
+        boolean reloading = ac.isPilotReloading();
+        weaponName = reloading ? "-- Reloading --" : ws.getDisplayName();
+        if (ws.getMagSize() > 0) {
+            weaponAmmo = reloading ? "----" : String.format("%4d", ws.getAmmo());
+            weaponAllAmmo = reloading ? "----" : String.format("%4d", ws.getRestAllAmmoNum());
+        } else {
+            weaponAmmo = "";
+            weaponAllAmmo = "";
+        }
+        WeaponInfo wi = ws.getInfo();
+        mortarDist = wi.displayMortarDistance ? (float) ac.weapons().getLandInDistance(player) : -1.0F;
+        if (wi.delay > wi.reloadTime) {
+            reloadSec = Math.abs(ws.cooldown);
+            reloadPer = Math.min(Math.abs((float) ws.cooldown / (wi.delay > 0 ? wi.delay : 1)), 1.0F);
+        } else {
+            reloadSec = ws.reloadCooldown;
+            reloadPer = (float) ws.reloadCooldown / (wi.reloadTime > 0 ? wi.reloadTime : 1);
+        }
+        int burst = ws.getCurrentWeapon().airburstDist;
+        airburstDist = burst <= 5 || burst >= 3000 ? "---" : burst + "m + 3";
+        reloadSec /= 20.0F;
+        reloadPer = (1.0F - reloadPer) * 100.0F;
+    }
+
+    /** Upstream {@code updateVarMap_Weapon}. */
+    private static void putWeaponVars(Map<String, Object> v, WeaponSet ws) {
+        double wpnHeat = 0.0;
+        float relTime = 0.0F;
+        double lock = 0.0;
+        int sightType = 0;
+        int hasAirburst = 0;
+        boolean reloading = false;
+        boolean isHeatWpn = false;
+        boolean displayMortarDist = false;
+        WeaponBase wb = ws.getCurrentWeapon();
+        WeaponInfo wi = wb.getInfo();
+        if (wi != null) {
+            isHeatWpn = wi.maxHeatCount > 0;
+            reloading = ws.isBusy();
+            displayMortarDist = wi.displayMortarDistance;
+            if (wi.delay > wi.reloadTime) {
+                relTime = Math.min(Math.abs((float) ws.cooldown / (wi.delay > 0 ? wi.delay : 1)), 1.0F);
+            } else {
+                relTime = (float) ws.reloadCooldown / (wi.reloadTime > 0 ? wi.reloadTime : 1);
+            }
+            if (wi.maxHeatCount > 0) {
+                wpnHeat = Math.min((double) ws.getCurrentHeat() / wi.maxHeatCount, 1.0);
+            }
+            int cntLockMax = wb.getLockCountMax();
+            SightType sight = wb.getSightType();
+            if (sight == SightType.LOCK && cntLockMax > 0) {
+                lock = (double) wb.getLockCount() / cntLockMax;
+                sightType = 2;
+            }
+            if (sight == SightType.ROCKET) {
+                sightType = 1;
+            }
+            hasAirburst = wb.airburstDist == 0 ? 0 : 1;
+        }
+        v.put("reloading", reloading);
+        v.put("reload_time", relTime);
+        v.put("wpn_heat", wpnHeat);
+        v.put("is_heat_wpn", isHeatWpn);
+        v.put("sight_type", sightType);
+        v.put("lock", lock);
+        v.put("dsp_mt_dist", displayMortarDist);
+        v.put("mt_dist", mortarDist);
+        v.put("has_airburst", hasAirburst);
     }
 
     /** Upstream {@code getHorizon}: 63, or the bottom of the world on a superflat world. */
