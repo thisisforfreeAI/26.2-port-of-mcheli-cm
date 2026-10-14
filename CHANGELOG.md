@@ -8,6 +8,63 @@ Versions stay below 1.0.0 until the port is feature-complete, and each milestone
 McHeli CE 1.5.1 (`master` @ `cbaff7f`). Where it deliberately differs from upstream, the difference is
 listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 
+## [0.4.0] - unreleased (M4: models, HUD and camera)
+
+### Added
+
+- **Helicopters are drawn with their models.** OBJ and MQO parsers with upstream's rules
+  (`$part` groups, MQO smoothing within the `facet` angle and object merging), and a model
+  manager with upstream's on-demand loading on a background thread (`render.onDemandModels`,
+  decision D16) or loading during resource reload, which unloads models unused for
+  `render.onDemandModelLifetimeSeconds`.
+  The renderer draws the body, rotors and blades (both `OldRenderMethod`s), canopies, hatches,
+  landing gear, throttle parts, rotating parts, camera parts, weapon bays and weapon parts at rest,
+  with the content's texture, upstream's 0.75 grey (dark when destroyed) and optional smooth
+  shading (`render.smoothShading`). It uses vanilla's entity render types only, so it works on
+  OpenGL and Vulkan. The M3 stand-in box renderer is gone (decision D11).
+- **Crew tilt**: riders lean with the helicopter's pitch and roll (`render.tiltRiders`,
+  decision D17). `debug.testMode` draws the hit boxes and seats.
+- **Engine and rotor sound** that follows the throttle, with upstream's pitch and volume.
+- **HUD**: upstream's HUD language, drawn on a GUI layer above vanilla's: `If`/`Endif`, `Exit`,
+  `Call`, `Color`, `DrawString`/`DrawCenteredString` with every format value, `DrawTexture`,
+  `DrawRect`, `DrawLine`, `DrawLineStipple` (as dashes, decision D15), `DrawGraduation` (heading
+  tape and the three pitch ladders), `CameraRot`, and the entity and enemy radars. Expressions run
+  on a port of Aviator's semantics (decision D4). Every HUD variable of upstream is filled (weapon
+  values keep upstream's "no weapon" values until M5). The pilot sees seat 0's HUD, and seat 1's
+  (`heli_gnr` on most helicopters) in gunner mode; crew seats see their own. Key hints are drawn
+  next to it (`hud.hideKeyHints`), the HUD can show in third person (`hud.displayInThirdPerson`) and
+  scale to the screen (`hud.autoScale`), and `debug.testMode` lists the HUD variables. Vanilla's
+  crosshair, hotbar, health, armour, food, air and boss bars are hidden while riding, as upstream.
+- **Gunner camera**: in gunner mode (H) the view moves to the content's camera position and turns
+  with the helicopter, through a client-only camera entity (decision D14); the gunner's pitch stays
+  within the seat's range. Crew gunner mode works too.
+- **Zoom** (Z in gunner mode): doubles up to the content's `CameraZoom`, then back to 1, and
+  narrows the field of view.
+- **Camera modes** (C): normal and night vision for helicopters with `NightVision`. The server
+  gives the viewer upstream's short night-vision effect while in that mode; the client draws
+  upstream's night-vision shader as a vanilla post effect, and the green noise overlay.
+- **Third-person distance**: the content's `ThirdPersonDist` while riding; Page Up and Page Down
+  change it in steps of 4 when the server allows it (SERVER `camera.enableCamDistChange`, synced).
+- Config: CLIENT `render.*`, `hud.*` and `debug.testMode`; SERVER `camera.enableCamDistChange`.
+  Keys: camera mode (C), camera distance up and down (Page Up, Page Down).
+- Tests:
+  - JUnit: `HudExpressionTest` (every expression of every stock HUD against Aviator 5.4.3, a
+    test-only oracle), `ModelParserTest` (every stock model against upstream's parsers copied into
+    the tests), `HudInterpreterTest` (every stock HUD against a transcription of upstream's HUD
+    code), `PartTransformTest` (every moving part of every stock vehicle against upstream's GL call
+    sequences), `AllHelicopterModelsTest` (every stock helicopter's models and textures) and
+    `AircraftCameraClientTest`.
+  - GameTests (29): adds `CameraModeGameTests` (night vision given, kept and removed; refused
+    without `NightVision`; camera modes per seat; reset when the vehicle is destroyed).
+
+### Changed from upstream
+
+- A HUD line that fails is logged once and skipped (a failing `If` counts as false); upstream
+  stopped drawing the HUD.
+- The camera-mode key only works where the content allows night vision, and switching back to
+  normal reaches the server, so the night-vision effect ends; upstream never sent the switch back.
+- See [KNOWN_ISSUES.md](KNOWN_ISSUES.md), items 30 to 41, for the rest.
+
 ## [0.3.0] - unreleased (M3: placing and flying helicopters)
 
 ### Added

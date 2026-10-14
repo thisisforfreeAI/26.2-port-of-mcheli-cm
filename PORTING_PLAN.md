@@ -1,8 +1,8 @@
 # McHeli CE → Minecraft 26.2 (NeoForge) — Porting Plan
 
 > **Status:** Plan approved. All [decisions D1–D9](#10-decisions) were approved as recommended on
-> 2026-10-14. **M1, M2 and M3 are implemented** (versions 0.1.0 to 0.3.0, see `CHANGELOG.md`); **next
-> step is M4** (§6).
+> 2026-10-14. **M1 to M4 are implemented** (versions 0.1.0 to 0.4.0, see `CHANGELOG.md`); **next
+> step is M5** (§6).
 > Repo: <https://github.com/thisisforfreeAI/26.2-port-of-mcheli-cm>. In a fresh checkout, run
 > `bash scripts/fetch-upstream.sh` to get the upstream reference sources into `upstream/`.
 >
@@ -266,7 +266,7 @@ Every milestone ends with `./gradlew build`, `runClient` (world load, no crash),
 | **M1** | Empty 26.2 mod boots | **Done 2026-10-14** (0.1.0). MDK import (neo 26.2.0.88), mod metadata (ID, GPLv3, authors, unofficial notice), LICENSE, empty registries, config skeleton, logging | Build green; client reaches title screen with the mod listed; dedicated server boots |
 | **M2** | Content + registries | **Done 2026-10-14** (0.2.0). Ported content system, addon discovery + builtin extraction, all items/blocks/entity types registered (entity types as inert placeholders until each entity is ported), 7 creative tabs, generated item model definitions/lang/sounds, recipes, `/mcheli dumpyaml` | All 372 stock definitions load from YAML **and** TXT (parity tests); every item visible with icon and name in creative; addon folder override test |
 | **M3** | One helicopter flies | **Done 2026-10-14** (0.3.0; plan in [docs/M3_PLAN.md](docs/M3_PLAN.md)). `AircraftEntity` core + `HeliEntity` (use a stock heli such as `ah-64`), spawn item, riding/seats, controls + mouse flight, physics, fuel, synced data, control payloads, interpolation | Spawn, mount, take off, hover, land in SP; two-client LAN test shows smooth remote motion; physics unit tests (rotor/throttle/drag math vs upstream formulas) |
-| **M4** | Rendering + HUD for that heli | OBJ/MQO loaders + threaded reload, render path A, rotor/part animation, textures, HUD layer + DSL + expression evaluator, camera/zoom, night vision post effect | Heli renders on **both GL and Vulkan**; HUD matches upstream layout for `heli.yml`; expression evaluator unit tests |
+| **M4** | Rendering + HUD for that heli | **Done 2026-10-14** (0.4.0; plan in [docs/M4_PLAN.md](docs/M4_PLAN.md)). OBJ/MQO loaders + threaded reload, render path A, rotor/part animation, textures, HUD layer + DSL + expression evaluator, camera/zoom, night vision post effect | Heli renders on **both GL and Vulkan**; HUD matches upstream layout for `heli.yml`; expression evaluator unit tests |
 | **M5** | Weapons | Weapon sets, all weapon types, bullets/missiles/bombs/torpedoes, guidance, flares/chaff, explosions, particles, hit markers, sounds | Each weapon type fires in a GameTest arena or manual checklist; damage-factor unit tests |
 | **M6** | Remaining vehicle types | Planes (VTOL, sweep wing, autopilot), ships, tanks (wheels, tilt, tracks), vehicles, UAV + stations, gunner NPC, containers, chains, parachutes, GLTD, light weapons, drafting table, charger, tools, multiplayer/teams | Every stock vehicle spawns, mounts, moves and renders |
 | **M6b** | Wingman | Marker blocks, formation AI, missions state machine, chunk loading, planner GUIs, `/wingman` | Formation + one CAP mission flies end-to-end |

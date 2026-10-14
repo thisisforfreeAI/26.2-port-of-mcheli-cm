@@ -5,21 +5,22 @@ McHeli CE 1.5.1. This file is updated with every milestone (PORTING_PLAN.md, sec
 
 ## Not ported yet
 
-As of 0.3.0 (M3), helicopters can be placed, flown, refuelled and picked up. Everything else that
-needs a vehicle or a weapon is still to come:
+As of 0.4.0 (M4), helicopters can be placed, flown, refuelled and picked up, and are drawn with
+their models, HUD and gunner camera. Everything else that needs a vehicle or a weapon is still to
+come:
 
 | Area | Planned milestone |
 |---|---|
-| Model rendering (OBJ/MQO), rotor and part animation, HUD, camera modes and zoom, third-person distance, night vision, engine and rotor sounds | M4 |
-| Weapons and gunner weapon use, throwing grenades, flares and chaff, APS and ECM, McHeli's own explosions, particles (damage smoke, sand clouds) | M5 |
-| Planes, ships, tanks, vehicles, UAVs, gunner NPCs and mobs in seats, racks and rappelling, containers, chains, parachutes, GLTD, hand-held weapons, the rest of the aircraft GUI, drafting table screen, charger, tools, supply vehicles, multiplayer teams | M6 |
+| Weapons and gunner weapon use, the weapon parts of models (aiming, recoil, barrel spin, missiles on rails), the HUD's weapon values, sight dot, hit and lock-on markers, TV missile camera, BVR, GPS, mortar and RWR overlays, throwing grenades, flares and chaff, APS and ECM, McHeli's own explosions, particles (damage smoke, sand clouds) | M5 |
+| Planes, ships, tanks, vehicles, UAVs (and the UAV camera), camera position switching, search lights, ropes and rappelling, crawler tracks and track rollers, ERA tiles, gunner NPCs and mobs in seats, racks, containers, chains, parachutes, GLTD, hand-held weapons, the rest of the aircraft GUI, drafting table screen, charger, tools, supply vehicles, multiplayer teams | M6 |
 | Wingman (AI wingmen, marker block screens and types, missions, `/wingman`) | M6b |
-| Remaining `/mcheli` commands (including reloading content with `reconfig`), advancement triggers, long-distance tracking and rendering, thermal vision, HBM:NTM stubs, performance work | M7 |
+| Remaining `/mcheli` commands (including reloading content with `reconfig`), advancement triggers, long-distance tracking and rendering, thermal vision (the third camera mode), GPU-buffer model rendering, HBM:NTM stubs, performance work | M7 |
 
 Until then:
 
-- Helicopters are drawn as boxes: the main box, the content bounding boxes and a nose line
-  (decision D11). Models come with M4.
+- Weapon parts are drawn at rest, missiles always show, and the HUD shows upstream's values for a
+  vehicle without weapons (M5). The key hints for flares, weapons, racks and search lights come
+  with those features (M5, M6).
 - Planes, ships, tanks, vehicles and throwables do nothing when used, and their entity types are
   inert placeholders that cannot be summoned.
 - A destroyed helicopter explodes with a vanilla explosion of upstream's power (decision D13);
@@ -113,6 +114,36 @@ These follow from how Minecraft 26.2 works or from decisions approved in PORTING
 29. The mouse turns the helicopter through `Entity#onPassengerTurned`, which sees every frame's
     raw mouse movement, instead of upstream's tick handler; free look follows vanilla's
     "invert mouse" option as well as `mouse.invertMouse`.
+30. A HUD line that fails (an expression error, for example) is logged once and skipped, and an
+    `If` whose condition fails counts as false. Upstream threw, which stopped the rest of the HUD
+    from drawing.
+31. HUD lines are drawn as quads one GUI pixel wide with square ends, and points as 2×2 squares,
+    through vanilla's GUI pipelines; upstream drew GL lines `scaleFactor` pixels wide.
+    Angled lines may look slightly different.
+32. The HUD's `altitude` probe covers 26.2's whole build height and rounds correctly at negative
+    coordinates, like the ground probe (item 21). Upstream probed y 0 to 256 only.
+33. The HUD's `MC_VER` string is the running Minecraft version; upstream always showed `1.12.2`.
+34. The camera-mode key only switches on helicopters whose content has `NightVision`; upstream
+    showed the key hint only there but switched on any helicopter. Switching back to normal
+    reaches the server, so the night-vision effect ends; upstream never sent it, so the server
+    kept giving the effect.
+35. A crew member getting out resets that seat's camera mode. Upstream looked the seat up after
+    the rider had left, so the mode stayed for the next rider.
+36. The third-person distance (`ThirdPersonDist`, Page Up and Page Down) is pulled in by blocks
+    behind the camera over its whole length; upstream only pulled in vanilla's first 4 blocks and
+    put the rest behind them regardless.
+37. In camera view the rider's own name tag is hidden; the rider's model is drawn, as upstream,
+    since the view comes from another entity. Switching between first and third person clears
+    post effects in 26.2; the port puts night vision back on the next tick.
+38. OBJ faces with four vertices are split into two triangles, and a vertex without a normal gets
+    its face's normal. Upstream's model path drew quads as triangles (scrambling those faces) and
+    gave such vertices a zero normal.
+39. Models are drawn with vanilla's translucent entity render type: translucent faces are sorted,
+    and pixels with alpha below 0.1 are discarded (upstream: below 0.001, unsorted).
+40. Helicopters do not get a glowing outline (the Glowing effect, spectral arrows); vanilla's
+    outline pass does not cover custom model geometry.
+41. Vanilla's vignette still darkens the screen edges while riding; upstream hid it. In 26.2 it
+    shares a layer with the pumpkin, spyglass and portal overlays, which should stay.
 
 ## Upstream content issues kept as they are
 
@@ -125,6 +156,10 @@ its stock content from TXT to YAML lost or changed (the full list, checked by a 
   settings; some search lights lost their transparency; some racks lost their fixed angles.
 - Stock YAML vehicles sit with the opposite pitch on the ground (`OnGroundPitch` was written with
   its sign flipped).
+- The stock helicopter HUD tests `hovering==1`, but `hovering` is true or false, so the HOVERING
+  label never shows, as upstream.
+- The AH-1Z names a `canopy` part and the UH-1C a `camera0` part that their model files do not
+  have; nothing is drawn for them, as upstream.
 - Eleven sound events named by stock content have no sound file (for example `railgun` and the
   smoke dispensers' fire sounds), so they play nothing, as upstream.
 - Two stock plane files (`b29.yml`, `fuel_truck.yml`) name their `Author` twice; SnakeYAML logs a

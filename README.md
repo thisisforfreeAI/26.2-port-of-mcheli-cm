@@ -10,11 +10,12 @@ An unofficial community port of [McHeli: Community Edition](https://github.com/W
 
 ## Status
 
-**Work in progress (milestone M3):** helicopters can be placed, boarded, flown with the keyboard
+**Work in progress (milestone M4):** helicopters can be placed, boarded, flown with the keyboard
 and mouse, refuelled from fuel cans, landed and picked up again, in single player and multiplayer.
-They are still drawn as boxes, and weapons do not fire: models and the HUD come with milestone M4,
-weapons with M5, and the other vehicle types with M6. The mod also loads all of McHeli CE's content
-(vehicles, weapons, throwables and HUDs, from YAML and legacy TXT files, including addon packs).
+They are drawn with their models, rotors and moving parts, show upstream's HUD, and have the
+gunner camera with zoom and night vision. Weapons do not fire yet: they come with milestone M5, and
+the other vehicle types with M6. The mod also loads all of McHeli CE's content (vehicles, weapons,
+throwables and HUDs, from YAML and legacy TXT files, including addon packs).
 
 - [PORTING_PLAN.md](PORTING_PLAN.md): the roadmap and the decisions behind it
 - [CHANGELOG.md](CHANGELOG.md): what each milestone added

@@ -29,6 +29,7 @@ final class CameraModeGameTests {
         ModGameTests.test("camera_keeps_longer_night_vision", 40, CameraModeGameTests::keepsLongerNightVision);
         ModGameTests.test("camera_needs_night_vision_content", 20, CameraModeGameTests::needsNightVisionContent);
         ModGameTests.test("camera_modes_per_seat", 20, CameraModeGameTests::modesPerSeat);
+        ModGameTests.test("camera_destroyed_resets", 20, CameraModeGameTests::destroyedResets);
     }
 
     private static Player rider(GameTestHelper helper) {
@@ -128,6 +129,22 @@ final class CameraModeGameTests {
             check(helper, heli.getCameraMode(passenger) == AircraftCamera.MODE_NORMAL,
                     "seats past the first crew seat have no camera, as upstream");
             check(helper, heli.getCameraMode(pilot) == AircraftCamera.MODE_NORMAL, "nor can they switch the pilot's");
+            GameTestSupport.cleanUp(heli);
+            helper.succeed();
+        });
+    }
+
+    private static void destroyedResets(GameTestHelper helper) {
+        HeliEntity heli = spawn(helper, AH64, new Vec3(12.5, 1.0, 12.5), 0.0F);
+        Player pilot = rider(helper);
+        helper.runAfterDelay(5, () -> {
+            heli.interact(pilot, InteractionHand.MAIN_HAND, Vec3.ZERO);
+            switchCamera(heli, pilot, AircraftCamera.MODE_NIGHTVISION);
+            check(helper, heli.getCameraMode(pilot) == AircraftCamera.MODE_NIGHTVISION, "night vision on");
+            heli.setDamageTaken(heli.getMaxHP());
+            heli.destroyAircraft();
+            check(helper, heli.getCameraMode(pilot) == AircraftCamera.MODE_NORMAL,
+                    "destruction puts the crew's cameras back to normal, as upstream");
             GameTestSupport.cleanUp(heli);
             helper.succeed();
         });

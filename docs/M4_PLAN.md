@@ -206,4 +206,24 @@ upstream did on Java 21 and later.
 
 ## 10. As built
 
-(Filled in when M4 is done.)
+What changed from this plan while implementing it:
+
+- Classes: the renderer is `HeliRenderer` with the part maths in `AircraftPartPoses` (pure, so
+  `PartTransformTest` can call it) on a `GlMatrixStack` with `glRotatef`'s semantics;
+  `AircraftRenderTypes`, `RiderTilt`, `ModelVertices` and `AircraftDebugBoxes` fill the other
+  roles. The camera is split in two: `AircraftCamera` (upstream's `MCH_Camera`, on both sides,
+  in `entity/aircraft` with `AircraftRadar`) and `client/camera/AircraftCameraClient` (the view
+  entity, zoom, post effect and third-person distance). `HudShapeRenderState` draws the HUD's
+  lines, points and rotated textures as GUI quads.
+- `GlMatrixStack` builds `glRotatef`'s matrix in doubles: `PartTransformTest` found that JOML's
+  float rotations lose precision near half turns.
+- The view entity is a `Marker` that keeps the rider's eye height and sits that far below the
+  camera, so vanilla's eye-height smoothing does not slide the view when it switches.
+- Crew gunner mode (upstream's `gunnerModeOtherSeat`) and the camera-mode key for crew seat 1 were
+  needed for `heli_gnr` and the key hints, so they came with M4. Destroying a helicopter puts its
+  crew's cameras back to normal, as upstream.
+- No stock helicopter uses `OldRenderMethod`; `PartTransformTest` switches the AH-64's rotors to
+  it. `AllHelicopterModelsTest` found two parts that upstream's own model files lack (AH-1Z
+  `canopy`, UH-1C `camera0`); they are listed as upstream content issues.
+- Not done in M4, as planned: thermal vision (M7), weapon HUD values and weapon part animation
+  (M5), search lights, camera position switching and the UAV camera (M6).
