@@ -13,6 +13,10 @@ import net.neoforged.neoforge.common.ModConfigSpec;
 public final class ServerConfig {
     /** Decision D2: a server can switch back to upstream's server-authoritative vehicle movement. */
     public static final ModConfigSpec.BooleanValue SERVER_AUTHORITATIVE_MOVEMENT;
+    public static final ModConfigSpec.BooleanValue ENABLE_ROTATION_LIMIT;
+    public static final ModConfigSpec.IntValue PITCH_LIMIT_MAX;
+    public static final ModConfigSpec.IntValue PITCH_LIMIT_MIN;
+    public static final ModConfigSpec.IntValue ROLL_LIMIT;
     public static final ModConfigSpec SPEC;
 
     static {
@@ -22,8 +26,24 @@ public final class ServerConfig {
         SERVER_AUTHORITATIVE_MOVEMENT = builder
                 .comment("false: the pilot's client moves the vehicle it controls and the server checks the movement.",
                         "true: clients only send control inputs and the server simulates every vehicle, as upstream McHeli CE does.",
-                        "Has no effect yet: vehicles are not ported.")
+                        "Takes effect for vehicles after a world restart.")
                 .define("serverAuthoritativeMovement", false);
+        builder.pop();
+
+        builder.comment("Rotation limits pilots fly with (upstream's MCH_ServerSettings, sent to every client).")
+                .push("rotationLimits");
+        ENABLE_ROTATION_LIMIT = builder
+                .comment("Pull helicopters back towards the limits below. Upstream: EnableRotationLimit.")
+                .define("enableRotationLimit", false);
+        PITCH_LIMIT_MAX = builder
+                .comment("Nose-down pitch limit in degrees. Upstream: PitchLimitMax.")
+                .defineInRange("pitchLimitMax", 10, 0, 80);
+        PITCH_LIMIT_MIN = builder
+                .comment("Nose-up pitch limit in degrees (negative). Upstream: PitchLimitMin.")
+                .defineInRange("pitchLimitMin", -10, -80, 0);
+        ROLL_LIMIT = builder
+                .comment("Roll limit in degrees either way. Upstream: RollLimit.")
+                .defineInRange("rollLimit", 35, 0, 80);
         builder.pop();
 
         SPEC = builder.build();

@@ -15,6 +15,10 @@ import net.neoforged.neoforge.common.ModConfigSpec;
 public final class ClientConfig {
     /** Decision D7: {@code /mcheli sendss} screen capture is opt-in. */
     public static final ModConfigSpec.BooleanValue ALLOW_SCREEN_CAPTURE;
+    public static final ModConfigSpec.BooleanValue INVERT_MOUSE;
+    public static final ModConfigSpec.DoubleValue MOUSE_SENSITIVITY;
+    public static final ModConfigSpec.BooleanValue MOUSE_CONTROL_STICK_MODE_HELI;
+    public static final ModConfigSpec.BooleanValue MOUSE_CONTROL_FLIGHT_SIM_MODE;
     private static final Map<ModTab, ModConfigSpec.ConfigValue<String>> TAB_ICONS = new EnumMap<>(ModTab.class);
     public static final ModConfigSpec SPEC;
 
@@ -27,6 +31,23 @@ public final class ClientConfig {
                         "Requests are refused while this is false, and you get a chat notice whenever a capture happens.",
                         "Has no effect yet: /mcheli sendss is not ported.")
                 .define("allowScreenCapture", false);
+        builder.pop();
+
+        builder.comment("Flying with the mouse (upstream's lines of the same names in mcheli.cfg).").push("mouse");
+        INVERT_MOUSE = builder
+                .comment("Invert the pitch of vehicles flown with the mouse. Upstream: InvertMouse.")
+                .define("invertMouse", false);
+        MOUSE_SENSITIVITY = builder
+                .comment("How fast the mouse turns a vehicle. Upstream: MouseSensitivity.")
+                .defineInRange("mouseSensitivity", 10.0, 0.0, 1000.0);
+        MOUSE_CONTROL_STICK_MODE_HELI = builder
+                .comment("The mouse moves a control stick that stays where it is put, instead of turning the helicopter directly.",
+                        "Upstream: MouseControlStickModeHeli.")
+                .define("mouseControlStickModeHeli", false);
+        MOUSE_CONTROL_FLIGHT_SIM_MODE = builder
+                .comment("Flight simulator mouse mode for planes and ships. Has no effect yet: planes and ships are not ported.",
+                        "Upstream: MouseControlFlightSimMode.")
+                .define("mouseControlFlightSimMode", false);
         builder.pop();
 
         builder.comment("Icons of the creative tabs (upstream's CreativeTabIcon* lines in mcheli.cfg).",
