@@ -1,7 +1,9 @@
 # McHeli CE → Minecraft 26.2 (NeoForge) — Porting Plan
 
-> **Status:** Step 1 deliverable (inventory + plan). No port code has been written yet.
-> Review the [Decisions needed](#10-decisions-needed-before-m1) section before M1 starts.
+> **Status:** Plan approved. All [decisions D1–D9](#10-decisions) were approved as recommended on
+> 2026-10-14. No port code has been written yet; **next step is M1** (§6).
+> Repo: <https://github.com/thisisforfreeAI/26.2-port-of-mcheli-cm>. In a fresh checkout, run
+> `bash scripts/fetch-upstream.sh` to get the upstream reference sources into `upstream/`.
 >
 > **Unofficial fork.** This is an unofficial, community port of McHeli: Community Edition. It is
 > not affiliated with or endorsed by Warfactory, the McHeli CE developers, or the original
@@ -27,7 +29,7 @@
 
 | | |
 |---|---|
-| Repo | `https://github.com/Warfactory-Offical/McHeliCE`, cloned to `upstream/McHeliCE` (reference only, git-ignored) |
+| Repo | `https://github.com/Warfactory-Offical/McHeliCE`, cloned to `upstream/McHeliCE` (reference only, git-ignored; recreate with `scripts/fetch-upstream.sh`) |
 | Commit | `master` @ `cbaff7f` (2026-08-29, "bump version"), 251 commits; mod version **1.5.1** |
 | Wiki | cloned to `upstream/McHeliCE.wiki` (14 pages: config, YAML content schemas, Wingman) |
 | Build | RetroFuturaGradle + GregTechCEu buildscript, Jabel (modern syntax compiled to Java 8), MixinBooter, an ASM coremod (`core.MCHCore`), access transformer `mcheli_at.cfg` |
@@ -185,7 +187,7 @@ Deps columns come from a per-package scan of 1.12.2 API usage (counts are matchi
 - **Riding.** Upstream: pilot rides the aircraft directly; extra seats are `MCH_EntitySeat` entities. Kept: `getControllingPassenger()` returns the pilot, `positionRider(…, MoveFunction)`, `getPassengerRidingPosition`, `getDismountLocationForPassenger`. Seat entities keep their own interpolation.
 - **Multipart hitboxes** (`MCH_EntityHitBox`, `MCH_BoundingBox` with rotatable boxes and damage factors) → NeoForge `PartEntity` children.
 - **Smooth client movement.** `InterpolationHandler` (vanilla, configurable step count) for non-authoritative instances, replacing `setPositionAndRotationDirect`. Upstream's tracking intervals (1,200-block range, update interval 2 for vehicles) are kept via `EntityType.Builder#clientTrackingRange`/`updateInterval`, subject to the view-distance cap (§5.7).
-- **Authority model** is Decision D2.
+- **Authority model (D2, approved).** The pilot's client simulates the vehicle (`isClientAuthoritative()` is true while a player pilots it), and the server applies sanity checks against content speed limits. A SERVER config option restores upstream's server-authoritative model (inputs only, server simulates).
 
 ### 5.3 Networking
 
@@ -213,7 +215,7 @@ Deps columns come from a per-package scan of 1.12.2 API usage (counts are matchi
 - **Generated resources** (upstream's `generated/` folder) become an in-memory `PackResources` providing item model definitions (`items/<id>.json` → `mcheli:items/<id>` texture), lang JSON from `DisplayName` maps, `sounds.json` for discovered `.ogg` files, and content recipes from `Recepie` blocks.
 - `/mcheli dumpyaml` is ported to Brigadier and writes `<gamedir>/mcheli_yaml_dump/` as upstream.
 - **Tests:** golden tests parse each of the 372 legacy TXT files and the corresponding YAML file and compare the resulting info objects. A round-trip test runs TXT → `YamlEmitter` → `YamlParser`.
-- Documented upstream parser bugs (wiki: `EnableVtol` map form, `Smoke.Velocity`, `BoundingBoxes.Name`, `WeightedCenterZ`, `RotBarrel`) are covered by Decision D5.
+- Documented upstream parser bugs (wiki: `EnableVtol` map form, `Smoke.Velocity`, `BoundingBoxes.Name`, `WeightedCenterZ`, `RotBarrel`) are fixed (D5, approved); each fix gets a CHANGELOG entry and a regression test.
 
 ### 5.6 Config
 
@@ -259,7 +261,7 @@ Every milestone ends with `./gradlew build`, `runClient` (world load, no crash),
 
 | MS | Goal | Main work | Exit criteria / tests |
 |---|---|---|---|
-| **M0** | Plan approved | This document; answers to §10 | — |
+| **M0** | Plan approved | **Done 2026-10-14** (all §10 decisions approved) | — |
 | **M1** | Empty 26.2 mod boots | MDK import (neo 26.2.0.88), mod metadata (ID, GPLv3, authors, unofficial notice), LICENSE, empty registries, config skeleton, logging | Build green; client reaches title screen with the mod listed; dedicated server boots |
 | **M2** | Content + registries | Ported content system, addon discovery + builtin extraction, all items/blocks/entity types registered, 7 creative tabs, generated item model definitions/lang/sounds, recipes, `/mcheli dumpyaml` | All 372 stock definitions load from YAML **and** TXT (parity tests); every item visible with icon and name in creative; addon folder override test |
 | **M3** | One helicopter flies | `AircraftEntity` core + `HeliEntity` (use a stock heli such as `ah-64`), spawn item, riding/seats, controls + mouse flight, physics, fuel, synced data, control payloads, interpolation | Spawn, mount, take off, hover, land in SP; two-client LAN test shows smooth remote motion; physics unit tests (rotor/throttle/drag math vs upstream formulas) |
@@ -290,7 +292,8 @@ Every milestone ends with `./gradlew build`, `runClient` (world load, no crash),
 6. GregTech EU charging removed (FE only); The One Probe and Trajectory Preview integrations stubbed.
 7. HBM:NTM payloads are inert unless an HBM build for 26.2 exists.
 8. Long-distance rendering uses scaled proxies instead of a second far-plane pass.
-9. If D2 = client-authoritative: the pilot's client simulates its own vehicle (smoother; server validates).
+9. D2: the pilot's client simulates its own vehicle (smoother; server validates). Servers can switch back to upstream's server-authoritative model in config.
+10. D7: `/mcheli sendss` screen capture only works for players who opt in (client config), and they get a chat notice.
 
 ---
 
@@ -308,9 +311,12 @@ Every milestone ends with `./gradlew build`, `runClient` (world load, no crash),
 
 ---
 
-## 10. Decisions needed before M1
+## 10. Decisions
 
-| # | Decision | Recommendation |
+All nine were approved as recommended on 2026-10-14. They are binding for the port; changing one
+needs a new entry here.
+
+| # | Decision | Approved resolution |
 |---|---|---|
 | D1 | Namespaces: registry IDs `mcheli_ce_port:*`, but assets stay under the **`mcheli`** namespace so existing `mcheli_addons/<pack>/assets/mcheli/…` packs work unchanged | **Yes.** Compatibility namespace only; no `mcheli` mod ID or branding. |
 | D2 | Flight authority: upstream is server-authoritative (client sends inputs). 26.2 natively supports the controlling player's client simulating the vehicle (like boats), which removes pilot input lag and the jitter CE fought with update interval 2 | **Client-authoritative piloting** with server sanity checks and a server config to force upstream's model |
@@ -320,4 +326,4 @@ Every milestone ends with `./gradlew build`, `runClient` (world load, no crash),
 | D6 | Licence: GPLv3 text from upstream `origin/main` (`7c1b0ee`); `master` has none | Proceed under GPLv3 as you instructed; confirm with upstream before any public release |
 | D7 | `/mcheli sendss` lets an operator capture a player's screen | Port it **opt-in**: client config defaults to refusing, and the player sees a chat notice when a capture happens |
 | D8 | Drop ElegantNetworking, ModularUI, Lombok and the coremod in favour of plain NeoForge and records | **Yes** (no 26.2 builds of the libraries; idiomatic code) |
-| D9 | Repo layout: workspace root is the port repo, `upstream/` git-ignored; commits need an author name (email would be your account's) | Init git at M1 start once you give the author name |
+| D9 | Repo layout: workspace root is the port repo, `upstream/` git-ignored | Done: repo at `thisisforfreeAI/26.2-port-of-mcheli-cm` (branch `main`); `scripts/fetch-upstream.sh` restores `upstream/` at `cbaff7f` |
