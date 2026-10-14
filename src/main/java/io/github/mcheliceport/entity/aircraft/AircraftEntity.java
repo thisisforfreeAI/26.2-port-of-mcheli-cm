@@ -647,8 +647,11 @@ public abstract class AircraftEntity extends Entity
         return this.entityData.get(DATA_TEXTURE_NAME);
     }
 
+    /** Upstream {@code setTextureName}: an empty name keeps the current texture. */
     public void setTextureName(String name) {
-        this.entityData.set(DATA_TEXTURE_NAME, name);
+        if (!name.isEmpty()) {
+            this.entityData.set(DATA_TEXTURE_NAME, name);
+        }
     }
 
     /** Upstream {@code switchNextTextureName} (wrench and sneak). */

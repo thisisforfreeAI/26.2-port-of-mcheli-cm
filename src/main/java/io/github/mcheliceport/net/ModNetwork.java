@@ -62,7 +62,14 @@ public final class ModNetwork {
 
     private static void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) {
-            PacketDistributor.sendToPlayer(player, ServerSettingsPayload.of(ServerSettings.server()));
+            sendSettings(player, ServerSettingsPayload.of(ServerSettings.server()));
+        }
+    }
+
+    /** Sends the settings to a player whose connection knows them (not to fake players or vanilla clients). */
+    private static void sendSettings(ServerPlayer player, ServerSettingsPayload payload) {
+        if (player.connection != null && player.connection.hasChannel(ServerSettingsPayload.TYPE)) {
+            PacketDistributor.sendToPlayer(player, payload);
         }
     }
 
@@ -72,7 +79,10 @@ public final class ModNetwork {
         }
         MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
         if (server != null) {
-            server.execute(() -> PacketDistributor.sendToAllPlayers(ServerSettingsPayload.of(ServerSettings.server())));
+            server.execute(() -> {
+                ServerSettingsPayload payload = ServerSettingsPayload.of(ServerSettings.server());
+                server.getPlayerList().getPlayers().forEach(player -> sendSettings(player, payload));
+            });
         }
     }
 

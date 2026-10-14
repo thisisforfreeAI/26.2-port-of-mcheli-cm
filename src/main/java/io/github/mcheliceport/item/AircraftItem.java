@@ -105,7 +105,9 @@ public class AircraftItem extends Item {
      * or entities are in the way.
      */
     public @Nullable AircraftEntity onTileClick(Level level, float yaw, int x, int y, int z) {
-        AircraftEntity aircraft = this.createAircraft(level, x + 0.5F, y + 1.0F, z + 0.5F);
+        // Upstream added 0.5F, which is float maths: past about 8 million blocks the vehicle landed
+        // on a block edge. Doubles keep it centred everywhere in the world.
+        AircraftEntity aircraft = this.createAircraft(level, x + 0.5, y + 1.0, z + 0.5);
         if (aircraft == null) {
             return null;
         }
