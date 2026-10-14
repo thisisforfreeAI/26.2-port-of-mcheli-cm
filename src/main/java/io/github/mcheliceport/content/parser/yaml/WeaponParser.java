@@ -255,9 +255,9 @@ public final class WeaponParser {
     }
 
     private static void parseDispenseItem(WeaponInfo info, Map<String, Object> value) {
-        String loc = ((String) getAny(value, Arrays.asList("Location", "Loc", "Name"), null)).toLowerCase(Locale.ROOT)
-                .trim();
-        info.dispenseItemLoc = loc;
+        Object loc = getAny(value, Arrays.asList("Location", "Loc", "Name"), null);
+        // Upstream failed on a DispenseItem without a name; the port leaves the item unset.
+        info.dispenseItemLoc = loc == null ? null : ((String) loc).toLowerCase(Locale.ROOT).trim();
         info.dispenseDamege = ((Number) getAny(value, Arrays.asList("Meta", "Damage"), 0)).intValue();
         if (value.containsKey("DispenseRange"))
             info.dispenseRange = getClamped(1, 100, value.get("DispenseRange"));

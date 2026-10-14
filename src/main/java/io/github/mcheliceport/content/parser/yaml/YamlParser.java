@@ -407,10 +407,14 @@ public final class YamlParser implements ContentParser {
 
     @SuppressWarnings("unboxing")
     private void mapToAircraft(AircraftInfo info, Map<String, Object> root) {
-        //I HAVE NO IDEA what the compiler is doing, but enhanced iterator starts skipping entries. Fucking piece of shit
+        List<String> extraHuds = List.of();
         for (Map.Entry<String, Object> entry : root.entrySet()) {
             final Object value = entry.getValue();
             switch (entry.getKey()) {
+                // Port extension written by /mcheli dumpyaml: HUDs past the last seat, such as a
+                // single-seat vehicle's gunner mode HUD. They follow the per-seat HUDs.
+                case "ExtraHuds" -> extraHuds = ((List<?>) value).stream()
+                        .map(name -> String.valueOf(name).toLowerCase(Locale.ROOT).trim()).toList();
                 case "ItemID" -> info.itemID = (int) value;
                 case "Author", "Authors" -> info.author = parseAuthor(value);
 
@@ -574,7 +578,7 @@ public final class YamlParser implements ContentParser {
                         parseSeatRackInfo(rack, info, seatCount, racks.size());
                     }
                 }
-                case "RideRack" -> parseRideRacks((Map<String, Integer>) value, info);
+                case "RideRack" -> parseRideRacks((Map<String, Object>) value, info);
                 case "Wheels" -> {
                     Map<String, Object> wheel = (Map<String, Object>) value;
                     parseWheels(wheel, info);
@@ -625,6 +629,7 @@ public final class YamlParser implements ContentParser {
                 default -> logUnknownEntry(entry, "AircraftInfo");
             }
         }
+        info.hudList.addAll(extraHuds);
     }
 
     private void parseWheels(Map<String, Object> wheel, AircraftInfo info) {
@@ -1119,13 +1124,22 @@ public final class YamlParser implements ContentParser {
         return new Wheel(wheelPos, scale);
     }
 
-    private void parseRideRacks(Map<String, Integer> map, AircraftInfo info) {
-        map.entrySet().forEach(stringIntegerEntry -> {
-            if (stringIntegerEntry.getKey().isEmpty())
+    /**
+     * {@code RideRack}: carrier vehicle name to rack number. As a port extension the value may also
+     * be a list of rack numbers, which {@code /mcheli dumpyaml} writes for vehicles that ride on
+     * several racks of the same carrier.
+     */
+    private void parseRideRacks(Map<String, Object> map, AircraftInfo info) {
+        map.forEach((name, value) -> {
+            if (name.isEmpty())
                 throw new IllegalArgumentException("RideRack vehicle entry cannot be empty!");
-            if (stringIntegerEntry.getValue() < 0)
-                throw new IllegalArgumentException("RideRack rackID cannot be negative!");
-            info.rideRacks.add(new RideRack(stringIntegerEntry.getKey(), stringIntegerEntry.getValue()));
+            List<?> ids = value instanceof List<?> list ? list : List.of(value);
+            for (Object id : ids) {
+                int rackId = ((Number) id).intValue();
+                if (rackId < 0)
+                    throw new IllegalArgumentException("RideRack rackID cannot be negative!");
+                info.rideRacks.add(new RideRack(name, rackId));
+            }
         });
     }
 
