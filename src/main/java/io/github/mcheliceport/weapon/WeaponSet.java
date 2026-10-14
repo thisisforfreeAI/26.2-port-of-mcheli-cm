@@ -148,7 +148,7 @@ public class WeaponSet {
             this.setAmmo(0);
             this.setReserveAmmo(inReserve + inMag);
             this.reload();
-            if (current.world.isClientSide()) {
+            if (current.isClientSide()) {
                 WeaponClientHooks.playSoundClick(1.0F, 1.0F);
             }
             return true;
@@ -163,7 +163,7 @@ public class WeaponSet {
         boolean needsAmmo = this.getAmmo() < this.getMagSize();
         if (hasMag && needsAmmo && current.getReloadCount() > 0) {
             this.reloadCooldown = current.getReloadCount();
-            if (current.world.isClientSide()) {
+            if (current.isClientSide()) {
                 this.setAmmo(0);
             } else {
                 this.reloadCooldown = Math.max(1, this.reloadCooldown - 20);
@@ -190,7 +190,7 @@ public class WeaponSet {
         }
         if (isChanged) {
             this.applySwitchCooldown(15);
-            if (this.getCurrentWeapon().world.isClientSide()) {
+            if (this.getCurrentWeapon().isClientSide()) {
                 WeaponClientHooks.playSoundClick(1.0F, 1.0F);
             }
         }
@@ -438,7 +438,7 @@ public class WeaponSet {
             this.cooldown = current.interval;
             this.reloadCooldown = 0;
             if (reload && this.getMagSize() > 0 && current.getReloadCount() > 0) {
-                this.reloadCooldown = Math.max(1, current.getReloadCount() - (current.world.isClientSide() ? 0 : 20));
+                this.reloadCooldown = Math.max(1, current.getReloadCount() - (current.isClientSide() ? 0 : 20));
             }
         }
     }

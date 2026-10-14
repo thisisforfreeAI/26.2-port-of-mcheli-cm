@@ -1,5 +1,6 @@
 package io.github.mcheliceport.entity.aircraft;
 
+import io.github.mcheliceport.net.ModNetwork;
 import io.github.mcheliceport.content.aircraft.AircraftInfo;
 import io.github.mcheliceport.content.weapon.WeaponInfo;
 import io.github.mcheliceport.effect.McheliEffects;
@@ -31,7 +32,6 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.network.PacketDistributor;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -243,7 +243,7 @@ public final class AircraftWeapons {
         WeaponSet ws = this.getCurrentWeapon(entity);
         ws.onSwitchWeapon(this.ac.level().isClientSide(), this.ac.isInfinityAmmo(entity));
         if (this.ac.level() instanceof ServerLevel server) {
-            PacketDistributor.sendToPlayersNear(server, null, this.ac.getX(), this.ac.getY(), this.ac.getZ(), 150.0,
+            ModNetwork.sendToPlayersNear(server, null, this.ac.getX(), this.ac.getY(), this.ac.getZ(), 150.0,
                     WeaponSyncPayload.of(this.ac, sid, id, ws));
         }
     }
@@ -316,7 +316,7 @@ public final class AircraftWeapons {
     public void manualReloadForPlayer(Player player) {
         boolean didReload = this.getCurrentWeapon(player).manualReload();
         if (didReload && player instanceof ServerPlayer serverPlayer) {
-            PacketDistributor.sendToPlayer(serverPlayer, new SyncReloadPayload(this.ac.getId()));
+            ModNetwork.sendToPlayer(serverPlayer, new SyncReloadPayload(this.ac.getId()));
         }
     }
 
@@ -433,7 +433,7 @@ public final class AircraftWeapons {
                     for (int i = 0; i < this.weapons.length; i++) {
                         WeaponSet ws = this.weapons[i];
                         if (ws == currentWs || hasGroup && group.equals(ws.getInfo().group)) {
-                            PacketDistributor.sendToPlayer(mp, WeaponSyncPayload.of(this.ac, sid, i, ws));
+                            ModNetwork.sendToPlayer(mp, WeaponSyncPayload.of(this.ac, sid, i, ws));
                         }
                     }
                 }
@@ -447,7 +447,7 @@ public final class AircraftWeapons {
         int sid = this.ac.getSeatIdByEntity(player);
         int wid = this.getCurrentWeaponID(player);
         if (sid >= 0 && wid >= 0) {
-            PacketDistributor.sendToPlayer(player, WeaponSyncPayload.of(this.ac, sid, wid, this.getWeapon(wid)));
+            ModNetwork.sendToPlayer(player, WeaponSyncPayload.of(this.ac, sid, wid, this.getWeapon(wid)));
         }
     }
 
@@ -1056,12 +1056,12 @@ public final class AircraftWeapons {
 
     private void sendAmmo(NotifyAmmoPayload payload, @Nullable ServerPlayer target) {
         if (target != null) {
-            PacketDistributor.sendToPlayer(target, payload);
+            ModNetwork.sendToPlayer(target, payload);
             return;
         }
         for (int i = 0; i < this.ac.getSeatNum() + 1; i++) {
             if (this.ac.getEntityBySeatId(i) instanceof ServerPlayer sp) {
-                PacketDistributor.sendToPlayer(sp, payload);
+                ModNetwork.sendToPlayer(sp, payload);
             }
         }
     }

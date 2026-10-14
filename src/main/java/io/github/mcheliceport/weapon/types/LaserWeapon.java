@@ -1,5 +1,6 @@
 package io.github.mcheliceport.weapon.types;
 
+import io.github.mcheliceport.net.ModNetwork;
 import io.github.mcheliceport.content.weapon.BulletDecay;
 import io.github.mcheliceport.content.weapon.PotionEffectInfo;
 import io.github.mcheliceport.content.weapon.WeaponInfo;
@@ -27,7 +28,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.network.PacketDistributor;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -80,7 +80,7 @@ public class LaserWeapon extends WeaponBase {
         float width = this.weaponInfo.radius > 0.0F ? this.weaponInfo.radius : 0.1F;
         int life = Math.max(1, this.weaponInfo.timeFuse);
         if (this.world instanceof ServerLevel server) {
-            PacketDistributor.sendToPlayersNear(server, null, prm.posX, prm.posY, prm.posZ, BROADCAST_RANGE,
+            ModNetwork.sendToPlayersNear(server, null, prm.posX, prm.posY, prm.posZ, BROADCAST_RANGE,
                     new LaserShotPayload(start, hitVec, argb, width, life, true, this.weaponInfo.turningFactor,
                             result != null));
         }

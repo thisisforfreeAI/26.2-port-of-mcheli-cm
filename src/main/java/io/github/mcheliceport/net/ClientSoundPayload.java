@@ -7,7 +7,6 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
-import net.neoforged.neoforge.network.PacketDistributor;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -39,7 +38,7 @@ public record ClientSoundPayload(float x, float y, float z, String sound, boolea
     public static void send(Level level, double x, double y, double z, double range, @Nullable String sound,
             boolean distort) {
         if (sound != null && !sound.isEmpty() && level instanceof ServerLevel server) {
-            PacketDistributor.sendToPlayersNear(server, null, x, y, z, range,
+            ModNetwork.sendToPlayersNear(server, null, x, y, z, range,
                     new ClientSoundPayload((float) x, (float) y, (float) z, sound, distort, false));
         }
     }

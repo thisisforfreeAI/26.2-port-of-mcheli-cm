@@ -90,6 +90,11 @@ public abstract class WeaponBase {
         return this.weaponInfo;
     }
 
+    /** Whether this mount belongs to a client's copy of the vehicle (a mount without a level is the server's). */
+    public boolean isClientSide() {
+        return this.world != null && this.world.isClientSide();
+    }
+
     public void setAirburstDist(int dist) {
         this.airburstDist = dist;
     }

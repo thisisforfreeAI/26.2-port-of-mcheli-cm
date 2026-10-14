@@ -13,6 +13,8 @@ import io.github.mcheliceport.weapon.WeaponSet;
 import io.github.mcheliceport.entity.heli.HeliEntity;
 import io.github.mcheliceport.entity.seat.SeatEntity;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
@@ -115,8 +117,41 @@ public final class ModNetwork {
 
     /** Sends the settings to a player whose connection knows them (not to fake players or vanilla clients). */
     private static void sendSettings(ServerPlayer player, ServerSettingsPayload payload) {
-        if (player.connection != null && player.connection.hasChannel(ServerSettingsPayload.TYPE)) {
+        sendToPlayer(player, payload);
+    }
+
+    /**
+     * Sends a payload to a player whose connection knows it. Fake players (GameTest and other mods')
+     * and clients without the mod are skipped: NeoForge throws for a payload a connection did not
+     * negotiate, which would crash the server tick that sent it.
+     */
+    public static void sendToPlayer(ServerPlayer player, CustomPacketPayload payload) {
+        if (player.connection != null && player.connection.hasChannel(payload.type())) {
             PacketDistributor.sendToPlayer(player, payload);
+        }
+    }
+
+    /** {@link PacketDistributor#sendToPlayersNear}, through {@link #sendToPlayer}. */
+    public static void sendToPlayersNear(ServerLevel level, @Nullable ServerPlayer excluded, double x, double y,
+            double z, double radius, CustomPacketPayload payload) {
+        for (ServerPlayer player : level.players()) {
+            if (player != excluded && player.distanceToSqr(x, y, z) < radius * radius) {
+                sendToPlayer(player, payload);
+            }
+        }
+    }
+
+    /** {@link PacketDistributor#sendToAllPlayers}, through {@link #sendToPlayer}. */
+    public static void sendToAllPlayers(net.minecraft.server.MinecraftServer server, CustomPacketPayload payload) {
+        for (ServerPlayer player : server.getPlayerList().getPlayers()) {
+            sendToPlayer(player, payload);
+        }
+    }
+
+    /** {@link PacketDistributor#sendToPlayersInDimension}, through {@link #sendToPlayer}. */
+    public static void sendToPlayersInDimension(ServerLevel level, CustomPacketPayload payload) {
+        for (ServerPlayer player : level.players()) {
+            sendToPlayer(player, payload);
         }
     }
 
@@ -384,7 +419,7 @@ public final class ModNetwork {
         if (player instanceof ServerPlayer serverPlayer
                 && player.level().getEntity(p.entityId()) instanceof AircraftEntity aircraft
                 && player.distanceToSqr(aircraft) < 512.0 * 512.0) {
-            PacketDistributor.sendToPlayer(serverPlayer, statusOf(aircraft));
+            sendToPlayer(serverPlayer, statusOf(aircraft));
         }
     }
 

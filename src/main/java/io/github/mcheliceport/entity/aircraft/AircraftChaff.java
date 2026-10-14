@@ -1,12 +1,12 @@
 package io.github.mcheliceport.entity.aircraft;
 
+import io.github.mcheliceport.net.ModNetwork;
 import io.github.mcheliceport.entity.flare.ChaffEntity;
 import io.github.mcheliceport.net.ChaffUsePayload;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.network.PacketDistributor;
 
 /**
  * A vehicle's chaff dispenser: for {@code ChaffUseTime} ticks it drops two chaff clouds behind and
@@ -43,7 +43,7 @@ public final class AircraftChaff {
         }
         this.start(this.chaffUseTime);
         if (this.world instanceof ServerLevel server) {
-            PacketDistributor.sendToPlayersInDimension(server, new ChaffUsePayload(this.aircraft.getId(), this.useTick));
+            ModNetwork.sendToPlayersInDimension(server, new ChaffUsePayload(this.aircraft.getId(), this.useTick));
         }
         return true;
     }

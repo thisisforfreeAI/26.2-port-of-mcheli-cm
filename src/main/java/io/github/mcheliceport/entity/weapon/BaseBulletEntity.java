@@ -69,6 +69,9 @@ import org.jspecify.annotations.Nullable;
  * <ul>
  *   <li>Saved projectiles are discarded when their chunk loads again, as upstream did on reading
  *       them; only mines ({@link BombEntity}) are kept.</li>
+ *   <li>Upstream's {@code checkValid} dropped projectiles below y -10, the old world's floor; the
+ *       limit now follows the world's floor, so projectiles live in the deep caves and superflat
+ *       worlds that reach down to y -64.</li>
  *   <li>Upstream's {@code checkValid} dereferenced a missing shooter when only the vehicle was
  *       known; the vehicle is used then.</li>
  *   <li>Flowers, crops, saplings and grass ({@link VegetationBlock}), leaves and iron bars let
@@ -450,7 +453,10 @@ public abstract class BaseBulletEntity extends Entity implements WeaponTargets.P
         this.setYRot((float) (Math.atan2(nmz, nmx) * 180.0 / Math.PI) - 90.0F);
     }
 
-    /** Upstream {@code checkValid}: within 5,820 blocks of the shooter horizontally, and above y -10. */
+    /**
+     * Upstream {@code checkValid}: within 5,820 blocks of the shooter horizontally, and no more than 10
+     * blocks below the world's floor (upstream's y -10, when the floor was y 0).
+     */
     public boolean checkValid() {
         if (this.shootingEntity == null && this.shootingAircraft == null) {
             return false;
@@ -458,7 +464,7 @@ public abstract class BaseBulletEntity extends Entity implements WeaponTargets.P
         Entity shooter = this.shootingEntity != null ? this.shootingEntity : this.shootingAircraft;
         double x = this.getX() - shooter.getX();
         double z = this.getZ() - shooter.getZ();
-        return x * x + z * z < 3.38724E7 && this.getY() > -10.0;
+        return x * x + z * z < 3.38724E7 && this.getY() > this.level().getMinY() - 10.0;
     }
 
     public float getBulletGravity() {

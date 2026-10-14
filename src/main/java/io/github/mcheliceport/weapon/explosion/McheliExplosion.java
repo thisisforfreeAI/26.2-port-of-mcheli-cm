@@ -1,5 +1,6 @@
 package io.github.mcheliceport.weapon.explosion;
 
+import io.github.mcheliceport.net.ModNetwork;
 import io.github.mcheliceport.config.CommonConfig;
 import io.github.mcheliceport.content.weapon.DamageFactor;
 import io.github.mcheliceport.content.weapon.WeaponInfo;
@@ -43,7 +44,6 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.event.EventHooks;
-import net.neoforged.neoforge.network.PacketDistributor;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -175,7 +175,7 @@ public class McheliExplosion extends ServerExplosion {
         }
         exp.doExplosionA();
         exp.doExplosionB();
-        PacketDistributor.sendToPlayersNear(serverLevel, null, p.x(), p.y(), p.z(), ExplosionEffectPayload.RANGE,
+        ModNetwork.sendToPlayersNear(serverLevel, null, p.x(), p.y(), p.z(), ExplosionEffectPayload.RANGE,
                 new ExplosionEffectPayload(p.x(), p.y(), p.z(), p.size(), inWater, exp.affectedBlocks));
         return exp.result;
     }

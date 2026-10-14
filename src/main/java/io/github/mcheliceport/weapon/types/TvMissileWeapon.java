@@ -1,5 +1,6 @@
 package io.github.mcheliceport.weapon.types;
 
+import io.github.mcheliceport.net.ModNetwork;
 import io.github.mcheliceport.content.weapon.WeaponInfo;
 import io.github.mcheliceport.entity.aircraft.AircraftEntity;
 import io.github.mcheliceport.entity.weapon.TvMissileEntity;
@@ -12,7 +13,6 @@ import io.github.mcheliceport.weapon.guidance.LaserGuidanceSystem;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.network.PacketDistributor;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -69,7 +69,7 @@ public class TvMissileWeapon extends WeaponBase {
             if (this.isTVGuided && this.tick <= 9) {
                 if (this.tick % 3 == 0 && this.lastShotTvMissile != null && this.lastShotTvMissile.isAlive()
                         && this.lastShotEntity != null && this.lastShotEntity.isAlive()) {
-                    PacketDistributor.sendToAllPlayers(new TvMissilePayload(this.lastShotEntity.getId(),
+                    ModNetwork.sendToAllPlayers(this.world.getServer(), new TvMissilePayload(this.lastShotEntity.getId(),
                             this.lastShotTvMissile.getId()));
                 }
                 if (this.tick == 9) {

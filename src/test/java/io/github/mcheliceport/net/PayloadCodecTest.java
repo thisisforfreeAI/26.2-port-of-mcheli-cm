@@ -125,4 +125,58 @@ class PayloadCodecTest {
         assertEquals(values, read.toValues());
         assertEquals(ServerSettings.Values.DEFAULT, ServerSettingsPayload.of(ServerSettings.Values.DEFAULT).toValues());
     }
+
+    @Test
+    void weaponControlRoundTrips() {
+        WeaponControlPayload none = WeaponControlPayload.none(42);
+        assertTrue(none.isEmpty());
+        assertEquals(none, roundTrip(WeaponControlPayload.CODEC, none));
+        WeaponControlPayload all = none.withSwitchWeapon(3).withUseWeapon(7, -2, 10.5, 64.25, -300.125, 91.5F, -12.0F)
+                .withFlare(2).withReload().withChaff().withAps();
+        assertFalse(all.isEmpty());
+        assertEquals(all, roundTrip(WeaponControlPayload.CODEC, all));
+        // Without a shot the aim is not sent and reads back as zero.
+        WeaponControlPayload flareOnly = none.withFlare(1);
+        assertEquals(flareOnly, roundTrip(WeaponControlPayload.CODEC, flareOnly));
+    }
+
+    @Test
+    void weaponPayloadsRoundTrip() {
+        WeaponSyncPayload sync = new WeaponSyncPayload(5, 1, 3, (short) 120, (short) 900, (short) -4, (short) 60);
+        assertEquals(sync, roundTrip(WeaponSyncPayload.CODEC, sync));
+        AmmoRequestPayload request = new AmmoRequestPayload(9, -1);
+        assertEquals(request, roundTrip(AmmoRequestPayload.CODEC, request));
+        SyncReloadPayload reload = new SyncReloadPayload(11);
+        assertEquals(reload, roundTrip(SyncReloadPayload.CODEC, reload));
+        AirburstDistPayload airburst = new AirburstDistPayload(12, 450);
+        assertEquals(airburst, roundTrip(AirburstDistPayload.CODEC, airburst));
+        ChaffUsePayload chaff = new ChaffUsePayload(13, 60);
+        assertEquals(chaff, roundTrip(ChaffUsePayload.CODEC, chaff));
+        NotifyHitPayload hit = new NotifyHitPayload(-1);
+        assertEquals(hit, roundTrip(NotifyHitPayload.CODEC, hit));
+        TvMissilePayload tv = new TvMissilePayload(14, 15);
+        assertEquals(tv, roundTrip(TvMissilePayload.CODEC, tv));
+        LaserShotPayload laser = new LaserShotPayload(new net.minecraft.world.phys.Vec3(1.5, 70.0, -2.0),
+                new net.minecraft.world.phys.Vec3(40.0, 62.5, 8.0), 0xC0FF2020, 0.3F, 5, true, 2.5, true);
+        assertEquals(laser, roundTrip(LaserShotPayload.CODEC, laser));
+        ClientSoundPayload sound = new ClientSoundPayload(1.0F, 2.0F, 3.0F, "hit", true, false);
+        assertEquals(sound, roundTrip(ClientSoundPayload.CODEC, sound));
+    }
+
+    @Test
+    void notifyAmmoRoundTrips() {
+        NotifyAmmoPayload all = new NotifyAmmoPayload(20, true, (byte) 0, new short[] {1, 200, 0},
+                new short[] {900, -1, 5});
+        NotifyAmmoPayload read = roundTrip(NotifyAmmoPayload.CODEC, all);
+        assertEquals(all.aircraftId(), read.aircraftId());
+        assertTrue(read.all());
+        assertTrue(java.util.Arrays.equals(all.ammo(), read.ammo()));
+        assertTrue(java.util.Arrays.equals(all.restAmmo(), read.restAmmo()));
+        NotifyAmmoPayload one = new NotifyAmmoPayload(21, false, (byte) 4, new short[] {30}, new short[] {300});
+        NotifyAmmoPayload readOne = roundTrip(NotifyAmmoPayload.CODEC, one);
+        assertEquals(4, readOne.weaponId());
+        assertFalse(readOne.all());
+        assertTrue(java.util.Arrays.equals(one.ammo(), readOne.ammo()));
+        assertTrue(java.util.Arrays.equals(one.restAmmo(), readOne.restAmmo()));
+    }
 }

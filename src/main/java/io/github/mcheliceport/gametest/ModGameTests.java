@@ -50,6 +50,7 @@ public final class ModGameTests {
         PickUpGameTests.register();
         PersistenceGameTests.register();
         AllHelicoptersGameTests.register();
+        WeaponGameTests.register();
         FUNCTIONS.register(modBus);
         modBus.addListener(ModGameTests::onRegisterGameTests);
     }

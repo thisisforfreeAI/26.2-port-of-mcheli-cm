@@ -7,7 +7,6 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
-import net.neoforged.neoforge.network.PacketDistributor;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -26,7 +25,7 @@ public record NotifyHitPayload(int aircraftId) implements CustomPacketPayload {
     public static void send(@Nullable AircraftEntity aircraft, ServerPlayer rider) {
         if (rider.isAlive() && rider.connection != null) {
             int id = aircraft != null && aircraft.isAlive() ? aircraft.getId() : -1;
-            PacketDistributor.sendToPlayer(rider, new NotifyHitPayload(id));
+            ModNetwork.sendToPlayer(rider, new NotifyHitPayload(id));
         }
     }
 
