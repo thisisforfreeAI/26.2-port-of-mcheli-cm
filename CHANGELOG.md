@@ -15,7 +15,7 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 - **Helicopters can be placed, boarded, flown, landed and picked up.** All 34 stock helicopters
   (and addon helicopters) share one entity, as upstream (decision D10); the AH-64 is the test
   reference. The `helicopter` and `seat` entity types are real; the other entity types stay
-  placeholders.
+  placeholders. A helicopter is named after its item (in the menu title and death messages).
 - **Placement** from the helicopter's item, as upstream: a 5-block ray trace, the helicopter one
   block above the clicked block, yaw snapped to a quarter turn, refused when blocks are in the way,
   creative-only content refused in survival, target drones refused ("Please use the UAV station"),

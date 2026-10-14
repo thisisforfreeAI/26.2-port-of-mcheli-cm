@@ -3,6 +3,8 @@
   "block.mcheli_ce_port.drafting_table": "Drafting Table",
   "block.mcheli_ce_port.lit_drafting_table": "Drafting Table",
   "block.mcheli_ce_port.wingman_marker": "Marker Block",
+  "entity.mcheli_ce_port.helicopter": "Helicopter",
+  "entity.mcheli_ce_port.seat": "Seat",
   "item.mcheli_ce_port.chain": "Chain",
   "item.mcheli_ce_port.container": "Container",
   "item.mcheli_ce_port.fgm148": "FGM-148 Javelin",

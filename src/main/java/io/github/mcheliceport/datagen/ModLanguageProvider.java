@@ -37,6 +37,8 @@ public class ModLanguageProvider extends LanguageProvider {
             add(tab.translationKey(), tab.title);
         }
         add("pack.source.mcheli_ce_port.addon", "McHeli addon");
+        add("entity.mcheli_ce_port.helicopter", "Helicopter");
+        add("entity.mcheli_ce_port.seat", "Seat");
         keys();
         addItem(ModItems.SPAWN_GUNNER_VS_MONSTER, "Gunner (vs Monster)");
         addItem(ModItems.SPAWN_GUNNER_VS_PLAYER, "Gunner (vs Player of other team)");

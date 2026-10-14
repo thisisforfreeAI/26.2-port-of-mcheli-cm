@@ -1263,6 +1263,13 @@ public abstract class AircraftEntity extends Entity
         return item != null ? new ItemStack(item) : null;
     }
 
+    /** Upstream named a vehicle by its item; the port's entity types are shared by every vehicle of a kind. */
+    @Override
+    protected Component getTypeName() {
+        AircraftItem item = this.getItem();
+        return item != null ? Component.translatable(item.getDescriptionId()) : super.getTypeName();
+    }
+
     /** The vehicle's item, or null if its content has none. */
     public @Nullable AircraftItem getItem() {
         if (this.info == null) {
