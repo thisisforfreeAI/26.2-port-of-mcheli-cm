@@ -9,7 +9,14 @@ import io.github.mcheliceport.client.input.ModKeyMappings;
 import io.github.mcheliceport.client.model.AircraftModels;
 import io.github.mcheliceport.client.particle.ClientEffects;
 import io.github.mcheliceport.effect.McheliEffects;
+import io.github.mcheliceport.client.model.BulletModels;
+import io.github.mcheliceport.client.render.A10Renderer;
+import io.github.mcheliceport.client.render.BulletRenderer;
+import io.github.mcheliceport.client.render.FlareRenderer;
 import io.github.mcheliceport.client.render.HeliRenderer;
+import io.github.mcheliceport.client.weapon.WeaponClient;
+import io.github.mcheliceport.entity.weapon.BaseBulletEntity;
+import java.util.Set;
 import io.github.mcheliceport.client.render.RiderTilt;
 import io.github.mcheliceport.registry.ModEntityTypes;
 import io.github.mcheliceport.registry.ModMenuTypes;
@@ -47,17 +54,45 @@ public final class McheliCePortClient {
             event.addListener(Identifier.fromNamespaceAndPath(McheliCePort.MOD_ID, "hud_textures"),
                     (net.minecraft.server.packs.resources.ResourceManagerReloadListener) manager ->
                             GuiHudCanvas.clearTextureSizes());
+            event.addListener(Identifier.fromNamespaceAndPath(McheliCePort.MOD_ID, "bullet_models"),
+                    (net.minecraft.server.packs.resources.ResourceManagerReloadListener) manager ->
+                            BulletModels.clear());
         });
         AircraftClientEvents.register();
         McheliEffects.setSink(ClientEffects.INSTANCE);
+        WeaponClient.register();
     }
 
     private static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
-        // Planes, ships, tanks and vehicles draw nothing until M6.
         event.registerEntityRenderer(ModEntityTypes.HELICOPTER.get(), HeliRenderer::new);
+        bullet(event, ModEntityTypes.BULLET.get(), BulletRenderer.Kind.BULLET);
+        bullet(event, ModEntityTypes.ROCKET.get(), BulletRenderer.Kind.BULLET);
+        bullet(event, ModEntityTypes.TORPEDO.get(), BulletRenderer.Kind.BULLET);
+        bullet(event, ModEntityTypes.MARKER_ROCKET.get(), BulletRenderer.Kind.BULLET);
+        bullet(event, ModEntityTypes.DISPENSED_ITEM.get(), BulletRenderer.Kind.BULLET);
+        bullet(event, ModEntityTypes.AA_MISSILE.get(), BulletRenderer.Kind.AA_MISSILE);
+        bullet(event, ModEntityTypes.AS_MISSILE.get(), BulletRenderer.Kind.AS_MISSILE);
+        bullet(event, ModEntityTypes.TV_MISSILE.get(), BulletRenderer.Kind.TV_MISSILE);
+        bullet(event, ModEntityTypes.AT_MISSILE.get(), BulletRenderer.Kind.TV_MISSILE);
+        bullet(event, ModEntityTypes.BOMB.get(), BulletRenderer.Kind.BOMB);
+        event.registerEntityRenderer(ModEntityTypes.A10.get(), A10Renderer::new);
+        event.registerEntityRenderer(ModEntityTypes.FLARE.get(), FlareRenderer::flare);
+        event.registerEntityRenderer(ModEntityTypes.CHAFF.get(), FlareRenderer::chaff);
+        // Planes, ships, tanks and vehicles draw nothing until M6.
+        Set<EntityType<?>> drawn = Set.of(ModEntityTypes.HELICOPTER.get(), ModEntityTypes.BULLET.get(),
+                ModEntityTypes.ROCKET.get(), ModEntityTypes.TORPEDO.get(), ModEntityTypes.MARKER_ROCKET.get(),
+                ModEntityTypes.DISPENSED_ITEM.get(), ModEntityTypes.AA_MISSILE.get(),
+                ModEntityTypes.AS_MISSILE.get(), ModEntityTypes.TV_MISSILE.get(), ModEntityTypes.AT_MISSILE.get(),
+                ModEntityTypes.BOMB.get(), ModEntityTypes.A10.get(), ModEntityTypes.FLARE.get(),
+                ModEntityTypes.CHAFF.get());
         ModEntityTypes.all().stream()
-                .filter(type -> type != ModEntityTypes.HELICOPTER)
+                .filter(type -> !drawn.contains(type.get()))
                 .forEach(type -> registerNoop(event, type.get()));
+    }
+
+    private static <T extends BaseBulletEntity> void bullet(EntityRenderersEvent.RegisterRenderers event,
+            EntityType<T> type, BulletRenderer.Kind kind) {
+        event.registerEntityRenderer(type, ctx -> new BulletRenderer<>(ctx, kind));
     }
 
     private static void registerScreens(RegisterMenuScreensEvent event) {

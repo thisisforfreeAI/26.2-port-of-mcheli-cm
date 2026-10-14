@@ -117,7 +117,9 @@ public class HeliRenderer extends EntityRenderer<HeliEntity, AircraftRenderState
                 gear != null ? gear.rotation : 0.0F, gear != null ? gear.prevRotation : 0.0F, gear != null,
                 entity.getCurrentThrottle(), entity.getPrevCurrentThrottle(),
                 entity.rotPartRotation.clone(), entity.prevRotPartRotation.clone(),
-                cameraYaw, cameraPitch, hideGunnerWeapons, blades, prevBlades);
+                cameraYaw, cameraPitch, hideGunnerWeapons, blades, prevBlades,
+                WeaponPartPoses.weaponParts(entity, partialTicks, mc.player, mc.options.getCameraType().isFirstPerson()),
+                WeaponPartPoses.weaponBays(entity, partialTicks));
     }
 
     @Override

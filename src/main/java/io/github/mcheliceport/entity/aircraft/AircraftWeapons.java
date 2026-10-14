@@ -151,6 +151,17 @@ public final class AircraftWeapons {
         return null;
     }
 
+    /** Upstream {@code getWeaponUserByWeaponName}: who sits in the seat that fires a weapon, or null. */
+    public @Nullable Entity getWeaponUserByWeaponName(String name) {
+        AircraftInfo info = this.ac.getAcInfo();
+        AircraftInfo.Weapon weapon = info != null ? info.getWeaponByName(name) : null;
+        if (weapon == null) {
+            return null;
+        }
+        Entity entity = this.ac.getEntityBySeatId(this.getWeaponSeatID(null, weapon));
+        return entity == null && weapon.canUsePilot ? this.ac.getPilot() : entity;
+    }
+
     /** Upstream {@code getCurrentWeaponID}: the weapon a player's seat has selected, or -1. */
     public int getCurrentWeaponID(@Nullable Entity entity) {
         if (!(entity instanceof Player)) {

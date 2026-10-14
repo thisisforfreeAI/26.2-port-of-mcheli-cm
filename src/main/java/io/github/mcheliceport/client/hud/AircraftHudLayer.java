@@ -12,7 +12,16 @@ import io.github.mcheliceport.content.aircraft.AircraftInfo;
 import io.github.mcheliceport.content.aircraft.HeliInfo;
 import io.github.mcheliceport.content.hud.Hud;
 import io.github.mcheliceport.entity.aircraft.AircraftCamera;
+import io.github.mcheliceport.content.weapon.WeaponInfo;
 import io.github.mcheliceport.entity.aircraft.AircraftEntity;
+import io.github.mcheliceport.weapon.WeaponSet;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
+import net.minecraft.util.Mth;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
+import org.joml.Vector4f;
+import io.github.mcheliceport.entity.aircraft.AircraftWeapons;
+import io.github.mcheliceport.client.weapon.WeaponClient;
 import io.github.mcheliceport.entity.heli.HeliEntity;
 import java.util.Random;
 import java.util.Set;
@@ -50,6 +59,7 @@ public final class AircraftHudLayer implements GuiLayer {
             .withColorTargetState(new ColorTargetState(BlendFunction.ADDITIVE))
             .build();
     private static final Identifier NOISE = Identifier.fromNamespaceAndPath("mcheli", "textures/gui/alpha.png");
+    private static final Identifier TV_NOISE = Identifier.fromNamespaceAndPath("mcheli", "textures/gui/noise.png");
     private static final Set<Identifier> HIDDEN_WHILE_RIDING = Set.of(VanillaGuiLayers.CROSSHAIR,
             VanillaGuiLayers.HOTBAR, VanillaGuiLayers.PLAYER_HEALTH, VanillaGuiLayers.ARMOR_LEVEL,
             VanillaGuiLayers.FOOD_LEVEL, VanillaGuiLayers.AIR_LEVEL, VanillaGuiLayers.BOSS_OVERLAY);
@@ -86,6 +96,8 @@ public final class AircraftHudLayer implements GuiLayer {
                 || mc.gui.screen() != null && !(mc.gui.screen() instanceof ChatScreen)) {
             return;
         }
+        // MCH_GuiCommon: the hit marker for hits made outside a vehicle.
+        drawHitMarker(graphics, WeaponClient.hitCount(), WeaponClient.HIT_COUNT);
         AircraftEntity ac = AircraftClientEvents.riddenAircraft(player);
         if (!(ac instanceof HeliEntity heli) || ac.isDestroyed() || ac.getAcInfo() == null) {
             return;
@@ -99,8 +111,101 @@ public final class AircraftHudLayer implements GuiLayer {
         }
         if (showHud) {
             this.drawHud(graphics, ac, player, seatId == 0 && ac.isGunnerMode(player) ? 1 : seatId, partialTicks);
-            this.drawKeyBind(graphics, heli, player, seatId);
         }
+        // MCH_GuiHeli: in missile camera mode the TV missile's noise replaces the key hints.
+        if (showHud) {
+            if (!ac.isMissileCameraMode(player)) {
+                this.drawKeyBind(graphics, heli, player, seatId);
+            } else if (ac.getTVMissile() != null) {
+                this.drawTvMissileNoise(graphics);
+            }
+        }
+        drawHitMarker(graphics, ac.getHitStatus(), AircraftWeapons.MAX_HIT_STATUS);
+        drawCcip(graphics, ac, player);
+    }
+
+    /**
+     * Upstream {@code MCH_RenderCCIP}: a ring with ticks and a centre cross at the CCIP weapon's
+     * predicted impact point, red when something is within 3 blocks of it, turned with the
+     * vehicle's roll. Upstream drew it in the world with depth testing off at a constant screen
+     * size; here it is projected onto the HUD, which looks the same.
+     */
+    private static void drawCcip(GuiGraphicsExtractor graphics, AircraftEntity ac, LocalPlayer player) {
+        WeaponSet ws = ac.getCurrentWeapon(player);
+        WeaponInfo wi = ws.getInfo();
+        if (wi == null || !wi.ccip || !WeaponInfo.isCCIPSupportedType(wi.type)) {
+            return;
+        }
+        Vec3 impact = ac.weapons().getPredictedImpactPoint(player);
+        if (impact == null) {
+            return;
+        }
+        CameraRenderState camera = Minecraft.getInstance().gameRenderer.gameRenderState().levelRenderState
+                .cameraRenderState;
+        Vector4f p = new Vector4f((float) (impact.x - camera.pos.x), (float) (impact.y + 0.2 - camera.pos.y),
+                (float) (impact.z - camera.pos.z), 1.0F);
+        if (p.x * p.x + p.y * p.y + p.z * p.z < 0.25F) {
+            return;
+        }
+        camera.viewRotationMatrix.transform(p);
+        camera.projectionMatrix.transform(p);
+        if (p.w <= 0.0F) {
+            return;
+        }
+        double x = (p.x / p.w + 1.0) * 0.5 * graphics.guiWidth();
+        double y = (1.0 - p.y / p.w) * 0.5 * graphics.guiHeight();
+        float radius = 14.0F * Mth.clamp(wi.ccipFactor, 0.1F, 10.0F);
+        AABB around = new AABB(impact, impact).inflate(3.0);
+        boolean hot = !ac.level().getEntities(ac, around, e -> e != player && e.isAlive()).isEmpty();
+        int color = 0xE6000000 | (hot ? 0xFF1A1A : 0x1AFF1A);
+        double[] ring = new double[48];
+        for (int i = 0; i < 24; i++) {
+            double ang = Math.PI * 2.0 * i / 24.0;
+            ring[i * 2] = x + Math.cos(ang) * radius;
+            ring[i * 2 + 1] = y + Math.sin(ang) * radius;
+        }
+        double inner = radius * 0.55;
+        double cross = radius * 0.30;
+        double[] ticks = {
+                x + inner, y, x + radius, y, x - inner, y, x - radius, y,
+                x, y + inner, x, y + radius, x, y - inner, x, y - radius,
+                x - cross, y, x + cross, y, x, y - cross, x, y + cross};
+        GuiHudCanvas canvas = new GuiHudCanvas(graphics);
+        canvas.pushRotation(x, y, ac.getRoll());
+        canvas.line(ring, color, HudCanvas.LINE_LOOP);
+        canvas.line(ticks, color, HudCanvas.LINES);
+        canvas.popRotation();
+    }
+
+    /**
+     * Upstream {@code drawHitMarker}: four diagonal strokes around the centre, fading as the hit
+     * count runs down, in the {@code hitMarkColor} config colour.
+     */
+    private static void drawHitMarker(GuiGraphicsExtractor graphics, int hitStrength, int maxHitStrength) {
+        if (hitStrength <= 0) {
+            return;
+        }
+        int cx = graphics.guiWidth() / 2;
+        int cy = graphics.guiHeight() / 2;
+        double[] lines = {
+                cx - 10, cy - 10, cx - 5, cy - 5,
+                cx - 10, cy + 10, cx - 5, cy + 5,
+                cx + 10, cy - 10, cx + 5, cy - 5,
+                cx + 10, cy + 10, cx + 5, cy + 5};
+        int config = ClientConfig.hitMarkColor();
+        float alphaFactor = (config >>> 24) / 255.0F;
+        int alpha = Math.min(hitStrength * (256 / maxHitStrength), 255);
+        int color = (int) (alphaFactor * alpha) << 24 | config & 0xFFFFFF;
+        new GuiHudCanvas(graphics).line(lines, color, HudCanvas.LINES);
+    }
+
+    /** Upstream {@code drawTvMissileNoise}: grey noise added over the missile's view. */
+    private void drawTvMissileNoise(GuiGraphicsExtractor graphics) {
+        AbstractTexture texture = Minecraft.getInstance().getTextureManager().getTexture(TV_NOISE);
+        double u = this.rand.nextInt(256) / 256.0;
+        double v = this.rand.nextInt(256) / 256.0;
+        GuiHudCanvas.texturedQuad(new GuiHudCanvas(graphics), texture, GUI_TEXTURED_ADDITIVE,
+                0x66808080, 0, 0, graphics.guiWidth(), graphics.guiHeight(), u, v, u + 1.0, v + 1.0, 0.0F);
     }
 
     /** Upstream {@code drawHud}. */
@@ -110,7 +215,10 @@ public final class AircraftHudLayer implements GuiLayer {
         if (info == null || seatId < 0 || seatId >= info.hudList.size()) {
             return;
         }
-        Hud hud = ContentRegistries.hud().get(info.hudList.get(seatId));
+        // Upstream: a TV missile's operator sees the missile HUD instead.
+        String hudName = ac.isMissileCameraMode(player) && ac.getTVMissile() != null && info.hudTvMissile != null
+                ? info.hudTvMissile : info.hudList.get(seatId);
+        Hud hud = ContentRegistries.hud().get(hudName);
         if (hud == null) {
             return;
         }
@@ -156,12 +264,22 @@ public final class AircraftHudLayer implements GuiLayer {
         }
         this.drawLeft(graphics, "Gunner %s : %s + %s".formatted(heli.getGunnerStatus() ? "ON" : "OFF",
                 keyName(ModKeyMappings.FREE_LOOK), keyName(ModKeyMappings.CAMERA_MODE)), leftX, ACTIVE);
+        if (seatId >= 0 && seatId <= 1 && heli.haveFlare()) {
+            this.drawRightKey(graphics, "Flare", ModKeyMappings.FLARE, rightX,
+                    heli.isFlarePreparation() ? INACTIVE : ACTIVE);
+        }
         if (seatId == 0 && info.haveLandingGear()) {
             if (heli.canFoldLandingGear()) {
                 this.drawRightKey(graphics, "Gear Up", ModKeyMappings.GEAR_UP_DOWN, rightX, ACTIVE);
             } else if (heli.canUnfoldLandingGear()) {
                 this.drawRightKey(graphics, "Gear Down", ModKeyMappings.GEAR_UP_DOWN, rightX, ACTIVE);
             }
+        }
+        if (heli.getWeaponNum() > 1) {
+            this.drawLeftKey(graphics, "Weapon", ModKeyMappings.SWITCH_WEAPON_2, leftX, ACTIVE);
+        }
+        if (heli.getCurrentWeapon(player).getCurrentWeapon().numMode > 0) {
+            this.drawLeftKey(graphics, "WeaponMode", ModKeyMappings.SWITCH_WEAPON_MODE, leftX, ACTIVE);
         }
         if (heli.canSwitchCameraMode(seatId)) {
             this.drawLeftKey(graphics, "CameraMode", ModKeyMappings.CAMERA_MODE, leftX, ACTIVE);
