@@ -1,11 +1,11 @@
 package io.github.mcheliceport.entity.aircraft;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.Fluids;
 
 /**
  * "Is there a block within N blocks above or below?", upstream's {@code MCH_Lib.getBlockY} and
@@ -91,6 +91,6 @@ public final class GroundProbe {
 
     /** Whether the first counting block below is water (upstream compared its block ID with water's). */
     public static boolean isWater(BlockState state) {
-        return state.getFluidState().is(FluidTags.WATER) && state.getBlock() instanceof LiquidBlock;
+        return state.getFluidState().getType().isSame(Fluids.WATER) && state.getBlock() instanceof LiquidBlock;
     }
 }
