@@ -4,7 +4,7 @@ import io.github.mcheliceport.entity.heli.HeliFlightModel;
 
 /**
  * The server settings vehicles read on both sides: upstream's {@code MCH_ServerSettings}
- * (rotation limits) plus the authority mode of decision D2.
+ * (rotation limits, camera distance change) plus the authority mode of decision D2.
  *
  * <p>The server reads {@link ServerConfig}; clients keep the copy the server last sent them in a
  * {@code ServerSettingsPayload}, so an integrated server and its client never share a value by
@@ -13,8 +13,9 @@ import io.github.mcheliceport.entity.heli.HeliFlightModel;
 public final class ServerSettings {
 
     /** One snapshot of the settings. */
-    public record Values(boolean serverAuthoritativeMovement, HeliFlightModel.RotationLimits rotationLimits) {
-        public static final Values DEFAULT = new Values(false, HeliFlightModel.RotationLimits.NONE);
+    public record Values(boolean serverAuthoritativeMovement, HeliFlightModel.RotationLimits rotationLimits,
+            boolean enableCamDistChange) {
+        public static final Values DEFAULT = new Values(false, HeliFlightModel.RotationLimits.NONE, true);
     }
 
     private static volatile Values client = Values.DEFAULT;
@@ -31,7 +32,8 @@ public final class ServerSettings {
                 new HeliFlightModel.RotationLimits(ServerConfig.ENABLE_ROTATION_LIMIT.get(),
                         ServerConfig.PITCH_LIMIT_MAX.get().floatValue(),
                         ServerConfig.PITCH_LIMIT_MIN.get().floatValue(),
-                        ServerConfig.ROLL_LIMIT.get().floatValue()));
+                        ServerConfig.ROLL_LIMIT.get().floatValue()),
+                ServerConfig.ENABLE_CAM_DIST_CHANGE.get());
     }
 
     /** The settings the server last sent this client. */

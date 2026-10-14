@@ -106,7 +106,7 @@ class PayloadCodecTest {
     @Test
     void serverSettingsRoundTrip() {
         ServerSettings.Values values = new ServerSettings.Values(true,
-                new HeliFlightModel.RotationLimits(true, 25.0F, -15.0F, 40.0F));
+                new HeliFlightModel.RotationLimits(true, 25.0F, -15.0F, 40.0F), false);
         ServerSettingsPayload p = ServerSettingsPayload.of(values);
         ServerSettingsPayload read = roundTrip(ServerSettingsPayload.CODEC, p);
         assertEquals(p, read);

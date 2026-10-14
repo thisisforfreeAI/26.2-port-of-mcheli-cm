@@ -14,7 +14,7 @@ import net.neoforged.neoforge.client.settings.IKeyConflictContext;
 import org.lwjgl.glfw.GLFW;
 
 /**
- * The vehicle keys of the M3 flight subset, with upstream's default keys (upstream's
+ * The vehicle keys ported so far, with upstream's default keys (upstream's
  * {@code Key*} lines in mcheli.cfg). They only act while the player rides a McHeli vehicle, so
  * they share keys with vanilla controls without conflicts.
  */
@@ -50,8 +50,12 @@ public final class ModKeyMappings {
     public static final KeyMapping GUI = key("gui", GLFW.GLFW_KEY_I);
     public static final KeyMapping GEAR_UP_DOWN = key("gear_up_down", GLFW.GLFW_KEY_B);
 
+    public static final KeyMapping CAMERA_MODE = key("camera_mode", GLFW.GLFW_KEY_C);
+    public static final KeyMapping CAMERA_DISTANCE_UP = key("camera_distance_up", GLFW.GLFW_KEY_PAGE_UP);
+    public static final KeyMapping CAMERA_DISTANCE_DOWN = key("camera_distance_down", GLFW.GLFW_KEY_PAGE_DOWN);
+
     public static final List<KeyMapping> ALL = List.of(UP, DOWN, RIGHT, LEFT, SWITCH_GUNNER, SWITCH_HOVERING, ZOOM,
-            UNMOUNT, EXTRA, FREE_LOOK, GUI, GEAR_UP_DOWN);
+            UNMOUNT, EXTRA, FREE_LOOK, GUI, GEAR_UP_DOWN, CAMERA_MODE, CAMERA_DISTANCE_UP, CAMERA_DISTANCE_DOWN);
 
     private ModKeyMappings() {
     }

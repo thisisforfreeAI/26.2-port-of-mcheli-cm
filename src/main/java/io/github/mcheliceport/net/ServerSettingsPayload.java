@@ -10,11 +10,11 @@ import net.minecraft.resources.Identifier;
 
 /**
  * The server settings clients fly by (upstream {@code PacketSyncServerSettings}): the rotation
- * limits, as bytes like upstream, and the authority mode of decision D2. Sent on login and when
+ * limits, as bytes like upstream, whether riders may change the camera distance, and the authority mode of decision D2. Sent on login and when
  * the server config changes. Upstream's other fields belong to later milestones.
  */
 public record ServerSettingsPayload(boolean enableRotationLimit, byte pitchLimitMax, byte pitchLimitMin,
-        byte rollLimit, boolean serverAuthoritativeMovement) implements CustomPacketPayload {
+        byte rollLimit, boolean serverAuthoritativeMovement, boolean enableCamDistChange) implements CustomPacketPayload {
 
     public static final Type<ServerSettingsPayload> TYPE =
             new Type<>(Identifier.fromNamespaceAndPath(McheliCePort.MOD_ID, "server_settings"));
@@ -26,20 +26,22 @@ public record ServerSettingsPayload(boolean enableRotationLimit, byte pitchLimit
                 buf.writeByte(p.pitchLimitMin);
                 buf.writeByte(p.rollLimit);
                 buf.writeBoolean(p.serverAuthoritativeMovement);
+                buf.writeBoolean(p.enableCamDistChange);
             },
             buf -> new ServerSettingsPayload(buf.readBoolean(), buf.readByte(), buf.readByte(), buf.readByte(),
-                    buf.readBoolean()));
+                    buf.readBoolean(), buf.readBoolean()));
 
     public static ServerSettingsPayload of(ServerSettings.Values values) {
         HeliFlightModel.RotationLimits limits = values.rotationLimits();
         return new ServerSettingsPayload(limits.enabled(), (byte) limits.pitchMax(), (byte) limits.pitchMin(),
-                (byte) limits.rollLimit(), values.serverAuthoritativeMovement());
+                (byte) limits.rollLimit(), values.serverAuthoritativeMovement(), values.enableCamDistChange());
     }
 
     public ServerSettings.Values toValues() {
         return new ServerSettings.Values(this.serverAuthoritativeMovement,
                 new HeliFlightModel.RotationLimits(this.enableRotationLimit, this.pitchLimitMax, this.pitchLimitMin,
-                        this.rollLimit));
+                        this.rollLimit),
+                this.enableCamDistChange);
     }
 
     @Override

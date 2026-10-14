@@ -17,6 +17,7 @@ public final class ServerConfig {
     public static final ModConfigSpec.IntValue PITCH_LIMIT_MAX;
     public static final ModConfigSpec.IntValue PITCH_LIMIT_MIN;
     public static final ModConfigSpec.IntValue ROLL_LIMIT;
+    public static final ModConfigSpec.BooleanValue ENABLE_CAM_DIST_CHANGE;
     public static final ModConfigSpec SPEC;
 
     static {
@@ -44,6 +45,13 @@ public final class ServerConfig {
         ROLL_LIMIT = builder
                 .comment("Roll limit in degrees either way. Upstream: RollLimit.")
                 .defineInRange("rollLimit", 35, 0, 80);
+        builder.pop();
+
+        builder.push("camera");
+        ENABLE_CAM_DIST_CHANGE = builder
+                .comment("Let riders change the third-person camera distance with Page Up and Page Down.",
+                        "Upstream: enableCamDistChange.")
+                .define("enableCamDistChange", true);
         builder.pop();
 
         SPEC = builder.build();
