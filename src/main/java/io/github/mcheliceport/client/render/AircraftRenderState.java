@@ -1,0 +1,23 @@
+package io.github.mcheliceport.client.render;
+
+import io.github.mcheliceport.content.aircraft.BoundingBoxInfo;
+import java.util.ArrayList;
+import java.util.List;
+import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.resources.Identifier;
+import org.jspecify.annotations.Nullable;
+
+/** What one frame draws of a vehicle. */
+public class AircraftRenderState extends EntityRenderState {
+    /** Null while the models load: nothing is drawn, as upstream's on-demand mode. */
+    public @Nullable Identifier texture;
+    public int color;
+    public boolean flat;
+    public final List<AircraftPartPoses.Draw> draws = new ArrayList<>();
+
+    public boolean testMode;
+    public float yaw;
+    public float pitch;
+    public float roll;
+    public final List<BoundingBoxInfo> boxes = new ArrayList<>();
+}

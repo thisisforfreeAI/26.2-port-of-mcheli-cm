@@ -61,7 +61,7 @@ final class GameTestSupport {
         ModNetwork.applyHeliControl(heli, pilot, new HeliControlPayload(heli.getId(),
                 HeliControlPayload.UnmountAction.NONE, mode, HeliControlPayload.HatchSwitch.NONE,
                 HeliControlPayload.GearSwitch.NONE, PlayerControlSwitches.NONE, (byte) 0,
-                HeliControlPayload.BladeStatus.NONE));
+                HeliControlPayload.BladeStatus.NONE, (byte) 0));
     }
 
     /**

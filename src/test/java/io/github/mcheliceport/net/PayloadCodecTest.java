@@ -33,7 +33,8 @@ class PayloadCodecTest {
         for (HeliControlPayload.UnmountAction unmount : HeliControlPayload.UnmountAction.values()) {
             for (HeliControlPayload.ModeSwitch mode : HeliControlPayload.ModeSwitch.values()) {
                 HeliControlPayload p = new HeliControlPayload(123456, unmount, mode, HeliControlPayload.HatchSwitch.FOLD,
-                        HeliControlPayload.GearSwitch.UNFOLD, switches, (byte) 2, HeliControlPayload.BladeStatus.FOLD);
+                        HeliControlPayload.GearSwitch.UNFOLD, switches, (byte) 2, HeliControlPayload.BladeStatus.FOLD,
+                        (byte) 2);
                 assertEquals(p, roundTrip(HeliControlPayload.CODEC, p));
             }
         }
@@ -52,6 +53,7 @@ class PayloadCodecTest {
         buf.writeShort(0);
         buf.writeByte(0);
         buf.writeByte(42);
+        buf.writeByte(0);
         HeliControlPayload p = HeliControlPayload.CODEC.decode(buf);
         assertEquals(HeliControlPayload.UnmountAction.NONE, p.unmount());
         assertEquals(HeliControlPayload.ModeSwitch.NONE, p.modeSwitch());
@@ -106,7 +108,7 @@ class PayloadCodecTest {
     @Test
     void serverSettingsRoundTrip() {
         ServerSettings.Values values = new ServerSettings.Values(true,
-                new HeliFlightModel.RotationLimits(true, 25.0F, -15.0F, 40.0F));
+                new HeliFlightModel.RotationLimits(true, 25.0F, -15.0F, 40.0F), false);
         ServerSettingsPayload p = ServerSettingsPayload.of(values);
         ServerSettingsPayload read = roundTrip(ServerSettingsPayload.CODEC, p);
         assertEquals(p, read);

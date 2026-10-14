@@ -134,6 +134,9 @@ public abstract class AircraftEntity extends Entity
     public @Nullable AircraftPart partCanopy;
     public @Nullable AircraftPart partLandingGear;
     public @Nullable AircraftPart partHatch;
+    /** Client only: upstream's {@code rotPartRotation}, the angles of the content's rotating parts. */
+    public float[] rotPartRotation = new float[0];
+    public float[] prevRotPartRotation = new float[0];
 
     private double currentThrottle;
     private double prevCurrentThrottle;
@@ -171,6 +174,12 @@ public abstract class AircraftEntity extends Entity
     public boolean rollReversed;
     public float thirdPersonDist = 4.0F;
     private boolean switchSeat;
+    /** The gunner camera and the camera modes of seats 0 and 1 (upstream {@code camera}). */
+    public final AircraftCamera camera = new AircraftCamera();
+    /** Client: the entity radar of {@code EnableEntityRadar} vehicles (upstream {@code entityRadar}). */
+    public final AircraftRadar radar = new AircraftRadar();
+    /** Client: a crew member switched their seat to gunner mode (upstream {@code isGunnerModeOtherSeat}). */
+    public boolean gunnerModeOtherSeat;
 
     /**
      * What the client side does for vehicles: set by the client entry point, null on a dedicated
@@ -244,6 +253,8 @@ public abstract class AircraftEntity extends Entity
         this.partCanopy = newInfo.haveCanopy() ? AircraftPart.canopy(this) : null;
         this.partLandingGear = newInfo.haveLandingGear() ? AircraftPart.landingGear(this) : null;
         this.partHatch = newInfo.haveHatch() ? AircraftPart.hatch(this) : null;
+        this.rotPartRotation = new float[newInfo.partRotPart.size()];
+        this.prevRotPartRotation = new float[newInfo.partRotPart.size()];
         SeatEntity[] oldSeats = this.seats;
         this.seats = new SeatEntity[this.getSeatNum()];
         for (SeatEntity seat : oldSeats) {
@@ -1036,6 +1047,8 @@ public abstract class AircraftEntity extends Entity
     }
 
     public void onUnmountPlayerSeat(SeatEntity seat, Entity entity) {
+        // Upstream looked the seat up by the rider, who had already left, so seat 1 kept its mode.
+        this.camera.initCamera(seat.getSeatIndex() + 1, entity);
         if (!this.isRidePlayer()) {
             this.switchGunnerMode(false);
             this.switchHoveringMode(false);
@@ -1049,8 +1062,13 @@ public abstract class AircraftEntity extends Entity
         }
         this.moveLeft = this.moveRight = this.throttleDown = this.throttleUp = false;
         Entity pilot = this.getPilot();
-        if (pilot != null && !this.level().isClientSide()) {
-            pilot.stopRiding();
+        if (pilot != null) {
+            this.camera.initCamera(0, pilot);
+            if (!this.level().isClientSide()) {
+                pilot.stopRiding();
+            }
+        } else if (this.lastPilot instanceof Player) {
+            this.camera.initCamera(0, this.lastPilot);
         }
         if (!this.isRidePlayer()) {
             this.switchGunnerMode(false);
@@ -1442,6 +1460,8 @@ public abstract class AircraftEntity extends Entity
         if (this.info != null) {
             this.onUpdateAircraft();
             this.updateParts(this.partStatus());
+            this.updatePartRotation();
+            this.updateCameraViewers();
         }
 
         if (!this.level().isClientSide() && this.isDestroyed() && !this.isExploded() && !prevOnGround
@@ -1604,6 +1624,121 @@ public abstract class AircraftEntity extends Entity
         }
     }
 
+    /**
+     * Upstream {@code getIsGunnerMode(entity)}: the pilot in gunner mode, or a gunner seat (a crew
+     * seat that can switch is in gunner mode only after its rider switched it, on their client).
+     */
+    public boolean isGunnerMode(@Nullable Entity entity) {
+        if (this.info == null) {
+            return false;
+        }
+        int id = this.getSeatIdByEntity(entity);
+        if (id < 0) {
+            return false;
+        }
+        if (id == 0 && this.info.isEnableGunnerMode) {
+            return this.gunnerMode;
+        }
+        SeatInfo seat = this.getSeatInfo(id);
+        if (seat == null || !seat.gunner) {
+            return false;
+        }
+        return !this.level().isClientSide() || !seat.switchgunner || this.gunnerModeOtherSeat;
+    }
+
+    /** Upstream {@code canSwitchGunnerModeOtherSeat}. */
+    public boolean canSwitchGunnerModeOtherSeat(@Nullable Entity entity) {
+        int sid = this.getSeatIdByEntity(entity);
+        SeatInfo seat = sid > 0 ? this.getSeatInfo(sid) : null;
+        return seat != null && seat.gunner && seat.switchgunner;
+    }
+
+    /** Upstream {@code switchGunnerModeOtherSeat}: a client-side toggle. */
+    public void switchGunnerModeOtherSeat() {
+        this.gunnerModeOtherSeat = !this.gunnerModeOtherSeat;
+    }
+
+    /** Upstream {@code isCameraView}: the view comes from the camera (gunner mode or a UAV). */
+    public boolean isCameraView(@Nullable Entity entity) {
+        return this.isGunnerMode(entity) || this.isUAV();
+    }
+
+    public boolean isUAV() {
+        return this.info != null && this.info.isUAV;
+    }
+
+    public boolean isEntityRadarMounted() {
+        return this.info != null && this.info.isEnableEntityRadar;
+    }
+
+    // ---- camera ----
+
+    public int getZoomMax() {
+        return this.info != null ? this.info.cameraZoom : 1;
+    }
+
+    public boolean canZoom() {
+        return this.getZoomMax() > 1;
+    }
+
+    /** Upstream {@code zoomCamera}: doubles the zoom up to {@code CameraZoom}, then back to 1. */
+    public void zoomCamera() {
+        if (this.canZoom()) {
+            float z = this.camera.getCameraZoom();
+            if (z >= this.getZoomMax() - 0.01) {
+                z = 1.0F;
+            } else {
+                z *= 2.0F;
+                if (z >= this.getZoomMax()) {
+                    z = this.getZoomMax();
+                }
+            }
+            this.camera.setCameraZoom(z <= this.getZoomMax() + 0.01 ? z : 1.0F);
+        }
+    }
+
+    /**
+     * Whether a seat may switch camera modes: upstream's {@code canSwitchCameraMode(seatID)}, which
+     * upstream showed in the key hints but did not check when the key was pressed. The port checks
+     * it on both sides.
+     */
+    public boolean canSwitchCameraMode(int seatId) {
+        return !this.isDestroyed() && this.info != null && this.info.isEnableNightVision
+                && this.camera.isValidUid(seatId);
+    }
+
+    public int getCameraMode(@Nullable Entity entity) {
+        return this.camera.getMode(this.getSeatIdByEntity(entity));
+    }
+
+    /** Upstream {@code switchCameraMode(player, mode)}. */
+    public void switchCameraMode(@Nullable Entity entity, int mode) {
+        this.camera.setMode(this.getSeatIdByEntity(entity), mode);
+    }
+
+    /** Upstream {@code updateCameraViewers}: on the server, keeps night vision on viewers in that mode. */
+    public void updateCameraViewers() {
+        for (int i = 0; i < this.getSeatNum() + 1; i++) {
+            this.camera.updateViewer(i, this.getEntityBySeatId(i));
+        }
+    }
+
+    /**
+     * Upstream {@code getCameraPosInfo}: the camera position for a viewer: the pilot uses the
+     * first {@code CameraPosition}; a crew seat with {@code InvCamPos} uses its own.
+     */
+    public AircraftInfo.@Nullable CameraPosition getCameraPosInfo(@Nullable Entity viewer) {
+        if (this.info == null || this.info.cameraPosition.isEmpty()) {
+            return null;
+        }
+        int sid = this.getSeatIdByEntity(viewer);
+        SeatInfo seat = sid > 0 ? this.getSeatInfo(sid) : null;
+        if (seat != null && seat.invCamPos && seat.getCamPos() != null) {
+            return seat.getCamPos();
+        }
+        return this.info.cameraPosition.getFirst();
+    }
+
     public boolean isFreeLookMode() {
         return this.getCommonStatus(STATUS_FREE_LOOK);
     }
@@ -1627,6 +1762,29 @@ public abstract class AircraftEntity extends Entity
     }
 
     // ---- moving parts ----
+
+    /**
+     * Upstream {@code onUpdate_PartRotation}: on clients, turns the rotating parts while someone
+     * flies the vehicle, or always for parts marked so.
+     */
+    protected void updatePartRotation() {
+        if (!this.level().isClientSide() || this.info == null
+                || this.rotPartRotation.length != this.info.partRotPart.size()) {
+            return;
+        }
+        for (int i = 0; i < this.rotPartRotation.length; i++) {
+            this.prevRotPartRotation[i] = this.rotPartRotation[i];
+            if (!this.isDestroyed() && this.info.partRotPart.get(i).rotAlways || this.getPilot() != null) {
+                this.rotPartRotation[i] += this.info.partRotPart.get(i).rotSpeed;
+                if (this.rotPartRotation[i] < 0.0F) {
+                    this.rotPartRotation[i] += 360.0F;
+                }
+                if (this.rotPartRotation[i] >= 360.0F) {
+                    this.rotPartRotation[i] -= 360.0F;
+                }
+            }
+        }
+    }
 
     /** Upstream {@code updateParts}, with its landing gear logic. */
     protected void updateParts(int stat) {

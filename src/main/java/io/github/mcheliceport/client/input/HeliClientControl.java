@@ -1,5 +1,6 @@
 package io.github.mcheliceport.client.input;
 
+import io.github.mcheliceport.content.aircraft.SeatInfo;
 import io.github.mcheliceport.entity.aircraft.AircraftEntity;
 import io.github.mcheliceport.entity.heli.HeliEntity;
 import io.github.mcheliceport.net.HeliControlPayload;
@@ -11,6 +12,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.Mth;
 import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 
 /**
@@ -39,8 +41,29 @@ public final class HeliClientControl {
         }
         wasRiding = true;
         HeliEntity heli = (HeliEntity) aircraft;
+        update(player, heli);
         if (mc.gui.screen() == null && !heli.isDestroyed()) {
             playerControl(player, heli, heli.isPilot(player));
+        }
+    }
+
+    /**
+     * Upstream {@code MCH_ClientHeliTickHandler#update}: the gunner's pitch is held in the seat's
+     * range, the camera follows the rider's look, and the radar sweeps.
+     */
+    private static void update(LocalPlayer player, HeliEntity heli) {
+        if (heli.isGunnerMode(player)) {
+            SeatInfo seat = heli.getSeatInfo(heli.getSeatIdByEntity(player));
+            if (seat != null) {
+                player.setXRot(Mth.clamp(player.getXRot(), seat.minPitch, seat.maxPitch));
+            }
+        }
+        heli.camera.prevRotationYaw = heli.camera.rotationYaw;
+        heli.camera.prevRotationPitch = heli.camera.rotationPitch;
+        heli.camera.rotationYaw = player.getYRot();
+        heli.camera.rotationPitch = player.getXRot();
+        if (heli.isEntityRadarMounted()) {
+            heli.radar.update(heli, 5);
         }
     }
 
@@ -53,7 +76,30 @@ public final class HeliClientControl {
         HeliControlPayload.BladeStatus blades = HeliControlPayload.BladeStatus.NONE;
         PlayerControlSwitches switches = PlayerControlSwitches.NONE;
         byte freeLook = 0;
+        byte cameraMode = 0;
         boolean freeLookHeld = ModKeyMappings.isFreeLookHeld();
+
+        // Upstream handleCameraAndModes: free look + camera mode toggles the gunner, else the camera mode.
+        if (ModKeyMappings.CAMERA_MODE.consumeClick()) {
+            if (freeLookHeld) {
+                switches = switches.with(PlayerControlSwitches.SWITCH_GUNNER_STATUS, true);
+                send = true;
+                playSoundOk();
+            } else if (heli.canSwitchCameraMode(heli.getSeatIdByEntity(player))) {
+                int before = heli.getCameraMode(player);
+                heli.switchCameraMode(player, before + 1);
+                int newMode = heli.getCameraMode(player);
+                if (newMode != before) {
+                    cameraMode = (byte) (newMode + 1);
+                    send = true;
+                    playSoundOk();
+                } else {
+                    playSoundNg();
+                }
+            } else {
+                playSoundNg();
+            }
+        }
 
         // Upstream handleSeatControls: free look + GUI or extra switches seat.
         boolean guiClicked = ModKeyMappings.GUI.consumeClick();
@@ -140,8 +186,22 @@ public final class HeliClientControl {
                     playSoundNg();
                 }
             }
+        } else if (ModKeyMappings.SWITCH_GUNNER.consumeClick()) {
+            if (heli.canSwitchGunnerModeOtherSeat(player)) {
+                heli.switchGunnerModeOtherSeat();
+                send = true;
+            } else {
+                playSoundNg();
+            }
+        }
 
-            if (ModKeyMappings.ZOOM.consumeClick() && heli.getAcInfo().haveHatch()) {
+        if (ModKeyMappings.ZOOM.consumeClick()) {
+            boolean uav = heli.isUAV() && !heli.getAcInfo().haveHatch();
+            if (heli.isGunnerMode(player) || uav) {
+                heli.zoomCamera();
+                Minecraft.getInstance().getSoundManager()
+                        .play(SimpleSoundInstance.forUI(McheliSounds.event("zoom").value(), 1.0F, 0.5F));
+            } else if (isPilot && heli.getAcInfo().haveHatch()) {
                 // Upstream's hatch key sends FOLD to open a closed hatch and UNFOLD to close it.
                 if (heli.canUnfoldHatch()) {
                     hatch = HeliControlPayload.HatchSwitch.FOLD;
@@ -153,18 +213,18 @@ public final class HeliClientControl {
                     playSoundNg();
                 }
             }
-        } else {
-            // Crew keys of later milestones; clear their clicks so they do not pile up.
-            ModKeyMappings.ALL.forEach(key -> {
-                while (key.consumeClick()) {
-                    // Discard.
-                }
-            });
         }
+
+        // Keys of later milestones; clear their clicks so they do not pile up.
+        ModKeyMappings.ALL.forEach(key -> {
+            while (key.consumeClick()) {
+                // Discard.
+            }
+        });
 
         if (send || player.tickCount % 100 == 0) {
             ClientPacketDistributor.sendToServer(new HeliControlPayload(heli.getId(), unmount, mode, hatch, gear,
-                    switches, freeLook, blades));
+                    switches, freeLook, blades, cameraMode));
         }
     }
 

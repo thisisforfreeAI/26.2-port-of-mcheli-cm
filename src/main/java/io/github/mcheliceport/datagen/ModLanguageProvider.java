@@ -81,6 +81,9 @@ public class ModLanguageProvider extends LanguageProvider {
         add(prefix + "free_look", "Free Look");
         add(prefix + "gui", "Vehicle Menu");
         add(prefix + "gear_up_down", "Landing Gear");
+        add(prefix + "camera_mode", "Camera Mode (Night Vision)");
+        add(prefix + "camera_distance_up", "Camera Distance Up");
+        add(prefix + "camera_distance_down", "Camera Distance Down");
     }
 
     /** NeoForge's config screen: section titles and one name per option. */
@@ -122,6 +125,19 @@ public class ModLanguageProvider extends LanguageProvider {
         add(prefix + "mouseControlFlightSimMode", "Flight Sim Mode");
         add(prefix + "privacy", "Privacy");
         add(prefix + "allowScreenCapture", "Allow Screen Capture");
+        add(prefix + "render", "Rendering");
+        add(prefix + "smoothShading", "Smooth Shading");
+        add(prefix + "tiltRiders", "Tilt the Crew");
+        add(prefix + "onDemandModels", "Load Models on Demand");
+        add(prefix + "onDemandModelLifetimeSeconds", "On-Demand Model Lifetime");
+        add(prefix + "hud", "HUD");
+        add(prefix + "displayInThirdPerson", "HUD in Third Person");
+        add(prefix + "hideKeyHints", "Hide Key Hints");
+        add(prefix + "autoScale", "Auto-Scale the HUD");
+        add(prefix + "debug", "Debug");
+        add(prefix + "testMode", "Test Mode");
+        add(prefix + "camera", "Camera");
+        add(prefix + "enableCamDistChange", "Allow Camera Distance Change");
         add(prefix + "creativeTabIcons", "Creative Tab Icons");
         for (ModTab tab : ModTab.values()) {
             if (!tab.defaultIcon.isEmpty()) {
