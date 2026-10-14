@@ -1,13 +1,44 @@
 # Upstream reference clone (re-create with scripts/fetch-upstream.sh)
 /upstream/
 
-# Gradle / IDE / run dirs
-.gradle/
+### Gradle ###
+.gradle
 build/
+!gradle/wrapper/gradle-wrapper.jar
+!**/src/**/build/
+
+### IntelliJ IDEA ###
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+!**/src/**/out/
+
+.run/
+
+### Eclipse ###
+.apt_generated
+.classpath
+.eclipse/
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+bin/
+!**/src/**/bin/
+
+### VS Code ###
+.vscode/
+
+### Mac OS ###
+.DS_Store
+
+### Minecraft Modding ###
 run/
 run-data/
-out/
-.idea/
-*.iml
-.vscode/
-src/generated/resources/.cache/
+!**/src/**/run/
+**/src/generated/**/.cache/
+repo/
+!**/src/**/repo/

@@ -1,0 +1,74 @@
+# McHeli CE (26.2 Port)
+
+An unofficial community port of [McHeli: Community Edition](https://github.com/Warfactory-Offical/McHeliCE)
+(McHeli CE) to **Minecraft 26.2** on **NeoForge**.
+
+> **Unofficial fork.** This port is not affiliated with or endorsed by Warfactory, the McHeli CE
+> developers, or the original McHeli authors. The upstream developers have said they will not port
+> McHeli CE to other Minecraft versions. Please report problems with this port to
+> [its issue tracker](https://github.com/thisisforfreeAI/26.2-port-of-mcheli-cm/issues), not to upstream.
+
+## Status
+
+**Work in progress (milestone M1):** the mod loads on the client and on a dedicated server, but it
+does not add any vehicles, weapons, items or blocks yet.
+
+- [PORTING_PLAN.md](PORTING_PLAN.md): the roadmap and the decisions behind it
+- [CHANGELOG.md](CHANGELOG.md): what each milestone added
+- [KNOWN_ISSUES.md](KNOWN_ISSUES.md): what is missing, and where the port differs from upstream
+
+| | |
+|---|---|
+| Mod ID | `mcheli_ce_port` |
+| Minecraft | 26.2 |
+| NeoForge | 26.2.0.88 (pinned for development; later 26.2 builds are accepted at runtime) |
+| Upstream baseline | McHeli CE 1.5.1 (`master` @ `cbaff7f`) |
+| Licence | GPLv3 |
+
+## Building and running
+
+The build targets Java 25. Install JDK 25, or run Gradle on any JDK from 17 up and it downloads a
+JDK 25 toolchain automatically.
+
+```sh
+./gradlew build       # mod jar in build/libs/
+./gradlew runClient   # development client
+./gradlew runServer   # development dedicated server (no GUI; type "stop" to shut it down)
+```
+
+Development runs use `run/` as the game directory.
+
+The upstream sources the port is based on are not part of this repository. To get a reference copy
+in `upstream/` (git-ignored), run:
+
+```sh
+bash scripts/fetch-upstream.sh
+```
+
+## Credits
+
+McHeli CE and this port exist thanks to:
+
+- **EMB4** and **Murachiki27**: the original McHeli
+- **RagexPrince683**: MCHEL-O-Extended (McHeli Overdrive), which McHeli CE continues with
+  RagexPrince683's full permission
+- **MrNorwood** and **MovBlock**: McHeli CE (Warfactory)
+- **TV90** for reforged content, and **H. M. Shrub** and **Jumboreal** for texture work
+- McHeli Wingman, originally a standalone addon, which was merged into McHeli CE
+
+The 26.2 port is maintained in
+[thisisforfreeAI/26.2-port-of-mcheli-cm](https://github.com/thisisforfreeAI/26.2-port-of-mcheli-cm).
+
+## Licence
+
+This port is licensed under the **GNU General Public License v3.0**, the same licence as McHeli CE;
+see [LICENSE](LICENSE). The text is identical to the GPLv3 file in upstream's initial commit
+(`7c1b0ee`), because upstream's default branch currently has no LICENSE file (PORTING_PLAN.md,
+decision D6). Built jars contain the licence as `LICENSE_mcheli_ce_port`.
+
+The Gradle build files come from NeoForge's
+[MDK-26.2-ModDevGradle](https://github.com/NeoForgeMDKs/MDK-26.2-ModDevGradle) template, which is MIT
+licensed; see [TEMPLATE_LICENSE.txt](TEMPLATE_LICENSE.txt).
+
+Minecraft's official names, which the code uses, are covered by Mojang's own licence; see
+[NeoForm's reference copy](https://github.com/NeoForged/NeoForm/blob/main/Mojang.md).

@@ -1,0 +1,45 @@
+# Mod metadata for McHeli CE (26.2 Port).
+# The generateModMetadata task in build.gradle expands the placeholders from gradle.properties
+# using Groovy template syntax, so do not write a dollar sign anywhere else in this file.
+# Format reference: https://docs.neoforged.net/docs/gettingstarted/modfiles
+
+# GPLv3, same as upstream McHeli CE. The full text ships inside the jar.
+license="${mod_license}"
+
+# Report problems with this port here, not to upstream McHeli CE.
+issueTrackerURL="https://github.com/thisisforfreeAI/26.2-port-of-mcheli-cm/issues"
+
+[[mods]]
+modId="${mod_id}"
+version="${mod_version}"
+displayName="${mod_name}"
+displayURL="https://github.com/thisisforfreeAI/26.2-port-of-mcheli-cm"
+
+# Upstream authors (from McHeli CE's mcmod.info), grouped by the project they worked on, then the port.
+authors="EMB4, Murachiki27 (McHeli); RagexPrince683 (MCHEL-O-Extended); MrNorwood, MovBlock (McHeli CE); thisisforfreeAI (26.2 port)"
+
+# The first sentence is McHeli CE's mcmod.info credits line, verbatim.
+credits="TV90 for reforged content, H. M. Shrub and Jumboreal for texturework help. McHeli Wingman began as a standalone addon and was merged into McHeli CE. Ported from McHeli CE 1.5.1 (commit cbaff7f)."
+
+description='''
+Adds realistic vehicles to Minecraft: an unofficial community port of McHeli: Community Edition (McHeli CE) to Minecraft 26.2 on NeoForge.
+
+This port is not affiliated with or endorsed by Warfactory, the McHeli CE developers, or the original McHeli authors. Please report problems to this port's issue tracker, not to upstream.
+
+Work in progress: see KNOWN_ISSUES.md in the port's repository for what is not ported yet.
+'''
+
+[[dependencies.${mod_id}]]
+    modId="neoforge"
+    type="required"
+    # Built and tested against the pinned NeoForge version; later 26.2 builds are allowed.
+    versionRange="[${neo_version},)"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.${mod_id}]]
+    modId="minecraft"
+    type="required"
+    versionRange="${minecraft_version_range}"
+    ordering="NONE"
+    side="BOTH"

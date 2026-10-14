@@ -1,0 +1,16 @@
+{
+  "mcheli_ce_port.configuration.title": "McHeli CE (26.2 Port) Configuration",
+  "mcheli_ce_port.configuration.section.mcheli.ce.port.common.toml": "Common Settings",
+  "mcheli_ce_port.configuration.section.mcheli.ce.port.common.toml.title": "McHeli CE (26.2 Port): Common Settings",
+  "mcheli_ce_port.configuration.section.mcheli.ce.port.client.toml": "Client Settings",
+  "mcheli_ce_port.configuration.section.mcheli.ce.port.client.toml.title": "McHeli CE (26.2 Port): Client Settings",
+  "mcheli_ce_port.configuration.section.mcheli.ce.port.server.toml": "Server Settings",
+  "mcheli_ce_port.configuration.section.mcheli.ce.port.server.toml.title": "McHeli CE (26.2 Port): Server Settings",
+
+  "mcheli_ce_port.configuration.general": "General",
+  "mcheli_ce_port.configuration.debugLog": "Debug Logging",
+  "mcheli_ce_port.configuration.vehicles": "Vehicles",
+  "mcheli_ce_port.configuration.serverAuthoritativeMovement": "Server-Side Movement",
+  "mcheli_ce_port.configuration.privacy": "Privacy",
+  "mcheli_ce_port.configuration.allowScreenCapture": "Allow Screen Capture"
+}
