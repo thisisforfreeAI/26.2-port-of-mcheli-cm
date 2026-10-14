@@ -10,8 +10,10 @@ An unofficial community port of [McHeli: Community Edition](https://github.com/W
 
 ## Status
 
-**Work in progress (milestone M1):** the mod loads on the client and on a dedicated server, but it
-does not add any vehicles, weapons, items or blocks yet.
+**Work in progress (milestone M2):** the mod loads all of McHeli CE's content (vehicles, weapons,
+throwables and HUDs, from YAML and legacy TXT files, including addon packs) and registers its items,
+blocks, entity types and creative tabs. Nothing can be used yet: vehicles cannot be placed or flown,
+and weapons do not fire. That starts with milestone M3.
 
 - [PORTING_PLAN.md](PORTING_PLAN.md): the roadmap and the decisions behind it
 - [CHANGELOG.md](CHANGELOG.md): what each milestone added
@@ -31,12 +33,27 @@ The build targets Java 25. Install JDK 25, or run Gradle on any JDK from 17 up a
 JDK 25 toolchain automatically.
 
 ```sh
-./gradlew build       # mod jar in build/libs/
+./gradlew build       # mod jar in build/libs/ (also runs the tests)
+./gradlew test        # JUnit tests, with Minecraft and the mod loaded
+./gradlew runData     # regenerates models, lang, recipes and loot tables in src/generated/resources
 ./gradlew runClient   # development client
 ./gradlew runServer   # development dedicated server (no GUI; type "stop" to shut it down)
 ```
 
 Development runs use `run/` as the game directory.
+
+## Content and addon packs
+
+As in McHeli CE, vehicles, weapons, throwables and HUDs are defined in content files (YAML, or the
+legacy TXT format) that the mod reads from `<game dir>/mcheli_addons/` at startup:
+
+- The stock content is extracted to `mcheli_addons/default/` and extracted again whenever the mod
+  version changes, so do not edit it there.
+- Every other folder, `.zip` or `.jar` in `mcheli_addons/` is an addon pack with McHeli CE's layout
+  (`pack.mcmeta` with an `addon` block, content under `assets/mcheli/<type>/`). Packs load after the
+  stock pack in name order, and a definition replaces an earlier one with the same name.
+- Addon packs are also loaded as always-on resource packs, so their textures, models and sounds work.
+- `/mcheli dumpyaml [folder]` converts loaded TXT content to YAML in `<game dir>/<folder>`.
 
 The upstream sources the port is based on are not part of this repository. To get a reference copy
 in `upstream/` (git-ignored), run:
