@@ -225,5 +225,14 @@ What changed from this plan while implementing it:
 - No stock helicopter uses `OldRenderMethod`; `PartTransformTest` switches the AH-64's rotors to
   it. `AllHelicopterModelsTest` found two parts that upstream's own model files lack (AH-1Z
   `canopy`, UH-1C `camera0`); they are listed as upstream content issues.
+- Manual checks (§8.4) ran under Xvfb with Mesa, on OpenGL (llvmpipe) and on Vulkan (lavapipe),
+  with a temporary scripted driver that was not committed. Both backends gave the same pictures
+  and the same values: the view entity takes over in gunner mode, 2x zoom halves the FOV (70 to
+  35), night vision sets the post effect and the potion effect and removes both, Page Up moves the
+  third-person camera from 16 to 24, and leaving resets it to 4. Two things needed for Vulkan in
+  this environment, neither in this mod: NeoForge's early loading window has to be off
+  (`earlyWindowControl = false`), and the game resets "Prefer Vulkan" after any startup it did not
+  finish, so `--graphicsBackend vulkan` was passed. No sound device under Xvfb, so the engine
+  sound in M2 was not heard.
 - Not done in M4, as planned: thermal vision (M7), weapon HUD values and weapon part animation
   (M5), search lights, camera position switching and the UAV camera (M6).
