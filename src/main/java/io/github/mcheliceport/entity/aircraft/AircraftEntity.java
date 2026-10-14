@@ -2199,6 +2199,11 @@ public abstract class AircraftEntity extends Entity
     public void destroyAircraft() {
         this.switchHoveringMode(false);
         this.switchGunnerMode(false);
+        for (int i = 0; i < this.getSeatNum() + 1; i++) {
+            if (this.getEntityBySeatId(i) instanceof Player player) {
+                this.switchCameraMode(player, AircraftCamera.MODE_NORMAL);
+            }
+        }
         this.setDespawnCount(20 * CommonConfig.DESPAWN_COUNT.get());
         this.rotDestroyedPitch = this.random.nextFloat() - 0.5F;
         this.rotDestroyedRoll = (this.random.nextFloat() - 0.5F) * 0.5F;

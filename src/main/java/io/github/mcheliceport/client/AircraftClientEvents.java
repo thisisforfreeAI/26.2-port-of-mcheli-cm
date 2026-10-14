@@ -1,5 +1,6 @@
 package io.github.mcheliceport.client;
 
+import io.github.mcheliceport.client.camera.AircraftCameraClient;
 import io.github.mcheliceport.client.hud.AircraftHudLayer;
 import io.github.mcheliceport.client.input.HeliClientControl;
 import io.github.mcheliceport.client.input.MouseFlight;
@@ -21,7 +22,7 @@ import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import net.neoforged.neoforge.common.NeoForge;
 import org.jspecify.annotations.Nullable;
 
-/** The client's game-bus hooks for riding vehicles: controls, camera roll and the hidden hand. */
+/** The client's game-bus hooks for riding vehicles: controls, camera, camera roll and the hidden hand. */
 public final class AircraftClientEvents {
 
     private AircraftClientEvents() {
@@ -40,17 +41,25 @@ public final class AircraftClientEvents {
             }
         });
         NeoForge.EVENT_BUS.addListener((ClientTickEvent.Post event) -> {
+            AircraftCameraClient.handleKeys();
             HeliClientControl.onClientTick();
+            AircraftCameraClient.tick();
             AircraftModels.tick();
             AircraftEngineSound.tickAll();
         });
         NeoForge.EVENT_BUS.addListener((RenderFrameEvent.Pre event) -> MouseFlight.onFrameWithoutTurn());
+        NeoForge.EVENT_BUS.addListener((RenderFrameEvent.Post event) -> HeliClientControl.applyRotLimit());
+        NeoForge.EVENT_BUS.addListener(AircraftCameraClient::onCameraAngles);
         NeoForge.EVENT_BUS.addListener(AircraftClientEvents::onCameraAngles);
+        NeoForge.EVENT_BUS.addListener(AircraftCameraClient::onComputeFov);
+        NeoForge.EVENT_BUS.addListener(AircraftCameraClient::onDetachedDistance);
+        NeoForge.EVENT_BUS.addListener(AircraftCameraClient::onNameTag);
         NeoForge.EVENT_BUS.addListener(AircraftClientEvents::onRenderHand);
         NeoForge.EVENT_BUS.addListener(AircraftHudLayer::onRenderLayer);
         NeoForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.LoggingOut event) -> {
             ServerSettings.setClient(ServerSettings.Values.DEFAULT);
             MouseFlight.reset();
+            AircraftCameraClient.reset();
         });
     }
 
@@ -69,7 +78,8 @@ public final class AircraftClientEvents {
     private static void onCameraAngles(ViewportEvent.ComputeCameraAngles event) {
         LocalPlayer player = Minecraft.getInstance().player;
         AircraftEntity aircraft = riddenAircraft(player);
-        if (aircraft == null || event.getCamera().entity() != player) {
+        Entity view = event.getCamera().entity();
+        if (aircraft == null || view != player && view != AircraftCameraClient.viewEntity()) {
             return;
         }
         float partial = (float) event.getPartialTick();
@@ -79,10 +89,11 @@ public final class AircraftClientEvents {
         event.setRoll(event.getRoll() + roll);
     }
 
-    /** The pilot's hand is hidden (upstream {@code disableFirstPersonItemRender}). */
+    /** The hand is hidden for the pilot and in camera view (upstream {@code disableFirstPersonItemRender}). */
     private static void onRenderHand(RenderHandEvent event) {
         LocalPlayer player = Minecraft.getInstance().player;
-        if (player != null && player.getVehicle() instanceof AircraftEntity aircraft && aircraft.isPilot(player)) {
+        AircraftEntity aircraft = riddenAircraft(player);
+        if (aircraft != null && (aircraft.isPilot(player) || AircraftCameraClient.viewEntity() != null)) {
             event.setCanceled(true);
         }
     }

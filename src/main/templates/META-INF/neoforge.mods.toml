@@ -29,6 +29,9 @@ This port is not affiliated with or endorsed by Warfactory, the McHeli CE develo
 Work in progress: see KNOWN_ISSUES.md in the port's repository for what is not ported yet.
 '''
 
+[[accessTransformers]]
+file="META-INF/accesstransformer.cfg"
+
 [[dependencies.${mod_id}]]
     modId="neoforge"
     type="required"

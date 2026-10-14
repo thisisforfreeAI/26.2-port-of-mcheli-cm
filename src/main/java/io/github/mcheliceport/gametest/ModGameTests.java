@@ -44,6 +44,7 @@ public final class ModGameTests {
     public static void register(IEventBus modBus) {
         PlacementGameTests.register();
         RidingGameTests.register();
+        CameraModeGameTests.register();
         FlightGameTests.register();
         FuelGameTests.register();
         PickUpGameTests.register();

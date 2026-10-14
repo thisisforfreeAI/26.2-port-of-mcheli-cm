@@ -206,4 +206,39 @@ upstream did on Java 21 and later.
 
 ## 10. As built
 
-(Filled in when M4 is done.)
+What changed from this plan while implementing it:
+
+- Classes: the renderer is `HeliRenderer` with the part maths in `AircraftPartPoses` (pure, so
+  `PartTransformTest` can call it) on a `GlMatrixStack` with `glRotatef`'s semantics;
+  `AircraftRenderTypes`, `RiderTilt`, `ModelVertices` and `AircraftDebugBoxes` fill the other
+  roles. The camera is split in two: `AircraftCamera` (upstream's `MCH_Camera`, on both sides,
+  in `entity/aircraft` with `AircraftRadar`) and `client/camera/AircraftCameraClient` (the view
+  entity, zoom, post effect and third-person distance). `HudShapeRenderState` draws the HUD's
+  lines, points and rotated textures as GUI quads.
+- `GlMatrixStack` builds `glRotatef`'s matrix in doubles: `PartTransformTest` found that JOML's
+  float rotations lose precision near half turns.
+- The view entity is a `Marker` that keeps the rider's eye height and sits that far below the
+  camera, so vanilla's eye-height smoothing does not slide the view when it switches.
+- The pilot's first-person eye is placed as upstream's `onCameraSetupEvent` puts it (turned with
+  the vehicle's attitude, or with the camera roll while hovering or in free look). It was missed
+  at first and reported by the user (the view slid back in the cockpit in forward flight). There
+  is no camera-position event in NeoForge 26.2, so an access transformer opens
+  `Camera#setPosition` and the eye is placed from the FOV event, the first one after vanilla
+  positions the camera.
+- Crew gunner mode (upstream's `gunnerModeOtherSeat`) and the camera-mode key for crew seat 1 were
+  needed for `heli_gnr` and the key hints, so they came with M4. Destroying a helicopter puts its
+  crew's cameras back to normal, as upstream.
+- No stock helicopter uses `OldRenderMethod`; `PartTransformTest` switches the AH-64's rotors to
+  it. `AllHelicopterModelsTest` found two parts that upstream's own model files lack (AH-1Z
+  `canopy`, UH-1C `camera0`); they are listed as upstream content issues.
+- Manual checks (§8.4) ran under Xvfb with Mesa, on OpenGL (llvmpipe) and on Vulkan (lavapipe),
+  with a temporary scripted driver that was not committed. Both backends gave the same pictures
+  and the same values: the view entity takes over in gunner mode, 2x zoom halves the FOV (70 to
+  35), night vision sets the post effect and the potion effect and removes both, Page Up moves the
+  third-person camera from 16 to 24, and leaving resets it to 4. Two things needed for Vulkan in
+  this environment, neither in this mod: NeoForge's early loading window has to be off
+  (`earlyWindowControl = false`), and the game resets "Prefer Vulkan" after any startup it did not
+  finish, so `--graphicsBackend vulkan` was passed. No sound device under Xvfb, so the engine
+  sound in M2 was not heard.
+- Not done in M4, as planned: thermal vision (M7), weapon HUD values and weapon part animation
+  (M5), search lights, camera position switching and the UAV camera (M6).
