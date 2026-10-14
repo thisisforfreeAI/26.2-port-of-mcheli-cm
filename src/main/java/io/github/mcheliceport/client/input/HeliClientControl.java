@@ -23,6 +23,10 @@ import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 public final class HeliClientControl {
 
     private static boolean wasRiding;
+    /** Upstream {@code setRotLimitPitch}: the gunner's pitch range, held every frame until the next tick. */
+    private static boolean limitPitch;
+    private static float minPitch;
+    private static float maxPitch;
 
     private HeliClientControl() {
     }
@@ -30,6 +34,7 @@ public final class HeliClientControl {
     public static void onClientTick() {
         Minecraft mc = Minecraft.getInstance();
         LocalPlayer player = mc.player;
+        limitPitch = false;
         AircraftEntity aircraft = player != null ? ModNetwork.riddenAircraft(player) : null;
         boolean riding = aircraft instanceof HeliEntity && aircraft.getAcInfo() != null;
         if (!riding) {
@@ -55,7 +60,10 @@ public final class HeliClientControl {
         if (heli.isGunnerMode(player)) {
             SeatInfo seat = heli.getSeatInfo(heli.getSeatIdByEntity(player));
             if (seat != null) {
-                player.setXRot(Mth.clamp(player.getXRot(), seat.minPitch, seat.maxPitch));
+                limitPitch = true;
+                minPitch = seat.minPitch;
+                maxPitch = seat.maxPitch;
+                player.setXRot(Mth.clamp(player.getXRot(), minPitch, maxPitch));
             }
         }
         heli.camera.prevRotationYaw = heli.camera.rotationYaw;
@@ -64,6 +72,21 @@ public final class HeliClientControl {
         heli.camera.rotationPitch = player.getXRot();
         if (heli.isEntityRadarMounted()) {
             heli.radar.update(heli, 5);
+        }
+    }
+
+    /** Upstream {@code applyRotLimit}, after each frame: the mouse cannot take the gunner past the seat's pitch. */
+    public static void applyRotLimit() {
+        LocalPlayer player = Minecraft.getInstance().player;
+        if (!limitPitch || player == null) {
+            return;
+        }
+        if (player.getXRot() < minPitch) {
+            player.setXRot(minPitch);
+            player.xRotO = minPitch;
+        } else if (player.getXRot() > maxPitch) {
+            player.setXRot(maxPitch);
+            player.xRotO = maxPitch;
         }
     }
 
