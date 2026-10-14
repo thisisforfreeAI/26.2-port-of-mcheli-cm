@@ -134,6 +134,9 @@ public abstract class AircraftEntity extends Entity
     public @Nullable AircraftPart partCanopy;
     public @Nullable AircraftPart partLandingGear;
     public @Nullable AircraftPart partHatch;
+    /** Client only: upstream's {@code rotPartRotation}, the angles of the content's rotating parts. */
+    public float[] rotPartRotation = new float[0];
+    public float[] prevRotPartRotation = new float[0];
 
     private double currentThrottle;
     private double prevCurrentThrottle;
@@ -244,6 +247,8 @@ public abstract class AircraftEntity extends Entity
         this.partCanopy = newInfo.haveCanopy() ? AircraftPart.canopy(this) : null;
         this.partLandingGear = newInfo.haveLandingGear() ? AircraftPart.landingGear(this) : null;
         this.partHatch = newInfo.haveHatch() ? AircraftPart.hatch(this) : null;
+        this.rotPartRotation = new float[newInfo.partRotPart.size()];
+        this.prevRotPartRotation = new float[newInfo.partRotPart.size()];
         SeatEntity[] oldSeats = this.seats;
         this.seats = new SeatEntity[this.getSeatNum()];
         for (SeatEntity seat : oldSeats) {
@@ -1442,6 +1447,7 @@ public abstract class AircraftEntity extends Entity
         if (this.info != null) {
             this.onUpdateAircraft();
             this.updateParts(this.partStatus());
+            this.updatePartRotation();
         }
 
         if (!this.level().isClientSide() && this.isDestroyed() && !this.isExploded() && !prevOnGround
@@ -1627,6 +1633,29 @@ public abstract class AircraftEntity extends Entity
     }
 
     // ---- moving parts ----
+
+    /**
+     * Upstream {@code onUpdate_PartRotation}: on clients, turns the rotating parts while someone
+     * flies the vehicle, or always for parts marked so.
+     */
+    protected void updatePartRotation() {
+        if (!this.level().isClientSide() || this.info == null
+                || this.rotPartRotation.length != this.info.partRotPart.size()) {
+            return;
+        }
+        for (int i = 0; i < this.rotPartRotation.length; i++) {
+            this.prevRotPartRotation[i] = this.rotPartRotation[i];
+            if (!this.isDestroyed() && this.info.partRotPart.get(i).rotAlways || this.getPilot() != null) {
+                this.rotPartRotation[i] += this.info.partRotPart.get(i).rotSpeed;
+                if (this.rotPartRotation[i] < 0.0F) {
+                    this.rotPartRotation[i] += 360.0F;
+                }
+                if (this.rotPartRotation[i] >= 360.0F) {
+                    this.rotPartRotation[i] -= 360.0F;
+                }
+            }
+        }
+    }
 
     /** Upstream {@code updateParts}, with its landing gear logic. */
     protected void updateParts(int stat) {

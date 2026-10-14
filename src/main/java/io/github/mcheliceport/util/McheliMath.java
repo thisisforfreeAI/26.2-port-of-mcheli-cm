@@ -92,6 +92,18 @@ public final class McheliMath {
                 .rotateZ((float) Math.toRadians(-roll));
     }
 
+    /**
+     * Upstream {@code MCH_Lib.slerpOrientationYPR}: the body attitude between two ticks, as a
+     * quaternion slerp turned back into {yaw, pitch, roll} in degrees.
+     */
+    public static float[] slerpOrientationYPR(float yaw0, float pitch0, float roll0, float yaw1, float pitch1,
+            float roll1, float t) {
+        Quaternionf q = orientationQuat(yaw0, pitch0, roll0);
+        q.slerp(orientationQuat(yaw1, pitch1, roll1), t);
+        Vector3f e = q.getEulerAnglesYXZ(new Vector3f());
+        return new float[] {(float) Math.toDegrees(e.y), (float) -Math.toDegrees(e.x), (float) -Math.toDegrees(e.z)};
+    }
+
     /** Upstream {@code MCH_Lib.applyQuat}. */
     public static Vec3 applyQuat(Quaternionf q, double x, double y, double z) {
         Vector3f v = q.transform(new Vector3f((float) x, (float) y, (float) z));
