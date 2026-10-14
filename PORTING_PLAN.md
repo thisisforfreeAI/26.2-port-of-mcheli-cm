@@ -1,7 +1,7 @@
 # McHeli CE → Minecraft 26.2 (NeoForge) — Porting Plan
 
 > **Status:** Plan approved. All [decisions D1–D9](#10-decisions) were approved as recommended on
-> 2026-10-14. No port code has been written yet; **next step is M1** (§6).
+> 2026-10-14. **M1 is implemented** (version 0.1.0, see `CHANGELOG.md`); **next step is M2** (§6).
 > Repo: <https://github.com/thisisforfreeAI/26.2-port-of-mcheli-cm>. In a fresh checkout, run
 > `bash scripts/fetch-upstream.sh` to get the upstream reference sources into `upstream/`.
 >
@@ -17,7 +17,7 @@
 |---|---|
 | License | **GPLv3**, same as upstream. Note: upstream's default branch `master` has **no LICENSE file** and GitHub reports no license. The GPLv3 text is in upstream's `origin/main` initial commit (`7c1b0ee`, 2025-03-01, 674 lines). We ship that text as `LICENSE`. See Decision D6. |
 | Attribution | Keep all notices. Authors listed upstream (`mcmod.info`): **EMB4** and **Murachiki27** (original McHeli), **RagexPrince683** (MCHEL-O-Extended / McHeli Overdrive, which CE continues "with full permission"), **MrNorwood** and **MovBlock** (CE / Warfactory). Credits: TV90 (reforged content), H. M. Shrub and Jumboreal (texture work). The wingman subsystem was a standalone McHeli-Wingman addon merged into CE. |
-| Identity | Mod ID `mcheli_ce_port`, display name **"McHeli CE (26.2 Port)"**, Java package `io.github.mcheliceport` (proposed). We do not use upstream's mod ID `mcheli`, its name, or its Discord/CurseForge branding. |
+| Identity | Mod ID `mcheli_ce_port`, display name **"McHeli CE (26.2 Port)"**, Java package `io.github.mcheliceport`. We do not use upstream's mod ID `mcheli`, its name, or its Discord/CurseForge branding. |
 | Assets | Ship **only** what is in the upstream repo (§3.3). No third-party content packs. `libs/optifine.jar` (dev-only in upstream) is **not** used or shipped. |
 | Faithfulness | Prefer upstream behaviour. Where 26.2 makes a 1:1 port impossible, the difference goes into `KNOWN_ISSUES.md`, not silently dropped. |
 
@@ -262,7 +262,7 @@ Every milestone ends with `./gradlew build`, `runClient` (world load, no crash),
 | MS | Goal | Main work | Exit criteria / tests |
 |---|---|---|---|
 | **M0** | Plan approved | **Done 2026-10-14** (all §10 decisions approved) | — |
-| **M1** | Empty 26.2 mod boots | MDK import (neo 26.2.0.88), mod metadata (ID, GPLv3, authors, unofficial notice), LICENSE, empty registries, config skeleton, logging | Build green; client reaches title screen with the mod listed; dedicated server boots |
+| **M1** | Empty 26.2 mod boots | **Done 2026-10-14** (0.1.0). MDK import (neo 26.2.0.88), mod metadata (ID, GPLv3, authors, unofficial notice), LICENSE, empty registries, config skeleton, logging | Build green; client reaches title screen with the mod listed; dedicated server boots |
 | **M2** | Content + registries | Ported content system, addon discovery + builtin extraction, all items/blocks/entity types registered, 7 creative tabs, generated item model definitions/lang/sounds, recipes, `/mcheli dumpyaml` | All 372 stock definitions load from YAML **and** TXT (parity tests); every item visible with icon and name in creative; addon folder override test |
 | **M3** | One helicopter flies | `AircraftEntity` core + `HeliEntity` (use a stock heli such as `ah-64`), spawn item, riding/seats, controls + mouse flight, physics, fuel, synced data, control payloads, interpolation | Spawn, mount, take off, hover, land in SP; two-client LAN test shows smooth remote motion; physics unit tests (rotor/throttle/drag math vs upstream formulas) |
 | **M4** | Rendering + HUD for that heli | OBJ/MQO loaders + threaded reload, render path A, rotor/part animation, textures, HUD layer + DSL + expression evaluator, camera/zoom, night vision post effect | Heli renders on **both GL and Vulkan**; HUD matches upstream layout for `heli.yml`; expression evaluator unit tests |
