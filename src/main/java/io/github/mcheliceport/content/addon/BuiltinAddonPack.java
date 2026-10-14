@@ -5,6 +5,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.mojang.logging.LogUtils;
+import io.github.mcheliceport.content.ContentType;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
@@ -18,17 +19,24 @@ import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 /**
  * The stock content pack, which ships inside the mod and is extracted to
  * {@code mcheli_addons/default/} so that it loads like any other pack.
  *
- * <p>Ported from upstream {@code com.norwood.mcheli.helper.addon.BuiltinAddonPack}. Upstream
- * extracted the pack once and then only when a config option asked for it, so updating the mod
- * left old stock content in place. The port records the mod version in the extracted
- * {@code pack.mcmeta} and extracts again when it changes. Changes made inside {@code default/}
- * are lost then; overrides belong in a separate pack.
+ * <p>Ported from upstream {@code com.norwood.mcheli.helper.addon.BuiltinAddonPack}, with two
+ * differences:
+ * <ul>
+ *   <li>Only the content definitions (the vehicle, weapon, throwable and HUD folders) are
+ *       extracted. Upstream copied every asset (about 90 MB) and added the copy as a resource
+ *       pack; the port reads stock textures, models and sounds from the mod jar.</li>
+ *   <li>Upstream extracted the pack once and then only when a config option asked for it, so
+ *       updating the mod left old stock content in place. The port records the mod version in the
+ *       extracted {@code pack.mcmeta} and extracts again when it changes. Changes made inside
+ *       {@code default/} are lost then; overrides belong in a separate pack.</li>
+ * </ul>
  */
 public final class BuiltinAddonPack {
 
@@ -108,7 +116,7 @@ public final class BuiltinAddonPack {
         }
     }
 
-    private static String readExtractedVersion(Path targetDir) {
+    private static @Nullable String readExtractedVersion(Path targetDir) {
         Path meta = targetDir.resolve("pack.mcmeta");
         if (!Files.isRegularFile(meta)) {
             return null;
@@ -129,6 +137,9 @@ public final class BuiltinAddonPack {
         Files.createDirectories(targetDir);
         AtomicInteger copied = new AtomicInteger();
         source.visitFiles(ASSETS_FOLDER, (relativePath, opener) -> {
+            if (!isContentFile(relativePath)) {
+                return;
+            }
             Path out = targetDir.resolve(relativePath).normalize();
             if (!out.startsWith(targetDir)) {
                 throw new IOException("Refusing to extract outside the pack folder: " + relativePath);
@@ -142,6 +153,12 @@ public final class BuiltinAddonPack {
         // Written last, so an interrupted extraction is redone at the next start.
         Files.writeString(targetDir.resolve("pack.mcmeta"), packMeta(modVersion), StandardCharsets.UTF_8);
         LOGGER.info("Extracted {} stock content files", copied.get());
+    }
+
+    /** Whether a jar path is a content definition: {@code assets/mcheli/<content folder>/...}. */
+    static boolean isContentFile(String relativePath) {
+        String[] parts = relativePath.split("/");
+        return parts.length >= 4 && ContentType.fromDirName(parts[2]) != null;
     }
 
     private static String packMeta(String modVersion) {

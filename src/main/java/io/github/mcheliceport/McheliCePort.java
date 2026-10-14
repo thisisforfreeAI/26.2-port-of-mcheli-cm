@@ -26,6 +26,7 @@ public final class McheliCePort {
         LOGGER.info("Loading {} {}. This is an unofficial port of McHeli CE: report problems to the port, not to upstream.",
                 container.getModInfo().getDisplayName(), container.getModInfo().getVersion());
 
+        ModContentLoader.load(container);
         ModRegistries.register(modBus);
         container.registerConfig(ModConfig.Type.COMMON, CommonConfig.SPEC);
         container.registerConfig(ModConfig.Type.SERVER, ServerConfig.SPEC);
