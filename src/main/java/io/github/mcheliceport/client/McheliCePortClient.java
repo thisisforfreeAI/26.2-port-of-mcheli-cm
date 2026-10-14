@@ -18,6 +18,7 @@ import io.github.mcheliceport.client.weapon.WeaponClient;
 import io.github.mcheliceport.entity.weapon.BaseBulletEntity;
 import java.util.Set;
 import io.github.mcheliceport.client.render.RiderTilt;
+import io.github.mcheliceport.client.render.ThrowableRenderer;
 import io.github.mcheliceport.registry.ModEntityTypes;
 import io.github.mcheliceport.registry.ModMenuTypes;
 import net.minecraft.client.renderer.entity.NoopRenderer;
@@ -78,13 +79,14 @@ public final class McheliCePortClient {
         event.registerEntityRenderer(ModEntityTypes.A10.get(), A10Renderer::new);
         event.registerEntityRenderer(ModEntityTypes.FLARE.get(), FlareRenderer::flare);
         event.registerEntityRenderer(ModEntityTypes.CHAFF.get(), FlareRenderer::chaff);
+        event.registerEntityRenderer(ModEntityTypes.THROWABLE.get(), ThrowableRenderer::new);
         // Planes, ships, tanks and vehicles draw nothing until M6.
         Set<EntityType<?>> drawn = Set.of(ModEntityTypes.HELICOPTER.get(), ModEntityTypes.BULLET.get(),
                 ModEntityTypes.ROCKET.get(), ModEntityTypes.TORPEDO.get(), ModEntityTypes.MARKER_ROCKET.get(),
                 ModEntityTypes.DISPENSED_ITEM.get(), ModEntityTypes.AA_MISSILE.get(),
                 ModEntityTypes.AS_MISSILE.get(), ModEntityTypes.TV_MISSILE.get(), ModEntityTypes.AT_MISSILE.get(),
                 ModEntityTypes.BOMB.get(), ModEntityTypes.A10.get(), ModEntityTypes.FLARE.get(),
-                ModEntityTypes.CHAFF.get());
+                ModEntityTypes.CHAFF.get(), ModEntityTypes.THROWABLE.get());
         ModEntityTypes.all().stream()
                 .filter(type -> !drawn.contains(type.get()))
                 .forEach(type -> registerNoop(event, type.get()));

@@ -2,6 +2,7 @@ package io.github.mcheliceport.registry;
 
 import io.github.mcheliceport.entity.PlaceholderEntity;
 import io.github.mcheliceport.entity.flare.ChaffEntity;
+import io.github.mcheliceport.entity.throwable.ThrowableEntity;
 import io.github.mcheliceport.entity.flare.FlareEntity;
 import io.github.mcheliceport.entity.weapon.A10Entity;
 import io.github.mcheliceport.entity.weapon.AAMissileEntity;
@@ -89,7 +90,8 @@ public final class ModEntityTypes {
             DispensedItemEntity::new, 1.0f, 1.0f, 530, 5);
     public static final DeferredHolder<EntityType<?>, EntityType<FlareEntity>> FLARE = weapon("flare",
             FlareEntity::new, 1.0f, 1.0f, 330, 10);
-    public static final DeferredHolder<EntityType<?>, EntityType<PlaceholderEntity>> THROWABLE = placeholder("throwable", 0.25f, 0.25f, 330, 10);
+    public static final DeferredHolder<EntityType<?>, EntityType<ThrowableEntity>> THROWABLE = weapon("throwable",
+            ThrowableEntity::new, 0.25f, 0.25f, 330, 10);
     public static final DeferredHolder<EntityType<?>, EntityType<PlaceholderEntity>> GUNNER = placeholder("gunner", 0.6f, 1.8f, 530, 5);
     public static final DeferredHolder<EntityType<?>, EntityType<ChaffEntity>> CHAFF = weapon("chaff",
             ChaffEntity::new, 1.0f, 1.0f, 330, 10);
