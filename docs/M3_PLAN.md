@@ -1,9 +1,10 @@
 # M3 plan: placing and flying helicopters (0.3.0)
 
-> **Status:** proposed, not started. Starts after M2 ([PR #2](https://github.com/thisisforfreeAI/26.2-port-of-mcheli-cm/pull/2))
+> **Status:** approved, not started. Decisions D10 to D13 were approved as recommended on
+> 2026-10-14. Starts after M2 ([PR #2](https://github.com/thisisforfreeAI/26.2-port-of-mcheli-cm/pull/2))
 > is merged; the M3 branch is cut from `main` at that point. NeoForge stays pinned at 26.2.0.88.
-> This file expands the M3 row of [PORTING_PLAN.md](../PORTING_PLAN.md) §6. It needs the four
-> decisions in [§9](#9-decisions-to-approve) before work starts.
+> This file expands the M3 row of [PORTING_PLAN.md](../PORTING_PLAN.md) §6. Its decisions are in
+> [§9](#9-decisions).
 
 ## 1. Goal
 
@@ -283,9 +284,12 @@ CI. Players are mock players.
 | M11 | Repeat M1 to M6 with "Prefer Vulkan" on; the stand-in renderer draws the same |
 | M12 | Repeat M3 to M6 with a different stock heli that has fold blades or a canopy, and with an addon TXT helicopter |
 
-## 9. Decisions to approve
+## 9. Decisions
 
-| # | Question | Recommendation |
+All four were approved as recommended on 2026-10-14. They are binding for M3, and they continue
+PORTING_PLAN.md §10's numbering.
+
+| # | Question | Approved resolution |
 |---|---|---|
 | D10 | Scope: the AH-64 only, or every helicopter? | **Every stock and addon helicopter**, since they share one entity class; the AH-64 is the test reference. Planes and other types stay M6. |
 | D11 | Helicopters are invisible until M4 draws models. Add a throw-away stand-in renderer (bounding boxes) in M3? | **Yes**: needed for M3's manual checks and screenshots; M4 replaces it. |
