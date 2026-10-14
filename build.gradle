@@ -100,6 +100,12 @@ neoForge {
             sourceSet(sourceSets.main)
         }
     }
+
+    // JUnit tests run with Minecraft and NeoForge on the classpath (FML is bootstrapped once per test JVM).
+    unitTest {
+        enable()
+        testedMod = mods."${mod_id}"
+    }
 }
 
 // Pass the terminal through to the dev server so console commands such as "stop" work from
@@ -118,6 +124,18 @@ configurations {
 }
 
 dependencies {
+    // SnakeYAML parses the YAML content files, as in upstream McHeli CE (which shades the same
+    // version). Neither Minecraft nor NeoForge ships it, so it is bundled with Jar-in-Jar.
+    jarJar(implementation('org.yaml:snakeyaml')) {
+        version {
+            strictly '[2.5,3)'
+            prefer '2.5'
+        }
+    }
+
+    testImplementation platform('org.junit:junit-bom:5.14.4')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     // Example optional mod dependency with JEI
     // The JEI API is declared for compile time use, while the full JEI artifact is used at runtime
     // compileOnly "mezz.jei:jei-${mc_version}-common-api:${jei_version}"
@@ -195,5 +213,17 @@ idea {
     module {
         downloadSources = true
         downloadJavadoc = true
+    }
+}
+
+test {
+    useJUnitPlatform()
+    // Content tests read the stock and fixture packs from the source tree.
+    systemProperty 'mcheli.projectDir', project.projectDir.absolutePath
+    // ./gradlew test -Dmcheli.updateParity=true rewrites the parity test's list of known differences.
+    systemProperty 'mcheli.updateParity', providers.systemProperty('mcheli.updateParity').orElse('false').get()
+    // The parity tests print their findings; show them on failure.
+    testLogging {
+        exceptionFormat = 'full'
     }
 }
