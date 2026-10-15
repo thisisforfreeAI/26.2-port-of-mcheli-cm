@@ -6,6 +6,8 @@ import java.util.List;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.Nullable;
+import io.github.mcheliceport.client.model.McheliModel;
+import org.joml.Matrix4f;
 
 /** What one frame draws of a vehicle. */
 public class AircraftRenderState extends EntityRenderState {
@@ -14,6 +16,8 @@ public class AircraftRenderState extends EntityRenderState {
     public int color;
     public boolean flat;
     public final List<AircraftPartPoses.Draw> draws = new ArrayList<>();
+    public record EmissiveDraw(Identifier texture, Matrix4f pose, List<McheliModel.Group> groups) { }
+    public final List<EmissiveDraw> emissiveDraws = new ArrayList<>();
 
     public boolean testMode;
     public float yaw;

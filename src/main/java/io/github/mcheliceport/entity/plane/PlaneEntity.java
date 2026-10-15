@@ -10,6 +10,8 @@ import io.github.mcheliceport.entity.aircraft.AircraftEntity;
 import io.github.mcheliceport.entity.aircraft.AircraftPart;
 import io.github.mcheliceport.entity.aircraft.GroundProbe;
 import io.github.mcheliceport.net.AircraftStatusRequestPayload;
+import io.github.mcheliceport.effect.McheliEffects;
+import io.github.mcheliceport.effect.ParticleParam;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.EntityType;
@@ -33,6 +35,10 @@ public class PlaneEntity extends AircraftEntity implements PlaneFlightModel.Body
     private boolean keyRotationApplied;
     private boolean requestedStatus;
     private boolean loading;
+    private final PlaneParticles particles = new PlaneParticles();
+    public final PlaneExhaustAnimation exhaustAnimation = new PlaneExhaustAnimation();
+    public float exhaustYaw;
+    public float previousExhaustYaw;
 
     public PlaneEntity(EntityType<? extends PlaneEntity> type, Level level) {
         super(type, level);
@@ -55,6 +61,8 @@ public class PlaneEntity extends AircraftEntity implements PlaneFlightModel.Body
     @Override
     protected void onTypeChanged(AircraftInfo info) {
         this.planeInfo = (PlaneInfo) info;
+        this.particles.reset();
+        this.exhaustAnimation.reset(this.planeInfo.exhaustFlames.size());
         this.partNozzle = this.planeInfo.haveNozzle() || this.planeInfo.haveRotor() || this.planeInfo.isEnableVtol
                 ? this.createPart(1, "Nozzle", 1.5F) : null;
         this.partWing = this.planeInfo.haveWing() ? this.createPart(3, "Wing", 2.5F) : null;
@@ -266,6 +274,8 @@ public class PlaneEntity extends AircraftEntity implements PlaneFlightModel.Body
             this.setPitch(this.getPitch() * (float) Math.pow(0.97, seconds * 20.0F));
             this.setRoll(this.getRoll() * (float) Math.pow(0.9, seconds * 20.0F));
         }
+        this.previousExhaustYaw = this.exhaustYaw;
+        this.exhaustYaw = PlaneExhaustAnimation.steer(this.exhaustYaw, this.moveLeft, this.moveRight, seconds);
     }
 
     @Override
@@ -328,12 +338,50 @@ public class PlaneEntity extends AircraftEntity implements PlaneFlightModel.Body
             }
         }
         if (this.level().isClientSide()) {
+            if (this.isDestroyed()) {
+                PlaneVisualMotion.destroyed(this, this.blockWithin(3, -3), this.rotDestroyedPitch, this.rotDestroyedRoll);
+            }
             float target = (float) this.getCurrentThrottle();
             if (this.getPilot() != null && (this.partCanopy == null || this.partCanopy.rotation < 1.0F)) { target += 0.1F; }
             this.soundVolume = this.soundVolume < target ? Math.min(target, this.soundVolume + 0.02F)
                     : Math.max(target, this.soundVolume - 0.02F);
             this.onUpdateParticleSandCloud(true);
+            this.updatePlaneParticles();
         }
+    }
+
+    @Override
+    public void destroyAircraft() {
+        super.destroyAircraft();
+        this.rotDestroyedRoll = (0.5F + this.random.nextFloat()) * PlaneVisualMotion.destroyedRollDirection(this.getRoll());
+    }
+
+    private void updatePlaneParticles() {
+        var seat = this.getSeatInfo(0);
+        PlaneParticles.Frame frame = new PlaneParticles.Frame(this.position(), new Vec3(this.xo, this.yo, this.zo),
+                this.getDeltaMovement(), this.getYaw(), this.getPitch(), this.getRoll(), this.getNozzleRotation(),
+                this.getCurrentThrottle(), this.getHP(), this.getMaxHP(), this.getBbWidth(), this.getBoundingBox().minY,
+                seat != null ? seat.pos : null);
+        this.particles.tick(this.planeInfo, frame, this.random, new PlaneParticles.World() {
+            @Override
+            public boolean isAir(int x, int y, int z) {
+                return level().getBlockState(new BlockPos(x, y, z)).isAir();
+            }
+            @Override
+            public boolean isWater(int x, int y, int z) {
+                return GroundProbe.isWater(level().getBlockState(new BlockPos(x, y, z)));
+            }
+        }, new PlaneParticles.Sink() {
+            @Override
+            public void accept(ParticleParam param) {
+                McheliEffects.spawnParticle(level(), param);
+            }
+            @Override
+            public void tileCrack(int bx, int by, int bz, double x, double y, double z,
+                    double mx, double my, double mz) {
+                McheliEffects.spawnTileCrack(level(), bx, by, bz, x, y, z, mx, my, mz);
+            }
+        });
     }
 
     @Override

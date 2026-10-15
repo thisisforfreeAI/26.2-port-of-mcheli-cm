@@ -57,7 +57,10 @@ public final class McheliCePortClient {
                             GuiHudCanvas.clearTextureSizes());
             event.addListener(Identifier.fromNamespaceAndPath(McheliCePort.MOD_ID, "bullet_models"),
                     (net.minecraft.server.packs.resources.ResourceManagerReloadListener) manager ->
-                            BulletModels.clear());
+                            {
+                                BulletModels.clear();
+                                io.github.mcheliceport.client.model.PlaneExhaustTextures.clear();
+                            });
         });
         AircraftClientEvents.register();
         McheliEffects.setSink(ClientEffects.INSTANCE);

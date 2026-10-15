@@ -24,9 +24,17 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 - Plane movement comparisons against the pinned upstream code, payload codec coverage, stock
   model/texture checks, and GameTests for all 46 stock plane definitions, control authorization,
   VTOL takeoff, persistence and movement authority.
+- Plane nozzle smoke (with greater spread near blocks), landing-gear block dust, damage smoke
+  from rotor/fuselage positions, and content-defined water wakes. Particle positions, motion,
+  colours and random-call ordering retain upstream's formulas; damage-trail history is per plane.
+- Addon exhaust-flame models and numbered textures, with upstream's throttle scale, steering
+  deflection, per-extraction animation delay and VTOL suppression. Geometry is extracted into
+  render state and submitted through the vanilla emissive pipeline for OpenGL and Vulkan.
+  Resource reload clears model/texture caches and shortened texture sequences remain safe.
+- Destroyed planes use upstream's roll direction and client-side falling-attitude rules.
 
-This is the first M6 increment, not a completed milestone. Plane-specific exhaust/damage effects,
-camera-position switching, ejection, remaining equipment and manual rendering/multiplayer checks
+M6 is still in progress. Camera-position switching, ejection, remaining equipment and full
+manual flight/weapon/multiplayer checks
 are still outstanding, alongside the other M6 vehicle types and systems. Stock model references
 without geometry are recorded in `src/test/resources/parity/plane-model-gaps.txt`; they were
 checked against the pinned upstream models, with line-ending normalization only.

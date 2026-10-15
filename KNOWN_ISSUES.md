@@ -8,8 +8,8 @@ McHeli CE 1.5.1. This file is updated with every milestone (PORTING_PLAN.md, sec
 The 0.5.1 baseline (M5) supports helicopters with flight, models, HUD, cameras and weapons.
 The current M6 development work also adds initial plane entities, placement, flight, VTOL,
 wing switches and model submission. M6 remains incomplete; see `docs/M6_PLAN.md` for validation
-and remaining work. In particular, plane-specific exhaust/damage effects, camera-position
-switching and ejection, and visual/multiplayer checks are still pending.
+and remaining work. Plane effects and destroyed-plane visual motion are now implemented;
+camera-position switching, ejection, and full flight/weapon/multiplayer checks are still pending.
 
 | Area | Planned milestone |
 |---|---|
