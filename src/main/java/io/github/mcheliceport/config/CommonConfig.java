@@ -31,6 +31,12 @@ public final class CommonConfig {
     public static final ModConfigSpec.BooleanValue KILL_PASSENGERS_WHEN_DESTROYED;
     public static final ModConfigSpec.DoubleValue AUTO_REPAIR_HP;
     public static final ModConfigSpec.BooleanValue COLLISION_DESTROY_BLOCK;
+    public static final ModConfigSpec.BooleanValue COLLISION_ENTITY_DAMAGE;
+    public static final ModConfigSpec.BooleanValue COLLISION_ENTITY_TANK_DAMAGE;
+    public static final ModConfigSpec.ConfigValue<List<? extends String>> CAR_BREAKABLE_BLOCKS;
+    public static final ModConfigSpec.ConfigValue<List<? extends String>> CAR_PROTECTED_BLOCKS;
+    public static final ModConfigSpec.ConfigValue<List<? extends String>> TANK_BREAKABLE_BLOCKS;
+    public static final ModConfigSpec.ConfigValue<List<? extends String>> TANK_PROTECTED_BLOCKS;
     public static final ModConfigSpec.BooleanValue INFINITY_AMMO;
     public static final ModConfigSpec.IntValue TV_MISSILE_MAX_RANGE;
     public static final ModConfigSpec.DoubleValue HURT_RESISTANT_TIME;
@@ -120,8 +126,26 @@ public final class CommonConfig {
                 .comment("Vehicles above this fraction of their hit points slowly repair themselves. Upstream: AutoRepairHP.")
                 .defineInRange("autoRepairHP", 0.5, 0.0, 1.0);
         COLLISION_DESTROY_BLOCK = builder
-                .comment("Vehicles break snow layers, lily pads and cakes they touch. Upstream: Collision_DestroyBlock.")
+                .comment("Vehicles break soft blocks they touch; cars/tanks also crush their configured blocks.",
+                        "Upstream: Collision_DestroyBlock. Server-side; independent of movement authority.")
                 .define("collisionDestroyBlock", true);
+        COLLISION_ENTITY_DAMAGE = builder.comment("Tanks/cars can ram other entities. Upstream: Collision_EntityDamage.")
+                .define("collisionEntityDamage", true);
+        COLLISION_ENTITY_TANK_DAMAGE = builder.comment("Ramming can hurt heavy tanks (WeightType TANK).",
+                        "Separate from collisionEntityDamage. Upstream: Collision_EntityTankDamage.")
+                .define("collisionEntityTankDamage", false);
+        builder.comment("Crushing selectors: block IDs or #block tags. These replace upstream's block plus Material lists.",
+                "Protected blocks stop crushing upward through their column. The collisionDestroyBlock switch gates all crushing.")
+                .push("crushing");
+        CAR_BREAKABLE_BLOCKS = builder.defineListAllowEmpty("carBreakableBlocks",
+                io.github.mcheliceport.entity.tank.GroundCollisionBlocks.CAR, () -> "", CommonConfig::isString);
+        CAR_PROTECTED_BLOCKS = builder.defineListAllowEmpty("carProtectedBlocks",
+                List.of("minecraft:torch", "minecraft:wall_torch"), () -> "", CommonConfig::isString);
+        TANK_BREAKABLE_BLOCKS = builder.defineListAllowEmpty("tankBreakableBlocks",
+                io.github.mcheliceport.entity.tank.GroundCollisionBlocks.TANK, () -> "", CommonConfig::isString);
+        TANK_PROTECTED_BLOCKS = builder.defineListAllowEmpty("tankProtectedBlocks",
+                List.of("minecraft:torch", "minecraft:wall_torch", "minecraft:glowstone"), () -> "", CommonConfig::isString);
+        builder.pop();
         builder.pop();
 
         builder.comment("Weapons (upstream's lines of the same names in mcheli.cfg).").push("weapons");

@@ -333,9 +333,59 @@ on both graphics backends after the fix. Additional captures: [tank menu](screen
 [Vulkan tank observer](screens/m6-tank-observer-vulkan.png), and
 [gun camera](screens/m6-ground-gun-aim.png).
 
-Ground crushing/ramming damage and upstream extra-box block collisions remain pending. The
-main hull and wheel probes provide collision/terrain behavior in this increment. Equipment,
+The collision follow-up below adds crushing and ramming. Solid movement collision still uses
+the main hull and wheel probes; extra hit boxes supply damage/crushing regions. Equipment,
 operators, tools, blocks/teams and deferred combat systems in stages 5–8 remain unfinished.
+
+### Tank collision follow-up
+
+`TankCollisions` runs after the server's tank tick, with current part positions, in either
+movement authority mode. It restores upstream's weight-specific block crushing, wheel soft-block
+removal and collision damage. Cars crush vegetation/panes; heavy tanks also crush wood, glass,
+carpets, circuits and the configured nether-brick fence. Torch and glowstone exclusions protect
+their columns. Each crushing pass stops at the first protected or broken block in a column;
+one in eight broken blocks drops items. Active extra hull regions are sampled one tick in three.
+
+Minecraft 26.2 has no old block `Material`. Editable block IDs and tags in
+`vehicles.crushing` replace those categories, using current vanilla/NeoForge tags. The server's
+existing `vehicles.collisionDestroyBlock` switch gates all crushing. Coordinates use floor and
+the level's real build heights, following the existing `GroundProbe` negative-coordinate fixes;
+collision scans skip unloaded chunks. No network layout change is needed for server-side effects.
+
+Ramming retains the speed threshold, speed/proximity damage, cumulative per-query bonus,
+ordinary/aircraft knockback and car reciprocal damage. Pilot credit uses a mob-attack damage
+source even for a player pilot, so contact cannot invoke the vehicle melee-pickup path. General
+entity damage is enabled by default; heavy-tank damage has a separate switch disabled by default.
+Occupants, their seat entities, items, XP, mod projectiles and chains are excluded; arrows are
+cleared. Upstream's occupant grace counters refresh/decrement every ten ticks, so an eight-count
+entry lasts up to eighty ticks. Parent/part query duplicates are collapsed within each region;
+popped ERA regions cannot crush or ram. Chain links will add their towing exclusions when the
+chain system is implemented. Extra boxes still do not form solid movement collision shapes.
+
+Seven additional GameTests exercise car/heavy-tank defaults, protected columns, configuration
+overrides and switches, negative-world-height column traversal, damage/credit/knockback in both
+movement authority settings, occupant and dismount grace, ignored entity types, heavy-tank opt-in,
+car reciprocal damage, multipart deduplication and active/popped ERA collision regions.
+The full build passes all 136 JUnit tests and all 102 required GameTests, with no unit-test
+failures, errors or skips. Collision fixtures keep the hull still while running real server
+ticks; existing drive/terrain/weapon scenarios continue to exercise the stock movement code.
+
+Live verification reuses the isolated dedicated server and OpenGL pilot/Vulkan observer. An
+M1A2 starts at `(700.5, -59, 0.5)`, drives through a three-high wooden wall at Z 12 and rams a
+marked cow at Z 20.5. Server block queries confirm the wall's center cleared and a protected
+glowstone at Z 30 survived; the driver's mob-kill objective increments. W is held eight seconds,
+then Space brakes to zero throttle. The default client-authority run reaches Z 74.4. After the
+server-authority setting reload reaches both clients, a fresh tank repeats the course with five
+seconds of W and five of Space, stops at Z 52.84 and increments the kill count a second time.
+No weapon input is used. The Vulkan observer sees the moving tank and contact with the target.
+
+A BNR32 in the parallel lane at X 760.5 clears a three-high glass-pane wall at Z 12, then stops
+at Z 24 against the wooden wall at Z 25. Block queries confirm the pane center is gone and the
+wood remains. Captures: [tank contact](screens/m6-tank-collision-vulkan.png) and
+[car stopped at wood](screens/m6-car-crushing-vulkan.png). These are local functional smoke
+checks on software graphics, without latency/loss or hardware-performance measurements.
+The dedicated server saves/stops successfully. The Vulkan client reports a native connection
+reset on server shutdown and returns to its disconnect screen; both clients then quit normally.
 
 ## Integration points already identified
 

@@ -272,6 +272,7 @@ Every milestone ends with `./gradlew build`, `runClient` (world load, no crash),
 | **M6b** | Wingman | Marker blocks, formation AI, missions state machine, chunk loading, planner GUIs, `/wingman` | Formation + one CAP mission flies end-to-end |
 | **M7** | Polish | Full config + `/mcheli` commands, sound/particle parity, render path B (GPU buffers), long-distance tracking/rendering, HBM stubs, thermal vision, performance pass (spark profile vs. upstream numbers), docs | No crash in a 30-minute mixed-vehicle soak; frame-time target agreed at M4 |
 | **M8** | Post-port visual effects polish | After the McHeli CE 1.12.2 port is complete, refine the existing effects for Minecraft's Vulkan renderer: explosions, smoke, fire, muzzle flashes, tracers, missile trails, flares, water splashes and rotor wash. Map out the visual changes before implementing this milestone. | Before/after captures in repeatable scenes; Vulkan visual and frame-time checks under combat load; OpenGL compatibility checks; gameplay behaviour unchanged |
+| **M9** | McHeli team automatic turrets | After the M8 Vulkan visual update, add vehicle team ownership and an opt-in automatic turret firing mode that targets vehicles outside its McHeli team. | Server-owned team assignment and targeting; friendly exclusions, configurable unassigned targets, range/visibility/aim limits, real ammunition/reloads, manual override and multiplayer tests |
 
 ### Post-port effects direction (M8)
 
@@ -284,6 +285,16 @@ APIs available then. Use Minecraft's supported rendering abstractions for Vulkan
 OpenGL compatibility. Measure performance in representative battles and provide scalable effect
 quality where needed. Visual changes must preserve damage, projectile trajectories, targeting,
 timings and multiplayer behaviour.
+
+### Deferred gameplay extension (M9)
+
+Requested after M8: a new McHeli team system assigns vehicles to teams, persists ownership and
+lets an automatic turret mode engage vehicles outside its team. This extends the port after the
+Vulkan visual update; it does not move automatic vehicle targeting into the current M6 work.
+Build on the ported weapons and team foundations, with the server choosing targets and validating
+team changes. Support manual takeover, target indication, weapon aiming limits, ammunition and
+reloads. Decide detailed team administration and unassigned-vehicle rules when designing M9.
+Upstream NPC gunner/team behavior remains part of the original port's scope.
 
 ---
 

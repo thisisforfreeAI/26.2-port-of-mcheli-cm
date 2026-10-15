@@ -12,6 +12,14 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 
 ### Added
 
+- Tank/car block crushing and ramming now run on the server in both movement authority modes.
+  Weight-specific editable block/tag lists replace the old block Material categories. Protected
+  columns, one-in-eight block drops and sampled active extra hull regions follow upstream.
+  Ramming includes speed/proximity damage, knockback, car reciprocal damage, pilot credit and
+  occupant/recent-dismount exclusions. Heavy-tank damage remains disabled by default.
+- Recorded the requested McHeli team automatic turret extension after M8's Vulkan visual update.
+  Current M6 work continues without implementing that post-port feature early.
+
 - M6 ground vehicles: all 12 stock tanks/cars and 18 placed vehicles now place, mount and
   save/load as real entities. Tank throttle, reverse, steering, held Space brake, mirrored wheel
   contacts and terrain tilt are connected. Placed guns respect content movement restrictions.
