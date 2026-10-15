@@ -39,6 +39,14 @@ HUDs, from YAML and legacy TXT files, including addon packs).
 
 ## Building and running
 
+To download a tested development build, sign in to GitHub, open a successful run under
+[Actions → Build](https://github.com/thisisforfreeAI/26.2-port-of-mcheli-cm/actions/workflows/build.yml),
+and download its `mcheli-ce-port-<commit>` artifact. Extract the ZIP and put the JAR in your
+Minecraft instance's `mods` folder. The included `SHA256SUMS` identifies the exact JAR; players
+joining each other should use the same artifact, since development builds can share a version
+number. Artifacts expire after 30 days. The downloadable artifact is produced only after both
+the build and GameTests pass.
+
 The build targets Java 25. Install JDK 25, or run Gradle on any JDK from 17 up and it downloads a
 JDK 25 toolchain automatically.
 

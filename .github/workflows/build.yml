@@ -26,3 +26,17 @@ jobs:
 
       - name: Run GameTests
         run: ./gradlew runGameTestServer
+
+      - name: Checksum mod JARs
+        working-directory: build/libs
+        run: sha256sum *.jar > SHA256SUMS
+
+      - name: Upload mod download
+        uses: actions/upload-artifact@v4
+        with:
+          name: mcheli-ce-port-${{ github.sha }}
+          path: |
+            build/libs/*.jar
+            build/libs/SHA256SUMS
+          if-no-files-found: error
+          retention-days: 30
