@@ -23,7 +23,9 @@ including reserve slots in the aircraft menu. The stock ejection/transport model
 asset defect described in KNOWN_ISSUES.md. Ships can now be placed, boarded and piloted, with buoyancy, steering, crew weapons, models
 and wakes. Tanks and ground vehicles now place, mount and save/load, with driving, terrain tilt,
 animated wheels/tracks and independent weapon aiming. Broader gameplay validation and the
-remaining support systems continue in M6. The mod also loads all of McHeli CE's content (vehicles, weapons, throwables and
+remaining support systems continue in M6. The stock fuel truck now supplies nearby vehicles, and
+medical transports regenerate secondary-seat passengers while a pilot is aboard. Addon-defined
+nearby vehicle repair is supported. The mod also loads all of McHeli CE's content (vehicles, weapons, throwables and
 HUDs, from YAML and legacy TXT files, including addon packs).
 
 - [PORTING_PLAN.md](PORTING_PLAN.md): the roadmap and the decisions behind it

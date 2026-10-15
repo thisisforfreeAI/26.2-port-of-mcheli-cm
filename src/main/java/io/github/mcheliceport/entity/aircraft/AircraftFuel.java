@@ -3,7 +3,8 @@ package io.github.mcheliceport.entity.aircraft;
 /**
  * Fuel rules of upstream's {@code MCH_EntityAircraft}: consumption every 20 ticks with a carried
  * fraction ({@code updateFuel}), the "may the engine run" test ({@code canUseFuel}) and refuelling
- * from a fuel can ({@code handleItemFuelRefuel}).
+ * from a fuel can ({@code handleItemFuelRefuel}). Nearby supply and its consumption grace are
+ * handled by {@link AircraftSupport}.
  */
 public final class AircraftFuel {
 

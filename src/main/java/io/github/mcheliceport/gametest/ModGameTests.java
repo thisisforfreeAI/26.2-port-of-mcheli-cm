@@ -47,6 +47,7 @@ public final class ModGameTests {
         CameraModeGameTests.register();
         FlightGameTests.register();
         FuelGameTests.register();
+        SupportGameTests.register();
         PickUpGameTests.register();
         PersistenceGameTests.register();
         AllHelicoptersGameTests.register();

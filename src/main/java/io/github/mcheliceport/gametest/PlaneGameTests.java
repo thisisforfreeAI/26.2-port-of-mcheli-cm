@@ -101,7 +101,8 @@ final class PlaneGameTests {
             PlaneInfo info = (PlaneInfo) item.getAircraftInfo();
             if (!ContentLocation.BUILTIN_DOMAIN.equals(info.getLocation().addonDomain())) { continue; }
             check(helper, item.isPlaceable(), info.name + ": plane placement enabled");
-            PlaneEntity plane = spawn(helper, info.name, new Vec3(12.5, 20.0, 12.5));
+            // Keep the now-functional 35-block fuel source clear of neighboring ground fuel tests.
+            PlaneEntity plane = spawn(helper, info.name, new Vec3(12.5, info.fuelSupplyRange > 0 ? 45.0 : 20.0, 12.5));
             check(helper, plane.getPlaneInfo() == info, info.name + ": definition attached");
             check(helper, plane.getMaxHP() == info.maxHp && plane.getMaxFuel() == info.maxFuel,
                     info.name + ": health and fuel capacity");
