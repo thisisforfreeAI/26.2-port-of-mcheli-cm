@@ -49,6 +49,8 @@ class PayloadCodecTest {
             for (PlaneControlPayload.PartSwitch wing : PlaneControlPayload.PartSwitch.values()) {
                 PlaneControlPayload p = new PlaneControlPayload(common, vtol, wing);
                 assertEquals(p, roundTrip(PlaneControlPayload.CODEC, p));
+                ShipControlPayload ship = new ShipControlPayload(common, vtol, wing);
+                assertEquals(ship, roundTrip(ShipControlPayload.CODEC, ship));
             }
         }
         FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.buffer());

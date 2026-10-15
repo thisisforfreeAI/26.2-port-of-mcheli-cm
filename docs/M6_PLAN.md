@@ -1,6 +1,6 @@
 # M6 plan: remaining vehicles and support systems
 
-Status: in progress, starting with shared integration and planes. This expands PORTING_PLAN.md §6.
+Status: in progress; shared integration, plane foundations and the ship increment are implemented. This expands PORTING_PLAN.md §6.
 The starting checkout is 0.5.1. Preserve decisions D1–D23 and compare
 behaviour with McHeli CE 1.5.1 at `cbaff7f30e549ff75e485388c24c74a4316c2228`.
 
@@ -41,10 +41,11 @@ The counts above are the stock inventory from M2, not a limit on addon definitio
 - All stock plane body models and textures are checked. The 79 part references absent in the
   pinned upstream model files are recorded explicitly in the parity fixture; additional gaps fail.
 
-This does not complete stage 2. Remaining plane work includes equipment integration,
-broader conventional takeoff/turn/landing scenarios, and full OpenGL/Vulkan flight/weapon and two-client
-checks. UAV-only and target-drone placement still waits for the UAV station. Stages 3–8 remain
-outstanding. Do not treat the shared renderer or asset tests as proof of visual correctness.
+This does not complete stage 2. Remaining plane work includes equipment integration and broader
+gameplay checks. The subsequent ship increment adds conventional and VTOL flight scenarios plus
+local OpenGL/Vulkan flight/weapon and two-client smoke checks. UAV-only and target-drone placement
+still waits for the UAV station. Stages 4–8 remain outstanding after the ship increment. Do not
+treat the shared renderer or asset tests as proof of visual correctness.
 
 Validation of this increment: the saved installation script completed `build`; all 110 JUnit
 tests passed with zero failures/errors/skips, and the dedicated GameTest server completed all
@@ -209,10 +210,76 @@ These checks cover rendering and an integrated-server control path. Two-client s
 full aircraft flight/weapon checks and hardware performance remain unrun; the virtual display
 still has no audio device.
 
+## Ship increment and plane cadence correction
+
+- `ShipEntity` replaces the placeholder and uses ship definitions with real placement, shared seats,
+  fuel, damage, weapons, inventories and item data. Stock ground-movement/rotation restrictions
+  are enforced. `allShipSpeed` scales each ship's normal and swept-wing speed limits.
+- The pinned `MCH_EntityShip` duplicates almost all plane control, movement, parts and particle
+  code. `WingedAircraftInfo` and `WingedAircraftEntity` share those implementations; planes and
+  ships remain sibling entity types. Ship models/parts/textures load from `ships`, both on demand
+  and eagerly. Plane exhaust animation remains specific to planes.
+- Buoyancy uses the shared five-slice water probe and each definition's float offset, including
+  negative world heights. Steering, throttle, reverse (when enabled), hull levelling, nozzle/wing
+  parts, rotor animation, damage smoke, wakes, dust, camera controls and sound follow upstream.
+  Steering wheels now rotate about their content pivots rather than remaining at rest.
+- `ShipControlPayload` carries common controls and nozzle/wing switches. Protocol 5 requires
+  matching clients/servers. Identity, rider, pilot and destroyed-state checks use the shared path.
+  Pilot motion application also enforces the existing authority and entity-ID checks directly.
+- None of the five stock ship definitions mounts torpedoes. The guided Mk46 integration check
+  uses an isolated addon-style ship definition; shipped loadouts and assets are preserved.
+- Auditing the pinned source found that the earlier plane increment's two-step cadence was
+  incorrect: `MCH_EntityAircraft#onUpdate` calls `onUpdateAircraft` once, which calls
+  `MCH_EntityPlane#onUpdate_Server` once, and that method moves once. Both vehicle kinds now use
+  one movement step per tick. The old numeric oracle repeated both sides twice and missed the
+  integration error; an entity-level movement-call/drag/bounds regression now guards it.
+
+The seven ship GameTests cover all five stock items/definitions, pilot and crew mounting,
+world persistence, water-surface equilibrium, acceleration, turning, braking, land restrictions,
+destroyed buoyancy, both authority modes, wrong sender/ID, invalid velocity, speed configuration,
+crew-only gunfire, guided torpedo launch/travel and item fuel/damage round trips. Three additional
+plane tests exercise a conventional P-51D and VTOL Harrier through takeoff, mouse turning,
+transition and safe landing, plus weapon launch/ammunition in both authority modes. Flights run
+outside the GameTest arena's barrier walls and load their collision chunks. They exercise the
+real entities synchronously, not a second networked client.
+
+Automated validation: `build` passes with 129 JUnit tests (zero failures, errors or skips),
+and the dedicated GameTest server completes all 87 required tests. The model audit covers all
+five ship bodies, every referenced part and all textures, with no missing stock ship assets.
+A separate transform check verifies the Zodiac outboard's steering pivot and rotation direction.
+
+### Ship graphics and multiplayer checks
+
+Two real development clients connect to a local offline dedicated server: an OpenGL pilot on
+Xvfb `:99` and a Vulkan observer on `:100`, both with Mesa software drivers. Isolated game
+folders are `.run/ships-server`, `.run/ships-pilot` and `.run/ships-observer`. The pilot uses eager
+model loading; the observer uses on-demand loading. The launch overrides are kept locally in
+`/workspace/.graphics/ships-multiplayer.init.gradle`. No test addon is needed for these stock scenes.
+
+A source-water lake spans X/Z -128 to 127, Y -59 to -55. All five stock ship models render in the
+fleet scene. Resource reload on both clients keeps their models and textures visible. The pilot
+opens the Zodiac fuel menu, steers at full throttle for at least 60 seconds in the default client
+authority mode while the observer watches, then brakes to zero throttle and zero horizontal
+velocity. The server's `vehicles.serverAuthoritativeMovement` setting is reloaded and broadcast
+to both clients; the steering/movement check is repeated in that mode. Server position/rotation
+queries and observer frame captures confirm movement and turning in both modes. These are local
+movement smoke checks, without measured per-frame smoothness statistics or network latency/loss.
+
+The same clients also exercise a Harrier in each authority mode: start in VTOL on land, hold W
+for climb, use F to transition to forward flight, and hold the left mouse button for cannon fire.
+Server position, part-status and ammo queries confirm climb, forward movement, nozzle transition
+and firing; the Vulkan observer sees the moving plane. Actual mouse-turning and complete manual
+approach/landing remain unrun; those sequences are covered by the synchronous entity tests above.
+Both clients and the dedicated server shut down cleanly.
+
+Screenshots: [OpenGL fleet](screens/m6-ships-opengl.png), [Vulkan fleet](screens/m6-ships-vulkan.png),
+and [ship menu](screens/m6-ships-menu.png). Audio remains unverified because the
+virtual displays have no audio device; software rendering does not establish hardware performance.
+
 ## Integration points already identified
 
 The integration notes below record the starting 0.5.1 audit; the first increment above has
-already generalized the helicopter-only paths for planes.
+already generalized the helicopter-only paths for planes and ships.
 
 The prior milestone handoff explicitly includes special crafting recipes in M6. Fixed-item and
 content recipes already exist; do not treat all crafting as missing. Port the two deferred special

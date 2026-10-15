@@ -1,7 +1,7 @@
 package io.github.mcheliceport.entity.plane;
 
 import io.github.mcheliceport.content.aircraft.AircraftInfo;
-import io.github.mcheliceport.content.aircraft.PlaneInfo;
+import io.github.mcheliceport.content.aircraft.WingedAircraftInfo;
 import io.github.mcheliceport.effect.ParticleParam;
 import io.github.mcheliceport.util.McheliMath;
 import java.util.function.Consumer;
@@ -35,7 +35,7 @@ public final class PlaneParticles {
         this.firstSmoke = true;
     }
 
-    public void tick(PlaneInfo info, Frame frame, RandomSource random, World world, Sink sink) {
+    public void tick(WingedAircraftInfo info, Frame frame, RandomSource random, World world, Sink sink) {
         landingGear(frame, random, sink);
         nozzle(info, frame, random, world, sink);
         this.damage(info, frame, random, sink);
@@ -54,7 +54,7 @@ public final class PlaneParticles {
     }
 
     /** Upstream onUpdate_ParticleNozzle, including the broader cloud near obstructing blocks. */
-    public static void nozzle(PlaneInfo info, Frame f, RandomSource random, World world, Consumer<ParticleParam> sink) {
+    public static void nozzle(WingedAircraftInfo info, Frame f, RandomSource random, World world, Consumer<ParticleParam> sink) {
         if (!info.haveNozzle() || f.throttle <= 0.1F) {
             return;
         }
@@ -73,7 +73,7 @@ public final class PlaneParticles {
     }
 
     /** Upstream onUpdate_Particle2. Rotor histories belong to this vehicle, never to the shared definition. */
-    public void damage(PlaneInfo info, Frame f, RandomSource random, Consumer<ParticleParam> sink) {
+    public void damage(WingedAircraftInfo info, Frame f, RandomSource random, Consumer<ParticleParam> sink) {
         if (f.hp >= f.maxHp * 0.5) {
             return;
         }
@@ -133,7 +133,7 @@ public final class PlaneParticles {
     }
 
     /** Upstream onUpdate_ParticleSplash and setParticleSplash. */
-    public static void splash(PlaneInfo info, Frame f, RandomSource random, World world, Consumer<ParticleParam> sink) {
+    public static void splash(WingedAircraftInfo info, Frame f, RandomSource random, World world, Consumer<ParticleParam> sink) {
         double mx = f.position.x - f.previousPosition.x;
         double mz = f.position.z - f.previousPosition.z;
         double distance = Math.min(1.0, mx * mx + mz * mz);

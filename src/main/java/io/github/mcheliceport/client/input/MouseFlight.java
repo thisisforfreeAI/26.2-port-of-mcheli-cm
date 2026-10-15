@@ -3,14 +3,14 @@ package io.github.mcheliceport.client.input;
 import io.github.mcheliceport.config.ClientConfig;
 import io.github.mcheliceport.entity.aircraft.AircraftEntity;
 import io.github.mcheliceport.entity.heli.HeliEntity;
-import io.github.mcheliceport.entity.plane.PlaneEntity;
+import io.github.mcheliceport.entity.aircraft.WingedAircraftEntity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 
 /**
- * Flying with the mouse: upstream's {@code MouseInputHandler} for the pilot of a helicopter.
+ * Flying with the mouse: upstream's {@code MouseInputHandler} for the pilot of a helicopter, plane or ship.
  *
  * <p>Upstream read the mouse once per rendered frame. The port does the same from
  * {@link AircraftEntity#onPassengerTurned}, which vanilla calls every frame while the mouse is
@@ -44,7 +44,7 @@ public final class MouseFlight {
     }
 
     private static boolean isStickMode(AircraftEntity aircraft) {
-        return aircraft instanceof PlaneEntity ? ClientConfig.MOUSE_CONTROL_STICK_MODE_PLANE.get()
+        return aircraft instanceof WingedAircraftEntity ? ClientConfig.MOUSE_CONTROL_STICK_MODE_PLANE.get()
                 : aircraft instanceof HeliEntity && ClientConfig.MOUSE_CONTROL_STICK_MODE_HELI.get();
     }
 

@@ -15,7 +15,7 @@ import org.joml.Matrix4f;
  *
  * <p>Pure computation from a {@link Input} snapshot, so {@code PartTransformTest} can check it.
  * Parts that need later milestones are drawn at rest: crawler tracks and track rollers (M6),
- * light hatches (search lights, M6), wheels and steering wheels (ground vehicles, M6). Weapon parts
+ * light hatches (search lights, M6), wheels (ground vehicles, M6). Weapon parts
  * and weapon bays are drawn at rest when the input carries no poses for them.
  */
 public final class AircraftPartPoses {
@@ -51,7 +51,8 @@ public final class AircraftPartPoses {
             float[][] bladeRotation,
             float[][] prevBladeRotation,
             WeaponPartPose[] weaponParts,
-            float[] weaponBayRotation) {
+            float[] weaponBayRotation,
+            float steeringYaw) {
     }
 
     /**
@@ -133,7 +134,7 @@ public final class AircraftPartPoses {
         rotParts(info, models, in, gl, out);
         hatches(info, models, in, gl, out);
         restParts(info.partTrackRoller, models, gl, out);
-        restParts(info.partSteeringWheel, models, gl, out);
+        steeringWheels(info, models, in.steeringYaw, gl, out);
         lightHatches(info, models, gl, out);
         restParts(info.partWheel, models, gl, out);
         throttles(info, models, in, gl, out);
@@ -141,6 +142,18 @@ public final class AircraftPartPoses {
         landingGear(info, models, in, gl, out);
         weaponBays(info, models, in, gl, out);
         canopies(info, models, in, gl, out);
+    }
+
+    static void steeringWheels(AircraftInfo info, AircraftModels.VehicleModels models, float yaw,
+            GlMatrixStack gl, List<Draw> out) {
+        for (AircraftInfo.PartWheel wheel : info.partSteeringWheel) {
+            gl.pushMatrix();
+            gl.translate(wheel.pos.x, wheel.pos.y, wheel.pos.z);
+            gl.rotate(yaw * wheel.rotDir, (float) wheel.rot.x, (float) wheel.rot.y, (float) wheel.rot.z);
+            gl.translate(-wheel.pos.x, -wheel.pos.y, -wheel.pos.z);
+            add(out, gl, models.part(wheel.modelName));
+            gl.popMatrix();
+        }
     }
 
     private static void add(List<Draw> out, GlMatrixStack gl, List<McheliModel.Group> groups) {

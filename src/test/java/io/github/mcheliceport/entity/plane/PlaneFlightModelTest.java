@@ -54,14 +54,14 @@ class PlaneFlightModelTest {
         UpstreamPlaneOracle upstream = new UpstreamPlaneOracle();
         configure.accept(port); configure.accept(upstream);
         for (int tick = 0; tick < 300; tick++) {
-                PlaneFlightModel.physics(port, port.p, port.nozzle, port.wing, port.gunner,
-                        port.floating, port.drone && port.fuel && !port.destroyed);
-                upstream.physics();
-                assertArrayEquals(new double[] {upstream.x, upstream.y, upstream.z, upstream.motionX,
-                                upstream.motionY, upstream.motionZ, upstream.currentSpeed, upstream.yaw, upstream.pitch, upstream.roll},
-                        new double[] {port.x, port.y, port.z, port.motionX, port.motionY, port.motionZ,
-                                port.currentSpeed, port.yaw, port.pitch, port.roll},
-                        1.0E-9, "tick " + tick);
+            PlaneFlightModel.physics(port, port.p, port.nozzle, port.wing, port.gunner,
+                    port.floating, port.drone && port.fuel && !port.destroyed);
+            upstream.physics();
+            assertArrayEquals(new double[] {upstream.x, upstream.y, upstream.z, upstream.motionX,
+                            upstream.motionY, upstream.motionZ, upstream.currentSpeed, upstream.yaw, upstream.pitch, upstream.roll},
+                    new double[] {port.x, port.y, port.z, port.motionX, port.motionY, port.motionZ,
+                            port.currentSpeed, port.yaw, port.pitch, port.roll},
+                    1.0E-9, "tick " + tick);
         }
     }
 

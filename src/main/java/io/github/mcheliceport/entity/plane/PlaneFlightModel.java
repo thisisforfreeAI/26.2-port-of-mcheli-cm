@@ -1,10 +1,10 @@
 package io.github.mcheliceport.entity.plane;
 
-import io.github.mcheliceport.content.aircraft.PlaneInfo;
+import io.github.mcheliceport.content.aircraft.WingedAircraftInfo;
 import io.github.mcheliceport.entity.aircraft.AircraftAttitude;
 import net.minecraft.util.Mth;
 
-/** Movement formulas from McHeli CE 1.5.1's MCH_EntityPlane, separated from world/network state. */
+/** Movement formulas shared by McHeli CE 1.5.1's MCH_EntityPlane and MCH_EntityShip, separated from world/network state. */
 public final class PlaneFlightModel {
     private PlaneFlightModel() {
     }
@@ -36,7 +36,7 @@ public final class PlaneFlightModel {
             float gravityInWater, float motionFactor, float onGroundPitch, float throttleUpDown,
             boolean enableBack, float pivotTurnThrottle, float throttleUpDownOnEntity,
             boolean canMoveOnGround, float autoPilotRot) {
-        public static Params of(PlaneInfo info, double speedMultiplier) {
+        public static Params of(WingedAircraftInfo info, double speedMultiplier) {
             return new Params((float) (info.speed * speedMultiplier),
                     (float) (info.sweepWingSpeed * speedMultiplier), info.isVariableSweepWing,
                     info.gravity, info.gravityInWater, info.motionFactor, info.onGroundPitch,

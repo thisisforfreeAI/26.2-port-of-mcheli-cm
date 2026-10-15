@@ -12,6 +12,8 @@ import io.github.mcheliceport.weapon.WeaponParam;
 import io.github.mcheliceport.weapon.WeaponSet;
 import io.github.mcheliceport.entity.heli.HeliEntity;
 import io.github.mcheliceport.entity.plane.PlaneEntity;
+import io.github.mcheliceport.entity.ship.ShipEntity;
+import io.github.mcheliceport.entity.aircraft.WingedAircraftEntity;
 import io.github.mcheliceport.entity.seat.SeatEntity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
@@ -42,7 +44,7 @@ public final class ModNetwork {
 
     private static final Logger LOGGER = LogUtils.getLogger();
     /** Bump when payload encoding or menu slot layout changes. */
-    public static final String VERSION = "4";
+    public static final String VERSION = "5";
 
     private ModNetwork() {
     }
@@ -57,6 +59,7 @@ public final class ModNetwork {
         PayloadRegistrar registrar = event.registrar(VERSION);
         registrar.playToServer(HeliControlPayload.TYPE, HeliControlPayload.CODEC, ModNetwork::handleHeliControl);
         registrar.playToServer(PlaneControlPayload.TYPE, PlaneControlPayload.CODEC, ModNetwork::handlePlaneControl);
+        registrar.playToServer(ShipControlPayload.TYPE, ShipControlPayload.CODEC, ModNetwork::handleShipControl);
         registrar.playToServer(AircraftAttitudePayload.TYPE, AircraftAttitudePayload.CODEC,
                 ModNetwork::handleAttitude);
         registrar.playToServer(AircraftMotionPayload.TYPE, AircraftMotionPayload.CODEC, ModNetwork::handleMotion);
@@ -281,21 +284,36 @@ public final class ModNetwork {
     }
 
     public static void applyPlaneControl(PlaneEntity plane, Player player, PlaneControlPayload p) {
-        if (riddenAircraft(player) != plane || plane.getId() != p.controls().entityId()) {
+        applyWingedControl(plane, player, p.controls(), p.vtol(), p.wing());
+    }
+
+    static void handleShipControl(ShipControlPayload p, IPayloadContext context) {
+        if (riddenAircraft(context.player()) instanceof ShipEntity ship) {
+            applyShipControl(ship, context.player(), p);
+        }
+    }
+
+    public static void applyShipControl(ShipEntity ship, Player player, ShipControlPayload p) {
+        applyWingedControl(ship, player, p.controls(), p.vtol(), p.wing());
+    }
+
+    private static void applyWingedControl(WingedAircraftEntity plane, Player player, HeliControlPayload controls,
+            PlaneControlPayload.PartSwitch vtol, PlaneControlPayload.PartSwitch wing) {
+        if (riddenAircraft(player) != plane || plane.getId() != controls.entityId()) {
             return;
         }
-        applyAircraftControl(plane, player, p.controls());
+        applyAircraftControl(plane, player, controls);
         if (!plane.isPilot(player) || plane.isDestroyed()
-                || p.controls().unmount() != HeliControlPayload.UnmountAction.NONE) {
+                || controls.unmount() != HeliControlPayload.UnmountAction.NONE) {
             return;
         }
-        if (p.vtol() != PlaneControlPayload.PartSwitch.NONE && plane.canSwitchVtol()) {
-            plane.switchVtol(p.vtol() == PlaneControlPayload.PartSwitch.ON);
+        if (vtol != PlaneControlPayload.PartSwitch.NONE && plane.canSwitchVtol()) {
+            plane.switchVtol(vtol == PlaneControlPayload.PartSwitch.ON);
             plane.setModeSwitchCooldown(20);
         }
-        if (p.wing() == PlaneControlPayload.PartSwitch.ON && plane.canFoldWing()) {
+        if (wing == PlaneControlPayload.PartSwitch.ON && plane.canFoldWing()) {
             plane.foldWing(true);
-        } else if (p.wing() == PlaneControlPayload.PartSwitch.OFF && plane.canUnfoldWing()) {
+        } else if (wing == PlaneControlPayload.PartSwitch.OFF && plane.canUnfoldWing()) {
             plane.foldWing(false);
         }
     }
@@ -334,7 +352,8 @@ public final class ModNetwork {
 
     /** Takes the pilot's velocity and throttle, limited to what the aircraft can do. */
     public static void applyPilotMotion(AircraftEntity aircraft, AircraftMotionPayload p) {
-        if (!Double.isFinite(p.motionX()) || !Double.isFinite(p.motionY()) || !Double.isFinite(p.motionZ())
+        if (!aircraft.followsPilot() || aircraft.getId() != p.entityId()
+                || !Double.isFinite(p.motionX()) || !Double.isFinite(p.motionY()) || !Double.isFinite(p.motionZ())
                 || !Float.isFinite(p.throttle())) {
             return;
         }

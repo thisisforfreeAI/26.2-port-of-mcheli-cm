@@ -155,6 +155,8 @@ public abstract class AircraftEntity extends Entity
     /** Client only: upstream's {@code rotPartRotation}, the angles of the content's rotating parts. */
     public float[] rotPartRotation = new float[0];
     public float[] prevRotPartRotation = new float[0];
+    public float steeringYaw;
+    public float previousSteeringYaw;
 
     private double currentThrottle;
     private double prevCurrentThrottle;
@@ -1631,6 +1633,10 @@ public abstract class AircraftEntity extends Entity
             this.onUpdateAircraft();
             this.updateParts(this.partStatus());
             this.updatePartRotation();
+            if (this.level().isClientSide()) {
+                this.previousSteeringYaw = this.steeringYaw;
+                this.steeringYaw = steeringStep(this.steeringYaw, this.moveLeft, this.moveRight);
+            }
             this.updateCameraViewers();
         }
 
@@ -1973,6 +1979,14 @@ public abstract class AircraftEntity extends Entity
     }
 
     // ---- moving parts ----
+
+    /** Upstream updatePartWheel's steering angle; independent of wheel propulsion. */
+    public static float steeringStep(float yaw, boolean left, boolean right) {
+        if (left != right) {
+            return left ? (float) Math.min(yaw + 0.1, 1.0) : (float) Math.max(yaw - 0.1, -1.0);
+        }
+        return yaw * 0.9F;
+    }
 
     /**
      * Upstream {@code onUpdate_PartRotation}: on clients, turns the rotating parts while someone

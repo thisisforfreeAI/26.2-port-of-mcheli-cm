@@ -23,7 +23,7 @@ import org.joml.Vector4f;
 import io.github.mcheliceport.entity.aircraft.AircraftWeapons;
 import io.github.mcheliceport.client.weapon.WeaponClient;
 import io.github.mcheliceport.entity.heli.HeliEntity;
-import io.github.mcheliceport.entity.plane.PlaneEntity;
+import io.github.mcheliceport.entity.aircraft.WingedAircraftEntity;
 import io.github.mcheliceport.content.aircraft.AircraftInfo;
 import java.util.Random;
 import java.util.Set;
@@ -295,7 +295,7 @@ public final class AircraftHudLayer implements GuiLayer {
         }
 
         // MCH_GuiHeli#drawKeyBind
-        if (seatId == 0 && !freeLookPressed && aircraft instanceof PlaneEntity && aircraft.canSwitchCameraPos()) {
+        if (seatId == 0 && !freeLookPressed && aircraft instanceof WingedAircraftEntity && aircraft.canSwitchCameraPos()) {
             this.drawRightKey(graphics, "Camera / Gunner", ModKeyMappings.SWITCH_GUNNER, rightX, ACTIVE);
         } else if (seatId == 0 && info.isEnableGunnerMode && !freeLookPressed) {
             int color = aircraft.isHoveringMode() ? INACTIVE : ACTIVE;
@@ -312,15 +312,15 @@ public final class AircraftHudLayer implements GuiLayer {
         if (seatId == 0 && info instanceof HeliInfo hi && hi.isEnableFoldBlade && aircraft.blockWithin(1, -2) && aircraft.getCurrentThrottle() <= 0.01) {
             this.drawRightKey(graphics, "FoldBlade", ModKeyMappings.EXTRA, rightX, ACTIVE);
         }
-        if (aircraft instanceof PlaneEntity && aircraft.canEjectSeat(player)) {
+        if (aircraft instanceof WingedAircraftEntity && aircraft.canEjectSeat(player)) {
             this.drawRightKey(graphics, "Eject seat", ModKeyMappings.SWITCH_HOVERING, rightX, ACTIVE);
         }
         if (seatId > 0) {
             this.drawLeftKey(graphics, aircraft.canParachute(player) ? "Parachute" : "Dismount",
                     ModKeyMappings.UNMOUNT, leftX, ACTIVE);
         }
-        if (seatId == 0 && aircraft instanceof PlaneEntity plane) {
-            if (plane.getPlaneInfo().isEnableVtol) {
+        if (seatId == 0 && aircraft instanceof WingedAircraftEntity plane) {
+            if (plane.getWingedInfo().isEnableVtol) {
                 this.drawRightKey(graphics, "VTOL", ModKeyMappings.EXTRA, rightX, plane.canSwitchVtol() ? ACTIVE : INACTIVE);
             }
             if (plane.partWing != null) {

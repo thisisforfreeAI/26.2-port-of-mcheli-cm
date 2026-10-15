@@ -3,8 +3,10 @@ package io.github.mcheliceport.client.input;
 import io.github.mcheliceport.content.aircraft.SeatInfo;
 import io.github.mcheliceport.entity.aircraft.AircraftEntity;
 import io.github.mcheliceport.entity.heli.HeliEntity;
-import io.github.mcheliceport.entity.plane.PlaneEntity;
+import io.github.mcheliceport.entity.aircraft.WingedAircraftEntity;
 import io.github.mcheliceport.net.PlaneControlPayload;
+import io.github.mcheliceport.net.ShipControlPayload;
+import io.github.mcheliceport.entity.ship.ShipEntity;
 import io.github.mcheliceport.net.HeliControlPayload;
 import io.github.mcheliceport.net.ModNetwork;
 import io.github.mcheliceport.net.PlayerControlSwitches;
@@ -18,7 +20,7 @@ import net.minecraft.util.Mth;
 import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 
 /**
- * Shared helicopter and plane rider controls, read once per client tick: upstream's
+ * Shared helicopter, plane and ship rider controls, read once per client tick: upstream's
  * {@code MCH_ClientHeliTickHandler#playerControl} and {@code commonPlayerControl}, limited to the
  * flight controls. Helicopter blades and plane nozzles/wings keep their type-specific switches.
  */
@@ -38,7 +40,7 @@ public final class AircraftClientControl {
         LocalPlayer player = mc.player;
         limitPitch = false;
         AircraftEntity aircraft = player != null ? ModNetwork.riddenAircraft(player) : null;
-        boolean riding = (aircraft instanceof HeliEntity || aircraft instanceof PlaneEntity) && aircraft.getAcInfo() != null;
+        boolean riding = (aircraft instanceof HeliEntity || aircraft instanceof WingedAircraftEntity) && aircraft.getAcInfo() != null;
         if (!riding) {
             if (wasRiding) {
                 MouseFlight.reset();
@@ -72,7 +74,7 @@ public final class AircraftClientControl {
         aircraft.camera.rotationYaw = player.getYRot();
         aircraft.camera.rotationPitch = player.getXRot();
         if (aircraft.isEntityRadarMounted()) {
-            aircraft.radar.update(aircraft, 5);
+            aircraft.radar.update(aircraft, aircraft instanceof ShipEntity ? 10 : 5);
         }
     }
 
@@ -143,7 +145,7 @@ public final class AircraftClientControl {
             send = true;
         }
         boolean hoverOrEject = ModKeyMappings.SWITCH_HOVERING.consumeClick();
-        if (hoverOrEject && aircraft instanceof PlaneEntity) {
+        if (hoverOrEject && aircraft instanceof WingedAircraftEntity) {
             if (aircraft.canEjectSeat(player)) {
                 switches = switches.with(PlayerControlSwitches.EJECT_SEAT, true);
                 send = true;
@@ -198,7 +200,7 @@ public final class AircraftClientControl {
                     }
                     send = true;
                     playSoundOk();
-                } else if (aircraft instanceof PlaneEntity plane && plane.canSwitchVtol()) {
+                } else if (aircraft instanceof WingedAircraftEntity plane && plane.canSwitchVtol()) {
                     vtol = plane.getVtolMode() == 0 ? PlaneControlPayload.PartSwitch.ON : PlaneControlPayload.PartSwitch.OFF;
                     send = true;
                     playSoundOk();
@@ -217,7 +219,7 @@ public final class AircraftClientControl {
                     playSoundNg();
                 }
             } else if (ModKeyMappings.SWITCH_GUNNER.consumeClick()) {
-                if (aircraft instanceof PlaneEntity plane) {
+                if (aircraft instanceof WingedAircraftEntity plane) {
                     boolean wasGunner = plane.isGunnerMode();
                     if (!plane.cycleCameraView(player)) {
                         playSoundNg();
@@ -261,7 +263,7 @@ public final class AircraftClientControl {
                 } else {
                     playSoundNg();
                 }
-            } else if (isPilot && aircraft instanceof PlaneEntity plane) {
+            } else if (isPilot && aircraft instanceof WingedAircraftEntity plane) {
                 if (plane.canFoldWing()) {
                     wing = PlaneControlPayload.PartSwitch.ON;
                     send = true;
@@ -282,7 +284,8 @@ public final class AircraftClientControl {
         if (send || player.tickCount % 100 == 0) {
             HeliControlPayload common = new HeliControlPayload(aircraft.getId(), unmount, mode, hatch, gear,
                     switches, freeLook, blades, cameraMode);
-            ClientPacketDistributor.sendToServer(aircraft instanceof PlaneEntity
+            ClientPacketDistributor.sendToServer(aircraft instanceof ShipEntity ? new ShipControlPayload(common, vtol, wing)
+                    : aircraft instanceof WingedAircraftEntity
                     ? new PlaneControlPayload(common, vtol, wing) : common);
         }
     }

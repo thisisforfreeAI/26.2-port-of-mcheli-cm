@@ -20,7 +20,8 @@ plane smoke, wakes, addon exhaust flames and destroyed-plane motion are also imp
 Planes now use the gunner camera, zoom and night vision; H also cycles extra camera positions
 defined by addons. Hand parachutes, transport-seat bailout and plane ejection are implemented,
 including reserve slots in the aircraft menu. The stock ejection/transport model has an upstream
-asset defect described in KNOWN_ISSUES.md. Full manual flight/multiplayer checks remain pending. Ships, tanks, ground vehicles
+asset defect described in KNOWN_ISSUES.md. Ships can now be placed, boarded and piloted, with buoyancy, steering, crew weapons, models
+and wakes. Broader gameplay validation remains in progress; tanks, ground vehicles
 and the remaining support systems follow in M6. The mod also loads all of McHeli CE's content (vehicles, weapons, throwables and
 HUDs, from YAML and legacy TXT files, including addon packs).
 
@@ -59,6 +60,10 @@ Parachutes: right-click the item while airborne and unmounted. On an ejection-ca
 load parachutes into the **Chutes** slots with **I**, then press **Space** from the pilot or first
 crew seat. Space still toggles hovering in helicopters. **Y** dismounts; eligible transport
 passenger seats use a parachute when the hatch is open and the ground is clear.
+
+Ships: **W/S** controls throttle, **A/D** steers, **I** opens the fuel/ammunition menu, and **Y**
+dismounts. Stock ships require water to move. Their crew weapons belong to their assigned seats;
+stock loadouts are preserved.
 
 ## Content and addon packs
 
