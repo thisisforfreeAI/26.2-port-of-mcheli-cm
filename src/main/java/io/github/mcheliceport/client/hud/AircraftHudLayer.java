@@ -257,14 +257,14 @@ public final class AircraftHudLayer implements GuiLayer {
         boolean gunnerMode = aircraft.isGunnerMode(player);
 
         // drawAircraftKeyBinds
-        if (seatId > 0 && aircraft.getSeatNum() > 1 || freeLookPressed) {
+        if (aircraft.getSeatNum() > 0) {
             // Upstream passed the character 'Ｐ' as the pilot's colour: 0xFF30 without alpha, drawn opaque.
             int seatColor = seatId == 0 ? GuiHudCanvas.textColor('Ｐ') : ACTIVE;
-            String prefix = seatId == 0 ? keyName(ModKeyMappings.FREE_LOOK) + " + " : "";
+            String prefix = keyName(ModKeyMappings.FREE_LOOK) + " + ";
             this.drawRight(graphics, "NextSeat : " + prefix + keyName(ModKeyMappings.GUI), rightX, seatColor);
             this.drawRight(graphics, "PrevSeat : " + prefix + keyName(ModKeyMappings.EXTRA), rightX, seatColor);
         }
-        this.drawLeft(graphics, "Gunner %s : %s + %s".formatted(aircraft.getGunnerStatus() ? "ON" : "OFF",
+        this.drawLeft(graphics, "NPC Gunner %s : %s + %s".formatted(aircraft.getGunnerStatus() ? "ON" : "OFF",
                 keyName(ModKeyMappings.FREE_LOOK), keyName(ModKeyMappings.CAMERA_MODE)), leftX, ACTIVE);
         if (seatId >= 0 && seatId <= 1 && aircraft.haveFlare()) {
             this.drawRightKey(graphics, "Flare", ModKeyMappings.FLARE, rightX,
@@ -353,6 +353,7 @@ public final class AircraftHudLayer implements GuiLayer {
     }
 
     private void drawRight(GuiGraphicsExtractor graphics, String text, int x, int color) {
+        x = Math.max(0, Math.min(x, graphics.guiWidth() - Minecraft.getInstance().font.width(text) - 10));
         graphics.text(Minecraft.getInstance().font, text, x, this.currentRightY, GuiHudCanvas.textColor(color));
         this.currentRightY += 10;
     }

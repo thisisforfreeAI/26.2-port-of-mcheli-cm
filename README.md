@@ -65,6 +65,15 @@ Ships: **W/S** controls throttle, **A/D** steers, **I** opens the fuel/ammunitio
 dismounts. Stock ships require water to move. Their crew weapons belong to their assigned seats;
 stock loadouts are preserved.
 
+Aircraft/ship aiming: **Left Ctrl toggles freelook** (press again to return to steering with
+the mouse). In freelook, the pilot can aim pilot-usable turrets independently of the hull.
+Hold **Ctrl+I** for the next crew seat or **Ctrl+F** for the previous one; these shortcuts
+also work from the driver's seat. Project 1204's first three crew seats control the front gun,
+rocket launcher and rear gun respectively. An occupied gunner seat takes control of its weapons.
+**H** switches camera/gunner view where the vehicle supports it. **Ctrl+C** toggles the NPC
+gunner status shown on the HUD; NPC gunners are still pending in M6, so it does not enter a
+turret seat or enable a player camera.
+
 ## Content and addon packs
 
 As in McHeli CE, vehicles, weapons, throwables and HUDs are defined in content files (YAML, or the

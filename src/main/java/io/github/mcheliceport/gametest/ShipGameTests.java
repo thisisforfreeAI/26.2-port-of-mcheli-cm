@@ -48,6 +48,7 @@ final class ShipGameTests {
         ModGameTests.test("ship_ground_restrictions", 30, ShipGameTests::groundRestrictions);
         ModGameTests.test("ship_authority_and_controls", 30, ShipGameTests::authority);
         ModGameTests.test("ship_crew_weapon", 60, ShipGameTests::crewWeapon);
+        ModGameTests.test("ship_project1204_turret_seats", 30, ShipGameTests::turretSeats);
         ModGameTests.test("ship_addon_torpedo", 60, ShipGameTests::torpedo);
         ModGameTests.test("ship_item_round_trip", 30, ShipGameTests::itemRoundTrip);
     }
@@ -257,6 +258,40 @@ final class ShipGameTests {
                 GameTestSupport.cleanUp(ship);
                 helper.succeed();
             });
+        });
+    }
+
+    private static void turretSeats(GameTestHelper helper) {
+        ShipEntity ship = spawn(helper, "project1204", new Vec3(12, 10, 12));
+        Player pilot = pilot(helper, ship);
+        helper.runAfterDelay(5, () -> {
+            pilot.setYRot(60);
+            pilot.setXRot(-15);
+            for (int i = 0; i < 80; i++) { ship.weapons().updateWeaponsRotation(); }
+            WeaponSet front = ship.weapons().getWeaponByName("d56ts");
+            check(helper, Math.abs(front.getYaw() - 60) < 0.01 && Math.abs(front.getPitch() + 15) < 0.01,
+                    "empty front turret follows the pilot's independent look");
+
+            // Ctrl+I/F use these seat operations; Project 1204's three gunner seats are
+            // already present in stock content, even though they sit below the deck model.
+            ship.switchNextSeat(pilot);
+            check(helper, ship.getSeatIdByEntity(pilot) == 1 && ship.isGunnerMode(pilot), "front gunner seat");
+            pilot.setYRot(-70);
+            pilot.setXRot(-10);
+            for (int i = 0; i < 80; i++) { ship.weapons().updateWeaponsRotation(); }
+            check(helper, Math.abs(front.getYaw() + 70) < 0.01 && Math.abs(front.getPitch() + 10) < 0.01,
+                    "front gunner aims the turret");
+            ship.switchNextSeat(pilot);
+            check(helper, ship.getSeatIdByEntity(pilot) == 2 && ship.isGunnerMode(pilot), "rocket gunner seat");
+            ship.switchNextSeat(pilot);
+            check(helper, ship.getSeatIdByEntity(pilot) == 3 && ship.isGunnerMode(pilot), "rear gunner seat");
+            ship.switchPrevSeat(pilot);
+            check(helper, ship.getSeatIdByEntity(pilot) == 2, "previous seat shortcut");
+            Player stranger = GameTestSupport.player(helper, GameType.SURVIVAL, new Vec3(10, 10, 10));
+            ship.switchNextSeat(stranger);
+            check(helper, stranger.getVehicle() == null, "outsider cannot switch into seats");
+            GameTestSupport.cleanUp(ship);
+            helper.succeed();
         });
     }
 

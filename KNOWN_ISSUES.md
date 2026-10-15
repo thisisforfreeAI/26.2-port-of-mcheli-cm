@@ -41,6 +41,9 @@ Until then:
 - The targeting pod only plays its refusal sound when fired, until team spotting comes (M6).
 - An APS with upstream's "iron curtain" range (100) only plays its sounds (M6).
 - Turret ballistics lines (upstream `drawTurretBallistics`) are not drawn yet (M7).
+- Ctrl+C changes the NPC gunner enabled status only. NPC gunners are not implemented yet, so
+  this does not automate weapons. Use Ctrl+I/F to enter crew seats and H for supported camera
+  switches. Left Ctrl toggles pilot freelook, including independent aiming of pilot-usable turrets.
 
 This config entry already exists but has no effect yet:
 

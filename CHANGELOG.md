@@ -64,6 +64,12 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 
 ### Fixed
 
+- Vehicle keys now work while Ctrl/Shift/Alt is held. NeoForge previously suppressed the riding
+  key context, blocking Left Ctrl freelook and Ctrl+C/I/F across helicopters, planes and ships.
+  This also restores independent pilot turret aiming through freelook. Seat shortcuts now show
+  their required Ctrl modifier for all riders and remain visible from the pilot seat; Ctrl+C's
+  hint identifies NPC gunner status separately from H's camera/gunner view.
+
 - Corrected planes from two movement steps to upstream's one per tick, including movement bounds.
   Added entity cadence, conventional/VTOL takeoff-turn-landing, and plane weapon integration checks.
 
