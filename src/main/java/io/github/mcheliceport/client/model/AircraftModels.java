@@ -6,6 +6,7 @@ import io.github.mcheliceport.config.CommonConfig;
 import io.github.mcheliceport.content.ContentRegistries;
 import io.github.mcheliceport.content.aircraft.AircraftInfo;
 import io.github.mcheliceport.content.aircraft.HeliInfo;
+import io.github.mcheliceport.content.aircraft.VehicleInfo;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -136,6 +137,7 @@ public final class AircraftModels {
                 continue;
             }
             McheliModel model = loadModel(resources, dir + "/" + info.name + "_" + part, true);
+            if (model == null && info instanceof VehicleInfo) { model = loadModel(resources, dir + "/" + part, true); }
             if (model != null) {
                 parts.put(lower, model);
             }
@@ -155,6 +157,9 @@ public final class AircraftModels {
         List<String> names = new ArrayList<>();
         if (info instanceof HeliInfo heli) {
             heli.rotorList.forEach(r -> names.add(r.modelName));
+        }
+        if (info instanceof VehicleInfo vehicle) {
+            addVehicleParts(vehicle.partList, names);
         }
         if (info instanceof io.github.mcheliceport.content.aircraft.WingedAircraftInfo plane) {
             plane.nozzles.forEach(p -> names.add(p.modelName));
@@ -183,6 +188,13 @@ public final class AircraftModels {
         info.partWheel.forEach(p -> names.add(p.modelName));
         info.partSteeringWheel.forEach(p -> names.add(p.modelName));
         return names;
+    }
+
+    private static void addVehicleParts(List<VehicleInfo.VPart> parts, List<String> names) {
+        for (VehicleInfo.VPart part : parts) {
+            names.add(part.modelName);
+            if (part.child != null) { addVehicleParts(part.child, names); }
+        }
     }
 
     /**
@@ -283,6 +295,14 @@ public final class AircraftModels {
                 e.state = State.LOADED;
                 loaded.put(McheliModel.key("ships", info.name), e);
             });
+            for (var source : List.of(ContentRegistries.get().tank(), ContentRegistries.get().vehicle())) {
+                source.values().parallelStream().forEach(info -> {
+                    String dir = info.getDirectoryName();
+                    Entry e = new Entry(dir, info, gen);
+                    e.models = load(manager, dir, info); e.state = State.LOADED;
+                    loaded.put(McheliModel.key(dir, info.name), e);
+                });
+            }
             LOGGER.info("Loaded the models of {} vehicles in {} ms", loaded.size(),
                     (System.nanoTime() - start) / 1_000_000L);
             return loaded;

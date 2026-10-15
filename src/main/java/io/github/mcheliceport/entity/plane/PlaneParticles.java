@@ -133,7 +133,7 @@ public final class PlaneParticles {
     }
 
     /** Upstream onUpdate_ParticleSplash and setParticleSplash. */
-    public static void splash(WingedAircraftInfo info, Frame f, RandomSource random, World world, Consumer<ParticleParam> sink) {
+    public static void splash(AircraftInfo info, Frame f, RandomSource random, World world, Consumer<ParticleParam> sink) {
         double mx = f.position.x - f.previousPosition.x;
         double mz = f.position.z - f.previousPosition.z;
         double distance = Math.min(1.0, mx * mx + mz * mz);

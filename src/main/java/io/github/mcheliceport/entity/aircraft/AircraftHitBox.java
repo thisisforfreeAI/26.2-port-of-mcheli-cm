@@ -93,7 +93,7 @@ public class AircraftHitBox extends PartEntity<AircraftEntity> {
 
     @Override
     public boolean isPickable() {
-        return this.info != null && this.getParent().isPickable();
+        return this.info != null && this.getParent().isPickable() && this.getParent().isHitBoxActive(this);
     }
 
     @Override

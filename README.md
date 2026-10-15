@@ -21,8 +21,9 @@ Planes now use the gunner camera, zoom and night vision; H also cycles extra cam
 defined by addons. Hand parachutes, transport-seat bailout and plane ejection are implemented,
 including reserve slots in the aircraft menu. The stock ejection/transport model has an upstream
 asset defect described in KNOWN_ISSUES.md. Ships can now be placed, boarded and piloted, with buoyancy, steering, crew weapons, models
-and wakes. Broader gameplay validation remains in progress; tanks, ground vehicles
-and the remaining support systems follow in M6. The mod also loads all of McHeli CE's content (vehicles, weapons, throwables and
+and wakes. Tanks and ground vehicles now place, mount and save/load, with driving, terrain tilt,
+animated wheels/tracks and independent weapon aiming. Broader gameplay validation and the
+remaining support systems continue in M6. The mod also loads all of McHeli CE's content (vehicles, weapons, throwables and
 HUDs, from YAML and legacy TXT files, including addon packs).
 
 - [PORTING_PLAN.md](PORTING_PLAN.md): the roadmap and the decisions behind it
@@ -72,6 +73,12 @@ passenger seats use a parachute when the hatch is open and the ground is clear.
 Ships: **W/S** controls throttle, **A/D** steers, **I** opens the fuel/ammunition menu, and **Y**
 dismounts. Stock ships require water to move. Their crew weapons belong to their assigned seats;
 stock loadouts are preserved.
+
+Ground controls: **W/S** accelerates/decelerates and reverses, **A/D** steers, and hold **Space**
+to brake a tank or car. The mouse aims independently of the chassis. **I** opens fuel/ammunition,
+**Y** dismounts, and **H** cycles additional camera positions when supplied by the content.
+Placed guns retain their stock movement restrictions; **Z** cycles their camera zoom.
+Network protocol 6 requires this build on both clients and servers.
 
 Aircraft/ship aiming: **Left Ctrl toggles freelook** (press again to return to steering with
 the mouse). In freelook, the pilot can aim pilot-usable turrets independently of the hull.

@@ -289,12 +289,19 @@ public final class AircraftHudLayer implements GuiLayer {
         if (seatId == 0) {
             this.drawLeftKey(graphics, "Dismount", ModKeyMappings.UNMOUNT, leftX, ACTIVE);
         }
-        boolean canFreeLook = seatId == 0 || seatId > 0 && aircraft.canSwitchGunnerModeOtherSeat(player);
+        boolean canFreeLook = !(aircraft instanceof io.github.mcheliceport.entity.ground.GroundVehicleEntity)
+                && (seatId == 0 || seatId > 0 && aircraft.canSwitchGunnerModeOtherSeat(player));
         if (canFreeLook) {
             this.drawLeftKey(graphics, "FreeLook", ModKeyMappings.FREE_LOOK, leftX, ACTIVE);
         }
 
         // MCH_GuiHeli#drawKeyBind
+        if (seatId == 0 && aircraft instanceof io.github.mcheliceport.entity.tank.TankEntity) {
+            this.drawRightKey(graphics, "Brake", ModKeyMappings.SWITCH_HOVERING, rightX, ACTIVE);
+        }
+        if (seatId == 0 && aircraft instanceof io.github.mcheliceport.entity.ground.GroundVehicleEntity && aircraft.canSwitchCameraPos()) {
+            this.drawRightKey(graphics, "Camera", ModKeyMappings.SWITCH_GUNNER, rightX, ACTIVE);
+        }
         if (seatId == 0 && !freeLookPressed && aircraft instanceof WingedAircraftEntity && aircraft.canSwitchCameraPos()) {
             this.drawRightKey(graphics, "Camera / Gunner", ModKeyMappings.SWITCH_GUNNER, rightX, ACTIVE);
         } else if (seatId == 0 && info.isEnableGunnerMode && !freeLookPressed) {

@@ -73,6 +73,16 @@ public abstract class AircraftRenderer<T extends AircraftEntity> extends EntityR
         state.color = entity.isDestroyed() ? DESTROYED_COLOR : COLOR;
         state.flat = !(info.smoothShading && ClientConfig.get(ClientConfig.SMOOTH_SHADING));
         this.drawParts(entity, info, models, input(entity, ypr, partialTicks), partialTicks, state.draws);
+        GlMatrixStack eraPose = AircraftPartPoses.bodyStack(input(entity, ypr, partialTicks));
+        int eraIndex = 0;
+        for (var box : info.extraBoundingBox) {
+            if (box.isERA) {
+                if (entity.isEraActive(eraIndex)) {
+                    state.draws.add(new AircraftPartPoses.Draw(eraPose.current(), models.body().part("$ERA" + eraIndex)));
+                }
+                eraIndex++;
+            }
+        }
     }
 
     protected abstract String directory();

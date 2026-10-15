@@ -18,6 +18,8 @@ import io.github.mcheliceport.entity.weapon.TvMissileEntity;
 import io.github.mcheliceport.entity.heli.HeliEntity;
 import io.github.mcheliceport.entity.plane.PlaneEntity;
 import io.github.mcheliceport.entity.ship.ShipEntity;
+import io.github.mcheliceport.entity.tank.TankEntity;
+import io.github.mcheliceport.entity.vehicle.VehicleEntity;
 import io.github.mcheliceport.entity.parachute.ParachuteEntity;
 import io.github.mcheliceport.entity.seat.SeatEntity;
 import java.util.ArrayList;
@@ -65,13 +67,17 @@ public final class ModEntityTypes {
     public static final DeferredHolder<EntityType<?>, EntityType<ShipEntity>> SHIP = register("ship",
             ModRegistries.ENTITY_TYPES.registerEntityType("ship", ShipEntity::new, MobCategory.MISC,
                     builder -> builder.sized(2.0F, 0.7F).clientTrackingRange(toChunks(1200)).updateInterval(2)));
-    public static final DeferredHolder<EntityType<?>, EntityType<PlaceholderEntity>> TANK = placeholder("tank", 2.0f, 0.7f, 1200, 2);
+    public static final DeferredHolder<EntityType<?>, EntityType<TankEntity>> TANK = register("tank",
+            ModRegistries.ENTITY_TYPES.registerEntityType("tank", TankEntity::new, MobCategory.MISC,
+                    builder -> builder.sized(2, 0.7F).clientTrackingRange(toChunks(1200)).updateInterval(2)));
     public static final DeferredHolder<EntityType<?>, EntityType<PlaceholderEntity>> CHAIN = placeholder("chain", 1.0f, 1.0f, 600, 10);
     public static final DeferredHolder<EntityType<?>, EntityType<ParachuteEntity>> PARACHUTE = register("parachute",
             ModRegistries.ENTITY_TYPES.registerEntityType("parachute", ParachuteEntity::new, MobCategory.MISC,
                     builder -> builder.sized(1.5F, 0.6F).clientTrackingRange(toChunks(200)).updateInterval(10)));
     public static final DeferredHolder<EntityType<?>, EntityType<PlaceholderEntity>> CONTAINER = placeholder("container", 2.0f, 1.0f, 200, 10);
-    public static final DeferredHolder<EntityType<?>, EntityType<PlaceholderEntity>> VEHICLE = placeholder("vehicle", 2.0f, 0.7f, 600, 2);
+    public static final DeferredHolder<EntityType<?>, EntityType<VehicleEntity>> VEHICLE = register("vehicle",
+            ModRegistries.ENTITY_TYPES.registerEntityType("vehicle", VehicleEntity::new, MobCategory.MISC,
+                    builder -> builder.sized(2, 0.7F).clientTrackingRange(toChunks(600)).updateInterval(2)));
     public static final DeferredHolder<EntityType<?>, EntityType<PlaceholderEntity>> UAV_STATION = placeholder("uav_station", 2.0f, 0.7f, 400, 10);
     /** Upstream's {@code MCH_EntityHide}, which carries a player down a rope from a helicopter. */
     public static final DeferredHolder<EntityType<?>, EntityType<PlaceholderEntity>> HIDE = placeholder("hide", 1.0f, 1.0f, 200, 10);

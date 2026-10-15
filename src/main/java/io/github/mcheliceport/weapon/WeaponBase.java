@@ -194,7 +194,9 @@ public abstract class WeaponBase {
 
     /** Moves the shot to the mount's position and fires. */
     public boolean use(WeaponParam prm) {
-        Vec3 v = this.getShotPos(prm.entity);
+        Vec3 v = prm.entity instanceof io.github.mcheliceport.entity.vehicle.VehicleEntity vehicle
+                ? McheliMath.rotVec3(this.position, -(prm.rotYaw - this.fixRotationYaw),
+                        -(prm.rotPitch - this.fixRotationPitch), -vehicle.getRoll()) : this.getShotPos(prm.entity);
         prm.posX = prm.posX + v.x;
         prm.posY = prm.posY + v.y;
         prm.posZ = prm.posZ + v.z;

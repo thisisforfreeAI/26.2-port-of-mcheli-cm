@@ -12,6 +12,18 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 
 ### Added
 
+- M6 ground vehicles: all 12 stock tanks/cars and 18 placed vehicles now place, mount and
+  save/load as real entities. Tank throttle, reverse, steering, held Space brake, mirrored wheel
+  contacts and terrain tilt are connected. Placed guns respect content movement restrictions.
+- Ground models include animated wheels, crawler links/rollers, independent turrets and recursive
+  placed-gun parts. Ground camera positions, placed-gun zoom, engine sound and tank particles
+  use the shared client paths. Stock models, definitions and loadouts are preserved.
+- Reactive armor has per-entity synchronized and saved tile state. Projectile tracing includes
+  active extra hull boxes; destroyed tiles stop receiving hits. Ground controls use protocol 6,
+  so clients and servers must use matching builds.
+- Ground regression coverage checks all stock definitions, driving/braking/reverse, terrain,
+  control authorization, both authority modes, weapon use, reactive armor and stock assets.
+
 - M6 ships: all five stock ships now place, mount, float, steer, stop and save/load as real
   vehicles. Shared fuel, damage, inventory, crew weapons, pickup/item data, HUD, cameras and
   engine sounds are connected. Stock loadouts are preserved; a test addon checks torpedo use.
@@ -63,6 +75,9 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
   unchanged and is documented in KNOWN_ISSUES.md. Correctly grouped addon models render.
 
 ### Fixed
+
+- Hide the local rider in the primary first-person marker camera so placed-gun views are clear.
+  Honor pilot `HideRiders` through the shared rider render state.
 
 - Vehicle keys now work while Ctrl/Shift/Alt is held. NeoForge previously suppressed the riding
   key context, blocking Left Ctrl freelook and Ctrl+C/I/F across helicopters, planes and ships.

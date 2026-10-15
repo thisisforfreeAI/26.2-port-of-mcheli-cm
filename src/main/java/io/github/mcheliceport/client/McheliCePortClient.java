@@ -71,6 +71,8 @@ public final class McheliCePortClient {
         event.registerEntityRenderer(ModEntityTypes.HELICOPTER.get(), HeliRenderer::new);
         event.registerEntityRenderer(ModEntityTypes.PLANE.get(), io.github.mcheliceport.client.render.PlaneRenderer::new);
         event.registerEntityRenderer(ModEntityTypes.SHIP.get(), io.github.mcheliceport.client.render.ShipRenderer::new);
+        event.registerEntityRenderer(ModEntityTypes.TANK.get(), context -> new io.github.mcheliceport.client.render.GroundRenderer<>(context, "tanks"));
+        event.registerEntityRenderer(ModEntityTypes.VEHICLE.get(), context -> new io.github.mcheliceport.client.render.GroundRenderer<>(context, "vehicles"));
         bullet(event, ModEntityTypes.BULLET.get(), BulletRenderer.Kind.BULLET);
         bullet(event, ModEntityTypes.ROCKET.get(), BulletRenderer.Kind.BULLET);
         bullet(event, ModEntityTypes.TORPEDO.get(), BulletRenderer.Kind.BULLET);
@@ -92,7 +94,8 @@ public final class McheliCePortClient {
                 ModEntityTypes.DISPENSED_ITEM.get(), ModEntityTypes.AA_MISSILE.get(),
                 ModEntityTypes.AS_MISSILE.get(), ModEntityTypes.TV_MISSILE.get(), ModEntityTypes.AT_MISSILE.get(),
                 ModEntityTypes.BOMB.get(), ModEntityTypes.A10.get(), ModEntityTypes.FLARE.get(),
-                ModEntityTypes.CHAFF.get(), ModEntityTypes.THROWABLE.get(), ModEntityTypes.PARACHUTE.get());
+                ModEntityTypes.CHAFF.get(), ModEntityTypes.THROWABLE.get(), ModEntityTypes.PARACHUTE.get(),
+                ModEntityTypes.TANK.get(), ModEntityTypes.VEHICLE.get());
         ModEntityTypes.all().stream()
                 .filter(type -> !drawn.contains(type.get()))
                 .forEach(type -> registerNoop(event, type.get()));

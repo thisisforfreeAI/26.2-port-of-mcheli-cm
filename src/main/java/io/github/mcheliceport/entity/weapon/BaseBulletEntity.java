@@ -1010,6 +1010,16 @@ public abstract class BaseBulletEntity extends Entity implements WeaponTargets.P
                     d0 = d1;
                 }
             }
+            if (candidate instanceof AircraftEntity aircraft) {
+                for (AircraftHitBox box : aircraft.getHitBoxes()) {
+                    if (!box.isPickable()) { continue; }
+                    Optional<Vec3> partHit = box.getBoundingBox().inflate(0.3).clip(from, to);
+                    if (partHit.isPresent()) {
+                        double distance = from.distanceTo(partHit.get());
+                        if (found == null || distance < d0) { found = box; d0 = distance; }
+                    }
+                }
+            }
         }
         return found;
     }
@@ -1160,12 +1170,15 @@ public abstract class BaseBulletEntity extends Entity implements WeaponTargets.P
 
     /** Thrown damage from this projectile and its shooter, scaled by the config and the definition. */
     public void onImpactEntity(Entity entity, float damageFactor) {
+        AircraftHitBox hitBox = entity instanceof AircraftHitBox part ? part : null;
+        if (hitBox != null) { entity = hitBox.getParent(); }
         if (entity.isAlive() && this.level() instanceof ServerLevel server) {
             DamageScaling.applyHurtResistantTime(entity);
             DamageSource ds = server.damageSources().thrown(this, this.shootingEntity);
             float damage = DamageScaling.applyDamageVsEntity(entity, this.getPower() * damageFactor);
             damage *= this.getInfo() != null ? this.getInfo().getDamageFactor(WeaponTargets.targetName(entity)) : 1.0F;
-            entity.hurtServer(server, ds, damage);
+            if (hitBox != null) { hitBox.hurtServer(server, ds, damage); }
+            else { entity.hurtServer(server, ds, damage); }
         }
         this.notifyHitBullet();
     }

@@ -109,6 +109,8 @@ public abstract class AircraftEntity extends Entity
 
     private static final EntityDataAccessor<String> DATA_TYPE_NAME =
             SynchedEntityData.defineId(AircraftEntity.class, EntityDataSerializers.STRING);
+    private static final EntityDataAccessor<String> DATA_ERA =
+            SynchedEntityData.defineId(AircraftEntity.class, EntityDataSerializers.STRING);
     private static final EntityDataAccessor<Integer> DATA_DAMAGE =
             SynchedEntityData.defineId(AircraftEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> DATA_STATUS =
@@ -187,6 +189,7 @@ public abstract class AircraftEntity extends Entity
     public float lastRiderPitch;
     public float prevLastRiderPitch;
     private float lastHitBoxFactor = 1.0F;
+    private @Nullable AircraftHitBox lastHitBox;
     private @Nullable Entity lastPilot;
     private boolean keepOnRideRotation;
     /** Client: the pilot turned the vehicle this tick, so its attitude goes to the server. */
@@ -280,6 +283,7 @@ public abstract class AircraftEntity extends Entity
             return;
         }
         this.info = newInfo;
+        this.entityData.set(DATA_ERA, "");
         this.setCameraId(0);
         this.thirdPersonDist = newInfo.thirdPersonDist;
         this.refreshDimensions();
@@ -355,6 +359,7 @@ public abstract class AircraftEntity extends Entity
     @Override
     protected void defineSynchedData(SynchedEntityData.Builder builder) {
         builder.define(DATA_TYPE_NAME, "");
+        builder.define(DATA_ERA, "");
         builder.define(DATA_DAMAGE, 0);
         builder.define(DATA_STATUS, 0);
         builder.define(DATA_FUEL, 0);
@@ -1692,7 +1697,9 @@ public abstract class AircraftEntity extends Entity
             this.interpolation.cancel();
             return;
         }
-        boolean keepRotation = this.isDestroyed() || this.isPilotLocalClient();
+        boolean keepRotation = this.isDestroyed() || this.isPilotLocalClient()
+                && !(this instanceof io.github.mcheliceport.entity.ground.GroundVehicleEntity
+                && ServerSettings.client().serverAuthoritativeMovement());
         float yaw = this.getYRot();
         float pitch = this.getXRot();
         this.interpolation.interpolate();
@@ -2287,8 +2294,55 @@ public abstract class AircraftEntity extends Entity
 
     /** A hit on one of the content's bounding boxes, with that box's damage factor. */
     public boolean hurtFromHitBox(ServerLevel level, AircraftHitBox box, DamageSource source, float damage) {
+        if (!this.isHitBoxActive(box)) { return false; }
         this.lastHitBoxFactor = box.getDamageFactor();
-        return this.hurtServer(level, source, damage);
+        this.lastHitBox = box;
+        try { return this.hurtServer(level, source, damage); }
+        finally { this.lastHitBox = null; this.lastHitBoxFactor = 1; }
+    }
+
+    /** ERA indices count only reactive boxes, matching upstream's AcERAState string and $ERA groups. */
+    public boolean isEraActive(int index) {
+        String state = this.entityData.get(DATA_ERA);
+        return index >= 0 && (index >= state.length() || state.charAt(index) != '0');
+    }
+
+    public boolean isHitBoxActive(AircraftHitBox hit) {
+        if (hit.getInfo() == null || !hit.getInfo().isERA) { return true; }
+        int index = 0;
+        for (AircraftHitBox box : this.hitBoxes) {
+            if (box.getInfo() == null || !box.getInfo().isERA) { continue; }
+            if (box == hit) { return this.isEraActive(index); }
+            index++;
+        }
+        return false;
+    }
+
+    public String getEraState() {
+        int count = this.info == null ? 0 : (int) this.info.extraBoundingBox.stream().filter(b -> b.isERA).count();
+        StringBuilder state = new StringBuilder(count);
+        for (int i = 0; i < count; i++) { state.append(this.isEraActive(i) ? '1' : '0'); }
+        return state.toString();
+    }
+
+    private void popEra(ServerLevel level, @Nullable AircraftHitBox hit, @Nullable Entity attacker, float damage) {
+        if (hit == null || hit.getInfo() == null || !hit.getInfo().isERA) { return; }
+        int index = 0;
+        for (AircraftHitBox box : this.hitBoxes) {
+            if (box.getInfo() == null || !box.getInfo().isERA) { continue; }
+            if (box == hit && this.isEraActive(index) && damage > box.getInfo().eraMinDamage) {
+                StringBuilder state = new StringBuilder(this.getEraState());
+                state.setCharAt(index, '0');
+                this.entityData.set(DATA_ERA, state.toString());
+                if (box.getInfo().eraExplosion > 0) {
+                    Vec3 p = box.getBoundingBox().getCenter();
+                    McheliExplosion.newExplosion(level, null, attacker instanceof Player ? attacker : null,
+                            p.x, p.y, p.z, box.getInfo().eraExplosion, 0, true, false, false, 0);
+                }
+                return;
+            }
+            index++;
+        }
     }
 
     private static AircraftDamage.Kind kindOf(DamageSource source) {
@@ -2319,6 +2373,8 @@ public abstract class AircraftEntity extends Entity
             return false;
         }
         Entity attacker = source.getEntity();
+        AircraftHitBox eraHit = this.lastHitBox;
+        this.lastHitBox = null;
         boolean playDamageSound = !(attacker instanceof Player);
 
         float factor = this.lastHitBoxFactor;
@@ -2356,6 +2412,8 @@ public abstract class AircraftEntity extends Entity
         if (damage <= 0.0F) {
             return false;
         }
+
+        this.popEra(level, eraHit, attacker, damage);
 
         if (!this.isDestroyed()) {
             if (!isPlayerAttack) {
@@ -2887,6 +2945,7 @@ public abstract class AircraftEntity extends Entity
         this.prevLastRiderPitch = this.lastRiderPitch = input.getFloatOr("AcLastRPitch", 0.0F);
         this.setPartStatus(input.getIntOr("PartStatus", 0));
         this.setAircraftTypeName(input.getStringOr("TypeName", ""));
+        this.entityData.set(DATA_ERA, input.getStringOr("AcERAState", ""));
         NonNullList<ItemStack> items = NonNullList.withSize(this.inventory.getContainerSize(), ItemStack.EMPTY);
         ContainerHelper.loadAllItems(input.childOrEmpty("ItemsAC"), items);
         for (int i = 0; i < items.size(); i++) {
@@ -2919,6 +2978,7 @@ public abstract class AircraftEntity extends Entity
 
     @Override
     protected void addAdditionalSaveData(ValueOutput output) {
+        output.putString("AcERAState", this.getEraState());
         output.putString("TextureName", this.getTextureName());
         output.putString("TypeName", this.getAircraftTypeName());
         output.putInt("PartStatus", this.partStatus() & this.getLastPartStatusMask());
