@@ -278,6 +278,29 @@ virtual displays have no audio device; software rendering does not establish har
 
 ## Integration points already identified
 
+### Shared Ctrl controls follow-up
+
+The riding key context now conflicts with NeoForge's `IN_GAME` context. `KeyModifier.NONE`
+otherwise rejects every riding binding while Ctrl/Shift/Alt is active, including Left Ctrl
+itself. This fixes the freelook toggle and Ctrl+C/I/F for all implemented vehicle kinds without
+changing packet layouts or stock seat/loadout definitions. Seat hints include Ctrl for crew
+as well as pilots, remain visible from the pilot seat, and fit inside the right screen edge.
+The Ctrl+C label explicitly says NPC Gunner; it toggles the enabled flag, and NPC implementation
+remains pending. H retains the existing camera/gunner-view behavior.
+
+Validation: 130 JUnit tests pass, including a regression for the exact context relationship
+used by NeoForge's modifier filter. All 88 required GameTests pass. The new Project 1204 test
+checks independent pilot aim, front-gunner aim, access to its three gunner seats, previous-seat
+selection and outsider refusal.
+
+A real OpenGL client on Xvfb/Mesa connected to the local dedicated server. Left Ctrl followed
+by mouse motion turned the Project 1204 pilot's look to 40.5 degrees while the hull stayed at
+zero, and the visible front turret followed it. Ctrl+I cycled through the front gun, rocket
+launcher and rear gun seats; Ctrl+F returned to the rocket seat. Ctrl+C changed the server's
+`AcGunnerStatus` from true to false. The same freelook check gave a 40.5-degree rider yaw with
+zero vehicle yaw in the AH-64 and Harrier. The server stopped and saved cleanly, and the client
+closed. These follow-up checks did not repeat Vulkan, two-client synchronization or full flight.
+
 The integration notes below record the starting 0.5.1 audit; the first increment above has
 already generalized the helicopter-only paths for planes and ships.
 

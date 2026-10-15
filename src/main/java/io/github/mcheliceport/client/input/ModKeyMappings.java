@@ -11,6 +11,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 import net.neoforged.neoforge.client.settings.IKeyConflictContext;
+import net.neoforged.neoforge.client.settings.KeyConflictContext;
 import org.lwjgl.glfw.GLFW;
 
 /**
@@ -33,7 +34,9 @@ public final class ModKeyMappings {
 
         @Override
         public boolean conflicts(IKeyConflictContext other) {
-            return other == this;
+            // KeyModifier.NONE suppresses keys while Ctrl/Shift/Alt is held unless this context
+            // conflicts with IN_GAME. Ctrl itself and Ctrl+C/I/F must all remain usable while riding.
+            return other == this || other == KeyConflictContext.IN_GAME;
         }
     };
 
