@@ -11,6 +11,7 @@ import io.github.mcheliceport.content.aircraft.BoundingBoxInfo;
 import io.github.mcheliceport.content.aircraft.SeatInfo;
 import io.github.mcheliceport.content.aircraft.TankInfo;
 import io.github.mcheliceport.entity.tank.TankEntity;
+import io.github.mcheliceport.entity.tank.GroundCollisionBlocks;
 import io.github.mcheliceport.entity.weapon.BulletEntity;
 import io.github.mcheliceport.net.AircraftMotionPayload;
 import io.github.mcheliceport.net.ModNetwork;
@@ -73,15 +74,29 @@ final class TankCollisionGameTests {
     private static void ticks(TankEntity tank, int count) { for (int i = 0; i < count; i++) { tank.tick(); } }
 
     private static void defaults(GameTestHelper h) {
+        withConfig(CommonConfig.CAR_BREAKABLE_BLOCKS, GroundCollisionBlocks.CAR, () ->
+                withConfig(CommonConfig.TANK_BREAKABLE_BLOCKS, GroundCollisionBlocks.TANK, () -> defaultBlocks(h)));
+    }
+
+    private static void defaultBlocks(GameTestHelper h) {
         var car = tank(h, info(1));
         h.setBlock(12, 5, 12, Blocks.GLASS_PANE);
         h.setBlock(13, 5, 12, Blocks.GLASS);
         h.setBlock(14, 5, 12, Blocks.OAK_PLANKS);
         h.setBlock(13, 5, 13, Blocks.STONE);
+        h.setBlock(10, 4, 10, Blocks.END_STONE); h.setBlock(10, 5, 10, Blocks.CHORUS_FLOWER);
+        h.setBlock(12, 5, 13, Blocks.BROWN_MUSHROOM_BLOCK);
+        h.setBlock(14, 4, 14, Blocks.STONE); h.setBlock(14, 5, 14, Blocks.FLOWER_POT);
+        h.setBlock(14, 4, 11, Blocks.STONE); h.setBlock(14, 5, 11, Blocks.BANNER.pick(net.minecraft.world.item.DyeColor.WHITE));
+        h.setBlock(12, 4, 14, Blocks.STONE); h.setBlock(12, 5, 14, Blocks.SKELETON_SKULL);
         car.tick();
         check(h, h.getBlockState(new BlockPos(12, 5, 12)).isAir(), "car crushes glass panes");
         check(h, h.getBlockState(new BlockPos(13, 5, 12)).is(Blocks.GLASS) && h.getBlockState(new BlockPos(14, 5, 12)).is(Blocks.OAK_PLANKS),
                 "car leaves full glass and wood intact");
+        check(h, h.getBlockState(new BlockPos(10, 5, 10)).isAir(), "legacy PLANTS includes chorus flowers");
+        check(h, h.getBlockState(new BlockPos(12, 5, 13)).is(Blocks.BROWN_MUSHROOM_BLOCK)
+                && h.getBlockState(new BlockPos(14, 5, 14)).is(Blocks.FLOWER_POT)
+                && h.getBlockState(new BlockPos(14, 5, 11)).is(Blocks.BANNER.pick(net.minecraft.world.item.DyeColor.WHITE)), "car leaves wood/circuit categories intact");
         car.discard();
         var tank = tank(h, info(2));
         h.setBlock(10, 5, 12, Blocks.GLOWSTONE);
@@ -96,6 +111,10 @@ final class TankCollisionGameTests {
         check(h, h.getBlockState(new BlockPos(11, 5, 12)).is(Blocks.TORCH) && h.getBlockState(new BlockPos(11, 6, 12)).is(Blocks.OAK_PLANKS),
                 "protected torch stops its column");
         check(h, h.getBlockState(new BlockPos(13, 5, 13)).is(Blocks.STONE), "ordinary terrain stays intact");
+        check(h, h.getBlockState(new BlockPos(12, 5, 13)).isAir()
+                && h.getBlockState(new BlockPos(14, 5, 14)).isAir()
+                && h.getBlockState(new BlockPos(14, 5, 11)).isAir()
+                && h.getBlockState(new BlockPos(12, 5, 14)).isAir(), "legacy WOOD/CIRCUITS includes mushrooms, banners, flower pots and skulls");
         tank.discard(); h.succeed();
     }
 

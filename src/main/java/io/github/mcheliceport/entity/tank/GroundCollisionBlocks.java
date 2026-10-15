@@ -19,7 +19,7 @@ public final class GroundCollisionBlocks {
             "minecraft:carrots", "minecraft:potatoes", "minecraft:beetroots", "minecraft:nether_wart",
             "minecraft:sugar_cane", "minecraft:pumpkin_stem", "minecraft:melon_stem",
             "minecraft:attached_pumpkin_stem", "minecraft:attached_melon_stem", "minecraft:cocoa",
-            "minecraft:lily_pad");
+            "minecraft:lily_pad", "minecraft:chorus_plant", "minecraft:chorus_flower");
     public static final List<String> TANK;
     static {
         List<String> selectors = new ArrayList<>(CAR);
@@ -35,7 +35,9 @@ public final class GroundCollisionBlocks {
                 "minecraft:crafting_table", "minecraft:bookshelf", "minecraft:chiseled_bookshelf",
                 "minecraft:note_block", "minecraft:jukebox", "minecraft:ladder", "minecraft:daylight_detector",
                 "minecraft:barrel", "minecraft:loom", "minecraft:fletching_table", "minecraft:cartography_table",
-                "minecraft:composter", "minecraft:lectern", "minecraft:bee_nest", "minecraft:beehive"));
+                "minecraft:composter", "minecraft:lectern", "minecraft:bee_nest", "minecraft:beehive",
+                "minecraft:brown_mushroom_block", "minecraft:red_mushroom_block", "minecraft:mushroom_stem",
+                "#minecraft:banners", "#minecraft:flower_pots", "#c:skulls"));
         TANK = List.copyOf(selectors);
     }
 
