@@ -98,8 +98,12 @@ public class AircraftMenu extends AbstractContainerMenu {
                 });
     }
 
+    /**
+     * A fuel can with fuel left. Upstream's slot also took empty cans, which then sat there doing
+     * nothing and looked like a full can that would not refuel.
+     */
     public static boolean isFuelCan(ItemStack stack) {
-        return stack.is(ModItems.FUEL.get());
+        return stack.is(ModItems.FUEL.get()) && stack.getDamageValue() < stack.getMaxDamage();
     }
 
     public @Nullable AircraftEntity getAircraft() {

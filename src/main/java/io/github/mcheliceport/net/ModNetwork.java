@@ -70,6 +70,7 @@ public final class ModNetwork {
                 (payload, context) -> ServerSettings.setClient(payload.toValues()));
         registrar.playToServer(WeaponControlPayload.TYPE, WeaponControlPayload.CODEC, ModNetwork::handleWeaponControl);
         registrar.playToServer(AmmoRequestPayload.TYPE, AmmoRequestPayload.CODEC, ModNetwork::handleAmmoRequest);
+        registrar.playToServer(ResupplyPayload.TYPE, ResupplyPayload.CODEC, ModNetwork::handleResupply);
         registrar.playToServer(AirburstDistPayload.TYPE, AirburstDistPayload.CODEC, ModNetwork::handleAirburstDist);
         registrar.playToClient(WeaponSyncPayload.TYPE, WeaponSyncPayload.CODEC, ModNetwork::handleWeaponSync);
         registrar.playToClient(NotifyAmmoPayload.TYPE, NotifyAmmoPayload.CODEC, (p, context) -> {
@@ -384,6 +385,16 @@ public final class ModNetwork {
             if (p.useAps()) {
                 aircraft.useAPS();
             }
+        }
+    }
+
+    /** Upstream {@code PacketRequestResupply}: only from a player who has that vehicle's menu open. */
+    static void handleResupply(ResupplyPayload p, IPayloadContext context) {
+        if (context.player() instanceof ServerPlayer player
+                && player.containerMenu instanceof io.github.mcheliceport.menu.AircraftMenu menu
+                && menu.getAircraft() != null && menu.getAircraft().getId() == p.aircraftId()
+                && p.weaponId() >= 0 && p.weaponId() < menu.getAircraft().getWeaponNum()) {
+            menu.getAircraft().weapons().supplyAmmo(p.weaponId(), player);
         }
     }
 

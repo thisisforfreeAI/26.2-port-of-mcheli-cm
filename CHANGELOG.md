@@ -8,6 +8,18 @@ Versions stay below 1.0.0 until the port is feature-complete, and each milestone
 McHeli CE 1.5.1 (`master` @ `cbaff7f`). Where it deliberately differs from upstream, the difference is
 listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 
+## [0.5.1] - unreleased (M5 fixes)
+
+### Added
+
+- The aircraft menu lists the vehicle's weapons with their ammunition and a reload button for each,
+  as upstream's aircraft GUI did. A reload costs the weapon's round items (for Hydra rockets, 3 iron
+  ingots and 3 gunpowder) and fills the reserve. Ammunition could not be loaded at all in 0.5.0.
+
+### Fixed
+
+- The fuel slot no longer takes empty fuel cans, which look like full ones and did not refuel.
+
 ## [0.5.0] - unreleased (M5: weapons)
 
 ### Added
