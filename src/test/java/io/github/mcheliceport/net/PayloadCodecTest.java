@@ -146,6 +146,8 @@ class PayloadCodecTest {
         assertEquals(sync, roundTrip(WeaponSyncPayload.CODEC, sync));
         AmmoRequestPayload request = new AmmoRequestPayload(9, -1);
         assertEquals(request, roundTrip(AmmoRequestPayload.CODEC, request));
+        ResupplyPayload resupply = new ResupplyPayload(9, 4);
+        assertEquals(resupply, roundTrip(ResupplyPayload.CODEC, resupply));
         SyncReloadPayload reload = new SyncReloadPayload(11);
         assertEquals(reload, roundTrip(SyncReloadPayload.CODEC, reload));
         AirburstDistPayload airburst = new AirburstDistPayload(12, 450);

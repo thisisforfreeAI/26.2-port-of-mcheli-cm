@@ -5,7 +5,7 @@ McHeli CE 1.5.1. This file is updated with every milestone (PORTING_PLAN.md, sec
 
 ## Not ported yet
 
-As of 0.5.0 (M5), helicopters can be placed, flown, refuelled and picked up, are drawn with their
+As of 0.5.1 (M5), helicopters can be placed, flown, refuelled and picked up, are drawn with their
 models, HUD and gunner camera, and fight with their weapons. Everything else is still to come:
 
 | Area | Planned milestone |
@@ -20,8 +20,9 @@ Until then:
 - The key hints for racks and search lights come with those features (M6).
 - Planes, ships, tanks and vehicles do nothing when used, and their entity types are inert
   placeholders that cannot be summoned.
-- The aircraft menu has the fuel slots and the trunk only, on a plain container background; the
-  rest of upstream's aircraft GUI (weapons, parachutes, the menu buttons) comes with M6.
+- The aircraft menu has the fuel slots, the trunk and the weapon list with its reload buttons, on a
+  plain container background; the rest of upstream's aircraft GUI (parachutes, the menu buttons)
+  comes with M6.
 - Fuel comes from fuel cans only. Refuelling from fluid containers, which upstream also allowed,
   needs a fuel fluid and comes with the supply vehicles (M6).
 - The drafting table is drawn with a simple block model; upstream drew a 3D model with a block
@@ -176,6 +177,11 @@ These follow from how Minecraft 26.2 works or from decisions approved in PORTING
 60. The texture `9M113.png` is lowercased (`9m113.png`), since resource paths must be lower case.
 61. Server-to-client packets skip connections that do not have the mod's channel (fake players,
     for example); upstream sent them regardless.
+62. The reload button in the aircraft menu charges whoever presses it and, for anyone but the
+    pilot, fills the magazine at once; upstream always charged the pilot. The pilot's magazines
+    still fill when the menu closes, as upstream.
+63. The fuel slot refuses empty fuel cans; upstream took them, and they then sat in the slot
+    without refuelling.
 
 ## Upstream content issues kept as they are
 

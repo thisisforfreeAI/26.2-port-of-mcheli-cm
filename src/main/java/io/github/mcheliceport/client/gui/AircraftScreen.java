@@ -1,18 +1,33 @@
 package io.github.mcheliceport.client.gui;
 
+import io.github.mcheliceport.content.weapon.WeaponInfo;
 import io.github.mcheliceport.entity.aircraft.AircraftEntity;
+import io.github.mcheliceport.entity.aircraft.AircraftWeapons;
 import io.github.mcheliceport.menu.AircraftMenu;
+import io.github.mcheliceport.net.ResupplyPayload;
+import io.github.mcheliceport.weapon.WeaponSet;
+import java.util.ArrayList;
+import java.util.List;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 
 /**
  * The fuel slots and trunk of a vehicle (decision D12): the trunk and player inventory on
  * vanilla's chest background, with a fuel panel on the left (fuel can in, empty can out, and
  * upstream's fuel gauge).
+ *
+ * <p>Beside them, the weapon list of upstream CE's aircraft GUI: each weapon set with a magazine,
+ * its magazine and reserve counts, the round items one supply costs, and a reload button that
+ * pays them ({@link AircraftWeapons#supplyAmmo}). The rest of that GUI comes with M6.
  */
 public class AircraftScreen extends AbstractContainerScreen<AircraftMenu> {
 
@@ -22,12 +37,95 @@ public class AircraftScreen extends AbstractContainerScreen<AircraftMenu> {
     private static final int DARK = 0xFF373737;
     private static final int LIGHT = 0xFFFFFFFF;
     private static final int SLOT_BG = 0xFF8B8B8B;
+    private static final int WEAPON_PANEL_W = 176;
+    private static final int WEAPON_ROW_H = 22;
+
+    /** A weapon set with a magazine and its reload button. */
+    private record WeaponRow(int weaponId, WeaponSet set, Button button) {
+    }
+
+    private final List<WeaponRow> weaponRows = new ArrayList<>();
 
     public AircraftScreen(AircraftMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title, AircraftMenu.CONTENT_X + 176, menu.getPlayerInventoryY() + 82 + 1);
         this.titleLabelX = AircraftMenu.CONTENT_X + 8;
         this.inventoryLabelX = AircraftMenu.CONTENT_X + 8;
         this.inventoryLabelY = menu.getPlayerInventoryY() - 11;
+    }
+
+    private List<Integer> weaponIds() {
+        List<Integer> ids = new ArrayList<>();
+        AircraftEntity aircraft = this.menu.getAircraft();
+        if (aircraft != null) {
+            for (int i = 0; i < aircraft.getWeaponNum(); i++) {
+                if (aircraft.getWeapon(i).getInfo() != null && aircraft.getWeapon(i).getMagSize() > 0) {
+                    ids.add(i);
+                }
+            }
+        }
+        return ids;
+    }
+
+    private int weaponPanelX() {
+        return this.leftPos + this.imageWidth + 2;
+    }
+
+    @Override
+    protected void init() {
+        super.init();
+        this.weaponRows.clear();
+        List<Integer> ids = this.weaponIds();
+        AircraftEntity aircraft = this.menu.getAircraft();
+        if (ids.isEmpty() || aircraft == null) {
+            return;
+        }
+        // Centre the menu and the weapon list together.
+        this.leftPos = Math.max(0, (this.width - this.imageWidth - 2 - WEAPON_PANEL_W) / 2);
+        int px = this.weaponPanelX();
+        for (int r = 0; r < ids.size(); r++) {
+            int id = ids.get(r);
+            WeaponSet ws = aircraft.getWeapon(id);
+            Button button = Button.builder(Component.literal("Reload"), b -> this.resupply(id))
+                    .bounds(px + WEAPON_PANEL_W - 48, this.topPos + 16 + r * WEAPON_ROW_H, 44, 18)
+                    .tooltip(Tooltip.create(this.costOf(ws)))
+                    .build();
+            this.addRenderableWidget(button);
+            this.weaponRows.add(new WeaponRow(id, ws, button));
+        }
+        this.updateButtons();
+    }
+
+    private void resupply(int weaponId) {
+        AircraftEntity aircraft = this.menu.getAircraft();
+        if (aircraft != null && this.minecraft != null && this.minecraft.player != null
+                && aircraft.weapons().canResupply(this.minecraft.player, aircraft.getWeapon(weaponId))) {
+            ClientPacketDistributor.sendToServer(new ResupplyPayload(aircraft.getId(), weaponId));
+            aircraft.weapons().supplyAmmo(weaponId, this.minecraft.player);
+        }
+    }
+
+    /** "Reload: 1x Iron Ingot, ..." from the definition's round items. */
+    private Component costOf(WeaponSet ws) {
+        List<String> parts = new ArrayList<>();
+        for (WeaponInfo.RoundItem ri : ws.getInfo().roundItems) {
+            Item item = AircraftWeapons.itemOf(ri);
+            parts.add(ri.num() + "x " + (item != null ? new ItemStack(item).getHoverName().getString() : ri.itemName()));
+        }
+        return Component.literal(parts.isEmpty() ? "Reload (free)" : "Reload: " + String.join(", ", parts));
+    }
+
+    private void updateButtons() {
+        AircraftEntity aircraft = this.menu.getAircraft();
+        for (WeaponRow row : this.weaponRows) {
+            row.button().active = aircraft != null && this.minecraft != null && this.minecraft.player != null
+                    && aircraft.weapons().canResupply(this.minecraft.player, row.set());
+        }
+    }
+
+    @Override
+    protected void containerTick() {
+        super.containerTick();
+        this.updateButtons();
     }
 
     @Override
@@ -71,6 +169,13 @@ public class AircraftScreen extends AbstractContainerScreen<AircraftMenu> {
         int ff = (int) (fuel * 50.0F);
         int color = fuel > 0.2F ? 0xFF20C020 : 0xFFE03030;
         graphics.fill(gaugeX, gaugeTop + 50 - ff, gaugeX + 4, gaugeTop + 50, color);
+
+        if (!this.weaponRows.isEmpty()) {
+            int wx = this.weaponPanelX();
+            int wh = 14 + this.weaponRows.size() * WEAPON_ROW_H + 4;
+            graphics.fill(wx, y, wx + WEAPON_PANEL_W, y + wh, DARK);
+            graphics.fill(wx + 1, y + 1, wx + WEAPON_PANEL_W - 1, y + wh - 1, PANEL_BG);
+        }
     }
 
     private void slotFrame(GuiGraphicsExtractor graphics, int sx, int sy, boolean fuelIcon) {
@@ -88,5 +193,17 @@ public class AircraftScreen extends AbstractContainerScreen<AircraftMenu> {
         AircraftEntity aircraft = this.menu.getAircraft();
         int percent = aircraft != null ? (int) (aircraft.getFuelPercentage() * 100.0F + 0.5F) : 0;
         graphics.text(this.font, String.format("%3d", percent) + "%", 6, 17 + 4 * 18 + 4, 0xFF404040, false);
+        if (!this.weaponRows.isEmpty()) {
+            int wx = this.weaponPanelX() - this.leftPos;
+            graphics.text(this.font, "Weapons", wx + 6, 5, 0xFF404040, false);
+            for (int r = 0; r < this.weaponRows.size(); r++) {
+                WeaponSet ws = this.weaponRows.get(r).set();
+                int ry = 16 + r * WEAPON_ROW_H;
+                String name = this.font.plainSubstrByWidth(ws.getInfo().displayName, WEAPON_PANEL_W - 60);
+                graphics.text(this.font, name, wx + 6, ry, 0xFF404040, false);
+                graphics.text(this.font, ws.getAmmo() + "/" + ws.getMagSize() + " (" + ws.getRestAllAmmoNum() + ")",
+                        wx + 6, ry + 10, 0xFF606060, false);
+            }
+        }
     }
 }

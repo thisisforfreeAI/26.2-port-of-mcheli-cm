@@ -918,19 +918,36 @@ public final class AircraftWeapons {
         }
     }
 
-    public void supplyAmmo(int weaponID) {
-        this.supplyAmmo(this.getWeapon(weaponID));
-    }
-
-    /** Upstream {@code supplyAmmo}: the pilot pays the definition's round items to fill the reserve. */
-    public void supplyAmmo(WeaponSet ws) {
+    /**
+     * Upstream {@code supplyAmmo}, from the aircraft menu's reload button: {@code payer} pays the
+     * definition's round items to add a supply's worth to the reserve. Upstream always charged the
+     * pilot (and did nothing when the button was used by someone else); here whoever presses it
+     * pays. The pilot's magazines fill when the menu closes, as upstream; anyone else's supply fills
+     * the magazine at once, since nothing else would.
+     */
+    public void supplyAmmo(int weaponID, Player payer) {
+        WeaponSet ws = this.getWeapon(weaponID);
         if (this.ac.level().isClientSide()) {
             ws.supplyRestAllAmmo();
             return;
         }
-        if (!(this.ac.getPilot() instanceof Player player) || !this.canPlayerSupplyAmmo(player, ws)) {
+        if (!this.canPlayerSupplyAmmo(payer, ws)) {
             return;
         }
+        this.payRoundItems(payer, ws);
+        ws.supplyRestAllAmmo();
+        if (payer != this.ac.getPilot()) {
+            ws.reloadMag();
+        }
+        if (payer instanceof ServerPlayer sp) {
+            this.sendAmmoNum(sp, weaponID);
+        }
+        if (this.ac.getPilot() instanceof ServerPlayer pilot && pilot != payer) {
+            this.sendAmmoNum(pilot, weaponID);
+        }
+    }
+
+    private void payRoundItems(Player player, WeaponSet ws) {
         Inventory inv = player.getInventory();
         for (WeaponInfo.RoundItem ri : ws.getInfo().roundItems) {
             Item item = itemOf(ri);
@@ -953,7 +970,11 @@ public final class AircraftWeapons {
                 }
             }
         }
-        ws.supplyRestAllAmmo();
+    }
+
+    /** Upstream's GUI {@code canResupply}: the player can pay, the reserve has room and the magazine is not full. */
+    public boolean canResupply(Player player, WeaponSet ws) {
+        return this.canPlayerSupplyAmmo(player, ws) && ws.getAmmo() < ws.getMagSize();
     }
 
     /** Upstream {@code canPlayerSupplyAmmo}: the reserve has room and the player carries every round item. */
@@ -986,7 +1007,7 @@ public final class AircraftWeapons {
      * A round item's 26.2 item. 1.12 metadata ({@code damage}) has no equivalent and is ignored;
      * an unknown item name can never be paid.
      */
-    static @Nullable Item itemOf(WeaponInfo.RoundItem ri) {
+    public static @Nullable Item itemOf(WeaponInfo.RoundItem ri) {
         Identifier id = Identifier.tryParse(ri.itemName());
         if (id == null) {
             return null;
