@@ -71,9 +71,8 @@ import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 /**
- * The common part of every McHeli vehicle: upstream's {@code MCH_EntityAircraft}, limited to what
- * milestone M3 flies with (docs/M3_PLAN.md section 3.1). Weapons, radar, flares, supply, UAVs and
- * racks stay with their milestones.
+ * The common part of every McHeli vehicle: upstream's {@code MCH_EntityAircraft}, including seats,
+ * fuel, damage, weapons, countermeasures and support effects. Remaining systems follow the roadmap.
  *
  * <p>Seat 0 (the pilot) rides this entity directly; every other seat is a {@link SeatEntity}
  * passenger. The content's bounding boxes become {@link AircraftHitBox} parts.
@@ -205,6 +204,7 @@ public abstract class AircraftEntity extends Entity
     public boolean gunnerModeOtherSeat;
 
     private final AircraftWeapons weapons;
+    private final AircraftSupport support;
     private final AircraftFlares flares;
     private final AircraftChaff chaff;
     private final AircraftAps aps;
@@ -237,6 +237,7 @@ public abstract class AircraftEntity extends Entity
         this.currentSpeed = 0.07;
         this.blocksBuilding = true;
         this.weapons = new AircraftWeapons(this);
+        this.support = new AircraftSupport(this);
         this.flares = new AircraftFlares(level, this);
         this.chaff = new AircraftChaff(level, this);
         this.aps = new AircraftAps(level, this);
@@ -1586,8 +1587,10 @@ public abstract class AircraftEntity extends Entity
         super.tick();
         this.tickInterpolation();
 
+        this.support.supplyFuel();
         this.weapons.supplyAmmoToOtherAircraft();
         this.updateFuel();
+        this.support.repairOtherAircraft();
         if (this.modeSwitchCooldown > 0) {
             this.modeSwitchCooldown--;
         }
@@ -1627,6 +1630,7 @@ public abstract class AircraftEntity extends Entity
             this.unmountEntity();
         }
         this.ensureSeats();
+        this.support.regenerateCrew();
 
         boolean prevOnGround = this.onGround();
         double prevMotionY = this.getDeltaMovement().y;
@@ -2243,8 +2247,9 @@ public abstract class AircraftEntity extends Entity
         if (this.getMaxFuel() == 0 || this.isDestroyed() || this.level().isClientSide() || this.info == null) {
             return;
         }
-        int fuel = AircraftFuel.consume(this.fuelMeter, this.getCountOnUpdate(), this.getFuel(), this.getThrottle(),
-                this.info.fuelConsumption, this.getFuelConsumptionFactor());
+        int fuel = this.support.pauseFuelConsumption() ? this.getFuel()
+                : AircraftFuel.consume(this.fuelMeter, this.getCountOnUpdate(), this.getFuel(), this.getThrottle(),
+                        this.info.fuelConsumption, this.getFuelConsumptionFactor());
         if (fuel != this.getFuel()) {
             this.setFuel(fuel);
         }
@@ -2736,6 +2741,10 @@ public abstract class AircraftEntity extends Entity
 
     public AircraftWeapons weapons() {
         return this.weapons;
+    }
+
+    AircraftSupport support() {
+        return this.support;
     }
 
     /** Upstream {@code canLockEntity}: the vehicle's own riders cannot be locked by its weapons. */

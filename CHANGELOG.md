@@ -12,6 +12,12 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 
 ### Added
 
+- Nearby fuel supply now runs on the server every ten ticks, including the stock infinite fuel
+  truck, compatible fuel types, finite sources and the upstream consumption grace period.
+- Addon-defined nearby vehicle repair runs every twenty ticks. Medical aircraft (including the
+  stock NH90, US-2 and An-2) regenerate secondary-seat passengers while a pilot is aboard.
+  These shared effects run in both movement authority modes; stock content remains unchanged.
+
 - Tank/car block crushing and ramming now run on the server in both movement authority modes.
   Weight-specific editable block/tag lists replace the old block Material categories. Protected
   columns, one-in-eight block drops and sampled active extra hull regions follow upstream.

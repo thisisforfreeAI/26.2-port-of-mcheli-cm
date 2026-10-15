@@ -387,6 +387,58 @@ checks on software graphics, without latency/loss or hardware-performance measur
 The dedicated server saves/stops successfully. The Vulkan client reports a native connection
 reset on server shutdown and returns to its disconnect screen; both clients then quit normally.
 
+## Supply and medical support increment
+
+- The stock fuel truck now supplies compatible vehicles in its configured 35-block expanded
+  bounding box. Fuel supply runs server-side every ten ticks before consumption and transfers
+  up to 30 fuel per recipient, capped by recipient capacity. A grounded supplier requires a
+  recipient able to resupply; an airborne supplier can refuel airborne recipients.
+- Finite suppliers use their current fuel type and pay from their tank; infinite suppliers use
+  `FuelSupply.Type` and need no onboard fuel. Empty recipients adopt the source type; nonempty
+  incompatible tanks and unaccepted content fuel types are skipped. As upstream, finite sources
+  transfer before clamping their remaining fuel, and may supply the last full increment even
+  with fewer than 30 units left. A source emptied during a scan may still supply the other
+  recipients in that scan. Compatible recipients receive a 40-tick consumption grace even when
+  full or unable to land. The grace counter is transient, as upstream.
+- `RepairOtherVehicles.Range`/`Value` now reduce nearby vehicle damage every twenty ticks,
+  excluding the supplier itself. Upstream does not gate repair on landing or destruction:
+  a wreck can supply repair, and reducing wreck damage does not clear its destroyed state.
+  All stock repair ranges are zero, so this is an addon feature without stock balance changes.
+- `Regeneration` now applies ambient regeneration I for 250 ticks to living secondary-seat
+  passengers of an intact medical aircraft while a pilot is present. The pilot is not a
+  patient. Effects with at least 500 ticks remaining are left alone; shorter effects use the
+  normal effect-merging rules. Stock NH90, US-2 and An-2 definitions already enable this.
+- Existing ammo-box resupply remains connected beside fuel supply. The effects run independently
+  of movement authority, with no new control payload or client authority over fuel/damage.
+- Fuel names remain compatibility tokens until registered fluids/container capabilities are
+  ported (KNOWN_ISSUES difference 68). Electric battery/charger support remains pending.
+
+Automated validation: all 136 JUnit tests pass without failures, errors or skips, and all 109
+required GameTests pass. Seven new support scenarios check stock fuel and ammo supply in both
+movement authority modes, finite transfer/cadence/capacity, fuel compatibility, electric-source
+exclusion, range/landing rules, consumption grace, repair/wreck semantics and stock NH90 medical
+passengers. Precise addon fixtures run the real shared server tick with movement held still.
+The stock-supply scene is elevated above concurrent tests because its 35-block radius exceeds
+the GameTest structure spacing; the all-planes spawn check likewise isolates its fuel truck.
+
+Live checks use the isolated dedicated server with the OpenGL pilot (eager models) and Vulkan
+passenger/observer (on-demand models), on software Mesa drivers. A stock fuel truck at
+`(910.5, -59, 0.5)` refuels the piloted AH-64 nearby from 0 to 1,080, then its 1,200 capacity.
+The pilot sees the fuel gauge and the observer sees both models. After changing to server
+movement authority, resetting fuel to zero yields 600 after about ten seconds. This verifies
+server/client integration locally, without a latency or hardware-performance claim.
+
+In the NH90 at `(960.5, -59, 0.5)`, the Vulkan secondary-seat passenger receives the visible
+Regeneration effect; server queries show ambient regeneration with 249 ticks remaining after
+an entity tick, while the pilot has no effect. With natural health regeneration disabled, six
+points of damage reduce passenger health to 14 and it returns to 20 while the pilot remains
+aboard, including after the server-authority setting reload. Clearing the effect after the
+pilot exits leaves the passenger without regeneration. Captures:
+[fuel truck and AH-64](screens/m6-fuel-truck-vulkan.png) and
+[passenger effect panel](screens/m6-medical-passenger-vulkan.png). The server saves/stops
+successfully, both clients return to the disconnect screen, and both quit normally with exit 0.
+
+
 ## Integration points already identified
 
 ### Shared Ctrl controls follow-up

@@ -13,13 +13,14 @@ plane camera-position switching and the shared gunner camera are connected. Para
 ejection and transport-seat bailout are implemented, with the stock model limitation below.
 Ship placement, water movement, steering, crew weapons and model submission are implemented.
 Tank/ground-vehicle placement, driving, wheel contacts, tracks, rollers, independent weapons
-and reactive armor state are implemented. Ground collision and equipment work remain below.
+and reactive armor state are implemented. Ground crushing/ramming, nearby fuel/ammunition supply,
+vehicle repair and medical crew effects are implemented. Remaining equipment work is listed below.
 Automated conventional/VTOL flight sequences and plane weapons in both authority modes pass;
 broader gameplay and hardware checks remain pending.
 
 | Area | Planned milestone |
 |---|---|
-| Remaining plane/ground equipment, UAVs (and the UAV camera), search lights, ropes and rappelling, gunner NPCs and mobs in seats (and their weapon use), racks, containers, chains, GLTD, hand-held weapons (Stinger, Javelin), the rest of the aircraft GUI, drafting table screen, charger, tools, supply vehicles, multiplayer teams and team spotting markers (`MCH_GuiTargetMarker`) | M6 |
+| Remaining plane/ground equipment, UAVs (and the UAV camera), search lights, ropes and rappelling, gunner NPCs and mobs in seats (and their weapon use), racks, containers, chains, GLTD, hand-held weapons (Stinger, Javelin), the rest of the aircraft GUI, drafting table screen, charger, tools, multiplayer teams and team spotting markers (`MCH_GuiTargetMarker`) | M6 |
 | BVR and passive radar, GPS panel and GPS missiles, mortar radar and RWR overlays, ECM jammer, the pulse-Doppler notch, the APS "iron curtain", data link, anti-radiation missiles, `Destruct` bombs (UAVs), the targeting pod's spotting | M6 (with the vehicles that use them) |
 | Wingman (AI wingmen, marker block screens and types, missions, `/wingman`) | M6b |
 | Remaining `/mcheli` commands (including reloading content with `reconfig`), advancement triggers, long-distance tracking and rendering, thermal vision (the third camera mode), GPU-buffer model rendering, projectile chunk loading (`ProjectileChunkLoad`), HBM:NTM stubs, performance work | M7 |
@@ -36,8 +37,9 @@ Until then:
 - The aircraft menu has the fuel slots, the trunk and the weapon list with its reload buttons, on a
   plain container background. Supported planes also expose parachute reserves; the remaining
   aircraft menu controls come with M6.
-- Fuel comes from fuel cans only. Refuelling from fluid containers, which upstream also allowed,
-  needs a fuel fluid and comes with the supply vehicles (M6).
+- Fuel comes from fuel cans or nearby supply vehicles. Refuelling from fluid containers and
+  external fluid capabilities still needs a registered fuel fluid (M6). Electric batteries and
+  charger energy remain pending; named vehicle-to-vehicle fuel transfer is not an energy capability.
 - The drafting table is drawn with a simple block model; upstream drew a 3D model with a block
   entity renderer (M6). The rangefinder, wrench, GLTD and hand-held launchers show as flat items in
   the hand; upstream drew 3D models (M6).
@@ -212,6 +214,10 @@ These follow from how Minecraft 26.2 works or from decisions approved in PORTING
     These map the old categories to current blocks; addon blocks need matching tags or explicit
     entries. Scans use current build limits and floored negative coordinates. Multipart parents
     receive one ramming hit per region query, rather than one for every modern part returned.
+
+68. Vehicle-to-vehicle fuel transfer matches named fuel types against the content whitelist.
+    The port still has no registered McHeli fuel fluid, so these names are compatibility tokens;
+    this does not add fluid-container handling, Forge fluid identity or fluid capabilities.
 
 ## Upstream content issues kept as they are
 
