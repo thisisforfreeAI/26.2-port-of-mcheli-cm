@@ -141,6 +141,8 @@ public abstract class AircraftEntity extends Entity
     private SeatEntity[] seats = NO_SEATS;
     private SimpleContainer inventory = new SimpleContainer(FIXED_SLOTS);
     private final AircraftFuel.Meter fuelMeter = new AircraftFuel.Meter();
+    /** Local viewer choice, as upstream: neither saved nor sent to other riders. */
+    private int cameraId;
 
     public @Nullable AircraftPart partCanopy;
     public @Nullable AircraftPart partLandingGear;
@@ -271,6 +273,7 @@ public abstract class AircraftEntity extends Entity
             return;
         }
         this.info = newInfo;
+        this.setCameraId(0);
         this.thirdPersonDist = newInfo.thirdPersonDist;
         this.refreshDimensions();
         this.partCanopy = newInfo.haveCanopy() ? AircraftPart.canopy(this) : null;
@@ -281,7 +284,9 @@ public abstract class AircraftEntity extends Entity
         SeatEntity[] oldSeats = this.seats;
         this.seats = new SeatEntity[this.getSeatNum()];
         for (SeatEntity seat : oldSeats) {
-            this.registerSeat(seat);
+            if (seat != null) {
+                this.registerSeat(seat);
+            }
         }
         for (Entity passenger : this.getPassengers()) {
             if (passenger instanceof SeatEntity seat) {
@@ -848,6 +853,8 @@ public abstract class AircraftEntity extends Entity
         super.addPassenger(passenger);
         if (passenger instanceof SeatEntity seat) {
             this.registerSeat(seat);
+        } else {
+            this.setCameraId(0);
         }
     }
 
@@ -860,6 +867,8 @@ public abstract class AircraftEntity extends Entity
                     this.seats[i] = null;
                 }
             }
+        } else {
+            this.setCameraId(0);
         }
     }
 
@@ -1738,6 +1747,29 @@ public abstract class AircraftEntity extends Entity
 
     // ---- camera ----
 
+    public int getCameraId() {
+        return this.cameraId;
+    }
+
+    /** Invalid selections fall back to the primary camera, including after content reload. */
+    public void setCameraId(int id) {
+        this.cameraId = id > 0 && id < this.getCameraPosNum() ? id : 0;
+    }
+
+    public int getCameraPosNum() {
+        return this.info != null ? this.info.cameraPosition.size() : 1;
+    }
+
+    public boolean canSwitchCameraPos() {
+        return this.getCameraPosNum() >= 2;
+    }
+
+    /** The actual view source; separate from isCameraView's weapon/UAV semantics. */
+    public boolean isViewFromCamera(@Nullable Entity viewer) {
+        return this.isGunnerMode(viewer) || this.isPilot(viewer) && this.info != null
+                && (this.info.alwaysCameraView || this.getCameraId() > 0);
+    }
+
     public int getZoomMax() {
         return this.info != null ? this.info.cameraZoom : 1;
     }
@@ -1790,13 +1822,16 @@ public abstract class AircraftEntity extends Entity
 
     /**
      * Upstream {@code getCameraPosInfo}: the camera position for a viewer: the pilot uses the
-     * first {@code CameraPosition}; a crew seat with {@code InvCamPos} uses its own.
+     * selected {@code CameraPosition}; a crew seat with {@code InvCamPos} uses its own.
      */
     public AircraftInfo.@Nullable CameraPosition getCameraPosInfo(@Nullable Entity viewer) {
         if (this.info == null || this.info.cameraPosition.isEmpty()) {
             return null;
         }
         int sid = this.getSeatIdByEntity(viewer);
+        if (sid == 0 && this.cameraId > 0 && this.cameraId < this.info.cameraPosition.size()) {
+            return this.info.cameraPosition.get(this.cameraId);
+        }
         SeatInfo seat = sid > 0 ? this.getSeatInfo(sid) : null;
         if (seat != null && seat.invCamPos && seat.getCamPos() != null) {
             return seat.getCamPos();
@@ -2264,6 +2299,7 @@ public abstract class AircraftEntity extends Entity
 
     /** Upstream {@code destroyAircraft}. */
     public void destroyAircraft() {
+        this.setCameraId(0);
         this.switchHoveringMode(false);
         this.switchGunnerMode(false);
         for (int i = 0; i < this.getSeatNum() + 1; i++) {

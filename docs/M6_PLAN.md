@@ -40,7 +40,7 @@ The counts above are the stock inventory from M2, not a limit on addon definitio
 - All stock plane body models and textures are checked. The 79 part references absent in the
   pinned upstream model files are recorded explicitly in the parity fixture; additional gaps fail.
 
-This does not complete stage 2. Remaining plane work includes camera-position switching, ejection, equipment integration,
+This does not complete stage 2. Remaining plane work includes ejection, equipment integration,
 broader conventional takeoff/turn/landing scenarios, and full OpenGL/Vulkan flight/weapon and two-client
 checks. UAV-only and target-drone placement still waits for the UAV station. Stages 3–8 remain
 outstanding. Do not treat the shared renderer or asset tests as proof of visual correctness.
@@ -99,6 +99,47 @@ flame. Screenshots: [OpenGL](screens/m6-plane-effects-opengl.png) and
 These scene checks cover effects/model submission, not complete plane flight, hardware
 performance or two-client synchronization. The virtual display has no audio device; audio is
 unverified. Full manual flight/weapon and two-client checks remain outstanding.
+
+## Plane camera increment
+
+- Removed the helicopter-only gate in the shared client camera controller. Planes now receive
+  gunner camera positioning, zoom, night-vision post effects, TV-missile camera updates and
+  content-defined third-person distance through that controller.
+- H follows `MCP_ClientPlaneTickHandler#playerControl` at the pinned commit: enter gunner mode
+  when allowed; leave gunner mode for position 1 when extra positions exist; cycle the remaining
+  positions and return to normal view. If gunner flight conditions are not met, extra positions
+  remain available. A plane without gunner mode or extra positions refuses the switch.
+- Camera IDs are local viewer state, not NBT or network fields. Only gunner-mode transitions
+  send existing control packets, so protocol version 3 is unchanged. Extra positions apply to
+  the pilot; crew `InvCamPos` and ordinary passenger viewpoints stay independent.
+- Selection resets on pilot mount/dismount, destruction and content changes. Switching directly
+  between vehicles also refreshes the client view marker and third-person distance. Changing a
+  content type before seats spawn now skips missing seat references instead of crashing.
+- All stock planes have one camera position. Addon definitions can supply more; the HUD shows
+  the H camera/gunner hint when they do. Camera `FixedRot`, `Yaw` and `Pitch` remain inert because
+  the pinned upstream parses those values but never applies them in the mouse/view path.
+
+Validation: `build` passes, with 121 JUnit tests and zero failures/errors/skips. All 63 required
+GameTests pass. Five new GameTests exercise the upstream view sequence, planes without gunner
+mode, blocked gunner conditions, invalid indices, crew/stranger isolation, `InvCamPos`,
+`AlwaysCameraView`, dismount/remount, save/load, content changes, destruction and network controls.
+Live camera checks run in isolated `.run/cameras-opengl` and `.run/cameras-vulkan` directories,
+using the effects increment's Xvfb/Mesa setup and backend flags. A separate local addon overrides
+`harrier_en` with three TXT `CameraPosition` entries: `(0, 2, 0)`, `(14, 4, -10)` and `(-14, 4, -10)`.
+It sets speed to zero, enables gunner mode and keeps the normal camera rotation. Coloured block
+pillars provide fixed landmarks. These definitions are test fixtures, not changes to stock content.
+
+Both backends show the two extra positions and return to the cockpit. Night vision and dismount
+cleanup are checked in OpenGL; Vulkan also checks entering gunner mode in the air, zoom changing
+from 1× to 2×, night vision and dismount cleanup. The Vulkan fixture uses `ThrottleUpDown = 3` (the parser clamps
+higher values to 3); holding W before H raises throttle above the gunner threshold. This checks
+camera integration, not a complete takeoff/flight/landing scenario. Build before launching these
+clients: recompiling their shared class output while a client is running invalidates the check.
+Screenshots: [OpenGL](screens/m6-plane-camera-opengl.png) and
+[Vulkan](screens/m6-plane-camera-vulkan.png), both at the first extra camera position.
+
+Full flight/weapon and two-client checks remain outstanding; TV-missile view is connected but
+not exercised in these camera scenes. Ejection still depends on the parachute/equipment work.
 
 ## Integration points already identified
 

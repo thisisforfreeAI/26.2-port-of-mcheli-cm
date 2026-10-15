@@ -9,11 +9,12 @@ The 0.5.1 baseline (M5) supports helicopters with flight, models, HUD, cameras a
 The current M6 development work also adds initial plane entities, placement, flight, VTOL,
 wing switches and model submission. M6 remains incomplete; see `docs/M6_PLAN.md` for validation
 and remaining work. Plane effects and destroyed-plane visual motion are now implemented;
-camera-position switching, ejection, and full flight/weapon/multiplayer checks are still pending.
+plane camera-position switching and the shared gunner camera are connected. Ejection and full
+flight/weapon/multiplayer checks are still pending.
 
 | Area | Planned milestone |
 |---|---|
-| Planes, ships, tanks, vehicles, UAVs (and the UAV camera), camera position switching, search lights, ropes and rappelling, crawler tracks and track rollers, ERA tiles, gunner NPCs and mobs in seats (and their weapon use), racks, containers, chains, parachutes, GLTD, hand-held weapons (Stinger, Javelin), the rest of the aircraft GUI, drafting table screen, charger, tools, supply vehicles, multiplayer teams and team spotting markers (`MCH_GuiTargetMarker`) | M6 |
+| Remaining plane equipment, ships, tanks, vehicles, UAVs (and the UAV camera), search lights, ropes and rappelling, crawler tracks and track rollers, ERA tiles, gunner NPCs and mobs in seats (and their weapon use), racks, containers, chains, parachutes, GLTD, hand-held weapons (Stinger, Javelin), the rest of the aircraft GUI, drafting table screen, charger, tools, supply vehicles, multiplayer teams and team spotting markers (`MCH_GuiTargetMarker`) | M6 |
 | BVR and passive radar, GPS panel and GPS missiles, mortar radar and RWR overlays, ECM jammer, the pulse-Doppler notch, the APS "iron curtain", data link, anti-radiation missiles, `Destruct` bombs (UAVs), the targeting pod's spotting | M6 (with the vehicles that use them) |
 | Wingman (AI wingmen, marker block screens and types, missions, `/wingman`) | M6b |
 | Remaining `/mcheli` commands (including reloading content with `reconfig`), advancement triggers, long-distance tracking and rendering, thermal vision (the third camera mode), GPU-buffer model rendering, projectile chunk loading (`ProjectileChunkLoad`), HBM:NTM stubs, performance work | M7 |
@@ -205,6 +206,9 @@ its stock content from TXT to YAML lost or changed (the full list, checked by a 
   upstream models (including empty rotor hubs/nozzles and mismatched canopy/gear names).
   The exact list is in `src/test/resources/parity/plane-model-gaps.txt`; these missing parts
   are not invented or silently renamed by the renderer.
+- The stock planes each define only one camera position. Additional positions require addon
+  content. Camera `FixedRot`, `Yaw` and `Pitch` are parsed, but the pinned upstream never applies
+  those camera rotation settings; the port preserves that behaviour.
 - Eleven sound events named by stock content have no sound file (for example `railgun` and the
   smoke dispensers' fire sounds), so they play nothing, as upstream.
 - Two stock plane files (`b29.yml`, `fuel_truck.yml`) name their `Author` twice; SnakeYAML logs a

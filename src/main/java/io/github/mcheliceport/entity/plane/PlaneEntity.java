@@ -14,6 +14,7 @@ import io.github.mcheliceport.effect.McheliEffects;
 import io.github.mcheliceport.effect.ParticleParam;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.level.Level;
@@ -56,6 +57,30 @@ public class PlaneEntity extends AircraftEntity implements PlaneFlightModel.Body
 
     public @Nullable PlaneInfo getPlaneInfo() {
         return this.planeInfo;
+    }
+
+    /**
+     * Upstream MCP_ClientPlaneTickHandler's H key: gunner, extra positions, then normal view.
+     * Only a gunner-mode change needs a packet; position selection stays on the pilot's client.
+     */
+    public boolean cycleCameraView(Entity viewer) {
+        if (!this.isPilot(viewer) || this.isDestroyed() || this.planeInfo == null) {
+            return false;
+        }
+        if (this.isGunnerMode(viewer) && this.canSwitchCameraPos()) {
+            this.switchGunnerMode(false);
+            this.setCameraId(1);
+        } else if (this.getCameraId() > 0) {
+            this.setCameraId(this.getCameraId() + 1);
+        } else if (this.canSwitchGunnerMode()) {
+            this.switchGunnerMode(!this.isGunnerMode());
+            this.setCameraId(0);
+        } else if (this.canSwitchCameraPos()) {
+            this.setCameraId(1);
+        } else {
+            return false;
+        }
+        return true;
     }
 
     @Override

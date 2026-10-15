@@ -32,8 +32,18 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
   render state and submitted through the vanilla emissive pipeline for OpenGL and Vulkan.
   Resource reload clears model/texture caches and shortened texture sequences remain safe.
 - Destroyed planes use upstream's roll direction and client-side falling-attitude rules.
+- Plane camera views now use the shared camera controller, including gunner zoom, night vision,
+  TV-missile view and the content's third-person distance. H cycles gunner mode, additional
+  content-defined camera positions and normal view in upstream's order. Camera-position choices
+  stay local to the pilot and reset on dismount, destruction and content changes.
+- Five plane camera GameTests cover mode cycling, blocked gunner conditions, per-viewer positions,
+  save/load, lifecycle resets and authorized network controls.
 
-M6 is still in progress. Camera-position switching, ejection, remaining equipment and full
+### Fixed
+
+- Changing a vehicle's content type before its crew seats spawn no longer crashes on a missing seat.
+
+M6 is still in progress. Ejection, remaining equipment and full
 manual flight/weapon/multiplayer checks
 are still outstanding, alongside the other M6 vehicle types and systems. Stock model references
 without geometry are recorded in `src/test/resources/parity/plane-model-gaps.txt`; they were
