@@ -307,6 +307,32 @@ and actual save restoration. The model audit checks every referenced part and te
 MXT-MV canopy is absent, matching the pinned upstream asset. Four formula/animation unit tests
 cover the single movement cadence, tracked/wheeled grip, movement restrictions and track wrap.
 
+### Ground graphics and multiplayer checks
+
+The same isolated local dedicated server and two development clients used for ships now exercise
+all 12 stock tanks/cars and all 18 stock placed vehicles in separate fleet scenes. The pilot uses
+OpenGL with eager model loading; the observer uses Vulkan with on-demand loading, both on Xvfb/Mesa.
+Models remain visible after F3+T resource reload on both backends. Screenshots:
+[tanks/OpenGL](screens/m6-tanks-opengl.png), [tanks/Vulkan](screens/m6-tanks-vulkan.png),
+[guns/OpenGL](screens/m6-ground-guns-opengl.png), [guns/Vulkan](screens/m6-ground-guns-vulkan.png).
+
+A real M1A2 pilot drives and turns with W/A, holds Space to stop, opens the fuel/ammunition menu
+and fires the main cannon. The server's position, rotation, throttle, velocity and ammunition
+queries confirm the actions. Mouse motion changes rider aim while a stopped hull keeps its yaw.
+After changing `serverAuthoritativeMovement` and receiving the config broadcast on both clients,
+the same tank drives/turns, reverses, brakes and fires again. The Vulkan observer sees the tank.
+The stock 12.7 cm emplacement remains at its placed position and chassis yaw under W/A, aims with
+the mouse and fires using real client input. These are local smoke checks without measured
+frame-time statistics or simulated latency/loss. The virtual displays have no audio device.
+
+The placed-gun camera check found the rider body occluding the primary camera. Rider render
+state now honors pilot `HideRiders` and suppresses the local rider in a primary first-person
+marker camera. The visibility decision is extracted into render state and applied through the shared living
+renderer event, including players, without graphics backend calls. The primary gun view is clear
+on both graphics backends after the fix. Additional captures: [tank menu](screens/m6-tank-menu.png),
+[Vulkan tank observer](screens/m6-tank-observer-vulkan.png), and
+[gun camera](screens/m6-ground-gun-aim.png).
+
 Ground crushing/ramming damage and upstream extra-box block collisions remain pending. The
 main hull and wheel probes provide collision/terrain behavior in this increment. Equipment,
 operators, tools, blocks/teams and deferred combat systems in stages 5–8 remain unfinished.
@@ -407,5 +433,5 @@ GameTest execution now work in this instance. Reusable setup/start instructions 
 in the environment draft; draft saving does not publish a new snapshot.
 
 Use `JAVA_HOME=/workspace/.toolchains/jdk-25+36` and `GRADLE_USER_HOME=/workspace/.gradle-home`
-for Gradle commands in this environment. Effects graphics checks now run as described above;
-full flight/weapon and two-client checks remain outstanding.
+for Gradle commands in this environment. The increment sections above record the current
+automated, graphics and two-client smoke checks; full gameplay and hardware validation remain.

@@ -76,6 +76,9 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 
 ### Fixed
 
+- Hide the local rider in the primary first-person marker camera so placed-gun views are clear.
+  Honor pilot `HideRiders` through the shared rider render state.
+
 - Vehicle keys now work while Ctrl/Shift/Alt is held. NeoForge previously suppressed the riding
   key context, blocking Left Ctrl freelook and Ctrl+C/I/F across helicopters, planes and ships.
   This also restores independent pilot turret aiming through freelook. Seat shortcuts now show

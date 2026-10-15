@@ -4,11 +4,13 @@ import com.google.common.reflect.TypeToken;
 import com.mojang.blaze3d.vertex.PoseStack;
 import io.github.mcheliceport.McheliCePort;
 import io.github.mcheliceport.config.ClientConfig;
+import io.github.mcheliceport.client.camera.AircraftCameraClient;
 import io.github.mcheliceport.content.aircraft.AircraftInfo;
 import io.github.mcheliceport.entity.aircraft.AircraftEntity;
 import io.github.mcheliceport.entity.seat.SeatEntity;
 import io.github.mcheliceport.util.McheliMath;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.context.ContextKey;
@@ -43,16 +45,34 @@ public final class RiderTilt {
 
     public static final ContextKey<Tilt> TILT =
             new ContextKey<>(Identifier.fromNamespaceAndPath(McheliCePort.MOD_ID, "rider_tilt"));
+    private static final ContextKey<Boolean> HIDDEN =
+            new ContextKey<>(Identifier.fromNamespaceAndPath(McheliCePort.MOD_ID, "rider_hidden"));
 
     private RiderTilt() {
     }
 
     public static void registerModifiers(RegisterRenderStateModifiersEvent event) {
         event.registerEntityModifier(new TypeToken<LivingEntityRenderer<LivingEntity, LivingEntityRenderState, ?>>() {
-        }, (LivingEntity entity, LivingEntityRenderState state) -> state.setRenderData(TILT, tilt(entity,
-                state.partialTick)));
+        }, (LivingEntity entity, LivingEntityRenderState state) -> {
+            boolean hidden = hidden(entity);
+            state.setRenderData(HIDDEN, hidden);
+            state.setRenderData(TILT, hidden ? null : tilt(entity, state.partialTick));
+        });
         NeoForge.EVENT_BUS.addListener(EventPriority.LOWEST, RiderTilt::onPre);
         NeoForge.EVENT_BUS.addListener(RiderTilt::onPost);
+    }
+
+    private static boolean hidden(Entity rider) {
+        Entity vehicle = rider.getVehicle();
+        AircraftEntity aircraft = vehicle instanceof AircraftEntity a ? a
+                : vehicle instanceof SeatEntity seat ? seat.getParent() : null;
+        if (aircraft == null || aircraft.getAcInfo() == null) { return false; }
+        if (aircraft.getAcInfo().hideEntity && aircraft.isPilot(rider)) { return true; }
+        Minecraft mc = Minecraft.getInstance();
+        // A marker camera makes vanilla treat the local rider as a third-person entity.
+        // Upstream's renderEntitySimple skips that rider in the primary first-person view.
+        return rider == mc.player && mc.options.getCameraType().isFirstPerson()
+                && AircraftCameraClient.viewEntity() != null && aircraft.getCameraId() == 0;
     }
 
     /** The tilt of a rider of a vehicle, or null. */
@@ -78,6 +98,10 @@ public final class RiderTilt {
 
     private static void onPre(RenderLivingEvent.Pre<?, ?, ?> event) {
         if (event.isCanceled()) {
+            return;
+        }
+        if (Boolean.TRUE.equals(event.getRenderState().getRenderData(HIDDEN))) {
+            event.setCanceled(true);
             return;
         }
         Tilt tilt = event.getRenderState().getRenderData(TILT);
