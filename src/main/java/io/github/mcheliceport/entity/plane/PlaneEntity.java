@@ -361,12 +361,10 @@ public class PlaneEntity extends AircraftEntity implements PlaneFlightModel.Body
             if (this.isExploded()) { this.setCurrentThrottle(this.getCurrentThrottle() * 0.98); }
         }
         if (this.simulates()) {
-            for (int step = 0; step < 2; step++) {
-                boolean fold = PlaneFlightModel.physics(this, this.params(), this.getNozzleRotation(), this.wingFactor(),
-                        this.isGunnerMode(), this.canFloatWater(), this.planeInfo.isTargetDrone && this.canUseFuel() && !this.isDestroyed());
-                if (fold && this.canFoldLandingGear()) { this.foldLandingGear(); }
-                this.breakSoftBlocks();
-            }
+            boolean fold = PlaneFlightModel.physics(this, this.params(), this.getNozzleRotation(), this.wingFactor(),
+                    this.isGunnerMode(), this.canFloatWater(), this.planeInfo.isTargetDrone && this.canUseFuel() && !this.isDestroyed());
+            if (fold && this.canFoldLandingGear()) { this.foldLandingGear(); }
+            this.breakSoftBlocks();
         }
         if (this.level().isClientSide()) {
             if (this.isDestroyed()) {
@@ -419,8 +417,8 @@ public class PlaneEntity extends AircraftEntity implements PlaneFlightModel.Body
     public float getUnfoldLandingGearThrottle() { return 0.7F; }
     @Override
     protected double getSpeedLimitForChecks() {
-        // The pinned upstream performs two movement steps per tick; validate the whole tick.
-        return this.planeInfo != null ? 2.0 * this.params().speedLimit(this.wingFactor()) : 1.0;
+        // Upstream onUpdateAircraft calls onUpdate_Server once per tick.
+        return this.planeInfo != null ? this.params().speedLimit(this.wingFactor()) : 1.0;
     }
     @Override
     public double motionX() { return this.getDeltaMovement().x; }

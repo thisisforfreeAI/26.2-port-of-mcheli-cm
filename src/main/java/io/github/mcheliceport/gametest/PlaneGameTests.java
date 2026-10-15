@@ -35,11 +35,42 @@ final class PlaneGameTests {
     }
 
     static void register() {
+        ModGameTests.test("plane_single_movement_step", 20, PlaneGameTests::singleMovementStep);
         ModGameTests.test("planes_all_stock_spawn", 30, PlaneGameTests::allSpawn);
         ModGameTests.test("plane_controls_and_vtol_persist", 100, PlaneGameTests::controlsAndPersistence);
         ModGameTests.test("plane_vtol_takes_off", 240, PlaneGameTests::takeOff);
         ModGameTests.test("plane_movement_authority", 30, PlaneGameTests::movementAuthority);
         ModGameTests.test("plane_default_vtol_save", 30, PlaneGameTests::defaultVtolSave);
+    }
+
+    /** Check the entity call cadence as well as the formula: upstream moves once per tick. */
+    private static void singleMovementStep(GameTestHelper helper) {
+        class CountingPlane extends PlaneEntity {
+            int moves;
+            CountingPlane() { super(io.github.mcheliceport.registry.ModEntityTypes.PLANE.get(), helper.getLevel()); }
+            @Override public void move(MoverType type, Vec3 delta) {
+                if (type == MoverType.SELF) { moves++; }
+                super.move(type, delta);
+            }
+        }
+        CountingPlane plane = new CountingPlane();
+        plane.setAircraftTypeName("harrier_en");
+        plane.setPos(helper.absoluteVec(new Vec3(12.5, 30, 12.5)));
+        plane.setFuel(plane.getMaxFuel());
+        plane.setCurrentThrottle(0.5);
+        Vec3 before = plane.position();
+        plane.tick();
+        check(helper, plane.moves == 1, "one movement step per tick, got " + plane.moves);
+        Vec3 distance = plane.position().subtract(before);
+        // After the only movement step the stored velocity has exactly one drag application.
+        check(helper, Math.abs(distance.y * 0.95 - plane.getDeltaMovement().y) < 1.0E-8,
+                "one vertical movement followed by drag");
+        check(helper, Math.abs(distance.z * plane.getPlaneInfo().motionFactor - plane.getDeltaMovement().z) < 1.0E-8,
+                "one forward movement followed by drag");
+        check(helper, Math.abs(plane.getMaxSpeedForChecks() - plane.getPlaneInfo().speed * 1.5) < 1.0E-6,
+                "validation allowance uses one movement step");
+        GameTestSupport.cleanUp(plane);
+        helper.succeed();
     }
 
     private static AircraftItem item(String name) {
@@ -183,7 +214,7 @@ final class PlaneGameTests {
             plane.move(MoverType.PLAYER, new Vec3(100.0, 5.0, 0.0));
             Vec3 moved = plane.position().subtract(old);
             check(helper, moved.horizontalDistance() <= plane.getMaxSpeedForChecks() + 1.0E-6,
-                    "impossible horizontal move capped using the two-step plane speed");
+                    "impossible horizontal move capped using the plane speed");
             check(helper, moved.y <= 1.0 + 1.0E-6, "impossible climb capped");
             Vec3 velocity = plane.getDeltaMovement();
             ModNetwork.applyPilotMotion(plane, new AircraftMotionPayload(plane.getId(), Double.NaN, 0, 0, 1.0F));

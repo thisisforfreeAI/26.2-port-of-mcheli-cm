@@ -26,8 +26,9 @@ The counts above are the stock inventory from M2, not a limit on addon definitio
 
 - Plane entities now use their content definitions and shared aircraft seats, fuel, damage and
   weapons. Items create/place planes rather than returning an inert placeholder.
-- `PlaneFlightModel` preserves upstream control and physics formulas, including the pinned
-  source's two movement steps per tick. Movement validation accounts for that cadence.
+- `PlaneFlightModel` ports upstream control and physics formulas. The initial increment
+  incorrectly ran two movement steps per tick; the ship increment corrects this to the pinned
+  source's single step and adds an entity-level cadence regression.
 - Nozzles/VTOL and folding/sweep wings have server-controlled state and animation; saved
   state is restored without reapplying the default VTOL mode over a saved forward-flight mode.
 - Rider controls, HUD, mouse flight, engine sounds and model submission support planes alongside

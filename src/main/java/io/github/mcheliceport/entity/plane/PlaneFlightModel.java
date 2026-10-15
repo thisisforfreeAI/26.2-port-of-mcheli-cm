@@ -92,8 +92,8 @@ public final class PlaneFlightModel {
     }
 
     /**
-     * One upstream onUpdate_Server step. Its caller must invoke it twice per tick: the pinned
-     * upstream plane explicitly does so. Collision response may change velocity in move().
+     * One upstream onUpdate_Server step, invoked once per entity tick.
+     * Collision response may change velocity in move().
      * Returns true when a target drone cruising above terrain requests folded landing gear.
      */
     public static boolean physics(Body b, Params p, float nozzle, float wingFactor, boolean gunner,
