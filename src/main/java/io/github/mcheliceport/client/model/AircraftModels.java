@@ -156,7 +156,7 @@ public final class AircraftModels {
         if (info instanceof HeliInfo heli) {
             heli.rotorList.forEach(r -> names.add(r.modelName));
         }
-        if (info instanceof io.github.mcheliceport.content.aircraft.PlaneInfo plane) {
+        if (info instanceof io.github.mcheliceport.content.aircraft.WingedAircraftInfo plane) {
             plane.nozzles.forEach(p -> names.add(p.modelName));
             plane.rotorList.forEach(r -> {
                 names.add(r.modelName);
@@ -276,6 +276,12 @@ public final class AircraftModels {
                 e.models = load(manager, "planes", info);
                 e.state = State.LOADED;
                 loaded.put(McheliModel.key("planes", info.name), e);
+            });
+            ContentRegistries.get().ship().values().parallelStream().forEach(info -> {
+                Entry e = new Entry("ships", info, gen);
+                e.models = load(manager, "ships", info);
+                e.state = State.LOADED;
+                loaded.put(McheliModel.key("ships", info.name), e);
             });
             LOGGER.info("Loaded the models of {} vehicles in {} ms", loaded.size(),
                     (System.nanoTime() - start) / 1_000_000L);

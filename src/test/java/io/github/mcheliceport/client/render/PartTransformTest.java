@@ -53,6 +53,27 @@ class PartTransformTest {
     }
 
     @Test
+    void zodiacSteeringRotatesAroundItsContentPivot() {
+        var info = stock.ship().get("zodiac");
+        var wheel = info.partSteeringWheel.getFirst();
+        for (float yaw : new float[] {-1, -0.5F, 0, 0.25F, 1}) {
+            List<AircraftPartPoses.Draw> draws = new ArrayList<>();
+            AircraftPartPoses.steeringWheels(info, everyPart(), yaw, new GlMatrixStack(), draws);
+            assertEquals(info.partSteeringWheel.size(), draws.size());
+            var pivot = draws.getFirst().pose().transformPosition((float) wheel.pos.x,
+                    (float) wheel.pos.y, (float) wheel.pos.z, new org.joml.Vector3f());
+            assertEquals(wheel.pos.x, pivot.x, 1.0E-5);
+            assertEquals(wheel.pos.y, pivot.y, 1.0E-5);
+            assertEquals(wheel.pos.z, pivot.z, 1.0E-5);
+            var direction = draws.getFirst().pose().transformDirection(1, 0, 0, new org.joml.Vector3f());
+            double radians = Math.toRadians(yaw * wheel.rotDir);
+            // The stock outboard motor's steering axis points down, so +X turns towards +Z.
+            assertEquals(Math.cos(radians), direction.x, 1.0E-5);
+            assertEquals(Math.sin(radians), direction.z, 1.0E-5);
+        }
+    }
+
+    @Test
     void everyStockVehicleMatchesUpstream() {
         Map<String, Integer> covered = new TreeMap<>();
         int compared = 0;
@@ -122,7 +143,7 @@ class PartTransformTest {
                 b.prevCanopyRotation(), b.canopyRotationMax(), b.hasCanopy(), b.hatchRotation(), b.prevHatchRotation(),
                 b.hatchRotationMax(), b.hasHatch(), b.landingGearRotation(), b.prevLandingGearRotation(),
                 b.hasLandingGear(), b.throttle(), b.prevThrottle(), b.rotPartRotation(), b.prevRotPartRotation(),
-                b.cameraYaw(), b.cameraPitch(), false, rot, prev, b.weaponParts(), b.weaponBayRotation());
+                b.cameraYaw(), b.cameraPitch(), false, rot, prev, b.weaponParts(), b.weaponBayRotation(), b.steeringYaw());
     }
 
     private static void cover(AircraftInfo info, Map<String, Integer> covered) {
@@ -200,7 +221,7 @@ class PartTransformTest {
                 r.nextFloat() * 90.0F, r.nextFloat() * 90.0F, true,
                 r.nextDouble(), r.nextDouble(), rotPart, prevRotPart,
                 r.nextFloat() * 180.0F - 90.0F, r.nextFloat() * 60.0F - 30.0F, false, blades, prevBlades,
-                new AircraftPartPoses.WeaponPartPose[0], new float[0]);
+                new AircraftPartPoses.WeaponPartPose[0], new float[0], 0.0F);
     }
 
     /** The port: the body stack, the blades, then the common parts this test checks. */

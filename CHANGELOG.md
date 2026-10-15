@@ -12,15 +12,24 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 
 ### Added
 
+- M6 ships: all five stock ships now place, mount, float, steer, stop and save/load as real
+  vehicles. Shared fuel, damage, inventory, crew weapons, pickup/item data, HUD, cameras and
+  engine sounds are connected. Stock loadouts are preserved; a test addon checks torpedo use.
+- Ships and planes share the duplicated upstream movement, parts and particle implementations.
+  `vehicles.allShipSpeed` scales ship speed; steering wheels animate about their content pivots.
+  Ship models support on-demand and eager loading, resource reload and the common render pipeline.
+- Ship controls use a new payload and protocol version 5, requiring matching client/server builds.
+  Rider/vehicle checks and the shared movement authority checks remain in effect.
+
 - Initial plane integration: real plane entities and item placement; upstream throttle/reverse,
   forward and VTOL movement, buoyancy, swept-wing speed limits and drone flight formulas;
   VTOL nozzle and folding/sweep-wing switches, gunner autopilot, shared seats, weapons, fuel,
-  damage and saving/loading. The pinned upstream's two movement steps per tick are preserved.
+  damage and saving/loading. The movement cadence is corrected to one step per tick in the M6 ship increment.
 - Shared aircraft renderer and rider controls for helicopters and planes. Plane models draw
   nozzles, wings/pylons and tilt rotors/blades alongside common moving parts. Plane engine sound,
   mouse/stick controls, HUD and VTOL/autopilot variables are connected.
 - Plane control payload (network protocol version 3), rider/vehicle checks, and movement bounds
-  that account for planes' two simulation steps per tick.
+  using each vehicle's speed limit.
 - Plane movement comparisons against the pinned upstream code, payload codec coverage, stock
   model/texture checks, and GameTests for all 46 stock plane definitions, control authorization,
   VTOL takeoff, persistence and movement authority.
@@ -54,6 +63,9 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
   unchanged and is documented in KNOWN_ISSUES.md. Correctly grouped addon models render.
 
 ### Fixed
+
+- Corrected planes from two movement steps to upstream's one per tick, including movement bounds.
+  Added entity cadence, conventional/VTOL takeoff-turn-landing, and plane weapon integration checks.
 
 - Parachute deployment no longer consumes an item when refused on the ground or while mounted.
   Ejection consumes the reserve slot that supplied the chute, correcting upstream's mismatched

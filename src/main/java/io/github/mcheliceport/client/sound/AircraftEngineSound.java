@@ -123,7 +123,7 @@ public final class AircraftEngineSound {
             int colon = move.indexOf(':');
             return colon >= 0 ? move.substring(colon + 1) : move;
         }
-        return aircraft instanceof io.github.mcheliceport.entity.plane.PlaneEntity ? "plane"
+        return aircraft instanceof io.github.mcheliceport.entity.aircraft.WingedAircraftEntity ? "plane"
                 : aircraft instanceof HeliEntity ? "heli" : "";
     }
 
@@ -133,13 +133,13 @@ public final class AircraftEngineSound {
         if (info != null && info.throttleUpDown <= 0.0F) {
             return 0.0F;
         }
-        return aircraft instanceof io.github.mcheliceport.entity.plane.PlaneEntity plane ? plane.soundVolume * 0.7F
+        return aircraft instanceof io.github.mcheliceport.entity.aircraft.WingedAircraftEntity plane ? plane.soundVolume * 0.7F
                 : (float) aircraft.getCurrentThrottle() * 2.0F;
     }
 
     /** Upstream {@code MCH_EntityHeli#getSoundPitch}. */
     static float soundPitch(AircraftEntity aircraft) {
-        return aircraft instanceof io.github.mcheliceport.entity.plane.PlaneEntity
+        return aircraft instanceof io.github.mcheliceport.entity.aircraft.WingedAircraftEntity
                 ? (float) (0.6 + aircraft.getCurrentThrottle() * 0.4)
                 : (float) (0.2 + aircraft.getCurrentThrottle() * 0.2);
     }

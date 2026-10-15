@@ -5,7 +5,6 @@ import static io.github.mcheliceport.gametest.GameTestSupport.check;
 import io.github.mcheliceport.content.ContentLocation;
 import io.github.mcheliceport.content.ContentType;
 import io.github.mcheliceport.content.aircraft.HeliInfo;
-import io.github.mcheliceport.entity.PlaceholderEntity;
 import io.github.mcheliceport.entity.aircraft.AircraftHitBox;
 import io.github.mcheliceport.entity.heli.HeliEntity;
 import io.github.mcheliceport.entity.seat.SeatEntity;
@@ -39,8 +38,6 @@ final class AllHelicoptersGameTests {
                 instanceof HeliEntity, "the helicopter entity type is real");
         check(helper, ModEntityTypes.SEAT.get().create(helper.getLevel(), EntitySpawnReason.COMMAND)
                 instanceof SeatEntity, "the seat entity type is real");
-        check(helper, ModEntityTypes.SHIP.get().create(helper.getLevel(), EntitySpawnReason.COMMAND)
-                instanceof PlaceholderEntity, "ships stay placeholders until their M6 implementation");
 
         List<ModItems.ContentItem> items = ModItems.contentItems().stream()
                 .filter(i -> i.type() == ContentType.HELICOPTER).toList();

@@ -3,6 +3,7 @@ package io.github.mcheliceport.client.render;
 import io.github.mcheliceport.client.model.AircraftModels;
 import io.github.mcheliceport.content.aircraft.AircraftInfo.DrawnPart;
 import io.github.mcheliceport.content.aircraft.PlaneInfo;
+import io.github.mcheliceport.content.aircraft.WingedAircraftInfo;
 import java.util.List;
 
 /** MCP_RenderPlane's nozzle, wing/pylon and rotor/blade matrix sequences. */
@@ -10,7 +11,7 @@ public final class PlanePartPoses {
     private PlanePartPoses() {
     }
 
-    public static void draw(PlaneInfo info, AircraftModels.VehicleModels models, AircraftPartPoses.Input input,
+    public static void draw(WingedAircraftInfo info, AircraftModels.VehicleModels models, AircraftPartPoses.Input input,
             float nozzle, float wing, float rotor, List<AircraftPartPoses.Draw> out) {
         GlMatrixStack gl = AircraftPartPoses.bodyStack(input);
         for (DrawnPart part : info.nozzles) {

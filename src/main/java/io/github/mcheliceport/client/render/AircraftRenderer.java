@@ -125,7 +125,8 @@ public abstract class AircraftRenderer<T extends AircraftEntity> extends EntityR
                 entity.rotPartRotation.clone(), entity.prevRotPartRotation.clone(),
                 cameraYaw, cameraPitch, hideGunnerWeapons, blades, prevBlades,
                 WeaponPartPoses.weaponParts(entity, partialTicks, mc.player, mc.options.getCameraType().isFirstPerson()),
-                WeaponPartPoses.weaponBays(entity, partialTicks));
+                WeaponPartPoses.weaponBays(entity, partialTicks),
+                entity.previousSteeringYaw + (entity.steeringYaw - entity.previousSteeringYaw) * partialTicks);
     }
 
     @Override

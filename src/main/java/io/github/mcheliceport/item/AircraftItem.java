@@ -71,7 +71,7 @@ public class AircraftItem extends Item {
 
     /** Vehicle kinds with functioning entities. */
     public boolean isPlaceable() {
-        return this.type == ContentType.HELICOPTER || this.type == ContentType.PLANE;
+        return this.type == ContentType.HELICOPTER || this.type == ContentType.PLANE || this.type == ContentType.SHIP;
     }
 
     /**
@@ -86,6 +86,7 @@ public class AircraftItem extends Item {
         AircraftEntity aircraft = switch (this.type) {
             case HELICOPTER -> ModEntityTypes.HELICOPTER.get().create(level, EntitySpawnReason.SPAWN_ITEM_USE);
             case PLANE -> ModEntityTypes.PLANE.get().create(level, EntitySpawnReason.SPAWN_ITEM_USE);
+            case SHIP -> ModEntityTypes.SHIP.get().create(level, EntitySpawnReason.SPAWN_ITEM_USE);
             default -> null;
         };
         if (aircraft == null) {

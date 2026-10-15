@@ -11,77 +11,16 @@ import org.jspecify.annotations.Nullable;
  * <p>The part classes ({@link Blade}, {@link Pylon}, {@link Rotor}, {@link Wing}) are shared with
  * {@link ShipInfo}; upstream had identical copies in both classes.
  */
-public class PlaneInfo extends AircraftInfo {
+public class PlaneInfo extends WingedAircraftInfo {
 
-    public final List<DrawnPart> nozzles = new ArrayList<>();
-    public final List<Rotor> rotorList = new ArrayList<>();
-    public final List<Wing> wingList = new ArrayList<>();
     public final List<ExhaustFlame> exhaustFlames = new ArrayList<>();
-    public boolean isEnableVtol = false;
-    public boolean isDefaultVtol;
-    public float vtolYaw = 0.3F;
-    public float vtolPitch = 0.2F;
-    public boolean isEnableAutoPilot = false;
-    public boolean isVariableSweepWing = false;
-    public float sweepWingSpeed = this.speed;
 
     public PlaneInfo(ContentLocation location, String path, String parserIdentifier) {
         super(location, path, parserIdentifier);
     }
 
-    @Override
-    public float getDefaultRotorSpeed() {
-        return 47.94F;
-    }
-
-    public boolean haveNozzle() {
-        return !this.nozzles.isEmpty();
-    }
-
-    public boolean haveRotor() {
-        return !this.rotorList.isEmpty();
-    }
-
-    public boolean haveWing() {
-        return !this.wingList.isEmpty();
-    }
-
-    @Override
-    public float getMaxSpeed() {
-        return 1.8F;
-    }
-
-    @Override
-    public int getDefaultMaxZoom() {
-        return 8;
-    }
-
-    @Override
-    public String getDefaultHudName(int seatId) {
-        if (seatId <= 0) {
-            return "plane";
-        }
-        return seatId == 1 ? "plane" : "gunner";
-    }
-
-    @Override
-    public boolean validate() throws Exception {
-        if (this.haveHatch() && this.haveWing()) {
-            this.wingList.clear();
-            this.hatchList.clear();
-        }
-        return super.validate();
-    }
-
-    @Override
-    public String getDirectoryName() {
-        return "planes";
-    }
-
-    @Override
-    public String getKindName() {
-        return "plane";
-    }
+    @Override public String getDirectoryName() { return "planes"; }
+    @Override public String getKindName() { return "plane"; }
 
     public static class Blade extends DrawnPart {
 

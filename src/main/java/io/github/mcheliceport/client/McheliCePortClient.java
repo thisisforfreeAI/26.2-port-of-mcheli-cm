@@ -70,6 +70,7 @@ public final class McheliCePortClient {
     private static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(ModEntityTypes.HELICOPTER.get(), HeliRenderer::new);
         event.registerEntityRenderer(ModEntityTypes.PLANE.get(), io.github.mcheliceport.client.render.PlaneRenderer::new);
+        event.registerEntityRenderer(ModEntityTypes.SHIP.get(), io.github.mcheliceport.client.render.ShipRenderer::new);
         bullet(event, ModEntityTypes.BULLET.get(), BulletRenderer.Kind.BULLET);
         bullet(event, ModEntityTypes.ROCKET.get(), BulletRenderer.Kind.BULLET);
         bullet(event, ModEntityTypes.TORPEDO.get(), BulletRenderer.Kind.BULLET);
@@ -86,7 +87,7 @@ public final class McheliCePortClient {
         event.registerEntityRenderer(ModEntityTypes.THROWABLE.get(), ThrowableRenderer::new);
         event.registerEntityRenderer(ModEntityTypes.PARACHUTE.get(), io.github.mcheliceport.client.render.ParachuteRenderer::new);
         // Remaining vehicles and support entities draw nothing until their M6 implementation.
-        Set<EntityType<?>> drawn = Set.of(ModEntityTypes.HELICOPTER.get(), ModEntityTypes.PLANE.get(), ModEntityTypes.BULLET.get(),
+        Set<EntityType<?>> drawn = Set.of(ModEntityTypes.HELICOPTER.get(), ModEntityTypes.PLANE.get(), ModEntityTypes.SHIP.get(), ModEntityTypes.BULLET.get(),
                 ModEntityTypes.ROCKET.get(), ModEntityTypes.TORPEDO.get(), ModEntityTypes.MARKER_ROCKET.get(),
                 ModEntityTypes.DISPENSED_ITEM.get(), ModEntityTypes.AA_MISSILE.get(),
                 ModEntityTypes.AS_MISSILE.get(), ModEntityTypes.TV_MISSILE.get(), ModEntityTypes.AT_MISSILE.get(),
