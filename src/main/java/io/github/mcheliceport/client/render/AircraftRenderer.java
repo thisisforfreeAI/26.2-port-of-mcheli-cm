@@ -48,6 +48,7 @@ public abstract class AircraftRenderer<T extends AircraftEntity> extends EntityR
     public void extractRenderState(T entity, AircraftRenderState state, float partialTicks) {
         super.extractRenderState(entity, state, partialTicks);
         state.draws.clear();
+        state.emissiveDraws.clear();
         state.boxes.clear();
         state.texture = null;
         io.github.mcheliceport.content.aircraft.AircraftInfo info = entity.getAcInfo();
@@ -169,6 +170,16 @@ public abstract class AircraftRenderer<T extends AircraftEntity> extends EntityR
                     ModelVertices.emit(buffer, p, draw.groups(), color, light, flat);
                 }
             });
+        }
+        for (AircraftRenderState.EmissiveDraw draw : List.copyOf(state.emissiveDraws)) {
+            collector.submitCustomGeometry(poseStack,
+                    net.minecraft.client.renderer.rendertype.RenderTypes.entityTranslucentEmissive(draw.texture()),
+                    (pose, buffer) -> {
+                        PoseStack.Pose p = pose.copy();
+                        p.mulPose(draw.pose());
+                        ModelVertices.emit(buffer, p, draw.groups(), 0xFFFFFFFF,
+                                net.minecraft.util.LightCoordsUtil.FULL_BRIGHT, false);
+                    });
         }
         super.submit(state, poseStack, collector, camera);
     }

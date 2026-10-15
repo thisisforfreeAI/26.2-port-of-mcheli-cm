@@ -40,19 +40,70 @@ The counts above are the stock inventory from M2, not a limit on addon definitio
 - All stock plane body models and textures are checked. The 79 part references absent in the
   pinned upstream model files are recorded explicitly in the parity fixture; additional gaps fail.
 
-This does not complete stage 2. Remaining plane work includes dedicated exhaust/nozzle/damage
-effects, destroyed-plane visual motion, camera-position switching, ejection, equipment integration,
-broader conventional takeoff/turn/landing scenarios, and manual OpenGL/Vulkan and two-client
+This does not complete stage 2. Remaining plane work includes camera-position switching, ejection, equipment integration,
+broader conventional takeoff/turn/landing scenarios, and full OpenGL/Vulkan flight/weapon and two-client
 checks. UAV-only and target-drone placement still waits for the UAV station. Stages 3–8 remain
 outstanding. Do not treat the shared renderer or asset tests as proof of visual correctness.
 
 Validation of this increment: the saved installation script completed `build`; all 110 JUnit
 tests passed with zero failures/errors/skips, and the dedicated GameTest server completed all
 58 required tests successfully. Five new GameTests cover stock planes, control/persistence,
-VTOL takeoff, authority bounds and the default-VTOL save/load regression. Manual graphical and
-two-client tests have not run in this instance.
+VTOL takeoff, authority bounds and the default-VTOL save/load regression. At that point graphical
+and two-client tests had not run; the subsequent effects graphics checks are described below.
+
+## Plane effects increment
+
+- `PlaneParticles` ports nozzle smoke and obstruction spread, landing dust, rotor/fuselage damage
+  trails and content-defined water wakes. It takes frame values, block queries and an emission
+  sink so the same formulas can be tested without a client level. Each plane owns its histories.
+- Damage smoke preserves the pinned upstream's unused `spawnSmoke` gate and `/3.0` trail
+  interpolation. It also preserves `MathHelper.sqrt(double)`'s rounding order; a boundary
+  regression checks a movement distance where rounding the input would emit one fewer particle.
+  Changes to the visual style or those legacy quirks remain outside this porting increment.
+- `PlaneVisualMotion` supplies destroyed-plane roll direction and the client-only pitch/roll
+  rules near and away from terrain. Authoritative flight formulas are unchanged.
+- Addon exhaust flames load `models/exhaustflames/<model>` and contiguous numbered textures
+  `textures/exhaustflames/<prefix>0.png`, `...1.png`, etc., up to 100 frames, as upstream.
+  The stock pack has no definitions/assets for this newer feature; addons supply their own.
+  Missing models or texture sequences are skipped rather than drawing missing-texture geometry.
+- Extracted flame draws contain their model groups, pose and texture; submission uses vanilla's
+  translucent emissive pipeline and full brightness. No raw OpenGL calls or custom shaders are
+  added. Animation retains upstream's per-extraction cadence; shader resource reload clears its
+  caches, and a shortened texture sequence cannot leave a stale frame index.
+
+### Graphics validation setup
+
+The development client runs under a local Xvfb display with Mesa software rendering. Separate
+ignored `.run/effects-opengl` and `.run/effects-vulkan` game directories contain copies of a flat
+test world and a synthetic addon overriding `harrier_en`. It holds throttle at 1, speed at 0 and
+gravity at -0.05 for a stationary scene. The addon supplies a small diagnostic triangle and two
+coloured textures for `AddExhaustFlame`; these are test fixtures, not new stock artwork.
+
+The scene summons the plane at `(0, -59, 12)` with `PlaneThrottle:1.0d`, `AcFuel:1200` and
+`AcDamage:150`, and views it from `(14, -51, -4)` at yaw 41, pitch 22. Allow the remote throttle
+interpolation to settle before inspecting flame size. Use `--graphicsBackend OPENGL` or
+`--graphicsBackend VULKAN` in the development run's program arguments and verify the actual
+backend line in the client log. For the pinned NeoForge build, Vulkan also needs
+`earlyWindowControl = false` in that game directory's `config/fml.toml`: its early OpenGL
+window otherwise causes GLFW error 65540 when Vulkan creates a surface. The local software
+driver uses an explicit lavapipe ICD and a writable Mesa shader-cache directory.
+
+The effects increment passes `build`, all 121 JUnit tests (zero failures/errors/skips), and all
+58 required GameTests. The 11 new JUnit cases cover particle values, trail history and rounding,
+water gating, landing dust, destroyed-attitude boundaries, exhaust animation, matrix transforms
+and texture-cache reload. Live scene checks confirm damage/nozzle smoke and diagnostic exhaust
+geometry on both backends, including resource reload. Switching to VTOL removes the diagnostic
+flame. Screenshots: [OpenGL](screens/m6-plane-effects-opengl.png) and
+[Vulkan](screens/m6-plane-effects-vulkan.png). The coloured triangle is the synthetic addon probe.
+
+These scene checks cover effects/model submission, not complete plane flight, hardware
+performance or two-client synchronization. The virtual display has no audio device; audio is
+unverified. Full manual flight/weapon and two-client checks remain outstanding.
 
 ## Integration points already identified
+
+The integration notes below record the starting 0.5.1 audit; the first increment above has
+already generalized the helicopter-only paths for planes.
 
 The prior milestone handoff explicitly includes special crafting recipes in M6. Fixed-item and
 content recipes already exist; do not treat all crafting as missing. Port the two deferred special
@@ -122,4 +173,5 @@ GameTest execution now work in this instance. Reusable setup/start instructions 
 in the environment draft; draft saving does not publish a new snapshot.
 
 Use `JAVA_HOME=/workspace/.toolchains/jdk-25+36` and `GRADLE_USER_HOME=/workspace/.gradle-home`
-for Gradle commands in this environment. Manual graphical and two-client checks remain unrun.
+for Gradle commands in this environment. Effects graphics checks now run as described above;
+full flight/weapon and two-client checks remain outstanding.

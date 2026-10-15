@@ -16,7 +16,8 @@ They are drawn with their models, rotors and moving parts, show upstream's HUD, 
 camera with zoom and night vision, and fight with all of upstream's weapon types, guided missiles,
 flares, chaff and McHeli's explosions. Grenades can be thrown. Initial plane placement, flight,
 VTOL, wing controls and model rendering are now implemented in the M6 development work;
-plane-specific effects and manual visual checks remain pending. Ships, tanks, ground vehicles
+plane smoke, wakes, addon exhaust flames and destroyed-plane motion are also implemented.
+Camera switching, ejection and full manual flight/multiplayer checks remain pending. Ships, tanks, ground vehicles
 and the remaining support systems follow in M6. The mod also loads all of McHeli CE's content (vehicles, weapons, throwables and
 HUDs, from YAML and legacy TXT files, including addon packs).
 
@@ -46,6 +47,10 @@ JDK 25 toolchain automatically.
 ```
 
 Development runs use `run/` as the game directory.
+
+For Vulkan with the pinned NeoForge build, set `earlyWindowControl = false` in
+`run/config/fml.toml` before launching. Its early OpenGL loading window otherwise conflicts
+with Vulkan surface creation. Select Vulkan in video settings and restart the client.
 
 ## Content and addon packs
 
