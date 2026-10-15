@@ -1,6 +1,6 @@
 # M6 plan: remaining vehicles and support systems
 
-Status: in progress; shared integration, plane foundations and the ship increment are implemented. This expands PORTING_PLAN.md §6.
+Status: in progress; shared integration, planes, ships and the ground-vehicle increment are implemented. This expands PORTING_PLAN.md §6.
 The starting checkout is 0.5.1. Preserve decisions D1–D23 and compare
 behaviour with McHeli CE 1.5.1 at `cbaff7f30e549ff75e485388c24c74a4316c2228`.
 
@@ -44,7 +44,7 @@ The counts above are the stock inventory from M2, not a limit on addon definitio
 This does not complete stage 2. Remaining plane work includes equipment integration and broader
 gameplay checks. The subsequent ship increment adds conventional and VTOL flight scenarios plus
 local OpenGL/Vulkan flight/weapon and two-client smoke checks. UAV-only and target-drone placement
-still waits for the UAV station. Stages 4–8 remain outstanding after the ship increment. Do not
+still waits for the UAV station. The ground increment below addresses stage 4; stages 5–8 remain. Do not
 treat the shared renderer or asset tests as proof of visual correctness.
 
 Validation of this increment: the saved installation script completed `build`; all 110 JUnit
@@ -275,6 +275,41 @@ Both clients and the dedicated server shut down cleanly.
 Screenshots: [OpenGL fleet](screens/m6-ships-opengl.png), [Vulkan fleet](screens/m6-ships-vulkan.png),
 and [ship menu](screens/m6-ships-menu.png). Audio remains unverified because the
 virtual displays have no audio device; software rendering does not establish hardware performance.
+
+## Ground-vehicle increment
+
+- Real sibling `TankEntity` and `VehicleEntity` types replace the last main-vehicle placeholders.
+  All 12 stock tank/car and 18 placed-vehicle definitions use shared placement, seats, fuel,
+  inventory, weapons, damage and item/world persistence. Content movement/rotation restrictions
+  and the upstream default fixed-position anchor for placed vehicles remain enforced.
+- `GroundMotion` retains the pinned tank throttle/reverse, gravity, buoyancy, speed cap and two
+  ground-grip passes around a single movement step. Wheeled vehicles retain the longer upstream
+  coast. Ground attitude/keyboard steering runs once per simulation tick (0.05 s), independent
+  of rendering frame rate. Local wheel probes provide mirrored contacts, weighted terrain normals
+  and constrained pitch/roll; large hull relocations reset probes instead of sweeping the map.
+- Mouse motion aims weapons independently of the chassis. W/S drives, A/D steers, held Space
+  brakes tanks/cars, H cycles additional camera positions, and Z zooms placed-gun cameras.
+  `GroundControlPayload` adds the held brake with pilot/vehicle checks. Protocol 6 requires
+  matching builds. Existing helicopter, plane and ship payload layouts remain intact.
+- Supported model submission draws wheel steering/spin, crawler links and rollers, shared tank
+  turrets and recursive placed-gun yaw/pitch/barrel/recoil parts. Ground assets load both eagerly
+  and on demand. Tank damage smoke, dust and content water splashes use shared effects.
+- Reactive armor uses synchronized per-entity state and `AcERAState` persistence, rather than
+  mutating shared content definitions. Qualifying hits pop active tiles; popped tiles stop
+  rendering and receiving hits. Projectile tracing now checks active extra hull boxes as well
+  as the base box. No stock definition includes ERA, so the checks use an isolated fixture.
+
+Automated validation: 136 JUnit tests and 95 required GameTests. Seven new GameTests cover all
+30 stock placements, pilot/crew mounting and save/item round trips, M1A2/BNR32 drive/steer/brake/
+reverse, uneven terrain, authorization and both movement authority settings, stationary gun and
+independent tank firing, plus reactive armor threshold, projectile tracing, per-entity isolation
+and actual save restoration. The model audit checks every referenced part and texture; only the
+MXT-MV canopy is absent, matching the pinned upstream asset. Four formula/animation unit tests
+cover the single movement cadence, tracked/wheeled grip, movement restrictions and track wrap.
+
+Ground crushing/ramming damage and upstream extra-box block collisions remain pending. The
+main hull and wheel probes provide collision/terrain behavior in this increment. Equipment,
+operators, tools, blocks/teams and deferred combat systems in stages 5–8 remain unfinished.
 
 ## Integration points already identified
 

@@ -22,6 +22,8 @@ public final class CommonConfig {
     public static final ModConfigSpec.DoubleValue ALL_HELI_SPEED;
     public static final ModConfigSpec.DoubleValue ALL_PLANE_SPEED;
     public static final ModConfigSpec.DoubleValue ALL_SHIP_SPEED;
+    public static final ModConfigSpec.BooleanValue AUTO_THROTTLE_DOWN_TANK;
+    public static final ModConfigSpec.BooleanValue FIX_VEHICLE_AT_PLACED_POINT;
     public static final ModConfigSpec.BooleanValue AUTO_THROTTLE_DOWN_PLANE;
     public static final ModConfigSpec.BooleanValue AUTO_THROTTLE_DOWN_HELI;
     public static final ModConfigSpec.BooleanValue EXPERIMENTAL_QUATERNION_ROTATION;
@@ -93,6 +95,10 @@ public final class CommonConfig {
         ALL_SHIP_SPEED = builder
                 .comment("Multiplies the speed of every ship. Upstream: AllShipSpeed.")
                 .defineInRange("allShipSpeed", 1.0, 0.0, 1000.0);
+        AUTO_THROTTLE_DOWN_TANK = builder.comment("Reduce tank throttle when neither throttle key is held. Upstream: AutoThrottleDownTank.")
+                .define("autoThrottleDownTank", false);
+        FIX_VEHICLE_AT_PLACED_POINT = builder.comment("Anchor placed vehicles after 200 ticks. Upstream: FixVehicleAtPlacedPoint.")
+                .define("fixVehicleAtPlacedPoint", true);
         AUTO_THROTTLE_DOWN_PLANE = builder
                 .comment("Reduce a plane's throttle when neither throttle key is held. Upstream: AutoThrottleDownPlane.")
                 .define("autoThrottleDownPlane", false);

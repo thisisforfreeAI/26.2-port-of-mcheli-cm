@@ -133,10 +133,12 @@ public final class AircraftPartPoses {
         weapons(info, models, in, gl, out);
         rotParts(info, models, in, gl, out);
         hatches(info, models, in, gl, out);
-        restParts(info.partTrackRoller, models, gl, out);
+        boolean ground = info instanceof io.github.mcheliceport.content.aircraft.TankInfo
+                || info instanceof io.github.mcheliceport.content.aircraft.VehicleInfo;
+        if (!ground) { restParts(info.partTrackRoller, models, gl, out); }
         steeringWheels(info, models, in.steeringYaw, gl, out);
         lightHatches(info, models, gl, out);
-        restParts(info.partWheel, models, gl, out);
+        if (!ground) { restParts(info.partWheel, models, gl, out); }
         throttles(info, models, in, gl, out);
         cameras(info, models, in, gl, out);
         landingGear(info, models, in, gl, out);

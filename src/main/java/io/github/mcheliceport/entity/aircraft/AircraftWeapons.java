@@ -515,6 +515,9 @@ public final class AircraftWeapons {
         if (ws == null || ws.getCurrentWeapon() == null) {
             return this.getWeaponUserYaw(entity);
         }
+        if (this.ac instanceof io.github.mcheliceport.entity.vehicle.VehicleEntity) {
+            return Mth.wrapDegrees(this.getWeaponUserYaw(entity) + ws.getCurrentWeapon().fixRotationYaw);
+        }
         return Mth.wrapDegrees(this.ac.getYaw() + ws.getYaw() + ws.getCurrentWeapon().fixRotationYaw);
     }
 
@@ -523,6 +526,10 @@ public final class AircraftWeapons {
         if (ws == null || ws.getCurrentWeapon() == null) {
             return this.getWeaponUserPitch(entity);
         }
+        if (this.ac instanceof io.github.mcheliceport.entity.vehicle.VehicleEntity && this.ac.getAcInfo() != null) {
+            return Mth.wrapDegrees(Mth.clamp(this.getWeaponUserPitch(entity), this.ac.getAcInfo().minRotationPitch,
+                    this.ac.getAcInfo().maxRotationPitch) + ws.getCurrentWeapon().fixRotationPitch);
+        }
         return Mth.wrapDegrees(this.ac.getPitch() + ws.getPitch() + ws.getCurrentWeapon().fixRotationPitch);
     }
 
@@ -530,6 +537,9 @@ public final class AircraftWeapons {
         WeaponSet ws = entity != null ? this.getCurrentWeapon(entity) : null;
         if (ws == null || ws.getCurrentWeapon() == null) {
             return this.getWeaponUserYaw(entity, partialTicks);
+        }
+        if (this.ac instanceof io.github.mcheliceport.entity.vehicle.VehicleEntity) {
+            return Mth.wrapDegrees(this.getWeaponUserYaw(entity, partialTicks) + ws.getCurrentWeapon().fixRotationYaw);
         }
         float yaw = this.ac.yRotO + (this.ac.getYRot() - this.ac.yRotO) * partialTicks;
         float wsYaw = ws.getPrevYaw() + (ws.getYaw() - ws.getPrevYaw()) * partialTicks;
@@ -540,6 +550,10 @@ public final class AircraftWeapons {
         WeaponSet ws = entity != null ? this.getCurrentWeapon(entity) : null;
         if (ws == null || ws.getCurrentWeapon() == null) {
             return this.getWeaponUserPitch(entity, partialTicks);
+        }
+        if (this.ac instanceof io.github.mcheliceport.entity.vehicle.VehicleEntity && this.ac.getAcInfo() != null) {
+            return Mth.wrapDegrees(Mth.clamp(this.getWeaponUserPitch(entity, partialTicks), this.ac.getAcInfo().minRotationPitch,
+                    this.ac.getAcInfo().maxRotationPitch) + ws.getCurrentWeapon().fixRotationPitch);
         }
         float pitch = this.ac.xRotO + (this.ac.getXRot() - this.ac.xRotO) * partialTicks;
         float wsPitch = ws.getPrevPitch() + (ws.getPitch() - ws.getPrevPitch()) * partialTicks;

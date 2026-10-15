@@ -13,6 +13,8 @@ import io.github.mcheliceport.weapon.WeaponSet;
 import io.github.mcheliceport.entity.heli.HeliEntity;
 import io.github.mcheliceport.entity.plane.PlaneEntity;
 import io.github.mcheliceport.entity.ship.ShipEntity;
+import io.github.mcheliceport.entity.ground.GroundVehicleEntity;
+import io.github.mcheliceport.entity.tank.TankEntity;
 import io.github.mcheliceport.entity.aircraft.WingedAircraftEntity;
 import io.github.mcheliceport.entity.seat.SeatEntity;
 import net.minecraft.server.MinecraftServer;
@@ -44,7 +46,7 @@ public final class ModNetwork {
 
     private static final Logger LOGGER = LogUtils.getLogger();
     /** Bump when payload encoding or menu slot layout changes. */
-    public static final String VERSION = "5";
+    public static final String VERSION = "6";
 
     private ModNetwork() {
     }
@@ -57,6 +59,11 @@ public final class ModNetwork {
 
     private static void registerPayloads(RegisterPayloadHandlersEvent event) {
         PayloadRegistrar registrar = event.registrar(VERSION);
+        registrar.playToServer(GroundControlPayload.TYPE, GroundControlPayload.CODEC, (p, context) -> {
+            if (riddenAircraft(context.player()) instanceof GroundVehicleEntity ground) {
+                applyGroundControl(ground, context.player(), p);
+            }
+        });
         registrar.playToServer(HeliControlPayload.TYPE, HeliControlPayload.CODEC, ModNetwork::handleHeliControl);
         registrar.playToServer(PlaneControlPayload.TYPE, PlaneControlPayload.CODEC, ModNetwork::handlePlaneControl);
         registrar.playToServer(ShipControlPayload.TYPE, ShipControlPayload.CODEC, ModNetwork::handleShipControl);
@@ -274,6 +281,20 @@ public final class ModNetwork {
         }
         if (p.switchCameraMode() > 0 && aircraft.canSwitchCameraMode(aircraft.getSeatIdByEntity(player))) {
             aircraft.switchCameraMode(player, p.switchCameraMode() - 1);
+        }
+    }
+
+    public static void applyGroundControl(GroundVehicleEntity ground, Player player, GroundControlPayload p) {
+        if (riddenAircraft(player) != ground || ground.getId() != p.controls().entityId()) { return; }
+        applyAircraftControl(ground, player, p.controls());
+        if (ground instanceof TankEntity && ground.isPilot(player) && !ground.isDestroyed()) {
+            ground.setBrake(p.brake());
+            if (p.brake()) {
+                ground.throttleUp = ground.throttleDown = false;
+                if (ground.getCurrentThrottle() <= 0.03 && ground.getDeltaMovement().horizontalDistanceSqr() < 0.01) {
+                    ground.moveLeft = ground.moveRight = false;
+                }
+            }
         }
     }
 

@@ -152,6 +152,13 @@ public final class MouseFlight {
         if (aircraft.getAcInfo() == null) {
             return;
         }
+        boolean ground = aircraft instanceof io.github.mcheliceport.entity.ground.GroundVehicleEntity;
+        if (ground) {
+            float limit = aircraft.getAcInfo().cameraRotationSpeed * 5;
+            var weapon = aircraft.getCurrentWeapon(player).getInfo();
+            if (weapon != null) { limit *= weapon.cameraRotationSpeedPitch; }
+            avgX = Mth.clamp(avgX, -limit, limit); avgY = Mth.clamp(avgY, -limit, limit);
+        }
         aircraft.setAngles((float) mouseRollDeltaX, (float) mouseRollDeltaY, deltaSeconds);
 
         if (!aircraft.isOverridePlayerYaw()) {
@@ -180,6 +187,14 @@ public final class MouseFlight {
         } else {
             player.xRotO = aircraft.getPitch();
             player.setXRot(aircraft.getPitch());
+        }
+
+        if (ground && Minecraft.getInstance().options.getCameraType().isFirstPerson()) {
+            float angle = Mth.wrapDegrees(aircraft.getYaw() - player.getYRot()) * Mth.DEG_TO_RAD;
+            float base = aircraft.getPitch() * Mth.cos(angle) - aircraft.getRoll() * Mth.sin(angle);
+            float pitch = Mth.clamp(player.getXRot(), base + aircraft.getAcInfo().minRotationPitch,
+                    base + aircraft.getAcInfo().maxRotationPitch);
+            player.setXRot(Mth.clamp(pitch, -90, 90)); player.xRotO = player.getXRot();
         }
 
         if (aircraft.isPilot(player) && !aircraft.isDestroyed()) {

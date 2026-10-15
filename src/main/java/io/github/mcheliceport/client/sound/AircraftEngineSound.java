@@ -124,7 +124,8 @@ public final class AircraftEngineSound {
             return colon >= 0 ? move.substring(colon + 1) : move;
         }
         return aircraft instanceof io.github.mcheliceport.entity.aircraft.WingedAircraftEntity ? "plane"
-                : aircraft instanceof HeliEntity ? "heli" : "";
+                : aircraft instanceof HeliEntity ? "heli"
+                : aircraft instanceof io.github.mcheliceport.entity.tank.TankEntity ? "prop" : "";
     }
 
     /** Upstream {@code MCH_EntityHeli#getSoundVolume}. */
@@ -133,13 +134,18 @@ public final class AircraftEngineSound {
         if (info != null && info.throttleUpDown <= 0.0F) {
             return 0.0F;
         }
-        return aircraft instanceof io.github.mcheliceport.entity.aircraft.WingedAircraftEntity plane ? plane.soundVolume * 0.7F
+        return aircraft instanceof io.github.mcheliceport.entity.tank.TankEntity tank ? tank.soundVolume * 0.7F
+                : aircraft instanceof io.github.mcheliceport.entity.aircraft.WingedAircraftEntity plane ? plane.soundVolume * 0.7F
                 : (float) aircraft.getCurrentThrottle() * 2.0F;
     }
 
     /** Upstream {@code MCH_EntityHeli#getSoundPitch}. */
     static float soundPitch(AircraftEntity aircraft) {
-        return aircraft instanceof io.github.mcheliceport.entity.aircraft.WingedAircraftEntity
+        return aircraft instanceof io.github.mcheliceport.entity.tank.TankEntity tank
+                ? (float) Math.max(0.5 + tank.getCurrentThrottle() * 0.5, 0.5 + tank.soundTarget * 0.5)
+                : aircraft instanceof io.github.mcheliceport.entity.vehicle.VehicleEntity
+                ? (float) aircraft.getCurrentThrottle() * 0.5F
+                : aircraft instanceof io.github.mcheliceport.entity.aircraft.WingedAircraftEntity
                 ? (float) (0.6 + aircraft.getCurrentThrottle() * 0.4)
                 : (float) (0.2 + aircraft.getCurrentThrottle() * 0.2);
     }

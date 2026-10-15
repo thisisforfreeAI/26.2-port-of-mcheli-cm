@@ -16,6 +16,14 @@ import org.junit.jupiter.api.Test;
 /** Exit criterion E8: every M3 payload survives its codec, and the control bits are CE's. */
 class PayloadCodecTest {
 
+    @Test void groundBrakeAndCommonControlsRoundTrip() {
+        for (boolean brake : new boolean[] {false, true}) {
+            var packet = new GroundControlPayload(HeliControlPayload.switchesOnly(318,
+                    PlayerControlSwitches.NONE.with(PlayerControlSwitches.MOVE_LEFT, true)), brake);
+            assertEquals(packet, roundTrip(GroundControlPayload.CODEC, packet));
+        }
+    }
+
     private static <T> T roundTrip(StreamCodec<FriendlyByteBuf, T> codec, T value) {
         RegistryFriendlyByteBuf buf = new RegistryFriendlyByteBuf(Unpooled.buffer(), RegistryAccess.EMPTY);
         codec.encode(buf, value);

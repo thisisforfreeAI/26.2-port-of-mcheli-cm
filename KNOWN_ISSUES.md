@@ -12,12 +12,14 @@ and remaining work. Plane effects and destroyed-plane visual motion are now impl
 plane camera-position switching and the shared gunner camera are connected. Parachutes, plane
 ejection and transport-seat bailout are implemented, with the stock model limitation below.
 Ship placement, water movement, steering, crew weapons and model submission are implemented.
+Tank/ground-vehicle placement, driving, wheel contacts, tracks, rollers, independent weapons
+and reactive armor state are implemented. Ground collision and equipment work remain below.
 Automated conventional/VTOL flight sequences and plane weapons in both authority modes pass;
 broader gameplay and hardware checks remain pending.
 
 | Area | Planned milestone |
 |---|---|
-| Remaining plane equipment, tanks, vehicles, UAVs (and the UAV camera), search lights, ropes and rappelling, crawler tracks and track rollers, ERA tiles, gunner NPCs and mobs in seats (and their weapon use), racks, containers, chains, GLTD, hand-held weapons (Stinger, Javelin), the rest of the aircraft GUI, drafting table screen, charger, tools, supply vehicles, multiplayer teams and team spotting markers (`MCH_GuiTargetMarker`) | M6 |
+| Remaining plane/ground equipment, tank crushing and ramming damage, UAVs (and the UAV camera), search lights, ropes and rappelling, gunner NPCs and mobs in seats (and their weapon use), racks, containers, chains, GLTD, hand-held weapons (Stinger, Javelin), the rest of the aircraft GUI, drafting table screen, charger, tools, supply vehicles, multiplayer teams and team spotting markers (`MCH_GuiTargetMarker`) | M6 |
 | BVR and passive radar, GPS panel and GPS missiles, mortar radar and RWR overlays, ECM jammer, the pulse-Doppler notch, the APS "iron curtain", data link, anti-radiation missiles, `Destruct` bombs (UAVs), the targeting pod's spotting | M6 (with the vehicles that use them) |
 | Wingman (AI wingmen, marker block screens and types, missions, `/wingman`) | M6b |
 | Remaining `/mcheli` commands (including reloading content with `reconfig`), advancement triggers, long-distance tracking and rendering, thermal vision (the third camera mode), GPU-buffer model rendering, projectile chunk loading (`ProjectileChunkLoad`), HBM:NTM stubs, performance work | M7 |
@@ -25,8 +27,11 @@ broader gameplay and hardware checks remain pending.
 Until then:
 
 - The key hints for racks and search lights come with those features (M6).
-- Tanks and ground vehicles do nothing when used, and their entity types are inert
-  placeholders that cannot be summoned.
+- Tank movement uses the main hull collision box plus wheel terrain probes. Upstream's extra
+  collision-box block crushing and entity ramming damage remain pending. Ground attitude is
+  updated at a fixed simulation tick; it is not tied to the client's frame rate.
+- The stock MXT-MV definition references a canopy missing from its upstream model. That part
+  remains absent; the shipped definition and model are preserved.
 - The aircraft menu has the fuel slots, the trunk and the weapon list with its reload buttons, on a
   plain container background. Supported planes also expose parachute reserves; the remaining
   aircraft menu controls come with M6.

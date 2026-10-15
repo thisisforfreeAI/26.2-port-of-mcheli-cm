@@ -7,6 +7,10 @@ import io.github.mcheliceport.entity.aircraft.WingedAircraftEntity;
 import io.github.mcheliceport.net.PlaneControlPayload;
 import io.github.mcheliceport.net.ShipControlPayload;
 import io.github.mcheliceport.entity.ship.ShipEntity;
+import io.github.mcheliceport.entity.ground.GroundVehicleEntity;
+import io.github.mcheliceport.entity.tank.TankEntity;
+import io.github.mcheliceport.entity.vehicle.VehicleEntity;
+import io.github.mcheliceport.net.GroundControlPayload;
 import io.github.mcheliceport.net.HeliControlPayload;
 import io.github.mcheliceport.net.ModNetwork;
 import io.github.mcheliceport.net.PlayerControlSwitches;
@@ -40,7 +44,7 @@ public final class AircraftClientControl {
         LocalPlayer player = mc.player;
         limitPitch = false;
         AircraftEntity aircraft = player != null ? ModNetwork.riddenAircraft(player) : null;
-        boolean riding = (aircraft instanceof HeliEntity || aircraft instanceof WingedAircraftEntity) && aircraft.getAcInfo() != null;
+        boolean riding = aircraft != null && aircraft.getAcInfo() != null;
         if (!riding) {
             if (wasRiding) {
                 MouseFlight.reset();
@@ -163,7 +167,7 @@ public final class AircraftClientControl {
                 }
                 send = true;
             }
-            if (ModKeyMappings.FREE_LOOK.consumeClick()) {
+            if (ModKeyMappings.FREE_LOOK.consumeClick() && !(aircraft instanceof GroundVehicleEntity)) {
                 freeLook = (byte) (aircraft.isFreeLookMode() ? 2 : 1);
                 send = true;
             }
@@ -176,6 +180,15 @@ public final class AircraftClientControl {
             boolean down = ModKeyMappings.DOWN.isDown();
             boolean right = ModKeyMappings.RIGHT.isDown();
             boolean left = ModKeyMappings.LEFT.isDown();
+            if (aircraft instanceof TankEntity tank) {
+                boolean brake = ModKeyMappings.SWITCH_HOVERING.isDown();
+                if (brake != tank.getBrake()) { send = true; }
+                tank.setBrake(brake);
+                if (brake) {
+                    up = down = false;
+                    if (tank.getCurrentThrottle() <= 0.03 && tank.getDeltaMovement().horizontalDistanceSqr() < 0.01) { left = right = false; }
+                }
+            }
             if (up != aircraft.throttleUp || down != aircraft.throttleDown || right != aircraft.moveRight
                     || left != aircraft.moveLeft) {
                 send = true;
@@ -228,6 +241,8 @@ public final class AircraftClientControl {
                                 : HeliControlPayload.ModeSwitch.GUNNER_OFF;
                         send = true;
                     }
+                } else if (aircraft instanceof GroundVehicleEntity ground) {
+                    if (!ground.cycleCameraView(player)) { playSoundNg(); }
                 } else if (aircraft.canSwitchGunnerMode()) {
                     mode = aircraft.isGunnerMode() ? HeliControlPayload.ModeSwitch.GUNNER_OFF
                             : HeliControlPayload.ModeSwitch.GUNNER_ON;
@@ -248,7 +263,7 @@ public final class AircraftClientControl {
 
         if (ModKeyMappings.ZOOM.consumeClick()) {
             boolean uav = aircraft.isUAV() && !aircraft.getAcInfo().haveHatch();
-            if (aircraft.isGunnerMode(player) || uav) {
+            if (aircraft.isGunnerMode(player) || uav || aircraft instanceof VehicleEntity) {
                 aircraft.zoomCamera();
                 Minecraft.getInstance().getSoundManager()
                         .play(SimpleSoundInstance.forUI(McheliSounds.event("zoom").value(), 1.0F, 0.5F));
@@ -284,7 +299,9 @@ public final class AircraftClientControl {
         if (send || player.tickCount % 100 == 0) {
             HeliControlPayload common = new HeliControlPayload(aircraft.getId(), unmount, mode, hatch, gear,
                     switches, freeLook, blades, cameraMode);
-            ClientPacketDistributor.sendToServer(aircraft instanceof ShipEntity ? new ShipControlPayload(common, vtol, wing)
+            ClientPacketDistributor.sendToServer(aircraft instanceof GroundVehicleEntity ground
+                    ? new GroundControlPayload(common, ground.getBrake())
+                    : aircraft instanceof ShipEntity ? new ShipControlPayload(common, vtol, wing)
                     : aircraft instanceof WingedAircraftEntity
                     ? new PlaneControlPayload(common, vtol, wing) : common);
         }
