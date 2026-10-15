@@ -12,10 +12,17 @@ import org.jspecify.annotations.Nullable;
 
 /** Tracked/wheeled tank hull, with independent rider-operated weapons. */
 public class TankEntity extends GroundVehicleEntity {
+    private final TankCollisions collisions = new TankCollisions(this);
     private @Nullable TankTerrain terrain;
     private float previousParticleYaw;
 
     public TankEntity(EntityType<? extends TankEntity> type, Level level) { super(type, level); }
+    @Override public void tick() {
+        super.tick();
+        if (!this.isRemoved() && this.getTankInfo() != null && this.level() instanceof net.minecraft.server.level.ServerLevel server) {
+            this.collisions.tick(server);
+        }
+    }
     @Override protected @Nullable AircraftInfo lookupInfo(String name) { return ContentRegistries.get().tank().get(name); }
     @Override public ContentType getContentType() { return ContentType.TANK; }
     public @Nullable TankInfo getTankInfo() { return (TankInfo) this.getAcInfo(); }

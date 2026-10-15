@@ -54,6 +54,7 @@ public final class ModGameTests {
         PlaneFlightGameTests.register();
         ShipGameTests.register();
         GroundGameTests.register();
+        TankCollisionGameTests.register();
         PlaneCameraGameTests.register();
         ParachuteGameTests.register();
         WeaponGameTests.register();

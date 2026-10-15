@@ -19,7 +19,7 @@ broader gameplay and hardware checks remain pending.
 
 | Area | Planned milestone |
 |---|---|
-| Remaining plane/ground equipment, tank crushing and ramming damage, UAVs (and the UAV camera), search lights, ropes and rappelling, gunner NPCs and mobs in seats (and their weapon use), racks, containers, chains, GLTD, hand-held weapons (Stinger, Javelin), the rest of the aircraft GUI, drafting table screen, charger, tools, supply vehicles, multiplayer teams and team spotting markers (`MCH_GuiTargetMarker`) | M6 |
+| Remaining plane/ground equipment, UAVs (and the UAV camera), search lights, ropes and rappelling, gunner NPCs and mobs in seats (and their weapon use), racks, containers, chains, GLTD, hand-held weapons (Stinger, Javelin), the rest of the aircraft GUI, drafting table screen, charger, tools, supply vehicles, multiplayer teams and team spotting markers (`MCH_GuiTargetMarker`) | M6 |
 | BVR and passive radar, GPS panel and GPS missiles, mortar radar and RWR overlays, ECM jammer, the pulse-Doppler notch, the APS "iron curtain", data link, anti-radiation missiles, `Destruct` bombs (UAVs), the targeting pod's spotting | M6 (with the vehicles that use them) |
 | Wingman (AI wingmen, marker block screens and types, missions, `/wingman`) | M6b |
 | Remaining `/mcheli` commands (including reloading content with `reconfig`), advancement triggers, long-distance tracking and rendering, thermal vision (the third camera mode), GPU-buffer model rendering, projectile chunk loading (`ProjectileChunkLoad`), HBM:NTM stubs, performance work | M7 |
@@ -27,8 +27,9 @@ broader gameplay and hardware checks remain pending.
 Until then:
 
 - The key hints for racks and search lights come with those features (M6).
-- Tank movement uses the main hull collision box plus wheel terrain probes. Upstream's extra
-  collision-box block crushing and entity ramming damage remain pending. Ground attitude is
+- Tank movement uses the main hull collision box plus wheel terrain probes. Extra hull boxes
+  contribute damage/crushing regions, but do not provide additional solid movement collision
+  shapes. Ground attitude is
   updated at a fixed simulation tick; it is not tied to the client's frame rate.
 - The stock MXT-MV definition references a canopy missing from its upstream model. That part
   remains absent; the shipped definition and model are preserved.
@@ -207,6 +208,10 @@ These follow from how Minecraft 26.2 works or from decisions approved in PORTING
     checks the content's ejection flag and refuses ejection from a destroyed vehicle.
 66. Parachute water rescue searches the current build height and uses water fluid states, with
     floored coordinates. Upstream's probe was restricted to y 0–255 and truncated negative x/z.
+67. Tank crushing uses editable block/tag selectors because block `Material` no longer exists.
+    These map the old categories to current blocks; addon blocks need matching tags or explicit
+    entries. Scans use current build limits and floored negative coordinates. Multipart parents
+    receive one ramming hit per region query, rather than one for every modern part returned.
 
 ## Upstream content issues kept as they are
 

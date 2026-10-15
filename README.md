@@ -80,6 +80,13 @@ to brake a tank or car. The mouse aims independently of the chassis. **I** opens
 Placed guns retain their stock movement restrictions; **Z** cycles their camera zoom.
 Network protocol 6 requires this build on both clients and servers.
 
+Cars and tanks crush blocks according to weight: cars break vegetation and glass panes; heavy
+tanks also break wood, full glass and other configured blocks. Contact can crush blocks even
+while stationary. The server's `vehicles.collisionDestroyBlock` switch and `vehicles.crushing`
+block/tag lists control this. Ramming hurts nearby entities except occupants and recently
+dismounted riders; heavy tanks are protected unless `vehicles.collisionEntityTankDamage` is enabled.
+`vehicles.collisionEntityDamage` controls damage to other targets.
+
 Aircraft/ship aiming: **Left Ctrl toggles freelook** (press again to return to steering with
 the mouse). In freelook, the pilot can aim pilot-usable turrets independently of the hull.
 Hold **Ctrl+I** for the next crew seat or **Ctrl+F** for the previous one; these shortcuts
