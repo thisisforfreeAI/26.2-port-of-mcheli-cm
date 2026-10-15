@@ -296,7 +296,9 @@ public final class AircraftHudLayer implements GuiLayer {
         }
 
         // MCH_GuiHeli#drawKeyBind
-        if (seatId == 0 && info.isEnableGunnerMode && !freeLookPressed) {
+        if (seatId == 0 && !freeLookPressed && aircraft instanceof PlaneEntity && aircraft.canSwitchCameraPos()) {
+            this.drawRightKey(graphics, "Camera / Gunner", ModKeyMappings.SWITCH_GUNNER, rightX, ACTIVE);
+        } else if (seatId == 0 && info.isEnableGunnerMode && !freeLookPressed) {
             int color = aircraft.isHoveringMode() ? INACTIVE : ACTIVE;
             this.drawRightKey(graphics, gunnerMode ? "Normal" : "Gunner", ModKeyMappings.SWITCH_GUNNER, rightX, color);
         }

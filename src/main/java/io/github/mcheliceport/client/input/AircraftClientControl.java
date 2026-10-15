@@ -207,7 +207,16 @@ public final class AircraftClientControl {
                     playSoundNg();
                 }
             } else if (ModKeyMappings.SWITCH_GUNNER.consumeClick()) {
-                if (aircraft.canSwitchGunnerMode()) {
+                if (aircraft instanceof PlaneEntity plane) {
+                    boolean wasGunner = plane.isGunnerMode();
+                    if (!plane.cycleCameraView(player)) {
+                        playSoundNg();
+                    } else if (wasGunner != plane.isGunnerMode()) {
+                        mode = plane.isGunnerMode() ? HeliControlPayload.ModeSwitch.GUNNER_ON
+                                : HeliControlPayload.ModeSwitch.GUNNER_OFF;
+                        send = true;
+                    }
+                } else if (aircraft.canSwitchGunnerMode()) {
                     mode = aircraft.isGunnerMode() ? HeliControlPayload.ModeSwitch.GUNNER_OFF
                             : HeliControlPayload.ModeSwitch.GUNNER_ON;
                     aircraft.switchGunnerMode(!aircraft.isGunnerMode());

@@ -7,7 +7,6 @@ import io.github.mcheliceport.config.ServerSettings;
 import io.github.mcheliceport.content.aircraft.AircraftInfo;
 import io.github.mcheliceport.entity.aircraft.AircraftCamera;
 import io.github.mcheliceport.entity.aircraft.AircraftEntity;
-import io.github.mcheliceport.entity.heli.HeliEntity;
 import io.github.mcheliceport.util.McheliMath;
 import net.minecraft.client.Camera;
 import net.minecraft.client.KeyMapping;
@@ -39,7 +38,7 @@ import org.jspecify.annotations.Nullable;
  * and {@code KeyboardInputHandler#handleCameraDistance}.
  *
  * <p>As upstream, the view comes from the camera in gunner mode, and for a pilot whose vehicle has
- * {@code AlwaysCameraView}; it is drawn from a client-only {@link Marker} given to
+ * {@code AlwaysCameraView} or an extra camera selected; it is drawn from a client-only {@link Marker} given to
  * {@link Minecraft#setCameraEntity}, moved to the camera each tick and turned with the rider every
  * frame. The marker keeps the rider's eye height and sits that far below the camera, so vanilla's
  * eye-height smoothing does not slide the view when it switches. Leaving the vehicle gives the
@@ -55,7 +54,7 @@ public final class AircraftCameraClient {
     private static final int CAM_DIST_MAX = 72;
 
     private static @Nullable ViewMarker viewEntity;
-    private static boolean wasRiding;
+    private static @Nullable AircraftEntity riddenVehicle;
     private static float thirdPersonDistance = DEFAULT_THIRD_PERSON_DISTANCE;
     private static @Nullable Vec3 lastCockpitEye;
 
@@ -65,8 +64,9 @@ public final class AircraftCameraClient {
     /** Forgets the view entity and distance when leaving a world. */
     public static void reset() {
         viewEntity = null;
-        wasRiding = false;
+        riddenVehicle = null;
         thirdPersonDistance = DEFAULT_THIRD_PERSON_DISTANCE;
+        lastCockpitEye = null;
     }
 
     /** The entity the view comes from in camera view, or null when the player's own view is used. */
@@ -97,12 +97,11 @@ public final class AircraftCameraClient {
 
     /**
      * Upstream's choice of view entity: the camera in gunner mode, or for a pilot whose vehicle has
-     * {@code AlwaysCameraView} (upstream's inverted {@code isAlwaysCameraView}), else the player.
+     * {@code AlwaysCameraView} (upstream's inverted {@code isAlwaysCameraView}) or an extra camera,
+     * else the player.
      */
     public static boolean usesCameraView(AircraftEntity aircraft, Entity rider) {
-        AircraftInfo info = aircraft.getAcInfo();
-        boolean alwaysCameraView = info != null && info.alwaysCameraView;
-        return aircraft.isGunnerMode(rider) || aircraft.isPilot(rider) && alwaysCameraView;
+        return aircraft.isViewFromCamera(rider);
     }
 
     /**
@@ -142,18 +141,21 @@ public final class AircraftCameraClient {
         Minecraft mc = Minecraft.getInstance();
         LocalPlayer player = mc.player;
         AircraftEntity aircraft = AircraftClientEvents.riddenAircraft(player);
-        boolean riding = player != null && aircraft instanceof HeliEntity && aircraft.getAcInfo() != null;
+        boolean riding = player != null && aircraft != null && aircraft.getAcInfo() != null;
         if (!riding) {
-            if (wasRiding) {
+            if (riddenVehicle != null) {
                 leave(mc, player);
             }
-            wasRiding = false;
+            riddenVehicle = null;
             return;
         }
-        if (!wasRiding) {
+        if (riddenVehicle != aircraft) {
+            if (riddenVehicle != null) {
+                leave(mc, player);
+            }
             setThirdPersonDistance(aircraft.getAcInfo().thirdPersonDist);
         }
-        wasRiding = true;
+        riddenVehicle = aircraft;
 
         Vec3 pos = cameraPosition(aircraft, player);
         TvMissileEntity tvm = aircraft.getTVMissile();
@@ -207,6 +209,7 @@ public final class AircraftCameraClient {
             mc.setCameraEntity(player);
         }
         viewEntity = null;
+        lastCockpitEye = null;
         thirdPersonDistance = DEFAULT_THIRD_PERSON_DISTANCE;
         updatePostEffect(mc, false);
     }
