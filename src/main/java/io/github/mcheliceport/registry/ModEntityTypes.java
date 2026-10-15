@@ -16,6 +16,7 @@ import io.github.mcheliceport.entity.weapon.RocketEntity;
 import io.github.mcheliceport.entity.weapon.TorpedoEntity;
 import io.github.mcheliceport.entity.weapon.TvMissileEntity;
 import io.github.mcheliceport.entity.heli.HeliEntity;
+import io.github.mcheliceport.entity.plane.PlaneEntity;
 import io.github.mcheliceport.entity.seat.SeatEntity;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -56,7 +57,9 @@ public final class ModEntityTypes {
                             .clientTrackingRange(toChunks(1200))
                             .updateInterval(2)));
     public static final DeferredHolder<EntityType<?>, EntityType<PlaceholderEntity>> GLTD = placeholder("gltd", 0.5f, 0.5f, 1200, 10);
-    public static final DeferredHolder<EntityType<?>, EntityType<PlaceholderEntity>> PLANE = placeholder("plane", 2.0f, 0.7f, 1200, 2);
+    public static final DeferredHolder<EntityType<?>, EntityType<PlaneEntity>> PLANE = register("plane",
+            ModRegistries.ENTITY_TYPES.registerEntityType("plane", PlaneEntity::new, MobCategory.MISC,
+                    builder -> builder.sized(2.0F, 0.7F).clientTrackingRange(toChunks(1200)).updateInterval(2)));
     public static final DeferredHolder<EntityType<?>, EntityType<PlaceholderEntity>> SHIP = placeholder("ship", 2.0f, 0.7f, 1200, 2);
     public static final DeferredHolder<EntityType<?>, EntityType<PlaceholderEntity>> TANK = placeholder("tank", 2.0f, 0.7f, 1200, 2);
     public static final DeferredHolder<EntityType<?>, EntityType<PlaceholderEntity>> CHAIN = placeholder("chain", 1.0f, 1.0f, 600, 10);

@@ -3,6 +3,8 @@ package io.github.mcheliceport.client.input;
 import io.github.mcheliceport.content.aircraft.SeatInfo;
 import io.github.mcheliceport.entity.aircraft.AircraftEntity;
 import io.github.mcheliceport.entity.heli.HeliEntity;
+import io.github.mcheliceport.entity.plane.PlaneEntity;
+import io.github.mcheliceport.net.PlaneControlPayload;
 import io.github.mcheliceport.net.HeliControlPayload;
 import io.github.mcheliceport.net.ModNetwork;
 import io.github.mcheliceport.net.PlayerControlSwitches;
@@ -16,11 +18,11 @@ import net.minecraft.util.Mth;
 import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 
 /**
- * The keys of a helicopter's rider, read once per client tick: upstream's
+ * Shared helicopter and plane rider controls, read once per client tick: upstream's
  * {@code MCH_ClientHeliTickHandler#playerControl} and {@code commonPlayerControl}, limited to the
- * M3 flight subset. The client applies mode switches at once, as upstream, and tells the server.
+ * flight controls. Helicopter blades and plane nozzles/wings keep their type-specific switches.
  */
-public final class HeliClientControl {
+public final class AircraftClientControl {
 
     private static boolean wasRiding;
     /** Upstream {@code setRotLimitPitch}: the gunner's pitch range, held every frame until the next tick. */
@@ -28,7 +30,7 @@ public final class HeliClientControl {
     private static float minPitch;
     private static float maxPitch;
 
-    private HeliClientControl() {
+    private AircraftClientControl() {
     }
 
     public static void onClientTick() {
@@ -36,7 +38,7 @@ public final class HeliClientControl {
         LocalPlayer player = mc.player;
         limitPitch = false;
         AircraftEntity aircraft = player != null ? ModNetwork.riddenAircraft(player) : null;
-        boolean riding = aircraft instanceof HeliEntity && aircraft.getAcInfo() != null;
+        boolean riding = (aircraft instanceof HeliEntity || aircraft instanceof PlaneEntity) && aircraft.getAcInfo() != null;
         if (!riding) {
             if (wasRiding) {
                 MouseFlight.reset();
@@ -45,10 +47,9 @@ public final class HeliClientControl {
             return;
         }
         wasRiding = true;
-        HeliEntity heli = (HeliEntity) aircraft;
-        update(player, heli);
-        if (mc.gui.screen() == null && !heli.isDestroyed()) {
-            playerControl(player, heli, heli.isPilot(player));
+        update(player, aircraft);
+        if (mc.gui.screen() == null && !aircraft.isDestroyed()) {
+            playerControl(player, aircraft, aircraft.isPilot(player));
         }
     }
 
@@ -56,9 +57,9 @@ public final class HeliClientControl {
      * Upstream {@code MCH_ClientHeliTickHandler#update}: the gunner's pitch is held in the seat's
      * range, the camera follows the rider's look, and the radar sweeps.
      */
-    private static void update(LocalPlayer player, HeliEntity heli) {
-        if (heli.isGunnerMode(player)) {
-            SeatInfo seat = heli.getSeatInfo(heli.getSeatIdByEntity(player));
+    private static void update(LocalPlayer player, AircraftEntity aircraft) {
+        if (aircraft.isGunnerMode(player)) {
+            SeatInfo seat = aircraft.getSeatInfo(aircraft.getSeatIdByEntity(player));
             if (seat != null) {
                 limitPitch = true;
                 minPitch = seat.minPitch;
@@ -66,12 +67,12 @@ public final class HeliClientControl {
                 player.setXRot(Mth.clamp(player.getXRot(), minPitch, maxPitch));
             }
         }
-        heli.camera.prevRotationYaw = heli.camera.rotationYaw;
-        heli.camera.prevRotationPitch = heli.camera.rotationPitch;
-        heli.camera.rotationYaw = player.getYRot();
-        heli.camera.rotationPitch = player.getXRot();
-        if (heli.isEntityRadarMounted()) {
-            heli.radar.update(heli, 5);
+        aircraft.camera.prevRotationYaw = aircraft.camera.rotationYaw;
+        aircraft.camera.prevRotationPitch = aircraft.camera.rotationPitch;
+        aircraft.camera.rotationYaw = player.getYRot();
+        aircraft.camera.rotationPitch = player.getXRot();
+        if (aircraft.isEntityRadarMounted()) {
+            aircraft.radar.update(aircraft, 5);
         }
     }
 
@@ -90,7 +91,7 @@ public final class HeliClientControl {
         }
     }
 
-    private static void playerControl(LocalPlayer player, HeliEntity heli, boolean isPilot) {
+    private static void playerControl(LocalPlayer player, AircraftEntity aircraft, boolean isPilot) {
         boolean send = false;
         HeliControlPayload.UnmountAction unmount = HeliControlPayload.UnmountAction.NONE;
         HeliControlPayload.ModeSwitch mode = HeliControlPayload.ModeSwitch.NONE;
@@ -100,6 +101,8 @@ public final class HeliClientControl {
         PlayerControlSwitches switches = PlayerControlSwitches.NONE;
         byte freeLook = 0;
         byte cameraMode = 0;
+        PlaneControlPayload.PartSwitch vtol = PlaneControlPayload.PartSwitch.NONE;
+        PlaneControlPayload.PartSwitch wing = PlaneControlPayload.PartSwitch.NONE;
         boolean freeLookHeld = ModKeyMappings.isFreeLookHeld();
 
         // Upstream handleCameraAndModes: free look + camera mode toggles the gunner, else the camera mode.
@@ -108,10 +111,10 @@ public final class HeliClientControl {
                 switches = switches.with(PlayerControlSwitches.SWITCH_GUNNER_STATUS, true);
                 send = true;
                 playSoundOk();
-            } else if (heli.canSwitchCameraMode(heli.getSeatIdByEntity(player))) {
-                int before = heli.getCameraMode(player);
-                heli.switchCameraMode(player, before + 1);
-                int newMode = heli.getCameraMode(player);
+            } else if (aircraft.canSwitchCameraMode(aircraft.getSeatIdByEntity(player))) {
+                int before = aircraft.getCameraMode(player);
+                aircraft.switchCameraMode(player, before + 1);
+                int newMode = aircraft.getCameraMode(player);
                 if (newMode != before) {
                     cameraMode = (byte) (newMode + 1);
                     send = true;
@@ -140,16 +143,16 @@ public final class HeliClientControl {
                 unmount = HeliControlPayload.UnmountAction.UNMOUNT_SELF;
                 send = true;
             }
-            if (ModKeyMappings.GEAR_UP_DOWN.consumeClick() && heli.getAcInfo().haveLandingGear()) {
-                if (heli.canFoldLandingGear()) {
+            if (ModKeyMappings.GEAR_UP_DOWN.consumeClick() && aircraft.getAcInfo().haveLandingGear()) {
+                if (aircraft.canFoldLandingGear()) {
                     gear = HeliControlPayload.GearSwitch.FOLD;
-                } else if (heli.canUnfoldLandingGear()) {
+                } else if (aircraft.canUnfoldLandingGear()) {
                     gear = HeliControlPayload.GearSwitch.UNFOLD;
                 }
                 send = true;
             }
             if (ModKeyMappings.FREE_LOOK.consumeClick()) {
-                freeLook = (byte) (heli.isFreeLookMode() ? 2 : 1);
+                freeLook = (byte) (aircraft.isFreeLookMode() ? 2 : 1);
                 send = true;
             }
             if (guiClicked) {
@@ -161,28 +164,32 @@ public final class HeliClientControl {
             boolean down = ModKeyMappings.DOWN.isDown();
             boolean right = ModKeyMappings.RIGHT.isDown();
             boolean left = ModKeyMappings.LEFT.isDown();
-            if (up != heli.throttleUp || down != heli.throttleDown || right != heli.moveRight
-                    || left != heli.moveLeft) {
+            if (up != aircraft.throttleUp || down != aircraft.throttleDown || right != aircraft.moveRight
+                    || left != aircraft.moveLeft) {
                 send = true;
             }
-            heli.throttleUp = up;
-            heli.throttleDown = down;
-            heli.moveRight = right;
-            heli.moveLeft = left;
+            aircraft.throttleUp = up;
+            aircraft.throttleDown = down;
+            aircraft.moveRight = right;
+            aircraft.moveLeft = left;
             switches = switches.with(PlayerControlSwitches.THROTTLE_UP, up)
                     .with(PlayerControlSwitches.THROTTLE_DOWN, down)
                     .with(PlayerControlSwitches.MOVE_RIGHT, right)
                     .with(PlayerControlSwitches.MOVE_LEFT, left);
 
             if (extraClicked) {
-                if (heli.canSwitchFoldBlades()) {
-                    if (heli.isFoldBlades()) {
-                        heli.unfoldBlades();
+                if (aircraft instanceof HeliEntity helicopter && helicopter.canSwitchFoldBlades()) {
+                    if (helicopter.isFoldBlades()) {
+                        helicopter.unfoldBlades();
                         blades = HeliControlPayload.BladeStatus.UNFOLD;
                     } else {
-                        heli.foldBlades();
+                        helicopter.foldBlades();
                         blades = HeliControlPayload.BladeStatus.FOLD;
                     }
+                    send = true;
+                    playSoundOk();
+                } else if (aircraft instanceof PlaneEntity plane && plane.canSwitchVtol()) {
+                    vtol = plane.getVtolMode() == 0 ? PlaneControlPayload.PartSwitch.ON : PlaneControlPayload.PartSwitch.OFF;
                     send = true;
                     playSoundOk();
                 } else {
@@ -191,27 +198,27 @@ public final class HeliClientControl {
             }
 
             if (ModKeyMappings.SWITCH_HOVERING.consumeClick()) {
-                if (heli.canSwitchHoveringMode()) {
-                    mode = heli.isHoveringMode() ? HeliControlPayload.ModeSwitch.HOVERING_OFF
+                if (aircraft.canSwitchHoveringMode()) {
+                    mode = aircraft.isHoveringMode() ? HeliControlPayload.ModeSwitch.HOVERING_OFF
                             : HeliControlPayload.ModeSwitch.HOVERING_ON;
-                    heli.switchHoveringMode(!heli.isHoveringMode());
+                    aircraft.switchHoveringMode(!aircraft.isHoveringMode());
                     send = true;
                 } else {
                     playSoundNg();
                 }
             } else if (ModKeyMappings.SWITCH_GUNNER.consumeClick()) {
-                if (heli.canSwitchGunnerMode()) {
-                    mode = heli.isGunnerMode() ? HeliControlPayload.ModeSwitch.GUNNER_OFF
+                if (aircraft.canSwitchGunnerMode()) {
+                    mode = aircraft.isGunnerMode() ? HeliControlPayload.ModeSwitch.GUNNER_OFF
                             : HeliControlPayload.ModeSwitch.GUNNER_ON;
-                    heli.switchGunnerMode(!heli.isGunnerMode());
+                    aircraft.switchGunnerMode(!aircraft.isGunnerMode());
                     send = true;
                 } else {
                     playSoundNg();
                 }
             }
         } else if (ModKeyMappings.SWITCH_GUNNER.consumeClick()) {
-            if (heli.canSwitchGunnerModeOtherSeat(player)) {
-                heli.switchGunnerModeOtherSeat();
+            if (aircraft.canSwitchGunnerModeOtherSeat(player)) {
+                aircraft.switchGunnerModeOtherSeat();
                 send = true;
             } else {
                 playSoundNg();
@@ -219,21 +226,29 @@ public final class HeliClientControl {
         }
 
         if (ModKeyMappings.ZOOM.consumeClick()) {
-            boolean uav = heli.isUAV() && !heli.getAcInfo().haveHatch();
-            if (heli.isGunnerMode(player) || uav) {
-                heli.zoomCamera();
+            boolean uav = aircraft.isUAV() && !aircraft.getAcInfo().haveHatch();
+            if (aircraft.isGunnerMode(player) || uav) {
+                aircraft.zoomCamera();
                 Minecraft.getInstance().getSoundManager()
                         .play(SimpleSoundInstance.forUI(McheliSounds.event("zoom").value(), 1.0F, 0.5F));
-            } else if (isPilot && heli.getAcInfo().haveHatch()) {
+            } else if (isPilot && aircraft.getAcInfo().haveHatch()) {
                 // Upstream's hatch key sends FOLD to open a closed hatch and UNFOLD to close it.
-                if (heli.canUnfoldHatch()) {
+                if (aircraft.canUnfoldHatch()) {
                     hatch = HeliControlPayload.HatchSwitch.FOLD;
                     send = true;
-                } else if (heli.canFoldHatch()) {
+                } else if (aircraft.canFoldHatch()) {
                     hatch = HeliControlPayload.HatchSwitch.UNFOLD;
                     send = true;
                 } else {
                     playSoundNg();
+                }
+            } else if (isPilot && aircraft instanceof PlaneEntity plane) {
+                if (plane.canFoldWing()) {
+                    wing = PlaneControlPayload.PartSwitch.ON;
+                    send = true;
+                } else if (plane.canUnfoldWing()) {
+                    wing = PlaneControlPayload.PartSwitch.OFF;
+                    send = true;
                 }
             }
         }
@@ -246,8 +261,10 @@ public final class HeliClientControl {
         });
 
         if (send || player.tickCount % 100 == 0) {
-            ClientPacketDistributor.sendToServer(new HeliControlPayload(heli.getId(), unmount, mode, hatch, gear,
-                    switches, freeLook, blades, cameraMode));
+            HeliControlPayload common = new HeliControlPayload(aircraft.getId(), unmount, mode, hatch, gear,
+                    switches, freeLook, blades, cameraMode);
+            ClientPacketDistributor.sendToServer(aircraft instanceof PlaneEntity
+                    ? new PlaneControlPayload(common, vtol, wing) : common);
         }
     }
 

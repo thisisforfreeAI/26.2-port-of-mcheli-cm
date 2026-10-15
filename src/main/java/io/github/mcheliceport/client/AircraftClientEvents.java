@@ -2,7 +2,7 @@ package io.github.mcheliceport.client;
 
 import io.github.mcheliceport.client.camera.AircraftCameraClient;
 import io.github.mcheliceport.client.hud.AircraftHudLayer;
-import io.github.mcheliceport.client.input.HeliClientControl;
+import io.github.mcheliceport.client.input.AircraftClientControl;
 import io.github.mcheliceport.client.input.MouseFlight;
 import io.github.mcheliceport.client.input.WeaponClientControl;
 import io.github.mcheliceport.client.model.AircraftModels;
@@ -46,7 +46,7 @@ public final class AircraftClientEvents {
         NeoForge.EVENT_BUS.addListener((ClientTickEvent.Post event) -> {
             AircraftCameraClient.handleKeys();
             WeaponClientControl.onClientTick();
-            HeliClientControl.onClientTick();
+            AircraftClientControl.onClientTick();
             AircraftCameraClient.tick();
             AircraftModels.tick();
             AircraftEngineSound.tickAll();
@@ -54,7 +54,7 @@ public final class AircraftClientEvents {
         });
         NeoForge.EVENT_BUS.addListener(WeaponEffects::onSubmitGeometry);
         NeoForge.EVENT_BUS.addListener((RenderFrameEvent.Pre event) -> MouseFlight.onFrameWithoutTurn());
-        NeoForge.EVENT_BUS.addListener((RenderFrameEvent.Post event) -> HeliClientControl.applyRotLimit());
+        NeoForge.EVENT_BUS.addListener((RenderFrameEvent.Post event) -> AircraftClientControl.applyRotLimit());
         NeoForge.EVENT_BUS.addListener(AircraftCameraClient::onCameraAngles);
         NeoForge.EVENT_BUS.addListener(AircraftClientEvents::onCameraAngles);
         NeoForge.EVENT_BUS.addListener(AircraftCameraClient::onComputeFov);

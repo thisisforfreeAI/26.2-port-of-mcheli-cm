@@ -5,7 +5,6 @@ import io.github.mcheliceport.content.ContentRegistries;
 import io.github.mcheliceport.content.ContentType;
 import io.github.mcheliceport.content.aircraft.AircraftInfo;
 import io.github.mcheliceport.entity.aircraft.AircraftEntity;
-import io.github.mcheliceport.entity.heli.HeliEntity;
 import io.github.mcheliceport.registry.ModEntityTypes;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -70,9 +69,9 @@ public class AircraftItem extends Item {
         };
     }
 
-    /** Whether this kind of vehicle can be placed yet (helicopters since M3). */
+    /** Vehicle kinds with functioning entities. */
     public boolean isPlaceable() {
-        return this.type == ContentType.HELICOPTER;
+        return this.type == ContentType.HELICOPTER || this.type == ContentType.PLANE;
     }
 
     /**
@@ -81,22 +80,26 @@ public class AircraftItem extends Item {
      */
     public @Nullable AircraftEntity createAircraft(Level level, double x, double y, double z) {
         AircraftInfo info = this.getAircraftInfo();
-        if (info == null || this.type != ContentType.HELICOPTER) {
+        if (info == null || !this.isPlaceable()) {
             return null;
         }
-        HeliEntity heli = ModEntityTypes.HELICOPTER.get().create(level, EntitySpawnReason.SPAWN_ITEM_USE);
-        if (heli == null) {
+        AircraftEntity aircraft = switch (this.type) {
+            case HELICOPTER -> ModEntityTypes.HELICOPTER.get().create(level, EntitySpawnReason.SPAWN_ITEM_USE);
+            case PLANE -> ModEntityTypes.PLANE.get().create(level, EntitySpawnReason.SPAWN_ITEM_USE);
+            default -> null;
+        };
+        if (aircraft == null) {
             return null;
         }
-        heli.setPos(x, y, z);
-        heli.xo = x;
-        heli.yo = y;
-        heli.zo = z;
-        heli.setAircraftTypeName(info.name);
+        aircraft.setPos(x, y, z);
+        aircraft.xo = x;
+        aircraft.yo = y;
+        aircraft.zo = z;
+        aircraft.setAircraftTypeName(info.name);
         if (!level.isClientSide()) {
-            heli.setTextureName(info.getTextureName());
+            aircraft.setTextureName(info.getTextureName());
         }
-        return heli;
+        return aircraft;
     }
 
     /**

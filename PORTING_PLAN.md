@@ -1,8 +1,8 @@
 # McHeli CE → Minecraft 26.2 (NeoForge) — Porting Plan
 
 > **Status:** Plan approved. All [decisions D1–D9](#10-decisions) were approved as recommended on
-> 2026-10-14. **M1 to M4 are implemented** (versions 0.1.0 to 0.4.0, see `CHANGELOG.md`); **next
-> step is M5** (§6).
+> 2026-10-14. **M1 to M5 are implemented** (current version 0.5.1, see `CHANGELOG.md`); **next
+> step is M6, now in progress** (§6 and [docs/M6_PLAN.md](docs/M6_PLAN.md)).
 > Repo: <https://github.com/thisisforfreeAI/26.2-port-of-mcheli-cm>. In a fresh checkout, run
 > `bash scripts/fetch-upstream.sh` to get the upstream reference sources into `upstream/`.
 >
@@ -271,6 +271,19 @@ Every milestone ends with `./gradlew build`, `runClient` (world load, no crash),
 | **M6** | Remaining vehicle types | Planes (VTOL, sweep wing, autopilot), ships, tanks (wheels, tilt, tracks), vehicles, UAV + stations, gunner NPC, containers, chains, parachutes, GLTD, light weapons, drafting table, charger, tools, multiplayer/teams | Every stock vehicle spawns, mounts, moves and renders |
 | **M6b** | Wingman | Marker blocks, formation AI, missions state machine, chunk loading, planner GUIs, `/wingman` | Formation + one CAP mission flies end-to-end |
 | **M7** | Polish | Full config + `/mcheli` commands, sound/particle parity, render path B (GPU buffers), long-distance tracking/rendering, HBM stubs, thermal vision, performance pass (spark profile vs. upstream numbers), docs | No crash in a 30-minute mixed-vehicle soak; frame-time target agreed at M4 |
+| **M8** | Post-port visual effects polish | After the McHeli CE 1.12.2 port is complete, refine the existing effects for Minecraft's Vulkan renderer: explosions, smoke, fire, muzzle flashes, tracers, missile trails, flares, water splashes and rotor wash. Map out the visual changes before implementing this milestone. | Before/after captures in repeatable scenes; Vulkan visual and frame-time checks under combat load; OpenGL compatibility checks; gameplay behaviour unchanged |
+
+### Post-port effects direction (M8)
+
+Complete M6, M6b and M7, with any remaining upstream feature gaps implemented or explicitly
+documented and accepted, before starting this visual refinement phase. The aim is to polish the
+ported effects while preserving McHeli CE's recognizable style and combat readability. Review
+particle shapes, animation, colour, transparency, lighting appearance and transitions together;
+choose the specific techniques and quality settings when mapping out M8 against the rendering
+APIs available then. Use Minecraft's supported rendering abstractions for Vulkan and retain
+OpenGL compatibility. Measure performance in representative battles and provide scalable effect
+quality where needed. Visual changes must preserve damage, projectile trajectories, targeting,
+timings and multiplayer behaviour.
 
 ---
 

@@ -39,8 +39,8 @@ final class AllHelicoptersGameTests {
                 instanceof HeliEntity, "the helicopter entity type is real");
         check(helper, ModEntityTypes.SEAT.get().create(helper.getLevel(), EntitySpawnReason.COMMAND)
                 instanceof SeatEntity, "the seat entity type is real");
-        check(helper, ModEntityTypes.PLANE.get().create(helper.getLevel(), EntitySpawnReason.COMMAND)
-                instanceof PlaceholderEntity, "planes stay placeholders until M6");
+        check(helper, ModEntityTypes.SHIP.get().create(helper.getLevel(), EntitySpawnReason.COMMAND)
+                instanceof PlaceholderEntity, "ships stay placeholders until their M6 implementation");
 
         List<ModItems.ContentItem> items = ModItems.contentItems().stream()
                 .filter(i -> i.type() == ContentType.HELICOPTER).toList();

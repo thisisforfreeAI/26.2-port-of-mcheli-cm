@@ -18,6 +18,7 @@ public final class ClientConfig {
     public static final ModConfigSpec.BooleanValue INVERT_MOUSE;
     public static final ModConfigSpec.DoubleValue MOUSE_SENSITIVITY;
     public static final ModConfigSpec.BooleanValue MOUSE_CONTROL_STICK_MODE_HELI;
+    public static final ModConfigSpec.BooleanValue MOUSE_CONTROL_STICK_MODE_PLANE;
     public static final ModConfigSpec.BooleanValue MOUSE_CONTROL_FLIGHT_SIM_MODE;
     public static final ModConfigSpec.BooleanValue TEST_MODE;
     public static final ModConfigSpec.BooleanValue SMOOTH_SHADING;
@@ -57,9 +58,12 @@ public final class ClientConfig {
                         "Upstream: MouseControlStickModeHeli.")
                 .define("mouseControlStickModeHeli", false);
         MOUSE_CONTROL_FLIGHT_SIM_MODE = builder
-                .comment("Flight simulator mouse mode for planes and ships. Has no effect yet: planes and ships are not ported.",
+                .comment("Flight simulator mouse mode for planes (ships follow in M6).",
                         "Upstream: MouseControlFlightSimMode.")
                 .define("mouseControlFlightSimMode", false);
+        MOUSE_CONTROL_STICK_MODE_PLANE = builder
+                .comment("Persistent mouse stick for planes. Upstream: MouseControlStickModePlane.")
+                .define("mouseControlStickModePlane", false);
         SWITCH_WEAPON_WITH_MOUSE_WHEEL = builder
                 .comment("The mouse wheel switches weapons while riding a vehicle. Upstream: SwitchWeaponWithMouseWheel.")
                 .define("switchWeaponWithMouseWheel", true);

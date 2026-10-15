@@ -5,8 +5,11 @@ McHeli CE 1.5.1. This file is updated with every milestone (PORTING_PLAN.md, sec
 
 ## Not ported yet
 
-As of 0.5.1 (M5), helicopters can be placed, flown, refuelled and picked up, are drawn with their
-models, HUD and gunner camera, and fight with their weapons. Everything else is still to come:
+The 0.5.1 baseline (M5) supports helicopters with flight, models, HUD, cameras and weapons.
+The current M6 development work also adds initial plane entities, placement, flight, VTOL,
+wing switches and model submission. M6 remains incomplete; see `docs/M6_PLAN.md` for validation
+and remaining work. In particular, plane-specific exhaust/damage effects, camera-position
+switching and ejection, and visual/multiplayer checks are still pending.
 
 | Area | Planned milestone |
 |---|---|
@@ -18,7 +21,7 @@ models, HUD and gunner camera, and fight with their weapons. Everything else is 
 Until then:
 
 - The key hints for racks and search lights come with those features (M6).
-- Planes, ships, tanks and vehicles do nothing when used, and their entity types are inert
+- Ships, tanks and vehicles do nothing when used, and their entity types are inert
   placeholders that cannot be summoned.
 - The aircraft menu has the fuel slots, the trunk and the weapon list with its reload buttons, on a
   plain container background; the rest of upstream's aircraft GUI (parachutes, the menu buttons)
@@ -198,6 +201,10 @@ its stock content from TXT to YAML lost or changed (the full list, checked by a 
   label never shows, as upstream.
 - The AH-1Z names a `canopy` part and the UH-1C a `camera0` part that their model files do not
   have; nothing is drawn for them, as upstream.
+- Stock plane definitions contain 79 references to parts without matching geometry in the
+  upstream models (including empty rotor hubs/nozzles and mismatched canopy/gear names).
+  The exact list is in `src/test/resources/parity/plane-model-gaps.txt`; these missing parts
+  are not invented or silently renamed by the renderer.
 - Eleven sound events named by stock content have no sound file (for example `railgun` and the
   smoke dispensers' fire sounds), so they play nothing, as upstream.
 - Two stock plane files (`b29.yml`, `fuel_truck.yml`) name their `Author` twice; SnakeYAML logs a

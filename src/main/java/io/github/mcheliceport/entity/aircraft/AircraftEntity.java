@@ -1357,6 +1357,15 @@ public abstract class AircraftEntity extends Entity
         return this.isLocalInstanceAuthoritative();
     }
 
+    /** The server follows its controlling pilot when movement is client-authoritative. */
+    public boolean followsPilot() {
+        return !this.level().isClientSide() && !this.simulates();
+    }
+
+    public double getMaxSpeedForChecks() {
+        return this.getSpeedLimitForChecks() * 1.5;
+    }
+
     /** Whether this is the pilot's own client (upstream {@code W_Lib.isClientPlayer(getRiddenByEntity())}). */
     public boolean isPilotLocalClient() {
         return this.level().isClientSide() && this.getPilot() instanceof Player player && player.isLocalPlayer();

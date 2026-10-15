@@ -3,6 +3,7 @@ package io.github.mcheliceport.client.input;
 import io.github.mcheliceport.config.ClientConfig;
 import io.github.mcheliceport.entity.aircraft.AircraftEntity;
 import io.github.mcheliceport.entity.heli.HeliEntity;
+import io.github.mcheliceport.entity.plane.PlaneEntity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
@@ -43,7 +44,8 @@ public final class MouseFlight {
     }
 
     private static boolean isStickMode(AircraftEntity aircraft) {
-        return aircraft instanceof HeliEntity && ClientConfig.MOUSE_CONTROL_STICK_MODE_HELI.get();
+        return aircraft instanceof PlaneEntity ? ClientConfig.MOUSE_CONTROL_STICK_MODE_PLANE.get()
+                : aircraft instanceof HeliEntity && ClientConfig.MOUSE_CONTROL_STICK_MODE_HELI.get();
     }
 
     /** Vanilla turned the local player, who rides {@code aircraft} directly, by one frame of mouse input. */

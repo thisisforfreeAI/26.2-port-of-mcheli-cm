@@ -23,6 +23,8 @@ import org.joml.Vector4f;
 import io.github.mcheliceport.entity.aircraft.AircraftWeapons;
 import io.github.mcheliceport.client.weapon.WeaponClient;
 import io.github.mcheliceport.entity.heli.HeliEntity;
+import io.github.mcheliceport.entity.plane.PlaneEntity;
+import io.github.mcheliceport.content.aircraft.AircraftInfo;
 import java.util.Random;
 import java.util.Set;
 import net.minecraft.client.DeltaTracker;
@@ -99,7 +101,7 @@ public final class AircraftHudLayer implements GuiLayer {
         // MCH_GuiCommon: the hit marker for hits made outside a vehicle.
         drawHitMarker(graphics, WeaponClient.hitCount(), WeaponClient.HIT_COUNT);
         AircraftEntity ac = AircraftClientEvents.riddenAircraft(player);
-        if (!(ac instanceof HeliEntity heli) || ac.isDestroyed() || ac.getAcInfo() == null) {
+        if (ac == null || ac.isDestroyed() || ac.getAcInfo() == null) {
             return;
         }
         float partialTicks = deltaTracker.getGameTimeDeltaPartialTick(false);
@@ -115,7 +117,7 @@ public final class AircraftHudLayer implements GuiLayer {
         // MCH_GuiHeli: in missile camera mode the TV missile's noise replaces the key hints.
         if (showHud) {
             if (!ac.isMissileCameraMode(player)) {
-                this.drawKeyBind(graphics, heli, player, seatId);
+                this.drawKeyBind(graphics, ac, player, seatId);
             } else if (ac.getTVMissile() != null) {
                 this.drawTvMissileNoise(graphics);
             }
@@ -239,8 +241,8 @@ public final class AircraftHudLayer implements GuiLayer {
     }
 
     /** Upstream {@code MCH_GuiHeli#drawKeyBind} and {@code drawAircraftKeyBinds}, for the parts ported so far. */
-    private void drawKeyBind(GuiGraphicsExtractor graphics, HeliEntity heli, LocalPlayer player, int seatId) {
-        HeliInfo info = heli.getHeliInfo();
+    private void drawKeyBind(GuiGraphicsExtractor graphics, AircraftEntity aircraft, LocalPlayer player, int seatId) {
+        AircraftInfo info = aircraft.getAcInfo();
         if (ClientConfig.get(ClientConfig.HIDE_KEY_HINTS) || info == null) {
             return;
         }
@@ -252,66 +254,75 @@ public final class AircraftHudLayer implements GuiLayer {
         this.currentLeftY = centerY - 80;
         this.currentRightY = centerY - 80;
         boolean freeLookPressed = ModKeyMappings.isFreeLookHeld();
-        boolean gunnerMode = heli.isGunnerMode(player);
+        boolean gunnerMode = aircraft.isGunnerMode(player);
 
         // drawAircraftKeyBinds
-        if (seatId > 0 && heli.getSeatNum() > 1 || freeLookPressed) {
+        if (seatId > 0 && aircraft.getSeatNum() > 1 || freeLookPressed) {
             // Upstream passed the character 'Ｐ' as the pilot's colour: 0xFF30 without alpha, drawn opaque.
             int seatColor = seatId == 0 ? GuiHudCanvas.textColor('Ｐ') : ACTIVE;
             String prefix = seatId == 0 ? keyName(ModKeyMappings.FREE_LOOK) + " + " : "";
             this.drawRight(graphics, "NextSeat : " + prefix + keyName(ModKeyMappings.GUI), rightX, seatColor);
             this.drawRight(graphics, "PrevSeat : " + prefix + keyName(ModKeyMappings.EXTRA), rightX, seatColor);
         }
-        this.drawLeft(graphics, "Gunner %s : %s + %s".formatted(heli.getGunnerStatus() ? "ON" : "OFF",
+        this.drawLeft(graphics, "Gunner %s : %s + %s".formatted(aircraft.getGunnerStatus() ? "ON" : "OFF",
                 keyName(ModKeyMappings.FREE_LOOK), keyName(ModKeyMappings.CAMERA_MODE)), leftX, ACTIVE);
-        if (seatId >= 0 && seatId <= 1 && heli.haveFlare()) {
+        if (seatId >= 0 && seatId <= 1 && aircraft.haveFlare()) {
             this.drawRightKey(graphics, "Flare", ModKeyMappings.FLARE, rightX,
-                    heli.isFlarePreparation() ? INACTIVE : ACTIVE);
+                    aircraft.isFlarePreparation() ? INACTIVE : ACTIVE);
         }
         if (seatId == 0 && info.haveLandingGear()) {
-            if (heli.canFoldLandingGear()) {
+            if (aircraft.canFoldLandingGear()) {
                 this.drawRightKey(graphics, "Gear Up", ModKeyMappings.GEAR_UP_DOWN, rightX, ACTIVE);
-            } else if (heli.canUnfoldLandingGear()) {
+            } else if (aircraft.canUnfoldLandingGear()) {
                 this.drawRightKey(graphics, "Gear Down", ModKeyMappings.GEAR_UP_DOWN, rightX, ACTIVE);
             }
         }
-        if (heli.getWeaponNum() > 1) {
+        if (aircraft.getWeaponNum() > 1) {
             this.drawLeftKey(graphics, "Weapon", ModKeyMappings.SWITCH_WEAPON_2, leftX, ACTIVE);
         }
-        if (heli.getCurrentWeapon(player).getCurrentWeapon().numMode > 0) {
+        if (aircraft.getCurrentWeapon(player).getCurrentWeapon().numMode > 0) {
             this.drawLeftKey(graphics, "WeaponMode", ModKeyMappings.SWITCH_WEAPON_MODE, leftX, ACTIVE);
         }
-        if (heli.canSwitchCameraMode(seatId)) {
+        if (aircraft.canSwitchCameraMode(seatId)) {
             this.drawLeftKey(graphics, "CameraMode", ModKeyMappings.CAMERA_MODE, leftX, ACTIVE);
         }
-        if (seatId == 0 && heli.getSeatNum() >= 1) {
-            boolean parachuting = info.isEnableParachuting && !heli.blockWithin(3, -10);
+        if (seatId == 0 && aircraft.getSeatNum() >= 1) {
+            boolean parachuting = info.isEnableParachuting && !aircraft.blockWithin(3, -10);
             this.drawLeftKey(graphics, parachuting ? "Parachuting" : "Dismount", ModKeyMappings.UNMOUNT, leftX, ACTIVE);
         }
-        boolean canFreeLook = seatId == 0 || seatId > 0 && heli.canSwitchGunnerModeOtherSeat(player);
+        boolean canFreeLook = seatId == 0 || seatId > 0 && aircraft.canSwitchGunnerModeOtherSeat(player);
         if (canFreeLook) {
             this.drawLeftKey(graphics, "FreeLook", ModKeyMappings.FREE_LOOK, leftX, ACTIVE);
         }
 
         // MCH_GuiHeli#drawKeyBind
         if (seatId == 0 && info.isEnableGunnerMode && !freeLookPressed) {
-            int color = heli.isHoveringMode() ? INACTIVE : ACTIVE;
+            int color = aircraft.isHoveringMode() ? INACTIVE : ACTIVE;
             this.drawRightKey(graphics, gunnerMode ? "Normal" : "Gunner", ModKeyMappings.SWITCH_GUNNER, rightX, color);
         }
-        if (seatId > 0 && heli.canSwitchGunnerModeOtherSeat(player)) {
+        if (seatId > 0 && aircraft.canSwitchGunnerModeOtherSeat(player)) {
             this.drawRightKey(graphics, gunnerMode ? "Normal" : "Camera", ModKeyMappings.SWITCH_GUNNER, rightX, ACTIVE);
         }
-        if (seatId == 0 && !freeLookPressed) {
+        if (seatId == 0 && !freeLookPressed && aircraft instanceof HeliEntity) {
             int color = gunnerMode ? INACTIVE : ACTIVE;
             this.drawRightKey(graphics, gunnerMode ? "Normal" : "Hovering", ModKeyMappings.SWITCH_HOVERING, rightX,
                     color);
         }
-        if (seatId == 0 && info.isEnableFoldBlade && heli.blockWithin(1, -2) && heli.getCurrentThrottle() <= 0.01) {
+        if (seatId == 0 && info instanceof HeliInfo hi && hi.isEnableFoldBlade && aircraft.blockWithin(1, -2) && aircraft.getCurrentThrottle() <= 0.01) {
             this.drawRightKey(graphics, "FoldBlade", ModKeyMappings.EXTRA, rightX, ACTIVE);
         }
-        if ((gunnerMode || heli.isUAV()) && info.cameraZoom > 1) {
+        if (seatId == 0 && aircraft instanceof PlaneEntity plane) {
+            if (plane.getPlaneInfo().isEnableVtol) {
+                this.drawRightKey(graphics, "VTOL", ModKeyMappings.EXTRA, rightX, plane.canSwitchVtol() ? ACTIVE : INACTIVE);
+            }
+            if (plane.partWing != null) {
+                this.drawRightKey(graphics, "Fold/Sweep Wing", ModKeyMappings.ZOOM, rightX,
+                        plane.canFoldWing() || plane.canUnfoldWing() ? ACTIVE : INACTIVE);
+            }
+        }
+        if ((gunnerMode || aircraft.isUAV()) && info.cameraZoom > 1) {
             this.drawLeftKey(graphics, "Zoom", ModKeyMappings.ZOOM, leftX, ACTIVE);
-        } else if (seatId == 0 && (heli.canUnfoldHatch() || heli.canFoldHatch())) {
+        } else if (seatId == 0 && (aircraft.canUnfoldHatch() || aircraft.canFoldHatch())) {
             this.drawLeftKey(graphics, "OpenHatch", ModKeyMappings.ZOOM, leftX, ACTIVE);
         }
     }

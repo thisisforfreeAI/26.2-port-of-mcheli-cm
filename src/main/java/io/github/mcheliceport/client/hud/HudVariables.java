@@ -109,12 +109,13 @@ public final class HudVariables {
         v.put("stick_x", stickAverage(STICK_X));
         v.put("stick_y", stickAverage(STICK_Y));
         putWeaponVars(v, ws);
-        v.put("vtol_stat", 0);
+        v.put("vtol_stat", ac instanceof io.github.mcheliceport.entity.plane.PlaneEntity plane ? plane.getVtolMode() : 0);
         v.put("free_look", ac.isPilot(player) && ac.isFreeLookMode() ? 1 : 0);
         v.put("gunner_mode", ac.isGunnerMode(player));
         v.put("cam_mode", ac.getCameraMode(player));
         v.put("cam_zoom", ac.camera.getCameraZoom());
-        v.put("auto_pilot", 0);
+        v.put("auto_pilot", ac instanceof io.github.mcheliceport.entity.plane.PlaneEntity
+                && ac.isPilot(player) && ac.isGunnerMode(player) ? 1 : 0);
         v.put("have_flare", info != null && info.haveFlare());
         v.put("can_flare", ac.canUseFlare());
         v.put("inventory", info != null ? info.inventorySize : 0);

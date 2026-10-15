@@ -156,6 +156,17 @@ public final class AircraftModels {
         if (info instanceof HeliInfo heli) {
             heli.rotorList.forEach(r -> names.add(r.modelName));
         }
+        if (info instanceof io.github.mcheliceport.content.aircraft.PlaneInfo plane) {
+            plane.nozzles.forEach(p -> names.add(p.modelName));
+            plane.rotorList.forEach(r -> {
+                names.add(r.modelName);
+                r.blades.forEach(b -> names.add(b.modelName));
+            });
+            plane.wingList.forEach(w -> {
+                names.add(w.modelName);
+                if (w.pylonList != null) { w.pylonList.forEach(p -> names.add(p.modelName)); }
+            });
+        }
         info.hatchList.forEach(p -> names.add(p.modelName));
         info.cameraList.forEach(p -> names.add(p.modelName));
         info.partThrottle.forEach(p -> names.add(p.modelName));
@@ -260,7 +271,13 @@ public final class AircraftModels {
                 e.state = State.LOADED;
                 loaded.put(McheliModel.key("helicopters", info.name), e);
             });
-            LOGGER.info("Loaded the models of {} helicopters in {} ms", loaded.size(),
+            ContentRegistries.get().plane().values().parallelStream().forEach(info -> {
+                Entry e = new Entry("planes", info, gen);
+                e.models = load(manager, "planes", info);
+                e.state = State.LOADED;
+                loaded.put(McheliModel.key("planes", info.name), e);
+            });
+            LOGGER.info("Loaded the models of {} vehicles in {} ms", loaded.size(),
                     (System.nanoTime() - start) / 1_000_000L);
             return loaded;
         }

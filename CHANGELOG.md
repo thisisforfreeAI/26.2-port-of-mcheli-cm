@@ -8,6 +8,29 @@ Versions stay below 1.0.0 until the port is feature-complete, and each milestone
 McHeli CE 1.5.1 (`master` @ `cbaff7f`). Where it deliberately differs from upstream, the difference is
 listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 
+## [Unreleased] - M6 in progress
+
+### Added
+
+- Initial plane integration: real plane entities and item placement; upstream throttle/reverse,
+  forward and VTOL movement, buoyancy, swept-wing speed limits and drone flight formulas;
+  VTOL nozzle and folding/sweep-wing switches, gunner autopilot, shared seats, weapons, fuel,
+  damage and saving/loading. The pinned upstream's two movement steps per tick are preserved.
+- Shared aircraft renderer and rider controls for helicopters and planes. Plane models draw
+  nozzles, wings/pylons and tilt rotors/blades alongside common moving parts. Plane engine sound,
+  mouse/stick controls, HUD and VTOL/autopilot variables are connected.
+- Plane control payload (network protocol version 3), rider/vehicle checks, and movement bounds
+  that account for planes' two simulation steps per tick.
+- Plane movement comparisons against the pinned upstream code, payload codec coverage, stock
+  model/texture checks, and GameTests for all 46 stock plane definitions, control authorization,
+  VTOL takeoff, persistence and movement authority.
+
+This is the first M6 increment, not a completed milestone. Plane-specific exhaust/damage effects,
+camera-position switching, ejection, remaining equipment and manual rendering/multiplayer checks
+are still outstanding, alongside the other M6 vehicle types and systems. Stock model references
+without geometry are recorded in `src/test/resources/parity/plane-model-gaps.txt`; they were
+checked against the pinned upstream models, with line-ending normalization only.
+
 ## [0.5.1] - unreleased (M5 fixes)
 
 ### Added

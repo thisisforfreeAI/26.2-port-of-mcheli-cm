@@ -20,6 +20,8 @@ public final class CommonConfig {
     public static final ModConfigSpec.BooleanValue DROP_ITEM_IN_CREATIVE_MODE;
     public static final ModConfigSpec.BooleanValue BREAKABLE_ONLY_PICKAXE;
     public static final ModConfigSpec.DoubleValue ALL_HELI_SPEED;
+    public static final ModConfigSpec.DoubleValue ALL_PLANE_SPEED;
+    public static final ModConfigSpec.BooleanValue AUTO_THROTTLE_DOWN_PLANE;
     public static final ModConfigSpec.BooleanValue AUTO_THROTTLE_DOWN_HELI;
     public static final ModConfigSpec.BooleanValue EXPERIMENTAL_QUATERNION_ROTATION;
     public static final ModConfigSpec.IntValue DESPAWN_COUNT;
@@ -84,6 +86,12 @@ public final class CommonConfig {
         ALL_HELI_SPEED = builder
                 .comment("Multiplies the speed of every helicopter. Upstream: AllHeliSpeed.")
                 .defineInRange("allHeliSpeed", 1.0, 0.0, 1000.0);
+        ALL_PLANE_SPEED = builder
+                .comment("Multiplies the speed of every plane. Upstream: AllPlaneSpeed.")
+                .defineInRange("allPlaneSpeed", 1.0, 0.0, 1000.0);
+        AUTO_THROTTLE_DOWN_PLANE = builder
+                .comment("Reduce a plane's throttle when neither throttle key is held. Upstream: AutoThrottleDownPlane.")
+                .define("autoThrottleDownPlane", false);
         AUTO_THROTTLE_DOWN_HELI = builder
                 .comment("A helicopter's throttle settles at hover (0.5) when no throttle key is held.",
                         "Upstream: AutoThrottleDownHeli (a client setting there; here each side reads its own copy).")

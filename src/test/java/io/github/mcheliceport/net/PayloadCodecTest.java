@@ -43,6 +43,25 @@ class PayloadCodecTest {
     }
 
     @Test
+    void planeControlsRoundTripAndRejectUnknownSwitchValues() {
+        HeliControlPayload common = HeliControlPayload.switchesOnly(123, PlayerControlSwitches.NONE);
+        for (PlaneControlPayload.PartSwitch vtol : PlaneControlPayload.PartSwitch.values()) {
+            for (PlaneControlPayload.PartSwitch wing : PlaneControlPayload.PartSwitch.values()) {
+                PlaneControlPayload p = new PlaneControlPayload(common, vtol, wing);
+                assertEquals(p, roundTrip(PlaneControlPayload.CODEC, p));
+            }
+        }
+        FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.buffer());
+        try {
+            HeliControlPayload.CODEC.encode(buf, common);
+            buf.writeByte(255); buf.writeByte(99);
+            PlaneControlPayload read = PlaneControlPayload.CODEC.decode(buf);
+            assertEquals(PlaneControlPayload.PartSwitch.NONE, read.vtol());
+            assertEquals(PlaneControlPayload.PartSwitch.NONE, read.wing());
+        } finally { buf.release(); }
+    }
+
+    @Test
     void explosionEffectRoundTrips() {
         java.util.List<net.minecraft.core.BlockPos> blocks = java.util.List.of(new net.minecraft.core.BlockPos(10, 64, -3),
                 new net.minecraft.core.BlockPos(-120, -60, 300), new net.minecraft.core.BlockPos(5, 70, 0));
