@@ -286,9 +286,8 @@ public final class AircraftHudLayer implements GuiLayer {
         if (aircraft.canSwitchCameraMode(seatId)) {
             this.drawLeftKey(graphics, "CameraMode", ModKeyMappings.CAMERA_MODE, leftX, ACTIVE);
         }
-        if (seatId == 0 && aircraft.getSeatNum() >= 1) {
-            boolean parachuting = info.isEnableParachuting && !aircraft.blockWithin(3, -10);
-            this.drawLeftKey(graphics, parachuting ? "Parachuting" : "Dismount", ModKeyMappings.UNMOUNT, leftX, ACTIVE);
+        if (seatId == 0) {
+            this.drawLeftKey(graphics, "Dismount", ModKeyMappings.UNMOUNT, leftX, ACTIVE);
         }
         boolean canFreeLook = seatId == 0 || seatId > 0 && aircraft.canSwitchGunnerModeOtherSeat(player);
         if (canFreeLook) {
@@ -312,6 +311,13 @@ public final class AircraftHudLayer implements GuiLayer {
         }
         if (seatId == 0 && info instanceof HeliInfo hi && hi.isEnableFoldBlade && aircraft.blockWithin(1, -2) && aircraft.getCurrentThrottle() <= 0.01) {
             this.drawRightKey(graphics, "FoldBlade", ModKeyMappings.EXTRA, rightX, ACTIVE);
+        }
+        if (aircraft instanceof PlaneEntity && aircraft.canEjectSeat(player)) {
+            this.drawRightKey(graphics, "Eject seat", ModKeyMappings.SWITCH_HOVERING, rightX, ACTIVE);
+        }
+        if (seatId > 0) {
+            this.drawLeftKey(graphics, aircraft.canParachute(player) ? "Parachute" : "Dismount",
+                    ModKeyMappings.UNMOUNT, leftX, ACTIVE);
         }
         if (seatId == 0 && aircraft instanceof PlaneEntity plane) {
             if (plane.getPlaneInfo().isEnableVtol) {

@@ -52,6 +52,7 @@ public final class ModGameTests {
         AllHelicoptersGameTests.register();
         PlaneGameTests.register();
         PlaneCameraGameTests.register();
+        ParachuteGameTests.register();
         WeaponGameTests.register();
         FUNCTIONS.register(modBus);
         modBus.addListener(ModGameTests::onRegisterGameTests);

@@ -9,6 +9,7 @@ import io.github.mcheliceport.content.aircraft.AircraftInfo;
 import io.github.mcheliceport.content.throwable.ThrowableInfo;
 import io.github.mcheliceport.item.AircraftItem;
 import io.github.mcheliceport.item.ThrowableItem;
+import io.github.mcheliceport.item.ParachuteItem;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
@@ -51,7 +52,8 @@ public final class ModItems {
     public static final DeferredItem<Item> FUEL = item("fuel", p -> p.durability(600).setNoCombineRepair());
     public static final DeferredItem<Item> GLTD = item("gltd", p -> p.stacksTo(1));
     public static final DeferredItem<Item> CHAIN = item("chain", p -> p.stacksTo(1));
-    public static final DeferredItem<Item> PARACHUTE = item("parachute", p -> p.stacksTo(1));
+    public static final DeferredItem<Item> PARACHUTE = register("parachute", ParachuteItem::new,
+            p -> p.stacksTo(1), ModTab.ITEMS);
     public static final DeferredItem<Item> CONTAINER = item("container", p -> p.stacksTo(1));
     public static final DeferredItem<Item> UAV_STATION = item("uav_station", p -> p.stacksTo(1));
     /** The portable UAV controller. */

@@ -84,13 +84,14 @@ public final class McheliCePortClient {
         event.registerEntityRenderer(ModEntityTypes.FLARE.get(), FlareRenderer::flare);
         event.registerEntityRenderer(ModEntityTypes.CHAFF.get(), FlareRenderer::chaff);
         event.registerEntityRenderer(ModEntityTypes.THROWABLE.get(), ThrowableRenderer::new);
-        // Planes, ships, tanks and vehicles draw nothing until M6.
+        event.registerEntityRenderer(ModEntityTypes.PARACHUTE.get(), io.github.mcheliceport.client.render.ParachuteRenderer::new);
+        // Remaining vehicles and support entities draw nothing until their M6 implementation.
         Set<EntityType<?>> drawn = Set.of(ModEntityTypes.HELICOPTER.get(), ModEntityTypes.PLANE.get(), ModEntityTypes.BULLET.get(),
                 ModEntityTypes.ROCKET.get(), ModEntityTypes.TORPEDO.get(), ModEntityTypes.MARKER_ROCKET.get(),
                 ModEntityTypes.DISPENSED_ITEM.get(), ModEntityTypes.AA_MISSILE.get(),
                 ModEntityTypes.AS_MISSILE.get(), ModEntityTypes.TV_MISSILE.get(), ModEntityTypes.AT_MISSILE.get(),
                 ModEntityTypes.BOMB.get(), ModEntityTypes.A10.get(), ModEntityTypes.FLARE.get(),
-                ModEntityTypes.CHAFF.get(), ModEntityTypes.THROWABLE.get());
+                ModEntityTypes.CHAFF.get(), ModEntityTypes.THROWABLE.get(), ModEntityTypes.PARACHUTE.get());
         ModEntityTypes.all().stream()
                 .filter(type -> !drawn.contains(type.get()))
                 .forEach(type -> registerNoop(event, type.get()));

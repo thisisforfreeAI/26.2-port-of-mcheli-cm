@@ -19,9 +19,10 @@ import org.jspecify.annotations.Nullable;
 /**
  * A vehicle's fuel slots and trunk (decision D12): the fuel-can part of upstream's aircraft GUI
  * ({@code MCH_AircraftGuiContainer}) and its storage panel ({@code ContainerGui}) in one vanilla
- * menu. The rest of the aircraft GUI (weapons, parachutes, settings) comes in M6.
+ * menu. Plane ejection reserves use two separate slots; remaining settings come in M6.
  *
- * <p>Slot 0 takes fuel cans, slot 1 receives the empty cans, and the trunk follows.
+ * <p>Slot 0 takes fuel cans, slot 1 receives the empty cans, and the trunk follows. Reserve slots
+ * follow the trunk in the menu, backed by separate persistent storage on the vehicle.
  */
 public class AircraftMenu extends AbstractContainerMenu {
 
@@ -32,22 +33,25 @@ public class AircraftMenu extends AbstractContainerMenu {
     private final @Nullable AircraftEntity aircraft;
     private final Container container;
     private final int trunkSize;
+    private final int parachuteSlots;
 
     /** Client side, from the open-menu packet: the vehicle's entity ID and trunk size. */
     public AircraftMenu(int containerId, Inventory playerInventory, RegistryFriendlyByteBuf data) {
-        this(containerId, playerInventory, findAircraft(playerInventory.player, data.readVarInt()), data.readVarInt());
+        this(containerId, playerInventory, findAircraft(playerInventory.player, data.readVarInt()), data.readVarInt(),
+                data.readVarInt());
     }
 
     public AircraftMenu(int containerId, Inventory playerInventory, AircraftEntity aircraft) {
         this(containerId, playerInventory, aircraft,
-                aircraft.getInventory().getContainerSize() - AircraftEntity.FIXED_SLOTS);
+                aircraft.getInventory().getContainerSize() - AircraftEntity.FIXED_SLOTS, aircraft.getNumEjectionSeat());
     }
 
     private AircraftMenu(int containerId, Inventory playerInventory, @Nullable AircraftEntity aircraft,
-            int trunkSize) {
+            int trunkSize, int parachuteSlots) {
         super(ModMenuTypes.AIRCRAFT.get(), containerId);
         this.aircraft = aircraft;
         this.trunkSize = Math.max(trunkSize, 0);
+        this.parachuteSlots = Math.clamp(parachuteSlots, 0, 2);
         Container inventory = aircraft != null ? aircraft.getInventory() : null;
         if (inventory == null || inventory.getContainerSize() != AircraftEntity.FIXED_SLOTS + this.trunkSize) {
             inventory = new SimpleContainer(AircraftEntity.FIXED_SLOTS + this.trunkSize);
@@ -70,6 +74,20 @@ public class AircraftMenu extends AbstractContainerMenu {
         for (int i = 0; i < this.trunkSize; i++) {
             this.addSlot(new Slot(this.container, AircraftEntity.FIXED_SLOTS + i, CONTENT_X + 8 + i % COLUMNS * 18,
                     18 + i / COLUMNS * 18));
+        }
+        Container chutes = aircraft != null ? aircraft.getParachuteInventory() : new SimpleContainer(2);
+        for (int i = 0; i < this.parachuteSlots; i++) {
+            this.addSlot(new Slot(chutes, i, 11, 118 + i * 18) {
+                @Override
+                public boolean mayPlace(ItemStack stack) {
+                    return stack.is(ModItems.PARACHUTE.get());
+                }
+
+                @Override
+                public int getMaxStackSize() {
+                    return 1;
+                }
+            });
         }
         int inventoryY = this.getPlayerInventoryY();
         for (int row = 0; row < 3; row++) {
@@ -95,6 +113,7 @@ public class AircraftMenu extends AbstractContainerMenu {
                 aircraft.getDisplayName()), buf -> {
                     buf.writeVarInt(aircraft.getId());
                     buf.writeVarInt(trunkSize);
+                    buf.writeVarInt(aircraft.getNumEjectionSeat());
                 });
     }
 
@@ -114,6 +133,14 @@ public class AircraftMenu extends AbstractContainerMenu {
         return this.trunkSize;
     }
 
+    public int getParachuteSlots() {
+        return this.parachuteSlots;
+    }
+
+    public int getParachuteSlotStart() {
+        return AircraftEntity.FIXED_SLOTS + this.trunkSize;
+    }
+
     /** Rows the trunk takes; at least three, so the fuel panel fits beside it. */
     public int getTrunkRows() {
         return Math.max(3, (this.trunkSize + COLUMNS - 1) / COLUMNS);
@@ -131,7 +158,7 @@ public class AircraftMenu extends AbstractContainerMenu {
         }
         ItemStack stack = slot.getItem();
         ItemStack original = stack.copy();
-        int vehicleSlots = AircraftEntity.FIXED_SLOTS + this.trunkSize;
+        int vehicleSlots = this.getParachuteSlotStart() + this.parachuteSlots;
         if (index < vehicleSlots) {
             if (!this.moveItemStackTo(stack, vehicleSlots, this.slots.size(), true)) {
                 return ItemStack.EMPTY;
@@ -139,8 +166,11 @@ public class AircraftMenu extends AbstractContainerMenu {
         } else if (isFuelCan(stack) && this.moveItemStackTo(stack, AircraftEntity.SLOT_FUEL_IN,
                 AircraftEntity.SLOT_FUEL_IN + 1, false)) {
             // Moved into the fuel slot.
+        } else if (stack.is(ModItems.PARACHUTE.get()) && this.parachuteSlots > 0
+                && this.moveItemStackTo(stack, this.getParachuteSlotStart(), vehicleSlots, false)) {
+            // Moved into a parachute slot.
         } else if (this.trunkSize == 0
-                || !this.moveItemStackTo(stack, AircraftEntity.FIXED_SLOTS, vehicleSlots, false)) {
+                || !this.moveItemStackTo(stack, AircraftEntity.FIXED_SLOTS, this.getParachuteSlotStart(), false)) {
             return ItemStack.EMPTY;
         }
         if (stack.isEmpty()) {

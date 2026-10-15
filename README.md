@@ -18,7 +18,9 @@ flares, chaff and McHeli's explosions. Grenades can be thrown. Initial plane pla
 VTOL, wing controls and model rendering are now implemented in the M6 development work;
 plane smoke, wakes, addon exhaust flames and destroyed-plane motion are also implemented.
 Planes now use the gunner camera, zoom and night vision; H also cycles extra camera positions
-defined by addons. Ejection and full manual flight/multiplayer checks remain pending. Ships, tanks, ground vehicles
+defined by addons. Hand parachutes, transport-seat bailout and plane ejection are implemented,
+including reserve slots in the aircraft menu. The stock ejection/transport model has an upstream
+asset defect described in KNOWN_ISSUES.md. Full manual flight/multiplayer checks remain pending. Ships, tanks, ground vehicles
 and the remaining support systems follow in M6. The mod also loads all of McHeli CE's content (vehicles, weapons, throwables and
 HUDs, from YAML and legacy TXT files, including addon packs).
 
@@ -52,6 +54,11 @@ Development runs use `run/` as the game directory.
 For Vulkan with the pinned NeoForge build, set `earlyWindowControl = false` in
 `run/config/fml.toml` before launching. Its early OpenGL loading window otherwise conflicts
 with Vulkan surface creation. Select Vulkan in video settings and restart the client.
+
+Parachutes: right-click the item while airborne and unmounted. On an ejection-capable plane,
+load parachutes into the **Chutes** slots with **I**, then press **Space** from the pilot or first
+crew seat. Space still toggles hovering in helicopters. **Y** dismounts; eligible transport
+passenger seats use a parachute when the hatch is open and the ground is clear.
 
 ## Content and addon packs
 

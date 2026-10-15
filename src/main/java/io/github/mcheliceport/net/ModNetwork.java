@@ -41,8 +41,8 @@ import org.slf4j.Logger;
 public final class ModNetwork {
 
     private static final Logger LOGGER = LogUtils.getLogger();
-    /** Bump when a payload's encoding changes. */
-    public static final String VERSION = "3";
+    /** Bump when payload encoding or menu slot layout changes. */
+    public static final String VERSION = "4";
 
     private ModNetwork() {
     }
@@ -207,12 +207,16 @@ public final class ModNetwork {
             // Upstream always unmounted the pilot; only the pilot's client sent it.
             if (pilot) {
                 aircraft.unmountEntity();
-            } else {
+            } else if (!aircraft.parachuteCrew(player)) {
                 player.stopRiding();
             }
             return;
         }
         if (aircraft.isDestroyed()) {
+            return;
+        }
+        if (p.switches().get(PlayerControlSwitches.EJECT_SEAT)) {
+            aircraft.ejectSeat(player);
             return;
         }
         if (pilot) {
