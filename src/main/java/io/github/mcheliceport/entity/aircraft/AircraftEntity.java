@@ -9,6 +9,7 @@ import io.github.mcheliceport.content.aircraft.BoundingBoxInfo;
 import io.github.mcheliceport.content.aircraft.SeatInfo;
 import io.github.mcheliceport.content.aircraft.SeatRackInfo;
 import io.github.mcheliceport.entity.seat.SeatEntity;
+import io.github.mcheliceport.entity.parachute.ParachuteEntity;
 import io.github.mcheliceport.item.AircraftItem;
 import io.github.mcheliceport.menu.AircraftMenu;
 import io.github.mcheliceport.registry.ModEntityTypes;
@@ -140,6 +141,10 @@ public abstract class AircraftEntity extends Entity
     private AircraftHitBox[] hitBoxes = NO_HIT_BOXES;
     private SeatEntity[] seats = NO_SEATS;
     private SimpleContainer inventory = new SimpleContainer(FIXED_SLOTS);
+    /** Separate storage preserves the indices of fuel and trunk items in existing saves. */
+    private final SimpleContainer parachutes = new SimpleContainer(2);
+    private final Vec3[] previousPositions = new Vec3[10];
+    private int previousPositionIndex;
     private final AircraftFuel.Meter fuelMeter = new AircraftFuel.Meter();
     /** Local viewer choice, as upstream: neither saved nor sent to other riders. */
     private int cameraId;
@@ -823,6 +828,107 @@ public abstract class AircraftEntity extends Entity
         return this.inventory;
     }
 
+    public SimpleContainer getParachuteInventory() {
+        return this.parachutes;
+    }
+
+    public int getNumEjectionSeat() {
+        return 0;
+    }
+
+    public boolean haveParachute() {
+        for (int i = 0; i < this.parachutes.getContainerSize(); i++) {
+            if (this.parachutes.getItem(i).is(ModItems.PARACHUTE.get())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void consumeParachute() {
+        for (int i = 0; i < this.parachutes.getContainerSize(); i++) {
+            if (this.parachutes.getItem(i).is(ModItems.PARACHUTE.get())) {
+                this.parachutes.removeItem(i, 1);
+                return;
+            }
+        }
+    }
+
+    /** Upstream allows only pilot and first crew seat, with no altitude restriction. */
+    public boolean canEjectSeat(@Nullable Entity rider) {
+        int sid = this.getSeatIdByEntity(rider);
+        return !this.isDestroyed() && this.info != null && this.info.isEnableEjectionSeat
+                && sid >= 0 && sid < 2 && (sid != 0 || !this.isUAV());
+    }
+
+    /** Pilot ejection also rescues a non-player in seat 1 when a second chute is stocked. */
+    public boolean ejectSeat(Entity rider) {
+        if (!(this.level() instanceof ServerLevel) || !this.canEjectSeat(rider) || !this.haveParachute()) {
+            return false;
+        }
+        int sid = this.getSeatIdByEntity(rider);
+        if (!this.ejectSeatSub(rider, sid)) {
+            return false;
+        }
+        if (sid == 0) {
+            Entity crew = this.getEntityBySeatId(1);
+            if (crew != null && !(crew instanceof Player) && this.haveParachute()) {
+                this.ejectSeatSub(crew, 1);
+            }
+        }
+        return true;
+    }
+
+    private boolean ejectSeatSub(Entity rider, int sid) {
+        SeatInfo seat = this.getSeatInfo(sid);
+        Vec3 position = seat != null ? this.getTransformedPosition(seat.pos.add(0, 2, 0)) : rider.position();
+        Vec3 boost = McheliMath.rotVec3(0, 2, 0, -this.getYaw(), -this.getPitch(), -this.getRoll());
+        Vec3 velocity = this.getDeltaMovement().add(boost).add((this.random.nextFloat() - 0.5) * 0.1,
+                0, (this.random.nextFloat() - 0.5) * 0.1);
+        ParachuteEntity chute = ParachuteEntity.deploy((ServerLevel) this.level(), rider, 2, position, velocity);
+        if (chute == null) {
+            return false;
+        }
+        this.consumeParachute();
+        this.camera.initCamera(sid, rider);
+        if (sid == 0) {
+            this.unmountEntity();
+        }
+        if (this.partCanopy != null && this.isCanopyClose()) {
+            this.partCanopy.setStatusServer(true, false);
+            this.setModeSwitchCooldown(40);
+        }
+        McheliSounds.playAt(chute, "eject_seat", 5, 1);
+        return true;
+    }
+
+    /** Transport seats beyond seat 1 may bail out through an open hatch, clear of the ground. */
+    public boolean canParachute(@Nullable Entity rider) {
+        return !this.isDestroyed() && this.info != null && this.info.isEnableParachuting
+                && this.getSeatIdByEntity(rider) > 1 && !this.blockWithin(3, -13)
+                && (this.partHatch == null || this.partHatch.rotation >= 89);
+    }
+
+    public boolean parachuteCrew(Entity rider) {
+        if (!(this.level() instanceof ServerLevel level) || !this.canParachute(rider)) {
+            return false;
+        }
+        int sid = this.getSeatIdByEntity(rider);
+        SeatInfo seat = this.getSeatInfo(sid);
+        Vec3 local = seat != null && seat.unmountPos != null ? seat.unmountPos : this.info.mobDropOption.pos;
+        // MCH_Queue#oldest uses current + 1, not current, in the pinned source.
+        Vec3 origin = this.previousPositions[(this.previousPositionIndex + 1) % this.previousPositions.length];
+        if (origin == null) {
+            origin = this.position();
+        }
+        Vec3 position = this.getTransformedPosition(local.x, local.y, local.z, origin.x, origin.y, origin.z);
+        if (ParachuteEntity.deploy(level, rider, 3, position, this.getDeltaMovement()) == null) {
+            return false;
+        }
+        this.camera.initCamera(sid, rider);
+        return true;
+    }
+
     // ---- riders and seats ----
 
     /** Seat 0's rider: upstream {@code getRiddenByEntity}. */
@@ -1432,6 +1538,9 @@ public abstract class AircraftEntity extends Entity
 
     @Override
     public void tick() {
+        if (this.getCountOnUpdate() < 2) {
+            java.util.Arrays.fill(this.previousPositions, this.position());
+        }
         this.prevCurrentThrottle = this.getCurrentThrottle();
         this.lastHitBoxFactor = 1.0F;
         if (this.info == null && !this.getAircraftTypeName().isEmpty()) {
@@ -1541,6 +1650,8 @@ public abstract class AircraftEntity extends Entity
         this.updateHitBoxPosition();
         this.onUpdateCollisionGroundDamage();
         this.lastPilot = this.getPilot();
+        this.previousPositions[this.previousPositionIndex] = this.position();
+        this.previousPositionIndex = (this.previousPositionIndex + 1) % this.previousPositions.length;
         if (this.isPilotLocalClient()) {
             this.sendPilotState();
         }
@@ -2534,6 +2645,7 @@ public abstract class AircraftEntity extends Entity
             }
             if (this.dropsContents) {
                 net.minecraft.world.Containers.dropContents(this.level(), this, this.inventory);
+                net.minecraft.world.Containers.dropContents(this.level(), this, this.parachutes);
             }
         }
         super.remove(reason);
@@ -2766,6 +2878,11 @@ public abstract class AircraftEntity extends Entity
         for (int i = 0; i < items.size(); i++) {
             this.inventory.setItem(i, items.get(i));
         }
+        NonNullList<ItemStack> chutes = NonNullList.withSize(2, ItemStack.EMPTY);
+        ContainerHelper.loadAllItems(input.childOrEmpty("ParachutesAC"), chutes);
+        for (int i = 0; i < chutes.size(); i++) {
+            this.parachutes.setItem(i, chutes.get(i));
+        }
         this.setCommandForce(input.getStringOr("AcCommand", ""));
         this.setGunnerStatus(input.getBooleanOr("AcGunnerStatus", true));
         this.setFuel(input.getIntOr("AcFuel", 0));
@@ -2804,6 +2921,11 @@ public abstract class AircraftEntity extends Entity
             items.set(i, this.inventory.getItem(i));
         }
         ContainerHelper.saveAllItems(output.child("ItemsAC"), items);
+        NonNullList<ItemStack> chutes = NonNullList.withSize(2, ItemStack.EMPTY);
+        for (int i = 0; i < chutes.size(); i++) {
+            chutes.set(i, this.parachutes.getItem(i));
+        }
+        ContainerHelper.saveAllItems(output.child("ParachutesAC"), chutes);
         output.putIntArray("AcWeaponsAmmo", this.weapons.saveAmmo());
         output.putInt("AcDamage", this.getDamageTaken());
         output.putDouble("AcThrottle", this.getCurrentThrottle());

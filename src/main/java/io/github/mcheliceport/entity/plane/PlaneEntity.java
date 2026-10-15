@@ -59,6 +59,12 @@ public class PlaneEntity extends AircraftEntity implements PlaneFlightModel.Body
         return this.planeInfo;
     }
 
+    @Override
+    public int getNumEjectionSeat() {
+        int seats = this.getSeatNum() + 1;
+        return this.planeInfo != null && this.planeInfo.isEnableEjectionSeat && seats <= 2 ? seats : 0;
+    }
+
     /**
      * Upstream MCP_ClientPlaneTickHandler's H key: gunner, extra positions, then normal view.
      * Only a gunner-mode change needs a packet; position selection stays on the pilot's client.

@@ -23,7 +23,7 @@ import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 /**
  * The fuel slots and trunk of a vehicle (decision D12): the trunk and player inventory on
  * vanilla's chest background, with a fuel panel on the left (fuel can in, empty can out, and
- * upstream's fuel gauge).
+ * upstream's fuel gauge), plus the plane's parachute reserves below that panel.
  *
  * <p>Beside them, the weapon list of upstream CE's aircraft GUI: each weapon set with a magazine,
  * its magazine and reserve counts, the round items one supply costs, and a reload button that
@@ -154,11 +154,14 @@ public class AircraftScreen extends AbstractContainerScreen<AircraftMenu> {
         // The fuel panel left of the chest.
         int px = x;
         int py = y;
-        int ph = 17 + 4 * 18 + 16;
+        int ph = this.menu.getParachuteSlots() > 0 ? 120 + this.menu.getParachuteSlots() * 18 : 17 + 4 * 18 + 16;
         graphics.fill(px, py, px + AircraftMenu.CONTENT_X + 4, py + ph, DARK);
         graphics.fill(px + 1, py + 1, px + AircraftMenu.CONTENT_X + 4, py + ph - 1, PANEL_BG);
         this.slotFrame(graphics, x + 10, y + 17, true);
         this.slotFrame(graphics, x + 10, y + 17 + 3 * 18, false);
+        for (int i = 0; i < this.menu.getParachuteSlots(); i++) {
+            this.slotFrame(graphics, x + 10, y + 117 + i * 18, false);
+        }
         // Upstream's gauge: 50 pixels for a full tank.
         AircraftEntity aircraft = this.menu.getAircraft();
         float fuel = aircraft != null ? aircraft.getFuelPercentage() : 0.0F;
@@ -193,6 +196,9 @@ public class AircraftScreen extends AbstractContainerScreen<AircraftMenu> {
         AircraftEntity aircraft = this.menu.getAircraft();
         int percent = aircraft != null ? (int) (aircraft.getFuelPercentage() * 100.0F + 0.5F) : 0;
         graphics.text(this.font, String.format("%3d", percent) + "%", 6, 17 + 4 * 18 + 4, 0xFF404040, false);
+        if (this.menu.getParachuteSlots() > 0) {
+            graphics.text(this.font, "Chutes", 2, 106, 0xFF404040, false);
+        }
         if (!this.weaponRows.isEmpty()) {
             int wx = this.weaponPanelX() - this.leftPos;
             graphics.text(this.font, "Weapons", wx + 6, 5, 0xFF404040, false);

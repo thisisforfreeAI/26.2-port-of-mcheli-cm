@@ -40,7 +40,7 @@ The counts above are the stock inventory from M2, not a limit on addon definitio
 - All stock plane body models and textures are checked. The 79 part references absent in the
   pinned upstream model files are recorded explicitly in the parity fixture; additional gaps fail.
 
-This does not complete stage 2. Remaining plane work includes ejection, equipment integration,
+This does not complete stage 2. Remaining plane work includes equipment integration,
 broader conventional takeoff/turn/landing scenarios, and full OpenGL/Vulkan flight/weapon and two-client
 checks. UAV-only and target-drone placement still waits for the UAV station. Stages 3–8 remain
 outstanding. Do not treat the shared renderer or asset tests as proof of visual correctness.
@@ -139,7 +139,74 @@ Screenshots: [OpenGL](screens/m6-plane-camera-opengl.png) and
 [Vulkan](screens/m6-plane-camera-vulkan.png), both at the first extra camera position.
 
 Full flight/weapon and two-client checks remain outstanding; TV-missile view is connected but
-not exercised in these camera scenes. Ejection still depends on the parachute/equipment work.
+not exercised in these camera scenes. The subsequent parachute increment adds ejection below.
+
+## Parachute and ejection increment
+
+- `ParachuteEntity` replaces the placeholder; `ParachuteMotion` ports the gravity, forward steering,
+  horizontal cap, acceleration multiplier and post-collision drag from `MCH_EntityParachute`.
+  Type 1 is the hand chute, type 2 the boosted ejection seat (opening below -0.1 vertical speed),
+  and type 3 the transport chute. Type 2 uses reduced gravity/drag before tick 20. The server
+  simulates motion; clients use vanilla tracking with the upstream thirteen-tick smoothing length.
+- Landing releases the rider and removes the chute after six ground ticks. Water removes it;
+  a type-2 seat creates an oak rescue boat only when the upstream 5×5×3 water count exceeds 37.
+  Water probes use modern build heights and fluid states. Model type and ordinary entity state
+  save/load normally; riders use vanilla passenger persistence.
+- The hand item deploys at upstream's `(0.5, 3.5, 0.5)` offset and inherits velocity/fall distance.
+  The server mounts the user immediately and consumes an item only after successful deployment;
+  creative users keep it. Grounded or mounted use is refused without consuming anything.
+- Space ejects the pilot or first crew seat of a supported plane. The server checks the sender,
+  vehicle ID, content flag, rider seat, destruction state and reserve availability. Launch position
+  and impulse rotate with the aircraft, its velocity is inherited, and ejection opens the canopy.
+  Pilot ejection also rescues a non-player in seat 1 when another chute remains; a player in that
+  seat chooses their own ejection. A repeated request after transfer cannot charge another item.
+- One/two-seat ejection-capable planes expose one/two reserve slots. Two independent storage slots
+  save under `ParachutesAC`, so `ItemsAC` fuel/trunk indices remain compatible. Menu transfer rules
+  accept one parachute per reserve. The opening packet includes reserve-slot count; protocol 4
+  rejects older clients rather than letting their menu slot numbering disagree.
+- Y now reaches crew seats. A transport passenger beyond seat 1 can use a type-3 chute when content
+  permits it, the hatch is open and the ground is clear. Drop positions use the pinned queue's
+  ten-position history and its `current + 1` oldest-index quirk. Ordinary dismount remains available.
+  Automatic mob dropping, ropes/rappelling and the remaining equipment controls are still pending.
+- `ParachuteRenderer` draws the stock hand chute and selects `$seat`/`$parachute` for the other
+  forms. Geometry uses the shared submission pipeline and model-sized culling bounds, without
+  raw graphics calls. The stock type-2 MQO has malformed exported names and draws neither part
+  upstream. Its exact SHA-256 is pinned in a regression test; no shipped asset is rewritten.
+  A valid addon model supplies those names. Ejection smoke retains upstream's triple assignment
+  to `motionX`, including its random-call order; visual redesign remains outside the port.
+
+Validation: `runData` completed and `build` passes with all 127 JUnit tests and zero
+failures/errors/skips. All 76 required GameTests pass. The thirteen new GameTests cover hand
+item use/refusals, creative consumption, real descent and safe landing, initial ejection boost
+and opening during descent, wrong sender/vehicle ID, empty reserves, repeated packets, first
+crew ejection, other-player protection, non-player rescue, inventory transfers and persistence,
+older saves, transport-seat bailout, and both sides of the water-volume threshold.
+
+### Parachute graphics checks
+
+The isolated `.run/parachutes-opengl` and `.run/parachutes-vulkan` game directories use the
+existing Xvfb/Mesa setup and explicit backend flags. `zz_parachute_probe` is a local test addon:
+it removes the exported-name prefixes from a copy of `parachute2.mqo` and moves the seat object
+before the canopy group, so the existing geometry has valid groups. This fixture is not shipped
+in the mod and does not change the pinned stock asset.
+
+With `/tick freeze`, summon models 1, 2 and 3 at `(-6, -57, 12)`, `(0, -57, 12)` and `(6, -57, 12)`.
+Give model 2 upward motion `(0, 2, 0)` to select its closed seat; model 3 selects the open canopy.
+View from `(16, -48, -6)` at yaw 41, pitch 18. Both backends draw the stock hand chute and the
+addon's closed seat/open canopy. Reloading resources keeps them visible. In Vulkan, temporarily
+removing the addon model and reloading makes only the stock hand chute remain; the stock missing
+parts produce no rendering error. Restoring the addon and reloading restores the other forms.
+
+Live OpenGL controls also verify the aircraft menu's reserve slot and shift-click round trip.
+Space transfers the pilot to a type-2 chute and changes the reserve from one item to empty;
+right-clicking the hand item while airborne deploys type 1. Screenshots:
+[menu](screens/m6-parachute-menu.png), [OpenGL](screens/m6-parachutes-opengl.png), and
+[Vulkan](screens/m6-parachutes-vulkan.png). The large canopy and small black seat in those model
+scenes use the test addon; the smaller brown hand chute uses the shipped model.
+
+These checks cover rendering and an integrated-server control path. Two-client synchronization,
+full aircraft flight/weapon checks and hardware performance remain unrun; the virtual display
+still has no audio device.
 
 ## Integration points already identified
 

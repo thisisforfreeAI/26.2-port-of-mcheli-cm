@@ -9,12 +9,13 @@ The 0.5.1 baseline (M5) supports helicopters with flight, models, HUD, cameras a
 The current M6 development work also adds initial plane entities, placement, flight, VTOL,
 wing switches and model submission. M6 remains incomplete; see `docs/M6_PLAN.md` for validation
 and remaining work. Plane effects and destroyed-plane visual motion are now implemented;
-plane camera-position switching and the shared gunner camera are connected. Ejection and full
-flight/weapon/multiplayer checks are still pending.
+plane camera-position switching and the shared gunner camera are connected. Parachutes, plane
+ejection and transport-seat bailout are implemented, with the stock model limitation below.
+Full flight/weapon/multiplayer checks are still pending.
 
 | Area | Planned milestone |
 |---|---|
-| Remaining plane equipment, ships, tanks, vehicles, UAVs (and the UAV camera), search lights, ropes and rappelling, crawler tracks and track rollers, ERA tiles, gunner NPCs and mobs in seats (and their weapon use), racks, containers, chains, parachutes, GLTD, hand-held weapons (Stinger, Javelin), the rest of the aircraft GUI, drafting table screen, charger, tools, supply vehicles, multiplayer teams and team spotting markers (`MCH_GuiTargetMarker`) | M6 |
+| Remaining plane equipment, ships, tanks, vehicles, UAVs (and the UAV camera), search lights, ropes and rappelling, crawler tracks and track rollers, ERA tiles, gunner NPCs and mobs in seats (and their weapon use), racks, containers, chains, GLTD, hand-held weapons (Stinger, Javelin), the rest of the aircraft GUI, drafting table screen, charger, tools, supply vehicles, multiplayer teams and team spotting markers (`MCH_GuiTargetMarker`) | M6 |
 | BVR and passive radar, GPS panel and GPS missiles, mortar radar and RWR overlays, ECM jammer, the pulse-Doppler notch, the APS "iron curtain", data link, anti-radiation missiles, `Destruct` bombs (UAVs), the targeting pod's spotting | M6 (with the vehicles that use them) |
 | Wingman (AI wingmen, marker block screens and types, missions, `/wingman`) | M6b |
 | Remaining `/mcheli` commands (including reloading content with `reconfig`), advancement triggers, long-distance tracking and rendering, thermal vision (the third camera mode), GPU-buffer model rendering, projectile chunk loading (`ProjectileChunkLoad`), HBM:NTM stubs, performance work | M7 |
@@ -25,8 +26,8 @@ Until then:
 - Ships, tanks and vehicles do nothing when used, and their entity types are inert
   placeholders that cannot be summoned.
 - The aircraft menu has the fuel slots, the trunk and the weapon list with its reload buttons, on a
-  plain container background; the rest of upstream's aircraft GUI (parachutes, the menu buttons)
-  comes with M6.
+  plain container background. Supported planes also expose parachute reserves; the remaining
+  aircraft menu controls come with M6.
 - Fuel comes from fuel cans only. Refuelling from fluid containers, which upstream also allowed,
   needs a fuel fluid and comes with the supply vehicles (M6).
 - The drafting table is drawn with a simple block model; upstream drew a 3D model with a block
@@ -187,6 +188,16 @@ These follow from how Minecraft 26.2 works or from decisions approved in PORTING
 63. The fuel slot refuses empty fuel cans; upstream took them, and they then sat in the slot
     without refuelling.
 
+64. A hand parachute is consumed only after a successful server deployment. Upstream consumed it
+    on the ground or while mounted too. Deployment mounts the user immediately, so repeated use
+    cannot create several chutes before the next tick.
+65. Ejection reserves use separate persistent storage, preserving the existing fuel/trunk slot
+    indices. A successful ejection consumes the slot that supplied the chute; upstream checked
+    slots `2 + i` but cleared `3 + i`, allowing reuse or consuming a different chute. The server
+    checks the content's ejection flag and refuses ejection from a destroyed vehicle.
+66. Parachute water rescue searches the current build height and uses water fluid states, with
+    floored coordinates. Upstream's probe was restricted to y 0–255 and truncated negative x/z.
+
 ## Upstream content issues kept as they are
 
 The port ships upstream's stock content files unchanged, including what upstream's conversion of
@@ -215,3 +226,10 @@ its stock content from TXT to YAML lost or changed (the full list, checked by a 
   "duplicate keys found" warning while loading them, and the second name wins, as upstream.
 - Upstream's legacy TXT files (not shipped, used as test fixtures) contain three recipes that cannot
   work: two use a pattern letter without a key, and one needs a 1.12 potion by metadata.
+
+- The stock `models/parachute2.mqo` has `[Exported] [Imported]` prefixes on every group name.
+  Upstream's whitespace parser truncates those names, so neither `$seat` nor `$parachute` exists
+  for rendering. Ejection seats and transport chutes therefore draw nothing with the stock model,
+  as upstream; movement, riders, landing and rescue still work. A replacement addon model with
+  correctly named groups renders both forms. The exact shipped asset is pinned by a SHA-256 test;
+  the stock hand parachute (`parachute1.obj`) renders normally.

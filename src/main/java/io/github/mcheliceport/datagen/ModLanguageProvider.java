@@ -74,7 +74,7 @@ public class ModLanguageProvider extends LanguageProvider {
         add(prefix + "right", "Right");
         add(prefix + "left", "Left");
         add(prefix + "switch_gunner", "Gunner Mode");
-        add(prefix + "switch_hovering", "Hovering Mode");
+        add(prefix + "switch_hovering", "Hover / Eject Seat");
         add(prefix + "zoom", "Zoom / Hatch");
         add(prefix + "unmount", "Get Out");
         add(prefix + "extra", "Extra (Fold Blades)");

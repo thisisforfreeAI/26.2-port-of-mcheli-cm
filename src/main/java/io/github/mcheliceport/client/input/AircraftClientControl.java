@@ -138,11 +138,21 @@ public final class AircraftClientControl {
             send = true;
         }
 
-        if (isPilot) {
-            if (ModKeyMappings.UNMOUNT.consumeClick()) {
-                unmount = HeliControlPayload.UnmountAction.UNMOUNT_SELF;
+        if (ModKeyMappings.UNMOUNT.consumeClick()) {
+            unmount = HeliControlPayload.UnmountAction.UNMOUNT_SELF;
+            send = true;
+        }
+        boolean hoverOrEject = ModKeyMappings.SWITCH_HOVERING.consumeClick();
+        if (hoverOrEject && aircraft instanceof PlaneEntity) {
+            if (aircraft.canEjectSeat(player)) {
+                switches = switches.with(PlayerControlSwitches.EJECT_SEAT, true);
                 send = true;
+            } else {
+                playSoundNg();
             }
+        }
+
+        if (isPilot) {
             if (ModKeyMappings.GEAR_UP_DOWN.consumeClick() && aircraft.getAcInfo().haveLandingGear()) {
                 if (aircraft.canFoldLandingGear()) {
                     gear = HeliControlPayload.GearSwitch.FOLD;
@@ -197,7 +207,7 @@ public final class AircraftClientControl {
                 }
             }
 
-            if (ModKeyMappings.SWITCH_HOVERING.consumeClick()) {
+            if (hoverOrEject && aircraft instanceof HeliEntity) {
                 if (aircraft.canSwitchHoveringMode()) {
                     mode = aircraft.isHoveringMode() ? HeliControlPayload.ModeSwitch.HOVERING_OFF
                             : HeliControlPayload.ModeSwitch.HOVERING_ON;

@@ -39,11 +39,28 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 - Five plane camera GameTests cover mode cycling, blocked gunner conditions, per-viewer positions,
   save/load, lifecycle resets and authorized network controls.
 
+- Parachute item deployment and real server-controlled parachute entities: hand chutes, delayed
+  ejection-seat opening, transport chutes, forward steering, landing cleanup and the ejection
+  seat's deep-water rescue boat. Gravity, drag, speed cap and opening thresholds retain upstream
+  formulas. Chutes and their model type persist with the world.
+- Plane ejection through Space for the pilot and first crew seat, inherited aircraft motion and
+  rotated launch impulse, canopy opening, and automatic rescue of a non-player first crew member
+  when a second reserve is available. Another player is never forced out with the pilot.
+- Aircraft menu reserve slots, shift-click transfers and independent parachute storage. Existing
+  fuel/trunk save indices are unchanged. Network protocol version 4 requires matching builds for
+  the changed menu layout. Y now reaches crew seats and deploys an eligible transport chute.
+- Both parachute models use supported render submission with model-sized culling bounds. The
+  stock `parachute2.mqo` cannot supply the part names upstream asks for; that asset defect remains
+  unchanged and is documented in KNOWN_ISSUES.md. Correctly grouped addon models render.
+
 ### Fixed
 
+- Parachute deployment no longer consumes an item when refused on the ground or while mounted.
+  Ejection consumes the reserve slot that supplied the chute, correcting upstream's mismatched
+  read/write slot indices. Pilot Y hints now say Dismount instead of promising a crew drop.
 - Changing a vehicle's content type before its crew seats spawn no longer crashes on a missing seat.
 
-M6 is still in progress. Ejection, remaining equipment and full
+M6 is still in progress. Automatic mob drops, remaining equipment and full
 manual flight/weapon/multiplayer checks
 are still outstanding, alongside the other M6 vehicle types and systems. Stock model references
 without geometry are recorded in `src/test/resources/parity/plane-model-gaps.txt`; they were
