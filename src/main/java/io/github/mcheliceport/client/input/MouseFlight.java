@@ -50,6 +50,7 @@ public final class MouseFlight {
 
     /** Vanilla turned the local player, who rides {@code aircraft} directly, by one frame of mouse input. */
     public static void onPassengerTurned(AircraftEntity aircraft, Entity passenger) {
+        if (aircraft.isPassenger()) { return; }
         Minecraft mc = Minecraft.getInstance();
         if (passenger != mc.player || !aircraft.canMouseRot()) {
             return;

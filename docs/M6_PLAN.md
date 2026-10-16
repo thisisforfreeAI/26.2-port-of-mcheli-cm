@@ -439,6 +439,138 @@ pilot exits leaves the passenger without regeneration. Captures:
 successfully, both clients return to the disconnect screen, and both quit normally with exit 0.
 
 
+## Cargo container increment
+
+- Replace the inert container entity/item with the stock two-block-wide, fireproof cargo entity.
+  The five-block placement ray accepts blocks/source fluids, snaps yaw by quarter turns and
+  preserves the upstream half-block spawn offset. Eye obstruction, occupied placement and failed
+  server spawn refuse placement without consuming the item; creative placement keeps the item.
+- Right-click opens a vanilla six-row inventory, with all 54 slots shared by viewers and normal
+  shift-click transfer. The pinned upstream `displayInventory` stub is empty, so connecting this
+  menu is an explicit fix (KNOWN_ISSUES difference 69). Validity follows current entity interaction
+  distance. Modern slot codecs save counts, components and empty-slot positions. Both direct and
+  sided automation expose NeoForge's current transactional item capability.
+- Only player melee damages the container, with external scaling, accumulated damage times 20,
+  one point of decay per tick, and the strict greater-than-40 threshold. Creative breaks instantly.
+  Survival drops one empty container and its inventory; creative drops the inventory alone.
+  Repeated destructive removal cannot drop contents twice. Unload and dimension-change removal
+  reasons retain contents and do not scatter items into the source world.
+- Server physics preserve gravity/buoyancy from five fluid slices, floating in both water and lava,
+  a .35 horizontal speed cap, .99/.95 damping, .9 ground friction and five-degree movement yaw.
+  The unused upstream speedMultiplier has no effect and is omitted. Cargo emits no walking
+  sounds/events, as upstream. Containers push one another;
+  the global collision-destruction setting gates corner-probe snow/lily-pad clearing. Preserve
+  upstream's floating-point corner-index division. Probes use current build heights/fluid tags.
+- The stock container OBJ, texture, .75 tint and .3 vertical render offset use the supported model
+  submission path. Client tracking retains the upstream thirteen-tick interpolation extension.
+  Protocol 7 rejects clients from before the new container entity data. No new payload is added.
+- Aircraft racks, container rack attachment, tow chains and ropes/rappelling remain later M6
+  equipment increments. This increment does not enable transport attachment hints prematurely.
+
+Automated validation: all 136 JUnit tests pass with zero failures, errors or skips, and all
+116 required GameTests pass. Seven new cargo scenarios exercise real placement/consumption and
+refusals, every saved slot (including item components/custom names), shared six-row menus and
+shift-click transfer, transactional capability commit/rollback, range/removal validity, damage
+threshold/decay and exactly-once drops, unload/dimension-removal reasons, gravity/speed/yaw,
+water/lava buoyancy, fire immunity and configured soft-block clearing/container pushing.
+Actual cross-dimension travel is not part of this check; its removal reasons and serialized
+inventory are covered independently.
+
+Live validation uses the isolated dedicated server with an OpenGL player (eager models) and
+Vulkan player (on-demand models) on software Mesa drivers. Both right-click the same crate at
+`(1100.5, -59, 0.5)` and see all 54 slots, including items in slot 53. The OpenGL player
+shift-clicks 32 diamonds out of slot 0 while the Vulkan player takes 12 emeralds from slot 53.
+Server queries show the crate empty and those exact counts in the two player inventories.
+Both return their items by shift-click; the crate holds 32 diamonds and 12 emeralds again.
+
+A survival player places the actual container item near `(1085.5, -59, -0.5)`; it settles on the
+ground at Y -59, and the player's inventory no longer contains the placement item. Four normal
+melee clicks break it into one container item. Breaking the loaded land crate likewise drops one
+container plus diamonds in stacks of 10 and 22, and 12 emeralds (the exact stored total).
+A crate in an enclosed three-block-deep water pool remains afloat. A server-set X impulse of
+.15 moves it from X 1127.5 to the pool wall at X 1133, with Vulkan tracking the movement. Captures:
+[OpenGL model](screens/m6-cargo-opengl.png), [Vulkan inventory](screens/m6-cargo-inventory-vulkan.png)
+and [Vulkan floating crate](screens/m6-cargo-floating-vulkan.png).
+These are local functional checks; software rendering does not establish hardware performance,
+audio or latency/loss behavior. The server saves and stops successfully. The Vulkan client
+reports a native Netty connection reset on server close, returns to its disconnect screen, and
+both clients quit normally with successful Gradle exit. No mod exception occurs during cargo
+placement, inventory interaction or movement.
+
+
+
+## Aircraft rack increment
+
+- J loads every empty compatible rack in content order, querying each transformed entry point's
+  configured range. U releases one load, scanning racks in reverse order. A vehicle pilot can
+  press J to board a compatible carrier and U to leave it without leaving their own vehicle.
+  Only the actual pilot may send rack actions for that vehicle ID; outsiders and crew are denied.
+- Preserve rack name/kind matching (case insensitive), cargo-side RideRack mappings, exclusion
+  groups and the server persistent-data `CanMountEntity` opt-in for other entity types. Reject
+  occupied/missing racks, existing passengers, destroyed vehicles and nested loaded transports.
+  Normal player boarding skips rack slots rather than treating them as spare crew seats.
+- `vehicles.enablePutRackInFlying` defaults true. When false, carrier loading needs throttle at
+  most .3 and ground within three blocks. As upstream, vehicle self-boarding uses its independent
+  path and is not gated by this setting. Vanilla's three-second reboarding cooldown still applies.
+- Seats/racks remain children of their carrier, and loads become children of those seats. Vanilla
+  serializes the entire tree, including cargo inventory. Existing seats are reused on load.
+  Carried containers skip motion; carried vehicles skip their own simulation, pilot motion and
+  attitude packets, ground damage and tank crushing/ramming. Their drivers/crew remain aboard.
+- Container models receive upstream's carrier-yaw-space pitch/roll transform. Carried aircraft
+  use the equivalent composed world attitude, so their own model, weapons, crew seats and living
+  crew transforms agree without nested legacy drawing. On release the rack's fixed yaw/pitch
+  and zero local roll are restored, matching upstream's detached pose. Supported model rendering
+  remains in use. Supported same-dimension teleport transitions synchronize the driver/crew tree
+  when a release or parachute touchdown returns vehicle movement authority to the client, replacing
+  the old eight-tick release position reserve. Tank carrier-collision grace keeps refreshing while
+  carried and is renewed on release, preventing a detached truck from ramming its carrier.
+- Releases use explicit UnmountPos when present, otherwise the entry point. Carrier-requested
+  aircraft release adds upstream's twelve-block fore/aft offset when no explicit point exists.
+  Refuse solidly blocked exits without detaching cargo. If the carrier has no ground in its
+  twenty-block downward probe, deploy a type-3 transport chute and inherit carrier velocity.
+  Spawn/mount failures and cancelled dismounts retain or restore the original rack/inventory.
+  An aircraft pilot can leave a transport chute with U; normal touchdown releases its load.
+- `OpenParaAlt` remains parsed but unused by the pinned upstream rack-release code. Do not silently
+  reinterpret it as a new altitude rule. The existing stock transport/ejection canopy defect
+  remains documented in KNOWN_ISSUES; the descent behavior is independent of the missing mesh.
+- Add a dedicated rack-action channel and protocol 8, leaving existing control record layouts
+  intact. Key descriptions and capability-based HUD hints appear only with these working actions.
+  Tow chains and ropes/rappelling remain separate later M6 equipment increments.
+
+Automated validation: all 139 JUnit tests pass with no failures, errors or skips, and all
+127 required GameTests pass. New unit checks round-trip every rack action, neutralize unknown
+ordinals and compare container render tilt with composed world attitude. Eleven server scenarios
+cover stock CH-47 exclusions, named/kind/RideRack vehicle matching, nested-load rejection,
+air-loading gates and opt-in entities, pilot/ID/crew authorization, both movement authority modes,
+carried pose/physics/crushing suspension, cooldown/self-boarding, blocked/reverse-order release,
+airdrop/touchdown with cargo inventory, passenger-tree save/load, carrier removal and cancellation
+of mounting, dismounting, parachute spawning and parachute mounting. Only confirmed successful
+attachments count as loads, and cancelled releases preserve the original rack and inventory.
+Additional cases verify the released tank still damages nearby living entities while excluding
+its carrier, and aircraft touchdown safely returns the load to independent movement.
+
+Live validation uses a dedicated server with separate OpenGL and Vulkan players on software Mesa.
+The OpenGL MH-53E pilot loads a Growler occupied by the Vulkan driver using J. Holding forward
+inside the loaded truck does not move it independently. The driver leaves with U on the ground,
+waits out the vanilla cooldown, then boards again with J. The carrier flies more than forty blocks
+above the ground and releases with U; both players retain 20 health and both vehicles retain zero
+damage. After transport-chute touchdown the truck drives independently. The server-controlled
+movement setting is then enabled and synchronized to both clients; a second occupied Growler
+likewise loads, flies, releases, lands and drives, with both vehicles undamaged and both players alive.
+
+A CH-47 loads a container holding 23 diamonds in slot 53, flies thirty blocks above ground and
+releases it onto a type-3 chute. The chute's passenger data confirms the crate attachment during
+descent. After landing, a survival player opens the crate and sees the same 23 diamonds in the
+last slot. Captures: [Vulkan truck after landing](screens/m6-racks-growler-landed-vulkan.png) and
+[OpenGL cargo after drop](screens/m6-racks-cargo-after-drop-opengl.png).
+
+The near-ground driver-requested release still logs a brief client-movement correction in default
+authority mode before settling at the intended exit. No damage or lost passengers follow; airborne
+releases and touchdowns in this run produce no further movement corrections. This remains a
+release-smoothing limitation. The server saves/stops and both clients quit successfully. These
+checks do not establish hardware performance, audio, network-latency/loss behavior or actual
+cross-dimension travel; passenger-tree serialization is checked independently.
+
 ## Integration points already identified
 
 ### Shared Ctrl controls follow-up

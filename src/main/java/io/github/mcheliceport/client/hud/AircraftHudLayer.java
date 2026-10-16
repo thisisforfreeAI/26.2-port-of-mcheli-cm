@@ -340,6 +340,13 @@ public final class AircraftHudLayer implements GuiLayer {
         } else if (seatId == 0 && (aircraft.canUnfoldHatch() || aircraft.canFoldHatch())) {
             this.drawLeftKey(graphics, "OpenHatch", ModKeyMappings.ZOOM, leftX, ACTIVE);
         }
+        if (seatId == 0) {
+            if (aircraft.racks().canRide()) { this.drawRightKey(graphics, "Board carrier", ModKeyMappings.PUT_TO_RACK, rightX, ACTIVE); }
+            else if (aircraft.racks().canLoad()) { this.drawRightKey(graphics, "Load rack", ModKeyMappings.PUT_TO_RACK, rightX, ACTIVE); }
+            if (aircraft.isPassenger() || aircraft.racks().canUnload()) {
+                this.drawRightKey(graphics, "Unload / Leave rack", ModKeyMappings.DOWN_FROM_RACK, rightX, ACTIVE);
+            }
+        }
     }
 
     private static String keyName(KeyMapping key) {

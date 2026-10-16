@@ -14,20 +14,23 @@ ejection and transport-seat bailout are implemented, with the stock model limita
 Ship placement, water movement, steering, crew weapons and model submission are implemented.
 Tank/ground-vehicle placement, driving, wheel contacts, tracks, rollers, independent weapons
 and reactive armor state are implemented. Ground crushing/ramming, nearby fuel/ammunition supply,
-vehicle repair and medical crew effects are implemented. Remaining equipment work is listed below.
+vehicle repair and medical crew effects are implemented. Cargo containers also place, float,
+save items and open a 54-slot inventory. Remaining equipment
+work is listed below. Rack loading/release and vehicle self-boarding are implemented; tow chains
+and rappelling remain pending.
 Automated conventional/VTOL flight sequences and plane weapons in both authority modes pass;
 broader gameplay and hardware checks remain pending.
 
 | Area | Planned milestone |
 |---|---|
-| Remaining plane/ground equipment, UAVs (and the UAV camera), search lights, ropes and rappelling, gunner NPCs and mobs in seats (and their weapon use), racks, containers, chains, GLTD, hand-held weapons (Stinger, Javelin), the rest of the aircraft GUI, drafting table screen, charger, tools, multiplayer teams and team spotting markers (`MCH_GuiTargetMarker`) | M6 |
+| Remaining plane/ground equipment, UAVs (and the UAV camera), search lights, ropes and rappelling, gunner NPCs and mobs in seats (and their weapon use), chains, GLTD, hand-held weapons (Stinger, Javelin), the rest of the aircraft GUI, drafting table screen, charger, tools, multiplayer teams and team spotting markers (`MCH_GuiTargetMarker`) | M6 |
 | BVR and passive radar, GPS panel and GPS missiles, mortar radar and RWR overlays, ECM jammer, the pulse-Doppler notch, the APS "iron curtain", data link, anti-radiation missiles, `Destruct` bombs (UAVs), the targeting pod's spotting | M6 (with the vehicles that use them) |
 | Wingman (AI wingmen, marker block screens and types, missions, `/wingman`) | M6b |
 | Remaining `/mcheli` commands (including reloading content with `reconfig`), advancement triggers, long-distance tracking and rendering, thermal vision (the third camera mode), GPU-buffer model rendering, projectile chunk loading (`ProjectileChunkLoad`), HBM:NTM stubs, performance work | M7 |
 
 Until then:
 
-- The key hints for racks and search lights come with those features (M6).
+- Rack controls and hints are implemented. Searchlight controls remain pending (M6).
 - Tank movement uses the main hull collision box plus wheel terrain probes. Extra hull boxes
   contribute damage/crushing regions, but do not provide additional solid movement collision
   shapes. Ground attitude is
@@ -218,6 +221,25 @@ These follow from how Minecraft 26.2 works or from decisions approved in PORTING
 68. Vehicle-to-vehicle fuel transfer matches named fuel types against the content whitelist.
     The port still has no registered McHeli fuel fluid, so these names are compatibility tokens;
     this does not add fluid-container handling, Forge fluid identity or fluid capabilities.
+
+69. Cargo-container interaction opens a standard six-row menu; the pinned upstream wrapper's
+    `displayInventory` body is empty. Menu validity uses current entity interaction distance
+    instead of the old wrapper's 64-block distance. Current NeoForge transactional item
+    capabilities replace the old Forge item handler. Slot-indexed modern item data preserves
+    all 54 positions; removed block Material checks use water/lava fluid tags and current build
+    heights. Contents drop only for destructive removal, preserving unload and dimension changes.
+
+70. Rack loads use the saved vanilla passenger tree, with full world attitude for carried vehicles
+    and a supported render transform for containers. Their own movement/ground effects and pilot
+    motion/attitude packets are suspended while carried. This replaces upstream's nested drawing
+    and avoids simulating a vehicle through its carrier. Normal player boarding skips rack slots.
+    Blocked release points are refused. Failed/cancelled parachute deployment preserves or restores
+    the rack attachment. Supported teleport transitions synchronize the driver/crew tree on release
+    and transport-chute touchdown instead of upstream's eight-tick position reserve. Tank carrier
+    collision grace refreshes while carried and on release. Existing living crew transforms use
+    the carried vehicle's composed world attitude.
+    A near-ground driver-requested release can briefly correct the client's movement before
+    settling at the exit in default movement mode; this smoothing limitation remains open.
 
 ## Upstream content issues kept as they are
 

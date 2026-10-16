@@ -28,6 +28,7 @@ import java.util.List;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.neoforged.neoforge.registries.DeferredHolder;
+import io.github.mcheliceport.entity.container.CargoContainerEntity;
 
 /**
  * Upstream's entity types ({@code MCH_MOD#registerEntity}), with its sizes, tracking ranges and
@@ -74,7 +75,10 @@ public final class ModEntityTypes {
     public static final DeferredHolder<EntityType<?>, EntityType<ParachuteEntity>> PARACHUTE = register("parachute",
             ModRegistries.ENTITY_TYPES.registerEntityType("parachute", ParachuteEntity::new, MobCategory.MISC,
                     builder -> builder.sized(1.5F, 0.6F).clientTrackingRange(toChunks(200)).updateInterval(10)));
-    public static final DeferredHolder<EntityType<?>, EntityType<PlaceholderEntity>> CONTAINER = placeholder("container", 2.0f, 1.0f, 200, 10);
+    public static final DeferredHolder<EntityType<?>, EntityType<CargoContainerEntity>> CONTAINER = register("container",
+            ModRegistries.ENTITY_TYPES.registerEntityType("container", CargoContainerEntity::new,
+                    MobCategory.MISC, builder -> builder.sized(2, 1).fireImmune().clientTrackingRange(toChunks(200))
+                            .updateInterval(10).setShouldReceiveVelocityUpdates(true)));
     public static final DeferredHolder<EntityType<?>, EntityType<VehicleEntity>> VEHICLE = register("vehicle",
             ModRegistries.ENTITY_TYPES.registerEntityType("vehicle", VehicleEntity::new, MobCategory.MISC,
                     builder -> builder.sized(2, 0.7F).clientTrackingRange(toChunks(600)).updateInterval(2)));

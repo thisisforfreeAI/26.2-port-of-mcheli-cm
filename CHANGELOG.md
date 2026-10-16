@@ -12,6 +12,27 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 
 ### Added
 
+- Aircraft racks now load containers and eligible vehicles with J; U releases the last occupied
+  rack. Vehicle pilots can board nearby compatible carriers with J and leave with U. Stock rack
+  names/kinds, RideRack mappings, entry ranges and seat/rack exclusion groups are enforced.
+- Attached loads save in the carrier's passenger tree. Carried vehicles retain their drivers and
+  cargo while movement physics, pilot motion/attitude updates and tank crushing are suspended.
+  Rack poses follow carrier attitude through supported rendering and world transforms.
+- High rack releases use type-3 transport parachutes with carrier velocity. Blocked exits and
+  cancelled mounting/dismounting/spawning keep or restore the original attachment. Controls use
+  protocol 8 and require matching client/host builds; existing control payload layouts are kept.
+
+- Cargo containers now place from their item and provide a synchronized 54-slot inventory with
+  shift-click transfers, slot-preserving saves and current NeoForge item automation capabilities.
+  The stock model uses the shared OpenGL/Vulkan submission path. Server motion restores gravity,
+  water/lava buoyancy, speed limits, container pushing and configurable snow/lily-pad clearing.
+- Player melee breaks containers using upstream damage/decay rules. Survival drops an empty
+  container plus its contents; creative drops contents only. Unload/dimension-removal reasons
+  preserve inventory without world drops. The formerly empty upstream inventory-opening method
+  now opens a standard six-row menu, checked at the current interaction distance.
+- Network protocol 7 rejects older clients that cannot decode the new container entity data;
+  clients and hosts must use the same build.
+
 - Nearby fuel supply now runs on the server every ten ticks, including the stock infinite fuel
   truck, compatible fuel types, finite sources and the upstream consumption grace period.
 - Addon-defined nearby vehicle repair runs every twenty ticks. Medical aircraft (including the

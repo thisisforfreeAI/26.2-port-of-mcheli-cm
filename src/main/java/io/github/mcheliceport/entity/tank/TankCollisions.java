@@ -32,8 +32,11 @@ final class TankCollisions {
 
     TankCollisions(TankEntity tank) { this.tank = tank; }
 
+    void rememberCarrier(Entity carrier) { this.excluded.put(carrier, 60); }
+
     void tick(ServerLevel level) {
         this.updateExcluded();
+        if (this.tank.isPassenger()) { return; }
         var info = this.tank.getTankInfo();
         if (info == null) { return; }
         boolean crush = CommonConfig.COLLISION_DESTROY_BLOCK.get();
@@ -98,7 +101,7 @@ final class TankCollisions {
     }
 
     private boolean canRam(Entity entity) {
-        if (entity == this.tank || entity.isRemoved() || entity instanceof ItemEntity || entity instanceof ExperienceOrb
+        if (entity.getRootVehicle() == this.tank.getRootVehicle() || entity.isRemoved() || entity instanceof ItemEntity || entity instanceof ExperienceOrb
                 || entity instanceof SeatEntity || entity instanceof BaseBulletEntity
                 || entity.getType() == ModEntityTypes.CHAIN.get()
                 || this.tank.isMountedEntity(entity) || this.excluded.containsKey(entity)) { return false; }

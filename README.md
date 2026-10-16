@@ -25,7 +25,11 @@ and wakes. Tanks and ground vehicles now place, mount and save/load, with drivin
 animated wheels/tracks and independent weapon aiming. Broader gameplay validation and the
 remaining support systems continue in M6. The stock fuel truck now supplies nearby vehicles, and
 medical transports regenerate secondary-seat passengers while a pilot is aboard. Addon-defined
-nearby vehicle repair is supported. The mod also loads all of McHeli CE's content (vehicles, weapons, throwables and
+nearby vehicle repair is supported. Cargo containers now place, float and store 54 slots of
+items: right-click to open, and attack to break and drop the contents. Aircraft racks now load
+eligible cargo with **J** and unload with **U**. Eligible vehicle pilots
+can use J to board a carrier and U to leave it. High cargo releases use a transport parachute;
+towing remains pending. The mod also loads all of McHeli CE's content (vehicles, weapons, throwables and
 HUDs, from YAML and legacy TXT files, including addon packs).
 
 - [PORTING_PLAN.md](PORTING_PLAN.md): the roadmap and the decisions behind it

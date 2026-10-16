@@ -58,6 +58,7 @@ public class ParachuteEntity extends Entity {
         Entity previousVehicle = user.getVehicle();
         Vec3 previousPosition = user.position();
         user.stopRiding();
+        if (user.isPassenger()) { chute.discard(); return null; }
         if (!user.startRiding(chute, true, true)) {
             chute.discard();
             user.setPos(previousPosition);
@@ -104,14 +105,15 @@ public class ParachuteEntity extends Entity {
             return;
         }
         AABB box = this.getBoundingBox();
+        Entity rider = this.getFirstPassenger();
         AABB waterProbe = new AABB(box.minX, box.minY - 0.125, box.minZ,
                 box.maxX, box.minY + box.getYsize() / 5.0 - 0.125, box.maxZ);
         if (BlockPos.betweenClosedStream(waterProbe).anyMatch(p -> this.level().getFluidState(p).is(FluidTags.WATER))) {
             this.tryRescueBoat();
             this.discard();
+            this.syncReleasedAircraft(rider);
             return;
         }
-        Entity rider = this.getFirstPassenger();
         if (rider != null && !rider.isAlive()) {
             this.discard();
             return;
@@ -130,6 +132,7 @@ public class ParachuteEntity extends Entity {
                 rider.resetFallDistance();
             }
             this.discard();
+            this.syncReleasedAircraft(rider);
             return;
         }
         Vec3 previous = this.position();
@@ -148,6 +151,15 @@ public class ParachuteEntity extends Entity {
             entity.push(this);
         }
         this.applyEffectsFromBlocks();
+    }
+
+    /** Returning control to a loaded vehicle also synchronizes its driver and crew positions. */
+    private void syncReleasedAircraft(@Nullable Entity rider) {
+        if (rider instanceof io.github.mcheliceport.entity.aircraft.AircraftEntity cargo && !cargo.isPassenger()
+                && this.level() instanceof ServerLevel server) {
+            cargo.teleport(new net.minecraft.world.level.portal.TeleportTransition(server, cargo.position(), Vec3.ZERO,
+                    cargo.getYRot(), cargo.getXRot(), net.minecraft.world.level.portal.TeleportTransition.DO_NOTHING));
+        }
     }
 
     private void tickClient() {

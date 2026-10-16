@@ -45,8 +45,9 @@ import org.slf4j.Logger;
 public final class ModNetwork {
 
     private static final Logger LOGGER = LogUtils.getLogger();
-    /** Bump when payload encoding or menu slot layout changes. */
-    public static final String VERSION = "6";
+    /** Bump when payload encoding, menu layout or synchronized entity data changes. */
+    // Rack controls add a required payload channel.
+    public static final String VERSION = "8";
 
     private ModNetwork() {
     }
@@ -71,6 +72,8 @@ public final class ModNetwork {
                 ModNetwork::handleAttitude);
         registrar.playToServer(AircraftMotionPayload.TYPE, AircraftMotionPayload.CODEC, ModNetwork::handleMotion);
         registrar.playToServer(SeatControlPayload.TYPE, SeatControlPayload.CODEC, ModNetwork::handleSeatControl);
+        registrar.playToServer(RackControlPayload.TYPE, RackControlPayload.CODEC,
+                (p, context) -> applyRackControl(context.player(), p));
         registrar.playToServer(AircraftStatusRequestPayload.TYPE, AircraftStatusRequestPayload.CODEC,
                 ModNetwork::handleStatusRequest);
         registrar.playToClient(AircraftStatusResponsePayload.TYPE, AircraftStatusResponsePayload.CODEC,
@@ -183,6 +186,18 @@ public final class ModNetwork {
 
     // ---- client to server ----
 
+    public static void applyRackControl(Player player, RackControlPayload p) {
+        AircraftEntity aircraft = riddenAircraft(player);
+        if (aircraft == null || aircraft.getId() != p.aircraftId() || !aircraft.isPilot(player) || aircraft.isDestroyed()) { return; }
+        switch (p.action()) {
+            case LOAD -> aircraft.racks().load();
+            case UNLOAD -> aircraft.racks().unload();
+            case RIDE -> aircraft.racks().ride();
+            case LEAVE -> aircraft.racks().leave();
+            default -> { }
+        }
+    }
+
     /** The vehicle a player rides, in seat 0 or a crew seat (upstream's lookup in {@code onReceive}). */
     public static @Nullable AircraftEntity riddenAircraft(Player player) {
         Entity vehicle = player.getVehicle();
@@ -224,6 +239,9 @@ public final class ModNetwork {
         }
         if (aircraft.isDestroyed()) {
             return;
+        }
+        if (pilot && p.unmount() == HeliControlPayload.UnmountAction.UNMOUNT_AIRCRAFT) {
+            aircraft.racks().leave(); return;
         }
         if (p.switches().get(PlayerControlSwitches.EJECT_SEAT)) {
             aircraft.ejectSeat(player);
@@ -342,7 +360,7 @@ public final class ModNetwork {
     static void handleAttitude(AircraftAttitudePayload p, IPayloadContext context) {
         Player player = context.player();
         if (!(player.getVehicle() instanceof AircraftEntity aircraft) || aircraft.getId() != p.entityId()
-                || !aircraft.isPilot(player) || aircraft.isDestroyed()) {
+                || !aircraft.isPilot(player) || aircraft.isDestroyed() || aircraft.isPassenger()) {
             return;
         }
         if (!Float.isFinite(p.yaw()) || !Float.isFinite(p.pitch()) || !Float.isFinite(p.roll())) {

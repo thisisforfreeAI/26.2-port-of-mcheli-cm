@@ -14,6 +14,10 @@ import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import org.slf4j.Logger;
+import io.github.mcheliceport.registry.ModEntityTypes;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
+import net.neoforged.neoforge.transfer.item.VanillaContainerWrapper;
 
 /**
  * Entry point of McHeli CE (26.2 Port), an unofficial port of McHeli: Community Edition.
@@ -35,6 +39,14 @@ public final class McheliCePort {
         container.registerConfig(ModConfig.Type.SERVER, ServerConfig.SPEC);
 
         modBus.addListener(this::commonSetup);
+        modBus.addListener((RegisterCapabilitiesEvent event) -> {
+            event.registerEntity(Capabilities.Item.ENTITY,
+                    ModEntityTypes.CONTAINER.get(),
+                    (cargo, context) -> VanillaContainerWrapper.of(cargo));
+            event.registerEntity(Capabilities.Item.ENTITY_AUTOMATION,
+                    ModEntityTypes.CONTAINER.get(),
+                    (cargo, side) -> VanillaContainerWrapper.of(cargo));
+        });
         ModNetwork.register(modBus);
         ModGameTests.register(modBus);
     }
