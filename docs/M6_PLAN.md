@@ -868,13 +868,14 @@ environment limitations; no mod exception or graphics-pipeline failure occurs in
   and hosts must update together. Version remains 0.5.1. Remote range/loaded-terrain limits,
   telemetry-only previews and the deferred chunk-streaming work remain unchanged.
 
-Automated validation: 151 JUnit tests and all 165 required GameTests pass. Eight new server tests
+Automated validation: 151 JUnit tests and all 166 required GameTests pass. Nine new server tests
 exercise pairing transfers, one-controller exclusion, full-list item retention, stale/forged menu
 actions, stable selection rather than latest deployment, endpoint persistence, old-save migration,
 tablet item retention, unsaved helpers, immediate unpair writeback, item replacement, death,
 small/full-size configuration, and cancelled spawn/mount cleanup. Four codec tests check immutable
 ordered lists, disk/network identity, roster telemetry, menu/UUID action encoding and bounded
-decoding of untrusted lists.
+decoding of untrusted lists. A real ServerPlayer save test compares placed and tablet controllers:
+placed stations retain normal RootVehicle data, while temporary tablet seats omit it entirely.
 
 ### Pairing and tablet graphics checks
 
@@ -897,7 +898,11 @@ open it, connect and fly the RC Goblin:
 The other client sees the drone airborne and the tablet operator on the ground, with no visible
 station helper: [external view](screens/m6-uav-tablet-observer.png).
 
-The first dedicated-server session saves/stops successfully. These are software Mesa checks;
+Both dedicated-server sessions save/stop and both clients quit successfully. After a full server
+restart the Vulkan player retains the tablet's UUID/pairing, reopens its roster and reconnects
+to the same drone. No temporary controller restores. This check exposed vanilla writing an empty
+RootVehicle wrapper for the unsaved seat; the final save-predicate correction removes that wrapper
+and is covered by the ServerPlayer serialization regression above. These are software Mesa checks;
 hardware performance, audio and adverse network conditions remain untested. Initial Quick Play
 attempts occurred before the server finished starting, so the clients rejoined through Direct
 Connection. Missing OpenAL hardware and the X11 cursor warning remain environment limitations.

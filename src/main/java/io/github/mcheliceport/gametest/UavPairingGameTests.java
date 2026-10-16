@@ -36,6 +36,7 @@ final class UavPairingGameTests {
         ModGameTests.test("uav_tablet_replaced_item_and_death_release", 60, UavPairingGameTests::tabletLoss);
         ModGameTests.test("uav_tablet_small_only_and_full_size_config", 60, UavPairingGameTests::tabletConfig);
         ModGameTests.test("uav_tablet_cancelled_spawn_and_mount", 60, UavPairingGameTests::cancelled);
+        ModGameTests.test("uav_tablet_player_save_omits_transient_root_vehicle", 60, UavPairingGameTests::playerSave);
     }
     private static Player nearby(GameTestHelper h, UavStationEntity s) {
         var p = GameTestSupport.player(h, GameType.SURVIVAL, new Vec3(8, 2, 8)); p.setPos(s.position()); return p;
@@ -157,5 +158,17 @@ final class UavPairingGameTests {
         try { ModItems.UAV_TABLET.get().use(h.getLevel(), p, InteractionHand.MAIN_HAND); check(h, !p.isPassenger() && created.size() == 1 && created.getFirst().isRemoved(), "cancelled mount removes temporary station"); }
         finally { NeoForge.EVENT_BUS.unregister(mount); }
         check(h, p.getMainHandItem().getCount() == 1, "failed tablet use never consumes item"); clean(p, s); h.succeed();
+    }
+    private static void playerSave(GameTestHelper h) {
+        var p = h.makeMockServerPlayerInLevel(); p.setGameMode(GameType.SURVIVAL);
+        var placed = station(h, false); p.setPos(placed.position()); p.startRiding(placed, true, true);
+        check(h, save(h, p).contains("RootVehicle"), "ordinary station remains in vanilla player vehicle saves");
+        p.stopRiding();
+        var stack = new ItemStack(ModItems.UAV_TABLET.get()); p.setItemInHand(InteractionHand.MAIN_HAND, stack);
+        var tablet = new UavStationEntity(io.github.mcheliceport.registry.ModEntityTypes.UAV_STATION.get(), h.getLevel());
+        tablet.initTablet(p, InteractionHand.MAIN_HAND, stack, UavControllerItem.data(stack)); h.getLevel().addFreshEntity(tablet);
+        p.startRiding(tablet, true, true);
+        check(h, tablet.operator() == p && !save(h, p).contains("RootVehicle"), "real player serializer omits temporary root instead of writing an invalid empty entity");
+        clean(tablet, placed, p); h.succeed();
     }
 }

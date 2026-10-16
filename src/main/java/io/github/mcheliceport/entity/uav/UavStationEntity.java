@@ -322,6 +322,8 @@ public class UavStationEntity extends Entity {
         super.remove(reason);
     }
     @Override public boolean shouldBeSaved() { return !handheld() && super.shouldBeSaved(); }
+    /** ServerPlayer otherwise writes an empty RootVehicle wrapper for this unsaved temporary seat. */
+    @Override public boolean hasExactlyOnePlayerPassenger() { return !handheld() && super.hasExactlyOnePlayerPassenger(); }
     @Override public boolean saveAsPassenger(ValueOutput output) { return !handheld() && super.saveAsPassenger(output); }
     @Override protected void addAdditionalSaveData(ValueOutput output) {
         output.store("PairedUavs", UUIDUtil.CODEC.listOf(), pairedUavs());
