@@ -38,7 +38,8 @@ final class UavRangeGameTests {
             check(h, s.connect(p), "reconnect before testing lower cap");
             ac.setPos(s.position().add(1001, 0, 0)); h.getLevel().getChunk(ac.blockPosition());
             check(h, !s.validLink(ac), "server can lower maximum range");
-            ac.setPos(s.position().add(1000, 0, 0)); check(h, s.validLink(ac), "lower boundary remains inclusive");
+            ac.setPos(s.position().add(1000, 0, 0)); h.getLevel().getChunk(ac.blockPosition());
+            check(h, s.validLink(ac), "lower boundary remains inclusive");
         });
         clean(ac, p, s); h.succeed();
     }
