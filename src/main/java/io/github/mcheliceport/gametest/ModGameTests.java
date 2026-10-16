@@ -51,6 +51,7 @@ public final class ModGameTests {
         CargoGameTests.register();
         RackGameTests.register();
         ChainGameTests.register();
+        RopeGameTests.register();
         PickUpGameTests.register();
         PersistenceGameTests.register();
         AllHelicoptersGameTests.register();

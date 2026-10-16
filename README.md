@@ -30,7 +30,8 @@ items: right-click to open, and attack to break and drop the contents. Aircraft 
 eligible cargo with **J** and unload with **U**. Eligible vehicle pilots
 can use J to board a carrier and U to leave it. High cargo releases use a transport parachute;
 towing now uses the reusable Chain item: right-click the cargo first, then the towing vehicle;
-right-click either linked endpoint to disconnect. Ropes and rappelling remain pending.
+right-click either linked endpoint to disconnect. Helicopters with rope hooks now deploy/retract
+ropes with **K** during a steady, level hover. After deployment, crew press **Y** to rappel.
 The mod also loads all of McHeli CE's content (vehicles, weapons, throwables and
 HUDs, from YAML and legacy TXT files, including addon packs).
 

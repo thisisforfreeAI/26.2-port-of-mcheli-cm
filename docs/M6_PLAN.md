@@ -634,6 +634,78 @@ correction was logged after braking, without damage or loss of the link. These c
 establish latency/loss behavior, hardware performance, audio or cross-dimension towing. The
 server saves/stops successfully after the second session; both clients quit normally.
 
+## Ropes and rappelling increment
+
+- K lets the pilot deploy/retract configured rope hooks, using the existing UNMOUNT_CREW action.
+  That action had no sender in the pinned upstream client handler. Ground crew-unloading and
+  automatic transport-parachute dropping remain separate equipment work. Readiness requires a
+  steady hover, pitch and roll below three degrees, less than .3 blocks of displacement across the
+  position history, and no ground in the four-block probe. Reject passengers, towed or destroyed
+  vehicles and missing hooks. Crew/outside/wrong-vehicle packets cannot toggle deployment.
+- Canonical server length grows .25 blocks per tick up to terrain or fifty blocks; terrain uses
+  the current dimension's lower build limit, including negative Y. Readiness begins after tick
+  fifty; automatic non-player crew starts after tick sixty at each hook's configured interval.
+  Preserve the first crew/gunner seat and rack exclusions, one eligible rider per hook/interval,
+  manual round-robin selection and upstream's distinct manual four-block/automatic two-block drop.
+- Y lets seated crew use ready ropes; pressing it during deployment keeps them seated. The pilot's
+  ordinary Y exit remains available. K appears only for hook-equipped vehicles, and crew see the
+  deploying/ready hint. Deployed vehicles use server movement, free look and suppressed flight
+  inputs so pilot packets cannot move the helicopter through the riders. Stopping deployment uses
+  a supported teleport transition to return control; ending hover also retracts ropes.
+- Replace the invisible Hide placeholder with a single-rider, upright, server-authoritative
+  descent helper. It follows the transformed hook horizontally and uses upstream's .03 gravity
+  and .9 vertical damping. Current solid collisions and rider-body clearance stop blocked paths.
+  Landing releases outside blocks with reset fall distance; retraction, parent destruction, rope
+  end or obstructions release at the current position and ordinary gravity resumes. Vanilla's
+  forced sneak exit remains possible. No chute is consumed or spawned.
+- Spawn and validate clearance before leaving the original seat. Cancelled spawn/dismount/mount
+  retains or restores the ride and leaves no empty helper. A cancelled final release keeps the
+  helper/rider together for retry. Dead/missing riders clean up. Parent/hook checks prevent stale
+  references and invalid indexing. Saved deployment, length, readiness, hook and parent UUID allow
+  recovery, including separately restored player RootVehicle rides, with fifty ticks of grace.
+  This replaces upstream's empty helper NBT; unload does not destructively release saved riders.
+- Snapshot transformed hooks independently of model loading and submit vertical black lines with
+  supported rendering APIs. Culling includes the entire deployed span. This replaces direct GL
+  line drawing and keeps ropes vertical rather than tilting their full length with the airframe.
+  Protocol 10 covers the new entity metadata and synchronized rope state. Version stays 0.5.1
+  until M6 is complete; searchlights and remaining equipment still follow.
+
+All 139 JUnit tests pass with no failures, errors or skips, and all 145 required GameTests pass.
+Nine rope scenarios cover deployment gates and exact timing/length limits below Y zero, packet
+authorization and both movement modes, non-player scheduling/exclusions, survival descent and
+solid-free landing, cancellation rollback and blocked exits, moving hooks and interrupted descent,
+saved parent/passenger recovery, delayed player-ride reattachment, orphan/death cleanup and
+cancelled destructive release. The network-player case verifies server control during deployment,
+stale motion refusal, crew Y timing, round-robin hook selection and pilot control return.
+
+Live validation uses a dedicated server, an OpenGL pilot and a Vulkan crew player. Both board
+an MH-6. The pilot flies from ground Y -59 to about Y -20.5, enters hover with Space, then
+deploys with K. Server queries show RopesDeployed true, readiness sixty and extending length;
+the crew HUD shows Rappel: Y. Y starts hook 1 with the player's feet .65 blocks below the helper.
+The survival player lands at Y -59 with 20 health and no remaining Hide entity. OpenGL renders
+the deployed lines: [pilot view](screens/m6-ropes-deployed-opengl.png).
+
+K retracts, clearing deployment and length. Enable/synchronize server-controlled movement,
+remount the crew player and deploy again. Y selects hook 0. Stop the server while the helper is
+at Y -36.62 and its rider at -37.27, with the correct parent UUID saved. After a full restart,
+the pilot reconnects first, then the crew player. The saved rope state and descent recover;
+the survival player finishes landing at Y -59 with 20 health and no orphan helper. Another
+descent confirms the upright player pose and cable alignment on Vulkan:
+[rider view](screens/m6-ropes-rider-vulkan.png).
+
+Place a cow in the second crew seat using the existing entity riding command. It automatically
+descends at the stock hook interval and lands at Y -59 with its full 10 health. Vulkan's external
+view shows the airframe, both full-length vertical ropes and descending cow:
+[external view](screens/m6-ropes-airframe-vulkan.png). Final K retraction sets deployment false
+and length zero; the pilot still has 20 health. Both server sessions save/stop, and both clients
+quit successfully. No movement-rejection or mod exception occurs during these rope checks;
+the offline server's usual authentication-service warning remains unrelated. Vulkan reports the
+existing native Netty connection reset on the final server close, then returns to its menu and
+quits normally. Software rendering
+does not establish hardware performance, audio or latency/loss behavior. Actual cross-dimension
+descent and reversing the two players' reconnect order were not exercised; missing-parent
+recovery is bounded by the documented fifty-tick grace, after which normal gravity resumes.
+
 ## Integration points already identified
 
 ### Shared Ctrl controls follow-up

@@ -24,4 +24,6 @@ public class AircraftRenderState extends EntityRenderState {
     public float pitch;
     public float roll;
     public final List<BoundingBoxInfo> boxes = new ArrayList<>();
+    public final List<net.minecraft.world.phys.Vec3> ropeHooks = new ArrayList<>();
+    public float ropeLength;
 }

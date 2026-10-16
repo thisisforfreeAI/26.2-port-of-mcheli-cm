@@ -323,7 +323,8 @@ public final class AircraftHudLayer implements GuiLayer {
             this.drawRightKey(graphics, "Eject seat", ModKeyMappings.SWITCH_HOVERING, rightX, ACTIVE);
         }
         if (seatId > 0) {
-            this.drawLeftKey(graphics, aircraft.canParachute(player) ? "Parachute" : "Dismount",
+            this.drawLeftKey(graphics, aircraft.ropes().active() ? (aircraft.ropes().ready() ? "Rappel" : "Rope deploying")
+                            : aircraft.canParachute(player) ? "Parachute" : "Dismount",
                     ModKeyMappings.UNMOUNT, leftX, ACTIVE);
         }
         if (seatId == 0 && aircraft instanceof WingedAircraftEntity plane) {
@@ -341,6 +342,10 @@ public final class AircraftHudLayer implements GuiLayer {
             this.drawLeftKey(graphics, "OpenHatch", ModKeyMappings.ZOOM, leftX, ACTIVE);
         }
         if (seatId == 0) {
+            if (aircraft.ropes().supported()) {
+                this.drawRightKey(graphics, aircraft.ropes().active() ? "Retract ropes" : "Deploy ropes", ModKeyMappings.ROPES,
+                        rightX, aircraft.ropes().active() || aircraft.ropes().canStart() ? ACTIVE : INACTIVE);
+            }
             if (aircraft.racks().canRide()) { this.drawRightKey(graphics, "Board carrier", ModKeyMappings.PUT_TO_RACK, rightX, ACTIVE); }
             else if (aircraft.racks().canLoad()) { this.drawRightKey(graphics, "Load rack", ModKeyMappings.PUT_TO_RACK, rightX, ACTIVE); }
             if (aircraft.isPassenger() || aircraft.racks().canUnload()) {

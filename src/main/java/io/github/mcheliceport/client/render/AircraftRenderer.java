@@ -50,6 +50,7 @@ public abstract class AircraftRenderer<T extends AircraftEntity> extends EntityR
         state.draws.clear();
         state.emissiveDraws.clear();
         state.boxes.clear();
+        state.ropeHooks.clear(); state.ropeLength = 0;
         state.texture = null;
         io.github.mcheliceport.content.aircraft.AircraftInfo info = entity.getAcInfo();
         if (info == null) {
@@ -60,6 +61,12 @@ public abstract class AircraftRenderer<T extends AircraftEntity> extends EntityR
         state.yaw = ypr[0];
         state.pitch = ypr[1];
         state.roll = ypr[2];
+        if (entity.ropes().active()) {
+            state.ropeLength = entity.ropeLength();
+            for (var hook : info.repellingHooks) {
+                state.ropeHooks.add(McheliMath.rotVec3(hook.pos().x, hook.pos().y, hook.pos().z, -ypr[0], -ypr[1], -ypr[2]));
+            }
+        }
         state.testMode = ClientConfig.get(ClientConfig.TEST_MODE);
         if (state.testMode) {
             state.boxes.addAll(info.extraBoundingBox);
@@ -158,12 +165,30 @@ public abstract class AircraftRenderer<T extends AircraftEntity> extends EntityR
                         entity.getY() + r, entity.getZ() + r));
             }
         }
+        if (entity.ropes().active() && info != null) {
+            for (int index = 0; index < info.repellingHooks.size(); index++) {
+                var hook = entity.ropes().hook(index);
+                box = box.minmax(new AABB(hook, hook.add(0, -entity.ropeLength(), 0)).inflate(1));
+            }
+        }
         return box;
     }
 
     @Override
     public void submit(AircraftRenderState state, PoseStack poseStack, SubmitNodeCollector collector,
             CameraRenderState camera) {
+        if (!state.ropeHooks.isEmpty() && state.ropeLength > 0) {
+            float width = Minecraft.getInstance().gameRenderer.gameRenderState().windowRenderState.appropriateLineWidth;
+            var hooks = List.copyOf(state.ropeHooks); float length = state.ropeLength;
+            collector.submitCustomGeometry(poseStack, net.minecraft.client.renderer.rendertype.RenderTypes.lines(), (pose, buffer) -> {
+                for (var hook : hooks) {
+                    buffer.addVertex(pose, (float) hook.x, (float) hook.y, (float) hook.z).setColor(0xFF000000)
+                            .setNormal(pose, 0, -1, 0).setLineWidth(width);
+                    buffer.addVertex(pose, (float) hook.x, (float) hook.y - length, (float) hook.z).setColor(0xFF000000)
+                            .setNormal(pose, 0, -1, 0).setLineWidth(width);
+                }
+            });
+        }
         if (state.testMode) {
             AircraftDebugBoxes.submit(poseStack, collector, state.yaw, state.pitch, state.roll,
                     state.boundingBoxWidth, state.boundingBoxHeight, state.boxes);

@@ -12,6 +12,15 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 
 ### Added
 
+- Helicopters with configured rope hooks deploy/retract ropes with K during a steady, level
+  hover. Crew use Y after the deployment delay to descend; eligible non-player crew descend
+  automatically at each hook's configured interval. Ropes and upright riders render through
+  supported APIs, and the helicopter keeps server-controlled hover during deployment.
+- Rappelling preserves the parent, hook and passenger across saves. Ground contact releases
+  the rider without fall damage; retraction, lost parents and interrupted paths leave no dangling
+  helper rides. Blocked exits and cancelled spawns/mounts retain the original seat. Protocol 10
+  requires matching client/host builds for rope and descent entity data.
+
 - The reusable Chain item now selects cargo first and its towing vehicle second. Click either
   linked endpoint to disconnect. Links preserve distinct endpoints and length across saves,
   render the stock chain model, pull and face their trailer towards the tug, and cap extension

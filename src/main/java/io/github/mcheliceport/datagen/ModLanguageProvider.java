@@ -87,6 +87,7 @@ public class ModLanguageProvider extends LanguageProvider {
         add(prefix + "gear_up_down", "Landing Gear");
         add(prefix + "put_to_rack", "Load Rack / Board Carrier");
         add(prefix + "down_from_rack", "Unload / Leave Rack");
+        add(prefix + "ropes", "Deploy / Retract Ropes");
         add(prefix + "camera_mode", "Camera Mode (Night Vision)");
         add(prefix + "camera_distance_up", "Camera Distance Up");
         add(prefix + "camera_distance_down", "Camera Distance Down");
