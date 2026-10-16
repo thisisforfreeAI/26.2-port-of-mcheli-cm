@@ -92,43 +92,43 @@ Components:
     Pivot: [1.05, 0.157, -1.789]
   SearchLight:
   - Position: [0.77, 0.62, 2.85]
-    ColorStart: '#FFFFFF'
-    ColorEnd: '#FFFFC0'
+    ColorStart: '#50FFFFFF'
+    ColorEnd: '#00FFFFC0'
     Height: 27.0
     Width: 15.0
     Yaw: -5.0
     FixedDirection: true
   - Position: [-0.77, 0.62, 2.85]
-    ColorStart: '#FFFFFF'
-    ColorEnd: '#FFFFC0'
+    ColorStart: '#50FFFFFF'
+    ColorEnd: '#00FFFFC0'
     Height: 27.0
     Width: 15.0
     Yaw: 5.0
     FixedDirection: true
   - Position: [0.97, 0.78, -3.05]
-    ColorStart: '#FF0000'
-    ColorEnd: '#FF0000'
+    ColorStart: '#FFFF0000'
+    ColorEnd: '#10FF0000'
     Height: 0.05
     Width: 0.25
     Yaw: 6.0
     FixedDirection: true
   - Position: [0.62, 0.78, -3.09]
-    ColorStart: '#FF0000'
-    ColorEnd: '#FF0000'
+    ColorStart: '#FFFF0000'
+    ColorEnd: '#10FF0000'
     Height: 0.05
     Width: 0.25
     Yaw: 6.0
     FixedDirection: true
   - Position: [-0.62, 0.78, -3.09]
-    ColorStart: '#FF0000'
-    ColorEnd: '#FF0000'
+    ColorStart: '#FFFF0000'
+    ColorEnd: '#10FF0000'
     Height: 0.05
     Width: 0.25
     Yaw: -6.0
     FixedDirection: true
   - Position: [-0.97, 0.78, -3.05]
-    ColorStart: '#FF0000'
-    ColorEnd: '#FF0000'
+    ColorStart: '#FFFF0000'
+    ColorEnd: '#10FF0000'
     Height: 0.05
     Width: 0.25
     Yaw: -6.0

@@ -54,6 +54,8 @@ public final class ModKeyMappings {
     public static final KeyMapping GEAR_UP_DOWN = key("gear_up_down", GLFW.GLFW_KEY_B);
     public static final KeyMapping PUT_TO_RACK = key("put_to_rack", GLFW.GLFW_KEY_J);
     public static final KeyMapping DOWN_FROM_RACK = key("down_from_rack", GLFW.GLFW_KEY_U);
+    public static final KeyMapping ROPES = key("ropes", GLFW.GLFW_KEY_K);
+    public static final KeyMapping SEARCH_LIGHT = key("search_light", GLFW.GLFW_KEY_L);
 
     public static final KeyMapping CAMERA_MODE = key("camera_mode", GLFW.GLFW_KEY_C);
     public static final KeyMapping CAMERA_DISTANCE_UP = key("camera_distance_up", GLFW.GLFW_KEY_PAGE_UP);
@@ -75,7 +77,7 @@ public final class ModKeyMappings {
     public static final List<KeyMapping> ALL = List.of(UP, DOWN, RIGHT, LEFT, SWITCH_GUNNER, SWITCH_HOVERING, ZOOM,
             UNMOUNT, EXTRA, FREE_LOOK, GUI, GEAR_UP_DOWN, CAMERA_MODE, CAMERA_DISTANCE_UP, CAMERA_DISTANCE_DOWN,
             USE_WEAPON, SWITCH_WEAPON_1, SWITCH_WEAPON_2, SWITCH_WEAPON_MODE, RELOAD_WEAPON, FLARE, CHAFF, APS,
-            AIRBURST_RESET, PUT_TO_RACK, DOWN_FROM_RACK);
+            AIRBURST_RESET, PUT_TO_RACK, DOWN_FROM_RACK, ROPES, SEARCH_LIGHT);
 
     private ModKeyMappings() {
     }

@@ -103,6 +103,24 @@ class AddonOverrideTest {
         return BuiltinAddonPack.Source.ofFolder(ContentTestSupport.stockPack());
     }
 
+    @Test
+    void stockRevisionRefreshesExistingMilestoneInstallsWithoutTouchingOverrides() throws IOException {
+        assertTrue(BuiltinAddonPack.ensureExtracted(addonDir, stockSource(), "0.5.1"));
+        Path stock = BuiltinAddonPack.getFolder(addonDir);
+        Path meta = stock.resolve("pack.mcmeta");
+        var json = com.google.gson.JsonParser.parseString(Files.readString(meta)).getAsJsonObject();
+        json.getAsJsonObject("addon").remove("port_content_revision");
+        Files.writeString(meta, json.toString());
+        Path lamp = stock.resolve("assets/mcheli/helicopters/bell207.yml");
+        Files.writeString(lamp, "old stock");
+        Path override = addonDir.resolve("custom/assets/mcheli/helicopters/bell207.yml");
+        write(override, "custom override");
+        assertTrue(BuiltinAddonPack.ensureExtracted(addonDir, stockSource(), "0.5.1"));
+        assertTrue(Files.readString(lamp).contains("'#50FFFFFF'"));
+        assertEquals("custom override", Files.readString(override));
+        assertFalse(BuiltinAddonPack.ensureExtracted(addonDir, stockSource(), "0.5.1"));
+    }
+
     private static long countContentFiles(Path pack) throws IOException {
         try (Stream<Path> files = Files.walk(pack.resolve("assets/mcheli"))) {
             return files.filter(Files::isRegularFile).count();

@@ -95,6 +95,7 @@ public abstract class AircraftEntity extends Entity
     public static final int STATUS_RELOADING = 2;
     public static final int STATUS_INFINITY_AMMO = 3;
     public static final int STATUS_INFINITY_FUEL = 4;
+    public static final int STATUS_REPELLING = 5;
     public static final int STATUS_MOVE_LEFT = 7;
     public static final int STATUS_MOVE_RIGHT = 8;
     public static final int STATUS_THROTTLE_UP = 9;
@@ -135,6 +136,15 @@ public abstract class AircraftEntity extends Entity
             SynchedEntityData.defineId(AircraftEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Boolean> DATA_TOWED =
             SynchedEntityData.defineId(AircraftEntity.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Float> DATA_ROPE_LENGTH =
+            SynchedEntityData.defineId(AircraftEntity.class, EntityDataSerializers.FLOAT);
+    private static final EntityDataAccessor<Integer> DATA_ROPE_TICKS =
+            SynchedEntityData.defineId(AircraftEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Float> DATA_LIGHT_YAW =
+            SynchedEntityData.defineId(AircraftEntity.class, EntityDataSerializers.FLOAT);
+    private static final EntityDataAccessor<Float> DATA_LIGHT_PITCH =
+            SynchedEntityData.defineId(AircraftEntity.class, EntityDataSerializers.FLOAT);
+    public float lightHatchRotation, previousLightHatchRotation;
 
     private static final AircraftHitBox[] NO_HIT_BOXES = new AircraftHitBox[0];
     private static final SeatEntity[] NO_SEATS = new SeatEntity[0];
@@ -208,6 +218,7 @@ public abstract class AircraftEntity extends Entity
     private final AircraftWeapons weapons;
     private final AircraftSupport support;
     private final AircraftRacks racks = new AircraftRacks(this);
+    private final AircraftRopes ropes = new AircraftRopes(this);
     private final AircraftFlares flares;
     private final AircraftChaff chaff;
     private final AircraftAps aps;
@@ -376,6 +387,8 @@ public abstract class AircraftEntity extends Entity
         builder.define(DATA_HOVERING, false);
         builder.define(DATA_USE_WEAPON, 0);
         builder.define(DATA_TOWED, false);
+        builder.define(DATA_ROPE_LENGTH, 0F); builder.define(DATA_ROPE_TICKS, 0);
+        builder.define(DATA_LIGHT_YAW, 0F); builder.define(DATA_LIGHT_PITCH, 0F);
     }
 
     @Override
@@ -1470,13 +1483,13 @@ public abstract class AircraftEntity extends Entity
     /** Whether the pilot's client moves this vehicle (the port's default) rather than the server. */
     @Override
     public boolean isClientAuthoritative() {
-        return !this.isPassenger() && !this.isTowed() && !ServerSettings.forSide(this.level().isClientSide()).serverAuthoritativeMovement()
+        return !this.isPassenger() && !this.isTowed() && !this.ropes.active() && !ServerSettings.forSide(this.level().isClientSide()).serverAuthoritativeMovement()
                 && !this.isDestroyed() && super.isClientAuthoritative();
     }
 
     @Override
     protected boolean isLocalClientAuthoritative() {
-        return !this.isPassenger() && !this.isTowed() && !ServerSettings.client().serverAuthoritativeMovement() && !this.isDestroyed()
+        return !this.isPassenger() && !this.isTowed() && !this.ropes.active() && !ServerSettings.client().serverAuthoritativeMovement() && !this.isDestroyed()
                 && super.isLocalClientAuthoritative();
     }
 
@@ -1563,6 +1576,7 @@ public abstract class AircraftEntity extends Entity
         if (this.info == null && !this.getAircraftTypeName().isEmpty()) {
             this.changeType(this.getAircraftTypeName());
         }
+        this.ropes.tick();
         this.updateControl();
 
         Entity pilot = this.getPilot();
@@ -1635,6 +1649,7 @@ public abstract class AircraftEntity extends Entity
         }
 
         this.missileDetector.update();
+        this.updateSearchLight();
         this.weapons.updateSupplyAmmo();
         this.autoRepair();
         this.updateCountermeasures();
@@ -1690,7 +1705,7 @@ public abstract class AircraftEntity extends Entity
 
     /** The pilot's client sends its attitude when it changed, and its motion while it moves the vehicle. */
     private void sendPilotState() {
-        if (this.isPassenger() || this.isTowed()) { return; }
+        if (this.isPassenger() || this.isTowed() || this.ropes.active()) { return; }
         ClientHooks hooks = clientHooks;
         if (hooks == null) {
             return;
@@ -1718,7 +1733,7 @@ public abstract class AircraftEntity extends Entity
             this.interpolation.cancel();
             return;
         }
-        boolean keepRotation = this.isDestroyed() || !this.isTowed() && this.isPilotLocalClient()
+        boolean keepRotation = this.isDestroyed() || !this.isTowed() && !this.ropes.active() && this.isPilotLocalClient()
                 && !(this instanceof io.github.mcheliceport.entity.ground.GroundVehicleEntity
                 && ServerSettings.client().serverAuthoritativeMovement());
         float yaw = this.getYRot();
@@ -1985,7 +2000,7 @@ public abstract class AircraftEntity extends Entity
     }
 
     public boolean isFreeLookMode() {
-        return this.getCommonStatus(STATUS_FREE_LOOK);
+        return this.getCommonStatus(STATUS_FREE_LOOK) || this.ropes.active();
     }
 
     public void switchFreeLookMode(boolean value) {
@@ -2505,6 +2520,7 @@ public abstract class AircraftEntity extends Entity
     /** Upstream {@code destroyAircraft}. */
     public void destroyAircraft() {
         this.setCameraId(0);
+        this.ropes.stop();
         this.switchHoveringMode(false);
         this.switchGunnerMode(false);
         for (int i = 0; i < this.getSeatNum() + 1; i++) {
@@ -2761,6 +2777,18 @@ public abstract class AircraftEntity extends Entity
     }
 
     public AircraftRacks racks() { return this.racks; }
+    public AircraftRopes ropes() { return this.ropes; }
+    public float ropeLength() { return this.entityData.get(DATA_ROPE_LENGTH); }
+    public int ropeTicks() { return this.entityData.get(DATA_ROPE_TICKS); }
+    public void setRopeState(float length, int ticks) {
+        this.entityData.set(DATA_ROPE_LENGTH, length); this.entityData.set(DATA_ROPE_TICKS, ticks);
+    }
+
+    /** Upstream queue oldest points to current + 1. */
+    public Vec3 oldestPosition() {
+        Vec3 oldest = this.previousPositions[(this.previousPositionIndex + 1) % this.previousPositions.length];
+        return oldest != null ? oldest : this.position();
+    }
 
     AircraftSupport support() {
         return this.support;
@@ -2961,6 +2989,41 @@ public abstract class AircraftEntity extends Entity
         return this.aps.tick;
     }
 
+    // ---- searchlights ----
+
+    public boolean haveSearchLight() { return this.info != null && !this.info.searchLights.isEmpty(); }
+    public boolean isSearchLightOn() { return this.haveSearchLight() && !this.isDestroyed() && this.getCommonStatus(6); }
+    public boolean canSwitchSearchLight(Entity rider) {
+        int seat = this.getSeatIdByEntity(rider);
+        return this.haveSearchLight() && !this.isDestroyed() && seat >= 0 && seat <= 1;
+    }
+    public void setSearchLight(boolean enabled) { this.setCommonStatus(6, enabled && this.haveSearchLight() && !this.isDestroyed()); }
+    private @Nullable Entity searchLightOperator() {
+        Entity gunner = this.getEntityBySeatId(1);
+        return gunner != null ? gunner : this.getPilot();
+    }
+    public float searchLightYaw(float partial) {
+        Entity operator = this.searchLightOperator();
+        return operator != null ? operator.getYRot(partial) : this.entityData.get(DATA_LIGHT_YAW);
+    }
+    public float searchLightPitch(float partial) {
+        Entity operator = this.searchLightOperator();
+        return operator != null ? operator.getXRot(partial) : this.entityData.get(DATA_LIGHT_PITCH);
+    }
+    private void updateSearchLight() {
+        boolean enabled = this.isSearchLightOn();
+        this.previousLightHatchRotation = this.lightHatchRotation;
+        this.lightHatchRotation = Mth.clamp(this.lightHatchRotation + (enabled ? 0.5F : -0.5F), 0, 1);
+        if (!this.level().isClientSide()) {
+            if (this.isDestroyed()) { this.setCommonStatus(6, false); }
+            Entity operator = this.searchLightOperator();
+            if (enabled && operator != null) {
+                this.entityData.set(DATA_LIGHT_YAW, Mth.wrapDegrees(operator.getYRot()));
+                this.entityData.set(DATA_LIGHT_PITCH, Mth.clamp(operator.getXRot(), -90, 90));
+            }
+        }
+    }
+
     // ---- save data ----
 
     @Override
@@ -3001,11 +3064,19 @@ public abstract class AircraftEntity extends Entity
             this.hoveringMode = hovering;
             this.entityData.set(DATA_HOVERING, hovering);
         }
+        this.ropes.load(input);
+        this.setSearchLight(input.getBooleanOr("SearchLight", false));
+        this.entityData.set(DATA_LIGHT_YAW, input.getFloatOr("SearchLightYaw", this.getYaw()));
+        this.entityData.set(DATA_LIGHT_PITCH, input.getFloatOr("SearchLightPitch", this.getPitch()));
         this.orientation = null;
     }
 
     @Override
     protected void addAdditionalSaveData(ValueOutput output) {
+        this.ropes.save(output);
+        output.putBoolean("SearchLight", this.isSearchLightOn());
+        output.putFloat("SearchLightYaw", this.entityData.get(DATA_LIGHT_YAW));
+        output.putFloat("SearchLightPitch", this.entityData.get(DATA_LIGHT_PITCH));
         output.putString("AcERAState", this.getEraState());
         output.putString("TextureName", this.getTextureName());
         output.putString("TypeName", this.getAircraftTypeName());

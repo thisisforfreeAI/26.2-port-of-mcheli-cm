@@ -63,16 +63,16 @@ PlaneFeatures:
 Components:
   SearchLight:
   - Position: [6.4, 1.6, -0.47]
-    ColorStart: '#FFFFFF'
-    ColorEnd: '#FFFFC0'
+    ColorStart: '#50FFFFFF'
+    ColorEnd: '#00FFFFC0'
     Height: 60.0
     Width: 26.0
     Yaw: -3.0
     Pitch: 15.0
     FixedDirection: true
   - Position: [-6.4, 1.6, -0.47]
-    ColorStart: '#FFFFFF'
-    ColorEnd: '#FFFFC0'
+    ColorStart: '#50FFFFFF'
+    ColorEnd: '#00FFFFC0'
     Height: 60.0
     Width: 26.0
     Yaw: 3.0

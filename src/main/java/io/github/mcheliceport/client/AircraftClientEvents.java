@@ -53,7 +53,10 @@ public final class AircraftClientEvents {
             WeaponClient.tick();
         });
         NeoForge.EVENT_BUS.addListener(WeaponEffects::onSubmitGeometry);
-        NeoForge.EVENT_BUS.addListener((RenderFrameEvent.Pre event) -> MouseFlight.onFrameWithoutTurn());
+        NeoForge.EVENT_BUS.addListener((RenderFrameEvent.Pre event) -> {
+            MouseFlight.onFrameWithoutTurn();
+            io.github.mcheliceport.client.render.SearchLightRenderer.beginFrame();
+        });
         NeoForge.EVENT_BUS.addListener((RenderFrameEvent.Post event) -> AircraftClientControl.applyRotLimit());
         NeoForge.EVENT_BUS.addListener(AircraftCameraClient::onCameraAngles);
         NeoForge.EVENT_BUS.addListener(AircraftClientEvents::onCameraAngles);
@@ -62,6 +65,7 @@ public final class AircraftClientEvents {
         NeoForge.EVENT_BUS.addListener(AircraftCameraClient::onNameTag);
         NeoForge.EVENT_BUS.addListener(AircraftClientEvents::onRenderHand);
         NeoForge.EVENT_BUS.addListener(WeaponClientControl::onInteractionKey);
+        NeoForge.EVENT_BUS.addListener(AircraftClientControl::onKey);
         NeoForge.EVENT_BUS.addListener(WeaponClientControl::onMouseScroll);
         NeoForge.EVENT_BUS.addListener(AircraftHudLayer::onRenderLayer);
         NeoForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.LoggingOut event) -> {

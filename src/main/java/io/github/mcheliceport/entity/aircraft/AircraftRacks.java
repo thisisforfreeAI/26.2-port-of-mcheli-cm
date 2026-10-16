@@ -36,7 +36,8 @@ public final class AircraftRacks {
     }
     /** Zero-based crew-seat index, as upstream's canRideAircraft. */
     public static boolean accepts(AircraftEntity carrier, int index, Entity cargo) {
-        if (io.github.mcheliceport.entity.chain.ChainEntity.linked(carrier)
+        if (cargo instanceof io.github.mcheliceport.entity.rappel.RappellingEntity
+                || io.github.mcheliceport.entity.chain.ChainEntity.linked(carrier)
                 || io.github.mcheliceport.entity.chain.ChainEntity.linked(cargo)
                 || carrier == cargo || carrier.isRemoved() || carrier.isDestroyed() || carrier.isPassenger()
                 || cargo.isRemoved() || cargo.isPassenger() || carrier.level() != cargo.level()
