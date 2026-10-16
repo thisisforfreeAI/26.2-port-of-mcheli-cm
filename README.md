@@ -29,7 +29,9 @@ nearby vehicle repair is supported. Cargo containers now place, float and store 
 items: right-click to open, and attack to break and drop the contents. Aircraft racks now load
 eligible cargo with **J** and unload with **U**. Eligible vehicle pilots
 can use J to board a carrier and U to leave it. High cargo releases use a transport parachute;
-towing remains pending. The mod also loads all of McHeli CE's content (vehicles, weapons, throwables and
+towing now uses the reusable Chain item: right-click the cargo first, then the towing vehicle;
+right-click either linked endpoint to disconnect. Ropes and rappelling remain pending.
+The mod also loads all of McHeli CE's content (vehicles, weapons, throwables and
 HUDs, from YAML and legacy TXT files, including addon packs).
 
 - [PORTING_PLAN.md](PORTING_PLAN.md): the roadmap and the decisions behind it

@@ -46,8 +46,8 @@ public final class ModNetwork {
 
     private static final Logger LOGGER = LogUtils.getLogger();
     /** Bump when payload encoding, menu layout or synchronized entity data changes. */
-    // Rack controls add a required payload channel.
-    public static final String VERSION = "8";
+    // Towing replaces a placeholder and adds synchronized trailer authority state.
+    public static final String VERSION = "9";
 
     private ModNetwork() {
     }
@@ -360,7 +360,7 @@ public final class ModNetwork {
     static void handleAttitude(AircraftAttitudePayload p, IPayloadContext context) {
         Player player = context.player();
         if (!(player.getVehicle() instanceof AircraftEntity aircraft) || aircraft.getId() != p.entityId()
-                || !aircraft.isPilot(player) || aircraft.isDestroyed() || aircraft.isPassenger()) {
+                || !aircraft.isPilot(player) || aircraft.isDestroyed() || aircraft.isPassenger() || aircraft.isTowed()) {
             return;
         }
         if (!Float.isFinite(p.yaw()) || !Float.isFinite(p.pitch()) || !Float.isFinite(p.roll())) {

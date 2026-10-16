@@ -571,6 +571,69 @@ release-smoothing limitation. The server saves/stops and both clients quit succe
 checks do not establish hardware performance, audio, network-latency/loss behavior or actual
 cross-dimension travel; passenger-tree serialization is checked independently.
 
+## Tow chain increment
+
+- The reusable Chain item selects the trailer/cargo first and the tug second. Endpoints must be
+  two to sixteen blocks apart; length is the initial integer distance clamped to three through
+  fifteen. Clicking either linked endpoint disconnects it. Selection, connection, disconnect and
+  range feedback use translated action-bar messages plus the stock sounds. Nothing consumes or
+  drops a chain item. Cargo/vehicle normal interactions are intercepted while holding a chain.
+- Resolve multipart hull hits to their parent vehicle. Reject living entities, items, XP,
+  projectiles, helper entities, destroyed vehicles, passengers and placed vehicles while the
+  upstream anchoring option is enabled. Validate the interaction's actual reach and sight line.
+  Store selection by dimension/UUID in modern item custom data; stale selections start over.
+- One chain per endpoint prevents duplicate links and cycles. Linked endpoints cannot enter
+  racks. A loaded carrier may tow, but its passenger loads cannot be chained separately.
+  Cancelled creation preserves item selection and leaves vehicle authority unchanged.
+- The trailer faces the tug once taut and receives upstream's inverse-gap weak pull. The gap
+  denominator is at least .1 to avoid an explosive impulse immediately past the length boundary.
+  At length plus two blocks, collision-aware movement applies the hard correction; an obstruction
+  disconnects instead of teleporting the trailer through solids. Reset the trailer's fall distance.
+- McHeli trailers remain server-simulated even with a driver aboard, and reject stale pilot motion
+  and attitude packets. Tugs retain the selected movement mode. Unpiloted carried/towed weapon
+  bases follow hull attitude. Tank partner/occupant collision exclusions refresh while linked
+  and persist after disconnect. A supported teleport transition returns trailer client authority.
+  Generic client-controlled entities cannot be trailers; this switch belongs to McHeli vehicles.
+- Save both endpoint UUIDs and length, with fifty ticks to resolve loaded entities in the current
+  level after reload. Removed/destroyed, newly mounted or otherwise invalid endpoints disconnect.
+  Unloading detaches runtime references without destructive sounds or item drops. Entity metadata
+  sends distinct endpoint IDs, fixing upstream's duplicate trailer ID. Actual disconnect lookup
+  replaces its always-null stub. Stock chain OBJ links repeat every .95 blocks via supported
+  geometry submission, with culling bounds spanning both ends and no direct OpenGL calls.
+- Protocol 9 covers the new chain metadata and synchronized trailer-authority flag. Hosts and
+  clients must update together. Ropes/rappelling and searchlights remain later M6 equipment work.
+
+Automated validation: all 139 JUnit tests pass with no failures, errors or skips; all 136 required
+GameTests pass. Nine new chain scenarios cover real item/event interception including multipart
+hits, selection/disconnect/range and invalid-target handling, cancelled creation, slack and taut
+pulling, near-taut numerical stability and hard limits, blocked paths, orphan cleanup and removal
+at either end, UUID reconnection with inventory, network-player authority in both movement modes,
+ramming/partner grace and rack exclusions. The network-player case checks that a trailer rejects
+client motion while retaining its driver, then returns client control on disconnect.
+
+Live validation uses a dedicated server, an OpenGL player and a Vulkan player on software Mesa.
+Actual right-clicks select a Growler trailer, then its tug eight blocks away. Server queries show
+distinct UUID endpoints and length eight; the selection clears and the one Chain item remains.
+Both players board their respective vehicles. Driving and braking moves the pair about fifty
+blocks in default movement mode and another fifty after enabling/synchronizing server movement.
+Both vehicles retain zero damage and both players survive. A right-click on the tug disconnects;
+the server then finds no chain. The same item reconnects the pair. Vulkan shows the stock links
+joining the correct vehicles: [paired Growlers](screens/m6-tow-links-vulkan.png).
+
+A second link joins a crate containing 27 diamonds in slot 53 to another Growler. Driving moves
+the crate from Z 12.5 to 60.55 and the tug to 70.55. OpenGL renders the complete tether:
+[cargo chain](screens/m6-tow-cargo-opengl.png). A full server save/stop/restart preserves both
+chains' distinct endpoint UUIDs and length eight. Both graphics clients reconnect and see the
+restored links. Another drive moves the saved crate to Z 99.44 and the tug to 109.38; opening the
+crate shows the same 27 diamonds in its final slot, and the reusable item is still in the player's
+hotbar: [inventory after restart](screens/m6-tow-inventory-after-restart.png).
+
+The chain limits maximum separation, not minimum separation, and does not copy the tug's brakes;
+the occupied trailer can roll towards the tug when it stops. One default-mode tug movement
+correction was logged after braking, without damage or loss of the link. These checks do not
+establish latency/loss behavior, hardware performance, audio or cross-dimension towing. The
+server saves/stops successfully after the second session; both clients quit normally.
+
 ## Integration points already identified
 
 ### Shared Ctrl controls follow-up

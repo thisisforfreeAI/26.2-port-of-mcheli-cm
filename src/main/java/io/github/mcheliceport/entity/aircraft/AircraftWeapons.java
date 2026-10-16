@@ -621,6 +621,7 @@ public final class AircraftWeapons {
             float pitch) {
         if (!(entity instanceof Player)) {
             w.setTurretYaw(this.ac.lastRiderYaw - this.ac.getYaw());
+            if (this.ac.isTowed() || this.ac.isPassenger()) { w.setYaw(0); }
             return;
         }
         float step = this.getWeaponRotationStep(w);

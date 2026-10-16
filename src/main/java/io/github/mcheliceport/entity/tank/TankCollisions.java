@@ -75,6 +75,8 @@ final class TankCollisions {
         Entity carrier = this.tank.getVehicle();
         if (carrier instanceof SeatEntity seat) { carrier = seat.getParent(); }
         if (carrier != null) { this.excluded.put(carrier, 60); }
+        var chain = io.github.mcheliceport.entity.chain.ChainEntity.attached(this.tank);
+        if (chain != null && chain.other(this.tank) != null) { this.excluded.put(chain.other(this.tank), 60); }
         this.excluded.replaceAll((entity, count) -> count - 1);
         this.excluded.entrySet().removeIf(e -> e.getValue() <= 0 || e.getKey().isRemoved());
     }
@@ -101,7 +103,8 @@ final class TankCollisions {
     }
 
     private boolean canRam(Entity entity) {
-        if (entity.getRootVehicle() == this.tank.getRootVehicle() || entity.isRemoved() || entity instanceof ItemEntity || entity instanceof ExperienceOrb
+        if (io.github.mcheliceport.entity.chain.ChainEntity.linked(this.tank, entity)
+                || entity.getRootVehicle() == this.tank.getRootVehicle() || entity.isRemoved() || entity instanceof ItemEntity || entity instanceof ExperienceOrb
                 || entity instanceof SeatEntity || entity instanceof BaseBulletEntity
                 || entity.getType() == ModEntityTypes.CHAIN.get()
                 || this.tank.isMountedEntity(entity) || this.excluded.containsKey(entity)) { return false; }
