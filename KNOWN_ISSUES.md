@@ -33,8 +33,12 @@ broader gameplay and hardware checks remain pending.
 Until then:
 
 - Rack and searchlight controls and hints are implemented.
-- UAV control is bounded by the aircraft's configured range, server/client view distance and
-  tracked loaded terrain, with a maximum of 128 blocks. It does not stream remote chunks.
+- UAV control reaches 5,000 blocks by default (3D distance), bounded by `uav.controlRange` and
+  any smaller aircraft-specific range. Active control keeps a bounded camera area loaded and
+  streams its chunks/entities to the pilot. `uav.remoteViewDistance` defaults to four chunks
+  (2..8), limited by server/client view distance. It does not load the intervening corridor.
+  Reconnect loads a paired UAV at its saved location in the same dimension. An older UAV must
+  have loaded once after this update for its location to be indexed.
   Range loss, leaving the station, death or destruction ends control and clears held inputs and
   throttle. Active control sessions are not restored after loading; reconnect with Connect last.
   Target drones launch autonomously and cannot be remotely piloted. Normal UAVs need fuel.

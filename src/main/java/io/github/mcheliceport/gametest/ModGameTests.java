@@ -55,6 +55,7 @@ public final class ModGameTests {
         SearchLightGameTests.register();
         UavGameTests.register();
         UavPairingGameTests.register();
+        UavRangeGameTests.register();
         PickUpGameTests.register();
         PersistenceGameTests.register();
         AllHelicoptersGameTests.register();

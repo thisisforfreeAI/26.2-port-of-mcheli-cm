@@ -1713,6 +1713,7 @@ public abstract class AircraftEntity extends Entity
         if (this.isPilotLocalClient()) {
             this.sendPilotState();
         }
+        io.github.mcheliceport.entity.uav.UavPositionIndex.update(this);
     }
 
     /** The pilot's client sends its attitude when it changed, and its motion while it moves the vehicle. */
@@ -1919,7 +1920,7 @@ public abstract class AircraftEntity extends Entity
     }
     private @Nullable UUID pairedController;
     public @Nullable UUID pairedController() { return pairedController; }
-    public void setPairedController(@Nullable UUID id) { pairedController = id; }
+    public void setPairedController(@Nullable UUID id) { pairedController = id; io.github.mcheliceport.entity.uav.UavPositionIndex.update(this); }
     public void setUavStation(@Nullable UavStationEntity station) {
         this.entityData.set(DATA_UAV_STATION, station == null ? 0 : station.getId());
     }
@@ -2769,6 +2770,7 @@ public abstract class AircraftEntity extends Entity
 
     @Override
     public void remove(Entity.RemovalReason reason) {
+        if (reason.shouldDestroy() && this.level() instanceof net.minecraft.server.level.ServerLevel sl && this.isUAV()) { io.github.mcheliceport.entity.uav.UavPositionIndex.get(sl).remove(getUUID()); }
         if (reason.shouldDestroy() && !this.level().isClientSide()) {
             for (SeatEntity seat : this.seats) {
                 if (seat != null) {

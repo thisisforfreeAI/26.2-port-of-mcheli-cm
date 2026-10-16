@@ -12,6 +12,12 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 
 ### Added
 
+- UAV control now reaches 5,000 blocks from consoles and tablets, including vertical distance.
+  A bounded camera window keeps distant UAVs ticking and delivers terrain/entities without
+  moving the operator. Exit, range loss and operator loss release tickets and restore body
+  terrain. Paired UAV positions save for bounded reconnect after chunk unload or world restart.
+  Servers can lower `uav.controlRange` and adjust `uav.remoteViewDistance` (default four chunks).
+  Network protocol is now 14; all players and the server need this build.
 - UAV pairing devices and handheld tablets now work. Each station retains an ordered paired-UAV
   roster with selection, status/telemetry, paging and unpairing; deployment pairs UAVs automatically.
   Existing last-UAV saves migrate when their aircraft loads. Pairing devices select a UAV then

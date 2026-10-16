@@ -32,6 +32,9 @@ Work in progress: see KNOWN_ISSUES.md in the port's repository for what is not p
 [[accessTransformers]]
 file="META-INF/accesstransformer.cfg"
 
+[[mixins]]
+config="mcheli_ce_port.mixins.json"
+
 [[dependencies.${mod_id}]]
     modId="neoforge"
     type="required"

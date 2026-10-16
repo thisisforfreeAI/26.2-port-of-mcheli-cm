@@ -21,6 +21,8 @@ public final class ServerConfig {
     public static final ModConfigSpec SPEC;
     public static final ModConfigSpec.IntValue MAX_PAIRED_UAVS;
     public static final ModConfigSpec.BooleanValue TABLET_NORMAL_UAVS;
+    public static final ModConfigSpec.IntValue UAV_CONTROL_RANGE;
+    public static final ModConfigSpec.IntValue UAV_REMOTE_VIEW_DISTANCE;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -57,6 +59,10 @@ public final class ServerConfig {
         builder.pop();
 
         builder.push("uav");
+        UAV_CONTROL_RANGE = builder.comment("Maximum station/tablet control distance in blocks.")
+                .defineInRange("controlRange", 5000, 24, 5000);
+        UAV_REMOTE_VIEW_DISTANCE = builder.comment("Camera chunk radius during UAV control, also bounded by player/server view distance.")
+                .defineInRange("remoteViewDistance", 4, 2, 8);
         MAX_PAIRED_UAVS = builder.comment("Maximum paired UAVs per controller. Upstream: MaxPairedUavPerStation.")
                 .defineInRange("maxPairedUavs", 5, 0, 64);
         TABLET_NORMAL_UAVS = builder.comment("Allow tablets to bind/control full-size UAVs. Default: small UAVs only.")

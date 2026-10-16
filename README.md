@@ -36,7 +36,10 @@ UAV stations and portable controllers now place and deploy UAV items. Right-clic
 insert a UAV, then choose **Deploy**, select its row and **Connect**. Use **I** for the aircraft's fuel/menu
 and **Y** to leave remote control. The operator stays seated at the station while the main view
 follows the UAV. Portable controllers accept small UAVs; shift-right-click toggles their lid.
-Control stays within loaded nearby terrain (at most 128 blocks). Stations retain a list of paired
+Control reaches **5,000 blocks** from the operator, including vertical distance. A small area
+around the UAV stays loaded and streams to its pilot; leaving control releases it. Reconnect can
+load a paired UAV at its saved location. Servers can lower `uav.controlRange` and tune the camera
+radius with `uav.remoteViewDistance` (default four chunks). Stations retain a list of paired
 UAVs (five by default); select a row to see its status and connect, or **Unpair selected** to release it.
 The pairing device selects a deployed UAV with right-click, then pairs it when you right-click a
 station. **Shift-right-click an idle UAV with the device** releases its previous pairing.
