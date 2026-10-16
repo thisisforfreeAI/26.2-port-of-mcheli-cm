@@ -39,6 +39,17 @@ public final class AircraftClientControl {
     private AircraftClientControl() {
     }
 
+    /** Vanilla handles Advancements before our post-tick controls; reserve a shared key for lamps while riding. */
+    public static void onKey(net.neoforged.neoforge.client.event.InputEvent.Key event) {
+        Minecraft mc = Minecraft.getInstance();
+        AircraftEntity aircraft = mc.player != null ? ModNetwork.riddenAircraft(mc.player) : null;
+        if (mc.gui.screen() == null && aircraft != null && aircraft.canSwitchSearchLight(mc.player)
+                && ModKeyMappings.SEARCH_LIGHT.matches(event.getKeyEvent())
+                && mc.options.keyAdvancements.matches(event.getKeyEvent())) {
+            while (mc.options.keyAdvancements.consumeClick()) { /* Handled by the vehicle light switch. */ }
+        }
+    }
+
     public static void onClientTick() {
         Minecraft mc = Minecraft.getInstance();
         LocalPlayer player = mc.player;
@@ -111,6 +122,13 @@ public final class AircraftClientControl {
         PlaneControlPayload.PartSwitch wing = PlaneControlPayload.PartSwitch.NONE;
         boolean freeLookHeld = ModKeyMappings.isFreeLookHeld();
         boolean ropesClicked = ModKeyMappings.ROPES.consumeClick();
+        if (ModKeyMappings.SEARCH_LIGHT.consumeClick()) {
+            if (aircraft.canSwitchSearchLight(player)) {
+                switches = switches.with(PlayerControlSwitches.SWITCH_SEARCH_LIGHT, true);
+                send = true;
+                playSoundOk();
+            } else { playSoundNg(); }
+        }
 
         // Upstream handleCameraAndModes: free look + camera mode toggles the gunner, else the camera mode.
         if (ModKeyMappings.CAMERA_MODE.consumeClick()) {

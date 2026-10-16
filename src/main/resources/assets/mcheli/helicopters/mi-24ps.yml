@@ -121,8 +121,8 @@ Components:
     MaxRotation: 127.0
   SearchLight:
   - Position: [0.0, 0.14, 5.94]
-    ColorStart: '#FFFFFF'
-    ColorEnd: '#FFFFC0'
+    ColorStart: '#50FFFFFF'
+    ColorEnd: '#10FFFFC0'
     Height: 70.0
     Width: 25.0
   HeliRotor:

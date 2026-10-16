@@ -46,8 +46,8 @@ public final class ModNetwork {
 
     private static final Logger LOGGER = LogUtils.getLogger();
     /** Bump when payload encoding, menu layout or synchronized entity data changes. */
-    // Rappelling replaces a placeholder and synchronizes rope deployment state.
-    public static final String VERSION = "10";
+    // Searchlights synchronize their retained aim when the controlling crew leaves.
+    public static final String VERSION = "11";
 
     private ModNetwork() {
     }
@@ -300,6 +300,9 @@ public final class ModNetwork {
         }
         if (p.switches().openGui()) {
             aircraft.openContainer(player);
+        }
+        if (p.switches().get(PlayerControlSwitches.SWITCH_SEARCH_LIGHT) && aircraft.canSwitchSearchLight(player)) {
+            aircraft.setSearchLight(!aircraft.isSearchLightOn());
         }
         if (p.switches().switchGunnerStatus()) {
             aircraft.setGunnerStatus(!aircraft.getGunnerStatus());

@@ -34,7 +34,7 @@ import org.slf4j.Logger;
  *       pack; the port reads stock textures, models and sounds from the mod jar.</li>
  *   <li>Upstream extracted the pack once and then only when a config option asked for it, so
  *       updating the mod left old stock content in place. The port records the mod version in the
- *       extracted {@code pack.mcmeta} and extracts again when it changes. Changes made inside
+ *       extracted {@code pack.mcmeta} and extracts again when it or the content revision changes. Changes made inside
  *       {@code default/} are lost then; overrides belong in a separate pack.</li>
  * </ul>
  */
@@ -43,6 +43,8 @@ public final class BuiltinAddonPack {
     public static final String EXTRACTED_FOLDER_NAME = "default";
     public static final String DOMAIN = "@builtin";
     private static final String ASSETS_FOLDER = "assets/mcheli";
+    /** Increment for stock definition fixes made between milestone releases. */
+    private static final int CONTENT_REVISION = 1;
     private static final Logger LOGGER = LogUtils.getLogger();
 
     private BuiltinAddonPack() {
@@ -95,7 +97,7 @@ public final class BuiltinAddonPack {
 
     /**
      * Extracts the stock pack unless {@code addonDir/default} already holds the files of this mod
-     * version.
+     * version and stock content revision.
      *
      * @return true if the pack was (re)extracted
      */
@@ -126,6 +128,9 @@ public final class BuiltinAddonPack {
             JsonElement addon = root.isJsonObject() ? root.getAsJsonObject().get("addon") : null;
             JsonElement version = addon != null && addon.isJsonObject() ? addon.getAsJsonObject().get("version")
                     : null;
+            JsonElement revision = addon != null && addon.isJsonObject() ? addon.getAsJsonObject().get("port_content_revision")
+                    : null;
+            if (revision == null || revision.getAsInt() != CONTENT_REVISION) { return null; }
             return version != null && version.isJsonPrimitive() ? version.getAsString() : null;
         } catch (IOException | RuntimeException e) {
             return null;
@@ -168,11 +173,12 @@ public final class BuiltinAddonPack {
         JsonObject addon = new JsonObject();
         addon.addProperty("domain", DOMAIN);
         addon.addProperty("version", modVersion);
+        addon.addProperty("port_content_revision", CONTENT_REVISION);
         addon.addProperty("loader_version", "2");
         addon.addProperty("credits", "EMB4-MCHeli");
         addon.add("authors", AddonPack.toJsonArray(List.of("EMB4", "Murachiki27")));
         addon.addProperty("description", "Stock content of McHeli CE (26.2 Port), extracted from the mod. "
-                + "This folder is replaced when the mod version changes; put changes in a separate pack.");
+                + "This folder is replaced when the mod version or stock content revision changes; put changes in a separate pack.");
         JsonObject root = new JsonObject();
         root.add("pack", pack);
         root.add("addon", addon);

@@ -112,8 +112,8 @@ Components:
     IsMissile: true
   SearchLight:
   - Position: [0.71, -0.02, 0.02]
-    ColorStart: '#FFFFFF'
-    ColorEnd: '#FFFFC0'
+    ColorStart: '#50FFFFFF'
+    ColorEnd: '#10FFFFC0'
     Height: 60.0
     Width: 20.0
   HeliRotor:

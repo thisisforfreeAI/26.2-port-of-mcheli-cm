@@ -26,4 +26,5 @@ public class AircraftRenderState extends EntityRenderState {
     public final List<BoundingBoxInfo> boxes = new ArrayList<>();
     public final List<net.minecraft.world.phys.Vec3> ropeHooks = new ArrayList<>();
     public float ropeLength;
+    public final List<io.github.mcheliceport.entity.aircraft.SearchLightBeam> searchLights = new ArrayList<>();
 }

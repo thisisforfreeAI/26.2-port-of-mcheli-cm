@@ -31,7 +31,7 @@ eligible cargo with **J** and unload with **U**. Eligible vehicle pilots
 can use J to board a carrier and U to leave it. High cargo releases use a transport parachute;
 towing now uses the reusable Chain item: right-click the cargo first, then the towing vehicle;
 right-click either linked endpoint to disconnect. Helicopters with rope hooks now deploy/retract
-ropes with **K** during a steady, level hover. After deployment, crew press **Y** to rappel.
+ropes with **K** during a steady, level hover. After deployment, crew press **Y** to rappel. Configured searchlights/headlights toggle with **L**.
 The mod also loads all of McHeli CE's content (vehicles, weapons, throwables and
 HUDs, from YAML and legacy TXT files, including addon packs).
 
@@ -105,13 +105,20 @@ rocket launcher and rear gun respectively. An occupied gunner seat takes control
 gunner status shown on the HUD; NPC gunners are still pending in M6, so it does not enter a
 turret seat or enable a player camera.
 
+Searchlights/headlights: **L** toggles the lights on vehicles whose definitions include them.
+The pilot and first crew seat can switch them. Movable lights follow the first crew member's look,
+or the pilot's when that seat is empty; fixed lights follow the hull. Stock examples include
+the Mi-24PS, Bell 207, Project 1204, An-2, Growler and BNR32. Light covers and steering lamps
+are also supported for addons. Beams and living-entity highlights do not change world block lighting.
+**Protocol 11 requires this updated build on every client and host.**
+
 ## Content and addon packs
 
 As in McHeli CE, vehicles, weapons, throwables and HUDs are defined in content files (YAML, or the
 legacy TXT format) that the mod reads from `<game dir>/mcheli_addons/` at startup:
 
 - The stock content is extracted to `mcheli_addons/default/` and extracted again whenever the mod
-  version changes, so do not edit it there.
+  version or stock content revision changes, so put edits in a separate addon pack.
 - Every other folder, `.zip` or `.jar` in `mcheli_addons/` is an addon pack with McHeli CE's layout
   (`pack.mcmeta` with an `addon` block, content under `assets/mcheli/<type>/`). Packs load after the
   stock pack in name order, and a definition replaces an earlier one with the same name.

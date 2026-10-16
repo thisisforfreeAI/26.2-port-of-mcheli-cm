@@ -3,9 +3,9 @@
 # Checked by ContentParityTest; regenerate with ./gradlew test -Dmcheli.updateParity=true and
 # review the diff. Every difference comes from upstream:
 #
-# Content that upstream's TXT -> YAML conversion dropped or changed (the port ships upstream's YAML
-# unchanged): recipeString/isShapedRecipe (no stock YAML recipes), itemID, author (added in YAML),
-# textureNameList (paint variants), searchLights colours (alpha dropped), rack fixYaw/fixPitch,
+# Content that upstream's TXT -> YAML conversion dropped or changed (searchlight alpha has been
+# restored in the port): recipeString/isShapedRecipe (no stock YAML recipes), itemID, author (added in YAML),
+# textureNameList (paint variants), rack fixYaw/fixPitch,
 # rideRacks (a YAML map holds one rack per vehicle name), hudList (YAML sets HUDs per seat only),
 # ships' rotorList, a few rotor factors, category ("zzz" written out and upper-cased),
 # limitRotation, fuelSupplyInfinite, and in weapons damageFactor, bomblet*, isFAE, dispense*,
@@ -190,8 +190,6 @@ helicopters/bell206l.recipeString: size 1 vs 0
 helicopters/bell206l.bbZmax: -11.0 vs 2.7
 helicopters/bell206l.bbZ: -11.5 vs -4.65
 helicopters/bell206l.author: '' vs 'EMB4'
-helicopters/bell207.searchLights[0].colorStart: 1358954495 vs 16777215
-helicopters/bell207.searchLights[0].colorEnd: 285212608 vs 16777152
 helicopters/bell207.textureNameList: size 3 vs 1
 helicopters/bell207.itemID: 28829 vs 0
 helicopters/bell207.recipeString: size 1 vs 0
@@ -284,8 +282,6 @@ helicopters/mi-24.onGroundPitch: -4.56 vs 4.56
 helicopters/mi-24.bbZmax: -10.32 vs 5.59
 helicopters/mi-24.bbZ: -11.42 vs -3.4650002
 helicopters/mi-24.author: '' vs 'EMB4'
-helicopters/mi-24ps.searchLights[0].colorStart: 1358954495 vs 16777215
-helicopters/mi-24ps.searchLights[0].colorEnd: 285212608 vs 16777152
 helicopters/mi-24ps.textureNameList: size 2 vs 1
 helicopters/mi-24ps.itemID: 28831 vs 0
 helicopters/mi-24ps.recipeString: size 1 vs 0
@@ -386,8 +382,6 @@ planes/ac-130.recipeString: size 1 vs 0
 planes/ac-130.bbZmax: -9.6 vs 0.4
 planes/ac-130.bbZ: -11.6 vs -6.6000004
 planes/ac-130.author: '' vs 'EMB4'
-planes/an2.searchLights[0].colorStart: 1358954495 vs 16777215
-planes/an2.searchLights[1].colorStart: 1358954495 vs 16777215
 planes/an2.textureNameList: size 5 vs 1
 planes/an2.itemID: 28732 vs 0
 planes/an2.recipeString: size 1 vs 0
@@ -652,8 +646,6 @@ ships/mark5.bbZmax: -2.5 vs 4.25
 ships/mark5.bbZ: -4.0 vs -0.625
 ships/mark5.author: '' vs 'EMB4'
 ships/project1204.rotorList: size 1 vs 0
-ships/project1204.searchLights[0].colorStart: 1358954495 vs 16777215
-ships/project1204.searchLights[0].colorEnd: 285212608 vs 16777152
 ships/project1204.itemID: 28748 vs 0
 ships/project1204.recipeString: size 1 vs 0
 ships/project1204.category: 'zzz' vs 'ZZZ'
@@ -670,16 +662,6 @@ ships/stinger_390x.author: '' vs 'EMB4'
 ships/zodiac.itemID: 28743 vs 0
 ships/zodiac.recipeString: size 1 vs 0
 ships/zodiac.author: '' vs 'EMB4'
-tanks/bnr32.searchLights[0].colorStart: 1358954495 vs 16777215
-tanks/bnr32.searchLights[1].colorStart: 1358954495 vs 16777215
-tanks/bnr32.searchLights[2].colorStart: -65536 vs 16711680
-tanks/bnr32.searchLights[2].colorEnd: 285147136 vs 16711680
-tanks/bnr32.searchLights[3].colorStart: -65536 vs 16711680
-tanks/bnr32.searchLights[3].colorEnd: 285147136 vs 16711680
-tanks/bnr32.searchLights[4].colorStart: -65536 vs 16711680
-tanks/bnr32.searchLights[4].colorEnd: 285147136 vs 16711680
-tanks/bnr32.searchLights[5].colorStart: -65536 vs 16711680
-tanks/bnr32.searchLights[5].colorEnd: 285147136 vs 16711680
 tanks/bnr32.textureNameList: size 4 vs 1
 tanks/bnr32.itemID: 28745 vs 0
 tanks/bnr32.recipeString: size 1 vs 0
@@ -692,12 +674,6 @@ tanks/centauro.bbZmax: -0.29999995 vs 5.7
 tanks/centauro.bbZ: -2.0 vs 0.9999999
 tanks/centauro.author: '' vs 'EMB4'
 tanks/growler.rideRacks: size 5 vs 3
-tanks/growler.searchLights[0].colorStart: 1358954495 vs 16777215
-tanks/growler.searchLights[1].colorStart: 1358954495 vs 16777215
-tanks/growler.searchLights[2].colorStart: -65536 vs 16711680
-tanks/growler.searchLights[2].colorEnd: 285147136 vs 16711680
-tanks/growler.searchLights[3].colorStart: -65536 vs 16711680
-tanks/growler.searchLights[3].colorEnd: 285147136 vs 16711680
 tanks/growler.textureNameList: size 4 vs 1
 tanks/growler.itemID: 28766 vs 0
 tanks/growler.recipeString: size 1 vs 0
