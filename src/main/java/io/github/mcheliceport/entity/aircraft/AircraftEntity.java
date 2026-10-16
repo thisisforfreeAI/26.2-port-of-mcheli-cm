@@ -140,6 +140,11 @@ public abstract class AircraftEntity extends Entity
             SynchedEntityData.defineId(AircraftEntity.class, EntityDataSerializers.FLOAT);
     private static final EntityDataAccessor<Integer> DATA_ROPE_TICKS =
             SynchedEntityData.defineId(AircraftEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Float> DATA_LIGHT_YAW =
+            SynchedEntityData.defineId(AircraftEntity.class, EntityDataSerializers.FLOAT);
+    private static final EntityDataAccessor<Float> DATA_LIGHT_PITCH =
+            SynchedEntityData.defineId(AircraftEntity.class, EntityDataSerializers.FLOAT);
+    public float lightHatchRotation, previousLightHatchRotation;
 
     private static final AircraftHitBox[] NO_HIT_BOXES = new AircraftHitBox[0];
     private static final SeatEntity[] NO_SEATS = new SeatEntity[0];
@@ -383,6 +388,7 @@ public abstract class AircraftEntity extends Entity
         builder.define(DATA_USE_WEAPON, 0);
         builder.define(DATA_TOWED, false);
         builder.define(DATA_ROPE_LENGTH, 0F); builder.define(DATA_ROPE_TICKS, 0);
+        builder.define(DATA_LIGHT_YAW, 0F); builder.define(DATA_LIGHT_PITCH, 0F);
     }
 
     @Override
@@ -1643,6 +1649,7 @@ public abstract class AircraftEntity extends Entity
         }
 
         this.missileDetector.update();
+        this.updateSearchLight();
         this.weapons.updateSupplyAmmo();
         this.autoRepair();
         this.updateCountermeasures();
@@ -2982,6 +2989,41 @@ public abstract class AircraftEntity extends Entity
         return this.aps.tick;
     }
 
+    // ---- searchlights ----
+
+    public boolean haveSearchLight() { return this.info != null && !this.info.searchLights.isEmpty(); }
+    public boolean isSearchLightOn() { return this.haveSearchLight() && !this.isDestroyed() && this.getCommonStatus(6); }
+    public boolean canSwitchSearchLight(Entity rider) {
+        int seat = this.getSeatIdByEntity(rider);
+        return this.haveSearchLight() && !this.isDestroyed() && seat >= 0 && seat <= 1;
+    }
+    public void setSearchLight(boolean enabled) { this.setCommonStatus(6, enabled && this.haveSearchLight() && !this.isDestroyed()); }
+    private @Nullable Entity searchLightOperator() {
+        Entity gunner = this.getEntityBySeatId(1);
+        return gunner != null ? gunner : this.getPilot();
+    }
+    public float searchLightYaw(float partial) {
+        Entity operator = this.searchLightOperator();
+        return operator != null ? operator.getYRot(partial) : this.entityData.get(DATA_LIGHT_YAW);
+    }
+    public float searchLightPitch(float partial) {
+        Entity operator = this.searchLightOperator();
+        return operator != null ? operator.getXRot(partial) : this.entityData.get(DATA_LIGHT_PITCH);
+    }
+    private void updateSearchLight() {
+        boolean enabled = this.isSearchLightOn();
+        this.previousLightHatchRotation = this.lightHatchRotation;
+        this.lightHatchRotation = Mth.clamp(this.lightHatchRotation + (enabled ? 0.5F : -0.5F), 0, 1);
+        if (!this.level().isClientSide()) {
+            if (this.isDestroyed()) { this.setCommonStatus(6, false); }
+            Entity operator = this.searchLightOperator();
+            if (enabled && operator != null) {
+                this.entityData.set(DATA_LIGHT_YAW, Mth.wrapDegrees(operator.getYRot()));
+                this.entityData.set(DATA_LIGHT_PITCH, Mth.clamp(operator.getXRot(), -90, 90));
+            }
+        }
+    }
+
     // ---- save data ----
 
     @Override
@@ -3023,12 +3065,18 @@ public abstract class AircraftEntity extends Entity
             this.entityData.set(DATA_HOVERING, hovering);
         }
         this.ropes.load(input);
+        this.setSearchLight(input.getBooleanOr("SearchLight", false));
+        this.entityData.set(DATA_LIGHT_YAW, input.getFloatOr("SearchLightYaw", this.getYaw()));
+        this.entityData.set(DATA_LIGHT_PITCH, input.getFloatOr("SearchLightPitch", this.getPitch()));
         this.orientation = null;
     }
 
     @Override
     protected void addAdditionalSaveData(ValueOutput output) {
         this.ropes.save(output);
+        output.putBoolean("SearchLight", this.isSearchLightOn());
+        output.putFloat("SearchLightYaw", this.entityData.get(DATA_LIGHT_YAW));
+        output.putFloat("SearchLightPitch", this.entityData.get(DATA_LIGHT_PITCH));
         output.putString("AcERAState", this.getEraState());
         output.putString("TextureName", this.getTextureName());
         output.putString("TypeName", this.getAircraftTypeName());

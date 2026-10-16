@@ -289,6 +289,10 @@ public final class AircraftHudLayer implements GuiLayer {
         if (seatId == 0) {
             this.drawLeftKey(graphics, "Dismount", ModKeyMappings.UNMOUNT, leftX, ACTIVE);
         }
+        if (aircraft.canSwitchSearchLight(player)) {
+            this.drawLeftKey(graphics, aircraft.isSearchLightOn() ? "Lights off" : "Lights on",
+                    ModKeyMappings.SEARCH_LIGHT, leftX, ACTIVE);
+        }
         boolean canFreeLook = !(aircraft instanceof io.github.mcheliceport.entity.ground.GroundVehicleEntity)
                 && (seatId == 0 || seatId > 0 && aircraft.canSwitchGunnerModeOtherSeat(player));
         if (canFreeLook) {

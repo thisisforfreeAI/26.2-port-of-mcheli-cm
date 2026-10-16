@@ -12,6 +12,14 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 
 ### Added
 
+- L toggles configured searchlights/headlights for the pilot or first crew seat. Movable lamps
+  follow first-crew/pilot aim, fixed lamps follow the hull, and addon steering lamps follow wheel
+  steering. Light covers animate, switch/retained aim save and synchronize, and destroyed vehicles
+  cannot emit light. Additive beams use supported rendering on OpenGL/Vulkan; living entities in
+  their cones receive a lightmap highlight. Protocol 11 requires matching client/host builds.
+- Restore legacy alpha values for all fifteen stock lamps. A stock content revision refreshes
+  existing 0.5.1 extracted definitions while preserving separate addon overrides.
+
 - Helicopters with configured rope hooks deploy/retract ropes with K during a steady, level
   hover. Crew use Y after the deployment delay to descend; eligible non-player crew descend
   automatically at each hook's configured interval. Ropes and upright riders render through

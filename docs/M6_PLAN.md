@@ -706,6 +706,66 @@ does not establish hardware performance, audio or latency/loss behavior. Actual 
 descent and reversing the two players' reconnect order were not exercised; missing-parent
 recovery is bounded by the documented fifty-tick grace, after which normal gravity resumes.
 
+## Searchlight increment
+
+- L is a dedicated bindable light switch for the pilot and first crew occupant. It sends the
+  existing common-control bit through helicopter, plane, ship and ground payloads; server-side
+  vehicle identity, actual seat membership, definition and destruction checks remain authoritative.
+  C retains camera mode switching; Ctrl+C retains gunner status. A contextual key hook consumes
+  vanilla Advancements clicks when that binding conflicts with the light key and an authorized
+  rider operates a vehicle with lamps. Outside that context Advancements remains available.
+- Movable lamps prefer first-crew aim and fall back to the pilot. Empty vehicles retain the last
+  server-synchronized yaw/pitch. Switch state and retained aim persist across world saves; protocol
+  11 covers the two new entity metadata values. Version remains 0.5.1 while M6 continues.
+- Port upstream's body/lamp matrix order for movable, fixed and addon steering lamps. Twenty-four
+  two-sided additive triangles reproduce each cone's start/end colour and configured length/width
+  through registered vanilla-shader render pipelines, with depth testing and no depth writes.
+  Extraction snapshots contain no live entity references; culling includes the full cone.
+- Restore the living-entity lightmap highlight, gathering tracked aircraft once per frame and
+  combining block light with the maximum lamp contribution. Use the actual 3D cone angle and
+  retain existing sky/block light. As upstream, this does not update terrain lighting or cast
+  dynamic spotlight shadows; the highlight has no block occlusion test. Addon light covers rotate
+  about their configured pivots and open/close over two ticks. Stock defines no steering lamps
+  or light-cover parts, so those cases are checked with synthetic definitions.
+- Restore legacy ARGB alpha for fifteen lamps in Bell 207, Mi-24PS, An-2, Project 1204, Growler
+  and BNR32. Content revision 1 refreshes default definitions even on existing 0.5.1 installs,
+  without touching separate addon packs. YAML emission already retains eight-digit ARGB values.
+- Automated validation: 146 JUnit tests pass with no failures/errors/skips and all 148 required
+  GameTests pass. New cases compare all lamp transforms to upstream GL calls, distinguish movable
+  and fixed aim, check cone lighting boundaries, verify all stock alpha values, exercise cover
+  pivot animation, and migrate existing stock caches while retaining overrides. Dedicated-server
+  cases verify pilot/first-crew/later-crew/outsider/wrong-ID authority, absent definitions,
+  first-crew aim priority, empty retained aim, two-tick cover timing, save/load and destruction.
+
+### Searchlight graphics and multiplayer checks
+
+Use the dedicated server with default client movement, an OpenGL pilot and a Vulkan observer,
+all on this build. All three existing 0.5.1 installations refresh their extracted stock definitions
+through the new content revision. At night, press L from the Mi-24PS cockpit: no Advancements
+screen opens, server SearchLight changes from false to true, both clients draw the beam, and a
+cow in its cone receives the living-entity highlight. Vulkan's external view shows the cone and
+cow: [spotlight](screens/m6-searchlight-vulkan.png). OpenGL's cockpit shows the same cone and
+Lights off : L hint. Ctrl freelook/mouse movement turns the lamp without turning the grounded hull.
+
+Mount the Vulkan player in first crew seat. That player's L switches the lamp off, then on;
+looking sideways changes server retained aim to yaw 118.70001, pitch 17, overriding the pilot's
+16.2-degree look. Dismount both players: the unoccupied airframe retains those angles. Move the
+OpenGL pilot into a Growler and press L. Its two headlights remain along chassis yaw zero while
+the driver's yaw changes to 37.5. Both clients draw the paired cones, including nearby living
+highlights: [OpenGL](screens/m6-headlights-opengl.png), [Vulkan](screens/m6-headlights-vulkan.png).
+Dismounting leaves the lights on and preserves both vehicles' state before saving.
+
+Stop and fully restart the dedicated server with both vehicles unoccupied. Before either player
+reconnects, the helicopter still reports SearchLight true, yaw 118.70001, pitch 17, and the Growler
+reports SearchLight true. Both players reconnect successfully and the restored lamps render.
+Unmounted L opens vanilla Advancements normally, confirming the input override is contextual.
+The final server saves/stops and both clients quit normally. Software Mesa is used; this does
+not establish hardware performance, local audio, latency/loss or terrain shadow support. The
+expected missing OpenAL device, X11 cursor-shape warning and offline authentication warning
+remain environment limitations; no mod exception or graphics-pipeline error occurs in this
+final run. Stock has no steering lamps/light covers; those were exercised by automated synthetic
+cases, not by a live addon. Broader plane/ship lamp gameplay remains unexercised in this scene.
+
 ## Integration points already identified
 
 ### Shared Ctrl controls follow-up
