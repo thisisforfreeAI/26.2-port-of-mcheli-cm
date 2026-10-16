@@ -24,6 +24,7 @@ public final class CommonConfig {
     public static final ModConfigSpec.DoubleValue ALL_SHIP_SPEED;
     public static final ModConfigSpec.BooleanValue AUTO_THROTTLE_DOWN_TANK;
     public static final ModConfigSpec.BooleanValue FIX_VEHICLE_AT_PLACED_POINT;
+    public static final ModConfigSpec.BooleanValue ENABLE_PUT_RACK_IN_FLYING;
     public static final ModConfigSpec.BooleanValue AUTO_THROTTLE_DOWN_PLANE;
     public static final ModConfigSpec.BooleanValue AUTO_THROTTLE_DOWN_HELI;
     public static final ModConfigSpec.BooleanValue EXPERIMENTAL_QUATERNION_ROTATION;
@@ -67,6 +68,8 @@ public final class CommonConfig {
         builder.pop();
 
         builder.comment("Vehicle rules (upstream's lines of the same names in mcheli.cfg).").push("vehicles");
+        ENABLE_PUT_RACK_IN_FLYING = builder.comment("Allow carriers to load racks while flying. Upstream: EnablePutRackInFlying.")
+                .define("enablePutRackInFlying", true);
         PLACEABLE_ON_SPONGE_ONLY = builder
                 .comment("Vehicles can only be placed on a sponge (floating vehicles: on water above a sponge).",
                         "Upstream: PlaceableOnSpongeOnly.")

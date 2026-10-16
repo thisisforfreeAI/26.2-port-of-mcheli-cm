@@ -12,6 +12,16 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 
 ### Added
 
+- Aircraft racks now load containers and eligible vehicles with J; U releases the last occupied
+  rack. Vehicle pilots can board nearby compatible carriers with J and leave with U. Stock rack
+  names/kinds, RideRack mappings, entry ranges and seat/rack exclusion groups are enforced.
+- Attached loads save in the carrier's passenger tree. Carried vehicles retain their drivers and
+  cargo while movement physics, pilot motion/attitude updates and tank crushing are suspended.
+  Rack poses follow carrier attitude through supported rendering and world transforms.
+- High rack releases use type-3 transport parachutes with carrier velocity. Blocked exits and
+  cancelled mounting/dismounting/spawning keep or restore the original attachment. Controls use
+  protocol 8 and require matching client/host builds; existing control payload layouts are kept.
+
 - Cargo containers now place from their item and provide a synchronized 54-slot inventory with
   shift-click transfers, slot-preserving saves and current NeoForge item automation capabilities.
   The stock model uses the shared OpenGL/Vulkan submission path. Server motion restores gravity,

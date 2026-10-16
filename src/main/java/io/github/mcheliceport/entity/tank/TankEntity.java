@@ -6,6 +6,7 @@ import io.github.mcheliceport.content.aircraft.AircraftInfo;
 import io.github.mcheliceport.content.aircraft.TankInfo;
 import io.github.mcheliceport.entity.ground.GroundMotion;
 import io.github.mcheliceport.entity.ground.GroundVehicleEntity;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.Level;
 import org.jspecify.annotations.Nullable;
@@ -23,6 +24,7 @@ public class TankEntity extends GroundVehicleEntity {
             this.collisions.tick(server);
         }
     }
+    public void rememberCarrier(Entity carrier) { this.collisions.rememberCarrier(carrier); }
     @Override protected @Nullable AircraftInfo lookupInfo(String name) { return ContentRegistries.get().tank().get(name); }
     @Override public ContentType getContentType() { return ContentType.TANK; }
     public @Nullable TankInfo getTankInfo() { return (TankInfo) this.getAcInfo(); }

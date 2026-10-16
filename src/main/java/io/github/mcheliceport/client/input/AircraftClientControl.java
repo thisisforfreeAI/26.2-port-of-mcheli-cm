@@ -159,6 +159,15 @@ public final class AircraftClientControl {
         }
 
         if (isPilot) {
+            if (ModKeyMappings.PUT_TO_RACK.consumeClick()) {
+                ClientPacketDistributor.sendToServer(new io.github.mcheliceport.net.RackControlPayload(aircraft.getId(),
+                        aircraft.racks().canRide() ? io.github.mcheliceport.net.RackControlPayload.Action.RIDE
+                                : io.github.mcheliceport.net.RackControlPayload.Action.LOAD));
+            } else if (ModKeyMappings.DOWN_FROM_RACK.consumeClick()) {
+                ClientPacketDistributor.sendToServer(new io.github.mcheliceport.net.RackControlPayload(aircraft.getId(),
+                        aircraft.isPassenger() ? io.github.mcheliceport.net.RackControlPayload.Action.LEAVE
+                                : io.github.mcheliceport.net.RackControlPayload.Action.UNLOAD));
+            }
             if (ModKeyMappings.GEAR_UP_DOWN.consumeClick() && aircraft.getAcInfo().haveLandingGear()) {
                 if (aircraft.canFoldLandingGear()) {
                     gear = HeliControlPayload.GearSwitch.FOLD;
