@@ -5,6 +5,11 @@ import io.github.mcheliceport.item.AircraftItem;
 import io.github.mcheliceport.menu.UavStationMenu;
 import io.github.mcheliceport.registry.ModItems;
 import java.util.UUID;
+import java.util.List;
+import java.util.LinkedHashSet;
+import io.github.mcheliceport.item.UavControllerItem;
+import io.github.mcheliceport.item.UavTabletData;
+import io.github.mcheliceport.registry.ModDataComponents;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.network.chat.Component;
@@ -33,15 +38,70 @@ public class UavStationEntity extends Entity {
     private static final EntityDataAccessor<Integer> Z = SynchedEntityData.defineId(UavStationEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> RANGE = SynchedEntityData.defineId(UavStationEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<String> FEEDBACK = SynchedEntityData.defineId(UavStationEntity.class, EntityDataSerializers.STRING);
+    private static final EntityDataAccessor<Boolean> HANDHELD = SynchedEntityData.defineId(UavStationEntity.class, EntityDataSerializers.BOOLEAN);
+    private final LinkedHashSet<UUID> paired = new LinkedHashSet<>();
+    private @Nullable UUID tabletOwner, tabletId;
+    private InteractionHand tabletHand = InteractionHand.MAIN_HAND;
+    private ItemStack tabletStack = ItemStack.EMPTY;
     private @Nullable UUID lastUav;
-    private boolean contentsDropped;
+    private boolean contentsDropped, legacyPairing;
     private final SimpleContainer inventory = new SimpleContainer(1);
     private final InterpolationHandler interpolation = new InterpolationHandler(this, 3);
     public float cover, previousCover;
     public UavStationEntity(EntityType<? extends UavStationEntity> type, Level level) { super(type, level); }
     @Override protected void defineSynchedData(SynchedEntityData.Builder b) {
-        b.define(SMALL, false); b.define(OPEN, true); b.define(CONTROLLED, 0); b.define(LAST, 0);
+        b.define(HANDHELD, false); b.define(SMALL, false); b.define(OPEN, true); b.define(CONTROLLED, 0); b.define(LAST, 0);
         b.define(X, 12); b.define(Y, 2); b.define(Z, 12); b.define(RANGE, 128); b.define(FEEDBACK, "");
+    }
+    public boolean handheld() { return entityData.get(HANDHELD); }
+    public UUID controllerId() { return tabletId != null ? tabletId : getUUID(); }
+    public List<UUID> pairedUavs() { return List.copyOf(paired); }
+    public @Nullable UUID lastId() { return lastUav; }
+    public @Nullable AircraftEntity resolve(UUID id) {
+        return level() instanceof ServerLevel sl && sl.getEntity(id) instanceof AircraftEntity ac && !ac.isRemoved() ? ac : null;
+    }
+    public void initTablet(Player player, InteractionHand hand, ItemStack stack, UavTabletData data) {
+        entityData.set(HANDHELD, true); tabletOwner = player.getUUID(); tabletId = data.id(); tabletHand = hand; tabletStack = stack;
+        paired.addAll(data.uavs()); setSmall(!UavControllerItem.allowsNormal());
+        snapTo(player.getX(), player.getY(), player.getZ(), player.getYRot(), 0);
+        if (!paired.isEmpty()) { lastUav = paired.iterator().next(); }
+    }
+    private boolean tabletValid(Player player) {
+        var d = tabletStack.get(ModDataComponents.UAV_TABLET.get());
+        return player.getUUID().equals(tabletOwner) && player.getItemInHand(tabletHand) == tabletStack
+                && d != null && d.id().equals(tabletId);
+    }
+    private void saveTablet() {
+        if (handheld() && tabletId != null) { tabletStack.set(ModDataComponents.UAV_TABLET.get(), new UavTabletData(tabletId, pairedUavs())); }
+    }
+    public boolean pair(Player player, AircraftEntity ac) {
+        if (level().isClientSide() || handheld() || player.isSpectator() || player.distanceToSqr(this) > 36
+                || getFirstPassenger() != null && operator() != player) { return false; }
+        if (!compatible(ac) || ac.getAcInfo().isTargetDrone || ac.getAcInfo().creativeOnly && !player.isCreative()
+                || ac.uavStation() != null) { return fail(player, "Use an idle compatible UAV."); }
+        if (ac.pairedController() != null && !ac.pairedController().equals(controllerId())) { return fail(player, "UAV is paired to another controller."); }
+        if (!paired.contains(ac.getUUID()) && paired.size() >= UavControllerItem.maxPairs()) { return fail(player, "Controller pairing list is full."); }
+        paired.add(ac.getUUID()); ac.setPairedController(controllerId());
+        if (lastUav == null) { lastUav = ac.getUUID(); entityData.set(LAST, ac.getId()); }
+        entityData.set(FEEDBACK, "UAV paired to station."); if (player instanceof ServerPlayer sp) { sp.sendSystemMessage(Component.literal("UAV paired to station."), true); } return true;
+    }
+    public boolean unpair(Player player, UUID id, boolean menuAction) {
+        if (level().isClientSide() || player.isSpectator() || !paired.contains(id)
+                || (menuAction ? !usableBy(player) : player.distanceToSqr(this) > 36 || getFirstPassenger() != null && operator() != player)) { return false; }
+        var ac = resolve(id);
+        if (ac != null && ac.uavStation() != null && ac.uavStation() != this) { return false; }
+        if (ac != null && controlled() == ac) { disconnect(); }
+        return forgetPairing(id, ac);
+    }
+    /** Physical pairing-tool interaction already checks the player and the idle aircraft. */
+    public void releaseIdlePairing(AircraftEntity ac) {
+        if (!level().isClientSide() && ac.uavStation() == null && controllerId().equals(ac.pairedController())) { forgetPairing(ac.getUUID(), ac); }
+    }
+    private boolean forgetPairing(UUID id, @Nullable AircraftEntity ac) {
+        paired.remove(id);
+        if (ac != null && controllerId().equals(ac.pairedController())) { ac.setPairedController(null); }
+        if (id.equals(lastUav)) { lastUav = null; entityData.set(LAST, 0); }
+        saveTablet(); return true;
     }
     public SimpleContainer inventory() { return inventory; }
     public boolean small() { return entityData.get(SMALL); }
@@ -60,7 +120,7 @@ public class UavStationEntity extends Entity {
     }
     public @Nullable Player operator() {
         return !isRemoved() && getFirstPassenger() instanceof Player p && p.isAlive() && !p.isRemoved()
-                && !p.isSpectator() && p.getVehicle() == this ? p : null;
+                && !p.isSpectator() && p.getVehicle() == this && (level().isClientSide() || !handheld() || tabletValid(p)) ? p : null;
     }
     public @Nullable AircraftEntity controlled() { return aircraft(entityData.get(CONTROLLED)); }
     public @Nullable AircraftEntity lastAircraft() { return aircraft(entityData.get(LAST)); }
@@ -72,6 +132,8 @@ public class UavStationEntity extends Entity {
         if (!tracked(ac)) { return false; }
         return !isPassenger() && controlled() == ac && ac.uavStation() == this && operator() != null && open() && !ac.isDestroyed() && ac.isUAV()
                 && ac.level() == level() && !ac.isPassenger() && !ac.isTowed()
+                && (!small() || ac.getAcInfo() != null && ac.getAcInfo().isSmallUAV)
+                && (level().isClientSide() || paired.contains(ac.getUUID()) && controllerId().equals(ac.pairedController()))
                 && distanceToSqr(ac) <= (double) allowedRange * allowedRange && level().hasChunkAt(ac.blockPosition());
     }
     private boolean tracked(AircraftEntity ac) {
@@ -86,20 +148,21 @@ public class UavStationEntity extends Entity {
     }
     public boolean usableBy(Player player) { return operator() == player && player.distanceToSqr(this) <= 16 && open(); }
     public boolean accepts(ItemStack stack) {
-        return stack.getItem() instanceof AircraftItem item && item.getAircraftInfo() != null
+        return !handheld() && stack.getItem() instanceof AircraftItem item && item.getAircraftInfo() != null
                 && item.isPlaceable() && item.getAircraftInfo().isUAV && (!small() || item.getAircraftInfo().isSmallUAV);
     }
     private boolean compatible(AircraftEntity ac) {
         return ac.isUAV() && !ac.isDestroyed() && !ac.isRemoved() && !ac.isPassenger() && !ac.isTowed()
                 && ac.getAcInfo() != null && ac.getPassengers().stream().noneMatch(e -> !(e instanceof io.github.mcheliceport.entity.seat.SeatEntity))
-                && (!small() || ac.getAcInfo().isSmallUAV)
-                && (!ac.getAcInfo().creativeOnly || operator() != null && operator().isCreative());
+                && (!small() || ac.getAcInfo().isSmallUAV);
     }
     public boolean deploy(Player player) {
-        if (level().isClientSide() || !usableBy(player) || controlled() != null) { return false; }
+        if (level().isClientSide() || handheld() || !usableBy(player) || controlled() != null) { return false; }
         ItemStack stack = inventory.getItem(0);
         if (stack.getCount() != 1 || !accepts(stack)) { return fail(player, "Insert a compatible UAV item first."); }
         var item = (AircraftItem) stack.getItem();
+        if (item.getAircraftInfo().creativeOnly && !player.isCreative()) { return fail(player, "This UAV requires creative mode."); }
+        if (!item.getAircraftInfo().isTargetDrone && paired.size() >= UavControllerItem.maxPairs()) { return fail(player, "Unpair a UAV before deploying another."); }
         Vec3 pos = position().add(offset(0), offset(1), offset(2));
         if (pos.y < level().getMinY() + 1 || pos.y >= level().getMaxY() - 2
                 || !level().hasChunkAt(net.minecraft.core.BlockPos.containing(pos))) {
@@ -115,19 +178,42 @@ public class UavStationEntity extends Entity {
         if (ac.getAcInfo().isTargetDrone) { ac.setFuel(ac.getMaxFuel()); }
         if (!level().addFreshEntity(ac)) { return fail(player, "UAV deployment was cancelled."); }
         inventory.removeItem(0, 1);
-        if (!ac.getAcInfo().isTargetDrone) { lastUav = ac.getUUID(); entityData.set(LAST, ac.getId()); }
+        if (!ac.getAcInfo().isTargetDrone) { paired.add(ac.getUUID()); ac.setPairedController(controllerId()); lastUav = ac.getUUID(); entityData.set(LAST, ac.getId()); }
         entityData.set(FEEDBACK, ac.getAcInfo().isTargetDrone ? "Target drone launched." : "Deployed. Connect, then I to refuel.");
         return true;
     }
-    public boolean connect(Player player) {
-        var ac = lastAircraft();
-        if (level().isClientSide() || !usableBy(player) || controlled() != null || ac == null || !compatible(ac)
-                || ac.uavStation() != null || ac.getAcInfo().isTargetDrone) { return fail(player, "Last UAV is unavailable."); }
+    public String connectionStatus(AircraftEntity ac) {
+        if (!controllerId().equals(ac.pairedController())) { return "Paired elsewhere"; }
+        if (ac.isDestroyed()) { return "Destroyed"; }
+        if (!compatible(ac)) { return "Incompatible"; }
+        if (ac.uavStation() != null) { return "In use"; }
+        if (distanceToSqr(ac) > (double) rangeLimit(ac) * rangeLimit(ac)) { return "Out of range"; }
+        if (!tracked(ac)) { return "Terrain loading"; }
+        return "Ready";
+    }
+    private void migrateLegacyPairing(AircraftEntity ac) {
+        if (!legacyPairing || !ac.getUUID().equals(lastUav)) { return; }
+        legacyPairing = false;
+        if (ac.pairedController() == null && paired.isEmpty() && UavControllerItem.maxPairs() > 0
+                && ac.isUAV() && ac.getAcInfo() != null && !ac.getAcInfo().isTargetDrone && !ac.isDestroyed()) {
+            paired.add(ac.getUUID()); ac.setPairedController(controllerId());
+        }
+    }
+    public boolean connect(Player player) { return connect(player, lastUav); }
+    public boolean connect(Player player, @Nullable UUID id) {
+        if (level().isClientSide() || !usableBy(player) || controlled() != null || id == null) { return fail(player, "No available remote UAV selected."); }
+        var ac = resolve(id);
+        if (ac == null) { return fail(player, "Selected UAV is not loaded."); }
+        migrateLegacyPairing(ac);
+        if (!paired.contains(id) || !controllerId().equals(ac.pairedController())) { return fail(player, "UAV pairing belongs to another controller."); }
+        if (!compatible(ac) || ac.uavStation() != null || ac.getAcInfo().isTargetDrone
+                || ac.getAcInfo().creativeOnly && !player.isCreative()) { return fail(player, "Selected UAV cannot be controlled now."); }
         entityData.set(RANGE, rangeLimit(ac));
         if (distanceToSqr(ac) > (double) range() * range() || !level().hasChunkAt(ac.blockPosition())) {
             return fail(player, "Last UAV is out of control range.");
         }
         if (!tracked(ac)) { return fail(player, "UAV terrain is still loading."); }
+        lastUav = ac.getUUID(); entityData.set(LAST, ac.getId());
         entityData.set(CONTROLLED, ac.getId()); ac.setUavStation(this);
         player.setYRot(ac.getYaw()); player.setXRot(ac.getPitch());
         if (player instanceof ServerPlayer sp) { sp.closeContainer(); }
@@ -156,7 +242,10 @@ public class UavStationEntity extends Entity {
         if (usableBy(player) && player instanceof ServerPlayer sp) { UavStationMenu.open(sp, this); }
     }
     @Override public InteractionResult interact(Player player, InteractionHand hand, Vec3 hit) {
-        if (hand != InteractionHand.MAIN_HAND || player.isSpectator() || isRemoved() || isPassenger()) { return InteractionResult.PASS; }
+        if (!handheld() && player.getItemInHand(hand).getItem() instanceof UavControllerItem item && player.getItemInHand(hand).is(ModItems.UAV_PAIRING_DEVICE.get())) {
+            return item.onStation(player, hand, this);
+        }
+        if (handheld() || hand != InteractionHand.MAIN_HAND || player.isSpectator() || isRemoved() || isPassenger()) { return InteractionResult.PASS; }
         if (small() && player.isShiftKeyDown() && getFirstPassenger() == null) {
             if (!level().isClientSide()) { entityData.set(OPEN, !open()); }
             return InteractionResult.SUCCESS;
@@ -172,10 +261,16 @@ public class UavStationEntity extends Entity {
     @Override public void tick() {
         super.tick(); previousCover = cover; cover = Math.clamp(cover + (open() ? 0.1F : -0.1F), 0, 1);
         if (level().isClientSide()) { interpolation.interpolate(); return; }
-        setDeltaMovement(0, getDeltaMovement().y - 0.03, 0); move(MoverType.SELF, getDeltaMovement());
-        setDeltaMovement(getDeltaMovement().multiply(0, 0.96, 0));
+        if (handheld()) {
+            if (operator() == null) { discard(); return; }
+            setSmall(!UavControllerItem.allowsNormal());
+        } else {
+            setDeltaMovement(0, getDeltaMovement().y - 0.03, 0); move(MoverType.SELF, getDeltaMovement());
+            setDeltaMovement(getDeltaMovement().multiply(0, 0.96, 0));
+        }
         if (lastUav != null && level() instanceof ServerLevel sl) {
             var found = sl.getEntity(lastUav); entityData.set(LAST, found instanceof AircraftEntity ac && !ac.isRemoved() ? ac.getId() : 0);
+            if (found instanceof AircraftEntity previous && !previous.isRemoved()) { migrateLegacyPairing(previous); }
         }
         var ac = controlled();
         if (ac != null) { entityData.set(RANGE, rangeLimit(ac)); }
@@ -190,14 +285,15 @@ public class UavStationEntity extends Entity {
     @Override protected boolean canAddPassenger(Entity passenger) { return getPassengers().isEmpty() && passenger instanceof Player; }
     @Override protected void positionRider(Entity passenger, MoveFunction move) {
         if (hasPassenger(passenger)) {
+            if (handheld()) { move.accept(passenger, getX(), getY(), getZ()); return; }
             double angle = Math.toRadians(getYRot());
             move.accept(passenger, getX() - Math.sin(angle) * .9, getY() + .35, getZ() + Math.cos(angle) * .9);
         }
     }
     @Override public InterpolationHandler getInterpolation() { return interpolation; }
-    @Override public boolean isPickable() { return !isRemoved(); }
+    @Override public boolean isPickable() { return !handheld() && !isRemoved(); }
     @Override public boolean hurtServer(ServerLevel level, DamageSource source, float damage) {
-        if (isInvulnerableToBase(source) || !Float.isFinite(damage) || damage <= 0 || isRemoved()) { return false; }
+        if (handheld() || isInvulnerableToBase(source) || !Float.isFinite(damage) || damage <= 0 || isRemoved()) { return false; }
         if (getFirstPassenger() instanceof Player rider && source.getEntity() instanceof Player attacker && !attacker.canHarmPlayer(rider)) { return false; }
         damage = io.github.mcheliceport.weapon.DamageScaling.applyDamageByExternal(this, source, damage);
         if (damage <= 0) { return false; }
@@ -214,10 +310,21 @@ public class UavStationEntity extends Entity {
         }
     }
     @Override public void remove(RemovalReason reason) {
-        if (!level().isClientSide()) { disconnect(); if (reason.shouldDestroy()) { dropContents(); } }
+        if (!level().isClientSide()) {
+            disconnect();
+            if (reason.shouldDestroy()) {
+                dropContents();
+                if (!handheld()) {
+                    for (var id : paired) { var ac = resolve(id); if (ac != null && controllerId().equals(ac.pairedController())) { ac.setPairedController(null); } }
+                }
+            }
+        }
         super.remove(reason);
     }
+    @Override public boolean shouldBeSaved() { return !handheld() && super.shouldBeSaved(); }
+    @Override public boolean saveAsPassenger(ValueOutput output) { return !handheld() && super.saveAsPassenger(output); }
     @Override protected void addAdditionalSaveData(ValueOutput output) {
+        output.store("PairedUavs", UUIDUtil.CODEC.listOf(), pairedUavs());
         output.putBoolean("Small", small()); output.putBoolean("Open", open());
         output.putInt("OffsetX", offset(0)); output.putInt("OffsetY", offset(1)); output.putInt("OffsetZ", offset(2));
         if (lastUav != null) { output.store("LastUav", UUIDUtil.CODEC, lastUav); }
@@ -229,6 +336,8 @@ public class UavStationEntity extends Entity {
         entityData.set(Y, Math.clamp(input.getIntOr("OffsetY", 2), -50, 50));
         entityData.set(Z, Math.clamp(input.getIntOr("OffsetZ", 12), -50, 50));
         lastUav = input.read("LastUav", UUIDUtil.CODEC).orElse(null);
+        var savedPairs = input.read("PairedUavs", UUIDUtil.CODEC.sizeLimitedListOf(UavTabletData.MAX));
+        paired.clear(); paired.addAll(savedPairs.orElse(List.of())); legacyPairing = savedPairs.isEmpty() && lastUav != null;
         var items = NonNullList.withSize(1, ItemStack.EMPTY); ContainerHelper.loadAllItems(input, items); inventory.setItem(0, items.getFirst());
         entityData.set(CONTROLLED, 0);
     }

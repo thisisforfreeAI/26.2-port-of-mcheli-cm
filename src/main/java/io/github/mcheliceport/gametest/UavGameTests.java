@@ -42,24 +42,24 @@ final class UavGameTests {
         ModGameTests.test("uav_real_server_flight_with_station_operator", 120, UavGameTests::flight);
         ModGameTests.test("uav_every_stock_unmanned_airframe_deploys", 40, UavGameTests::allStock);
     }
-    private static UavStationEntity station(GameTestHelper h, boolean small) {
+    static UavStationEntity station(GameTestHelper h, boolean small) {
         var s = new UavStationEntity(ModEntityTypes.UAV_STATION.get(), h.getLevel());
         s.setPos(h.absoluteVec(new Vec3(8, 2, 8))); s.setSmall(small); h.getLevel().addFreshEntity(s); return s;
     }
-    private static Player operator(GameTestHelper h, UavStationEntity s) {
+    static Player operator(GameTestHelper h, UavStationEntity s) {
         var p = GameTestSupport.player(h, GameType.SURVIVAL, new Vec3(10, 2, 10));
         check(h, p.startRiding(s, true, true), "operator mounts console"); s.positionRider(p); return p;
     }
-    private static ItemStack item(String name) {
+    static ItemStack item(String name) {
         return new ItemStack(ModItems.contentItems().stream().filter(i -> i.contentName().equals(name))
                 .findFirst().orElseThrow().item().get());
     }
-    private static AircraftEntity deploy(GameTestHelper h, UavStationEntity s, Player p, String name) {
+    static AircraftEntity deploy(GameTestHelper h, UavStationEntity s, Player p, String name) {
         s.inventory().setItem(0, item(name)); check(h, s.deploy(p), "deploy " + name);
         var ac = s.lastAircraft(); check(h, ac != null, "saved last drone resolves immediately"); return ac;
     }
-    private static void clean(Entity... all) { for (var e : all) { e.discard(); } }
-    private static void deployment(GameTestHelper h) {
+    static void clean(Entity... all) { for (var e : all) { e.discard(); } }
+    static void deployment(GameTestHelper h) {
         var small = station(h, true); var p = operator(h, small);
         small.inventory().setItem(0, item("mq-8b")); check(h, !small.deploy(p), "portable refuses large UAV");
         check(h, small.inventory().getItem(0).getCount() == 1, "refusal retains item");
@@ -153,7 +153,7 @@ final class UavGameTests {
         check(h, abandoned.getPilot() == null && abandoned.uavStation() == null, "dead operator loses control");
         clean(abandoned, dead, deathStation); h.succeed();
     }
-    private static CompoundTag save(GameTestHelper h, Entity entity) {
+    static CompoundTag save(GameTestHelper h, Entity entity) {
         var output = TagValueOutput.createWithContext(ProblemReporter.DISCARDING, h.getLevel().registryAccess()); entity.saveWithoutId(output); return output.buildResult();
     }
     private static void persistence(GameTestHelper h) {

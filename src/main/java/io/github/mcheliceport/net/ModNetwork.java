@@ -46,8 +46,8 @@ public final class ModNetwork {
 
     private static final Logger LOGGER = LogUtils.getLogger();
     /** Bump when payload encoding, menu layout or synchronized entity data changes. */
-    // UAV stations, remote pilot links and the station menu replace placeholders.
-    public static final String VERSION = "12";
+    // Controller pairings, handheld stations and UUID-based roster selection.
+    public static final String VERSION = "13";
 
     private ModNetwork() {
     }
@@ -60,6 +60,12 @@ public final class ModNetwork {
 
     private static void registerPayloads(RegisterPayloadHandlersEvent event) {
         PayloadRegistrar registrar = event.registrar(VERSION);
+        registrar.playToServer(UavRosterActionPayload.TYPE, UavRosterActionPayload.CODEC, (p, context) -> {
+            if (context.player().containerMenu instanceof io.github.mcheliceport.menu.UavStationMenu menu) { menu.rosterAction(context.player(), p); }
+        });
+        registrar.playToClient(UavRosterPayload.TYPE, UavRosterPayload.CODEC, (p, context) -> {
+            if (context.player().containerMenu instanceof io.github.mcheliceport.menu.UavStationMenu menu) { menu.applyRoster(p); }
+        });
         registrar.playToServer(UavStationControlPayload.TYPE, UavStationControlPayload.CODEC, (p, context) -> {
             applyUavStationControl(context.player(), p);
         });

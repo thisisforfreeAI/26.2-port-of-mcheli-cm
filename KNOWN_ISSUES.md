@@ -18,14 +18,14 @@ vehicle repair and medical crew effects are implemented. Cargo containers also p
 save items and open a 54-slot inventory. Remaining equipment
 work is listed below. Rack loading/release, vehicle self-boarding, tow chains, ropes and rappelling
 and searchlights are implemented. UAV stations and portable controllers deploy stock UAVs and
-provide nearby remote piloting, a saved last-UAV identity and station inventory; pairing devices,
-tablets and remaining equipment are pending.
+provide nearby remote piloting, saved pairing lists and station inventory. Pairing devices transfer
+idle UAVs between controllers, and handheld tablets control paired UAVs. Remaining equipment is pending.
 Automated conventional/VTOL flight sequences and plane weapons in both authority modes pass;
 broader gameplay and hardware checks remain pending.
 
 | Area | Planned milestone |
 |---|---|
-| Remaining plane/ground equipment, UAV pairing devices/tablets and station preview camera, gunner NPCs and mobs in seats (and their weapon use), GLTD, hand-held weapons (Stinger, Javelin), the rest of the aircraft GUI, drafting table screen, charger, tools, multiplayer teams and team spotting markers (`MCH_GuiTargetMarker`) | M6 |
+| Remaining plane/ground equipment and UAV station preview camera, gunner NPCs and mobs in seats (and their weapon use), GLTD, hand-held weapons (Stinger, Javelin), the rest of the aircraft GUI, drafting table screen, charger, tools, multiplayer teams and team spotting markers (`MCH_GuiTargetMarker`) | M6 |
 | BVR and passive radar, GPS panel and GPS missiles, mortar radar and RWR overlays, ECM jammer, the pulse-Doppler notch, the APS "iron curtain", data link, anti-radiation missiles, `Destruct` bombs (UAVs), the targeting pod's spotting | M6 (with the vehicles that use them) |
 | Wingman (AI wingmen, marker block screens and types, missions, `/wingman`) | M6b |
 | Remaining `/mcheli` commands (including reloading content with `reconfig`), advancement triggers, long-distance tracking and rendering, thermal vision (the third camera mode), GPU-buffer model rendering, projectile chunk loading (`ProjectileChunkLoad`), HBM:NTM stubs, performance work | M7 |
@@ -38,6 +38,11 @@ Until then:
   Range loss, leaving the station, death or destruction ends control and clears held inputs and
   throttle. Active control sessions are not restored after loading; reconnect with Connect last.
   Target drones launch autonomously and cannot be remotely piloted. Normal UAVs need fuel.
+- One controller owns each UAV pairing. Release an idle UAV with Shift + pairing device before
+  transferring it. A tablet accepts small UAVs unless the server enables `uav.tabletControlNormalUav`.
+  `uav.maxPairedUavs` defaults to five (0..64). Copied tablets share their copied pairing identity;
+  simultaneous control is still excluded by the active UAV link. An unloaded or destroyed
+  controller cannot remotely release a loaded UAV; the physical pairing device can release it.
 - Tank movement uses the main hull collision box plus wheel terrain probes. Extra hull boxes
   contribute damage/crushing regions, but do not provide additional solid movement collision
   shapes. Ground attitude is
@@ -73,9 +78,12 @@ These follow from how Minecraft 26.2 works or from decisions approved in PORTING
 (sections 8 and 10). They apply as each feature is ported.
 
 1. 1.12.2 worlds and items are not migrated (different mod ID, item flattening, new save format).
-2. The UAV station's small preview shows NO SIGNAL plus telemetry: 26.2 has no supported way to
+2. The UAV station's small preview shows telemetry only: 26.2 has no supported way to
    render the world a second time from another viewpoint. Remote flight uses the supported main
    camera at the UAV instead.
+   The handheld tablet controls UAVs deployed from placed stations; it has no deployment inventory.
+   Its temporary seat is invisible and is never saved. Pairings update the item immediately, and
+   changing/dropping the held tablet ends control. Reopen the tablet after reconnecting or loading.
 3. Stippled HUD lines are drawn as dashes, so they may not match upstream pixel for pixel.
 4. Recipe and ammo references to 1.12 items that cannot be mapped to a 26.2 item are skipped, with a
    log line.

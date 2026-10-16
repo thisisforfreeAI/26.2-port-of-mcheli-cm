@@ -29,6 +29,7 @@ public class UavStationRenderer extends EntityRenderer<UavStationEntity, UavStat
         String name = entity.small() ? "uav_portable_controller" : "uav_station";
         boolean lit = entity.small() ? entity.cover > .95F : entity.controlled() != null && entity.operator() != null;
         state.texture = Identifier.fromNamespaceAndPath("mcheli", "textures/" + name + (lit ? "_on" : "") + ".png");
+        if (entity.handheld()) { return; }
         var model = BulletModels.get(name); if (model == null) { return; }
         var gl = new GlMatrixStack(); gl.translate(0, .35, 0); gl.rotate(Mth.rotLerp(partial, entity.yRotO, entity.getYRot()), 0, -1, 0);
         if (!entity.small()) { state.draws.add(new AircraftPartPoses.Draw(gl.current(), model.groups)); return; }

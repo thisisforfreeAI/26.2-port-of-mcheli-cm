@@ -10,6 +10,7 @@ import io.github.mcheliceport.content.aircraft.SeatInfo;
 import io.github.mcheliceport.content.aircraft.SeatRackInfo;
 import io.github.mcheliceport.entity.seat.SeatEntity;
 import io.github.mcheliceport.entity.uav.UavStationEntity;
+import java.util.UUID;
 import io.github.mcheliceport.entity.parachute.ParachuteEntity;
 import io.github.mcheliceport.item.AircraftItem;
 import io.github.mcheliceport.menu.AircraftMenu;
@@ -1359,7 +1360,11 @@ public abstract class AircraftEntity extends Entity
     /** Upstream {@code processInitialInteract}. */
     @Override
     public InteractionResult interact(Player player, InteractionHand hand, Vec3 location) {
-        if (this.isDestroyed() || this.info == null || this.notOnSameTeam(player)) {
+        if (this.notOnSameTeam(player)) { return InteractionResult.PASS; }
+        if (player.getItemInHand(hand).getItem() instanceof io.github.mcheliceport.item.UavControllerItem item) {
+            return item.onAircraft(player, hand, this);
+        }
+        if (this.isDestroyed() || this.info == null) {
             return InteractionResult.PASS;
         }
         ItemStack stack = player.getItemInHand(hand);
@@ -1912,6 +1917,9 @@ public abstract class AircraftEntity extends Entity
                 && this.level().getEntity(this.entityData.get(DATA_UAV_STATION)) instanceof io.github.mcheliceport.entity.uav.UavStationEntity s
                 && !s.isRemoved() ? s : null;
     }
+    private @Nullable UUID pairedController;
+    public @Nullable UUID pairedController() { return pairedController; }
+    public void setPairedController(@Nullable UUID id) { pairedController = id; }
     public void setUavStation(@Nullable UavStationEntity station) {
         this.entityData.set(DATA_UAV_STATION, station == null ? 0 : station.getId());
     }
@@ -3043,6 +3051,7 @@ public abstract class AircraftEntity extends Entity
 
     @Override
     protected void readAdditionalSaveData(ValueInput input) {
+        this.pairedController = input.read("PairedUavController", net.minecraft.core.UUIDUtil.CODEC).orElse(null);
         this.setDespawnCount(input.getIntOr("AcDespawnCount", 0));
         this.setTextureName(input.getStringOr("TextureName", ""));
         this.setRoll(input.getFloatOr("AcRoll", 0.0F));
@@ -3088,6 +3097,7 @@ public abstract class AircraftEntity extends Entity
 
     @Override
     protected void addAdditionalSaveData(ValueOutput output) {
+        if (pairedController != null) { output.store("PairedUavController", net.minecraft.core.UUIDUtil.CODEC, pairedController); }
         this.ropes.save(output);
         output.putBoolean("SearchLight", this.isSearchLightOn());
         output.putFloat("SearchLightYaw", this.entityData.get(DATA_LIGHT_YAW));

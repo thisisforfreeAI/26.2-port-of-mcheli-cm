@@ -11,6 +11,12 @@ import net.minecraft.network.codec.ByteBufCodecs;
  * {@code minecraft:damage}, as upstream used the item damage.
  */
 public final class ModDataComponents {
+    public static final Supplier<DataComponentType<java.util.UUID>> UAV_BOUND =
+            ModRegistries.DATA_COMPONENT_TYPES.registerComponentType("uav_bound",
+                    b -> b.persistent(net.minecraft.core.UUIDUtil.CODEC).networkSynchronized(net.minecraft.core.UUIDUtil.STREAM_CODEC));
+    public static final Supplier<DataComponentType<io.github.mcheliceport.item.UavTabletData>> UAV_TABLET =
+            ModRegistries.DATA_COMPONENT_TYPES.registerComponentType("uav_tablet",
+                    b -> b.persistent(io.github.mcheliceport.item.UavTabletData.CODEC).networkSynchronized(io.github.mcheliceport.item.UavTabletData.STREAM_CODEC));
 
     /** The vehicle's fuel, set when {@code vehicles.itemFuel} is on. */
     public static final Supplier<DataComponentType<Integer>> AIRCRAFT_FUEL =

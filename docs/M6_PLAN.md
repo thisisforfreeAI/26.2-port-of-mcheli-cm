@@ -836,6 +836,73 @@ manual UAV weapon firing and every stock airframe's manual flight are untested h
 missing OpenAL device, X11 cursor-shape warning and offline authentication-service warning remain
 environment limitations; no mod exception or graphics-pipeline failure occurs in this run.
 
+## UAV pairing and tablet increment
+
+- Replace the pairing-device and tablet placeholder items. The device selects a deployed remote
+  UAV by UUID, then registers it when used on a placed station. Shift-right-click with the device
+  releases an idle UAV, including when its prior controller is unavailable. Loaded placed owners
+  immediately remove that pairing. Target drones, destroyed aircraft, rack/tow loads and active
+  remote links cannot be claimed through the tool.
+- One controller identity owns each UAV pairing. Deployment automatically registers the aircraft
+  with its station. Pairing lists and aircraft-side controller UUIDs persist. Pre-pairing saves
+  migrate their last UAV when it loads, without taking aircraft already claimed by another
+  controller. Destroying a station releases loaded paired aircraft; a physical tool can recover
+  pairings whose previous controller is unavailable.
+- The station menu has a paged roster, stable UUID selection, live status/fuel/health/distance
+  telemetry and Unpair selected. Each row includes a short identity so identical aircraft can be
+  distinguished. Actions carry the current menu ID, station ID and aircraft UUID; the server
+  checks actual menu/operator membership and controller ownership before acting. Telemetry is
+  sent only to the operator's matching menu and cannot authorize control.
+- A tablet directly pairs a released UAV, then right-click air opens its controller. Its stable
+  identity and ordered pairings use typed, persistent/networked item components. The temporary
+  invisible station keeps the operator at the opening position and uses the existing main flight
+  camera and remote controls. Holding that exact item is required; replacing it, changing slots,
+  dropping it, leaving, dying or disconnecting ends the session. Active control is not saved.
+  Pairing changes write immediately to the item, so there is no delayed writeback to a replacement.
+- Tablets control UAVs deployed from a placed station and have no deployment inventory. This
+  avoids placing stored items in an unsaved temporary entity. They accept small UAVs by default;
+  SERVER `uav.tabletControlNormalUav` enables full-size aircraft. `uav.maxPairedUavs` defaults to
+  five, bounded to 0..64. Copied tablets carry copied identity/pairings, but active aircraft links
+  still exclude concurrent control. Release before transferring to a distinct controller.
+- Protocol 13 covers handheld-station metadata, typed components and roster payloads. All clients
+  and hosts must update together. Version remains 0.5.1. Remote range/loaded-terrain limits,
+  telemetry-only previews and the deferred chunk-streaming work remain unchanged.
+
+Automated validation: 151 JUnit tests and all 165 required GameTests pass. Eight new server tests
+exercise pairing transfers, one-controller exclusion, full-list item retention, stale/forged menu
+actions, stable selection rather than latest deployment, endpoint persistence, old-save migration,
+tablet item retention, unsaved helpers, immediate unpair writeback, item replacement, death,
+small/full-size configuration, and cancelled spawn/mount cleanup. Four codec tests check immutable
+ordered lists, disk/network identity, roster telemetry, menu/UUID action encoding and bounded
+decoding of untrusted lists.
+
+### Pairing and tablet graphics checks
+
+An OpenGL client and a Vulkan client join the dedicated server with default movement authority.
+The previous increment's saved full station and RC Goblin automatically gain matching pairings.
+A new full station deploys an RC Goblin and Skylark, shows both in its roster and connects the
+selected RC Goblin even though Skylark was deployed last:
+[roster](screens/m6-uav-roster-opengl.png). I opens the correct aircraft menu and a fuel can fills
+the drone to 100%. The pairing device releases the idle RC Goblin, selects it, and registers it
+back at the station. Unpair selected removes it again before binding it to a tablet.
+
+Right-click air opens the tablet roster with its paired drone and current telemetry:
+[OpenGL](screens/m6-uav-tablet-opengl.png). Connect, take off, hover and mouse steering work while
+the operator remains at the tablet's opening location. Changing the held hotbar slot removes the
+temporary controller, restores the player's view and clears server throttle. Drop the same tablet
+and let the other player pick it up: its identity and pairing survive, and the Vulkan player can
+open it, connect and fly the RC Goblin:
+[Vulkan menu](screens/m6-uav-tablet-vulkan.png),
+[Vulkan flight](screens/m6-uav-tablet-flight-vulkan.png).
+The other client sees the drone airborne and the tablet operator on the ground, with no visible
+station helper: [external view](screens/m6-uav-tablet-observer.png).
+
+The first dedicated-server session saves/stops successfully. These are software Mesa checks;
+hardware performance, audio and adverse network conditions remain untested. Initial Quick Play
+attempts occurred before the server finished starting, so the clients rejoined through Direct
+Connection. Missing OpenAL hardware and the X11 cursor warning remain environment limitations.
+Manual UAV weapon firing and roster paging beyond the default five entries were not exercised.
+
 ## Integration points already identified
 
 ### Shared Ctrl controls follow-up
