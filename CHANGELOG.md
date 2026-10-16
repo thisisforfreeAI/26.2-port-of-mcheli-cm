@@ -12,6 +12,16 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 
 ### Added
 
+- UAV pairing devices and handheld tablets now work. Each station retains an ordered paired-UAV
+  roster with selection, status/telemetry, paging and unpairing; deployment pairs UAVs automatically.
+  Existing last-UAV saves migrate when their aircraft loads. Pairing devices select a UAV then
+  register it at a station; Shift + device releases an idle aircraft for transfer.
+- Tablets retain their identity and pairings in typed item components, open a temporary invisible
+  controller and use the existing remote flight workflow. They accept small UAVs by default;
+  server settings control full-size compatibility and pairing limits. Held-item loss, death and
+  disconnect remove active tablet control. Temporary controllers never save; tablets have no
+  deployment inventory. Protocol 13 requires matching client/host builds.
+
 - Placed UAV stations and portable controllers now deploy UAV items, reconnect to their saved last
   UAV and provide remote flight through the existing main camera, HUD, weapons and aircraft menu.
   Operators remain at the console. Portable controllers accept small UAVs and have an animated

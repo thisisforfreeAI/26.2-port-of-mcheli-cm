@@ -63,8 +63,8 @@ public final class ModItems {
     /** The portable UAV controller. */
     public static final DeferredItem<io.github.mcheliceport.item.UavStationItem> UAV_STATION2 = register("uav_station2",
             p -> new io.github.mcheliceport.item.UavStationItem(p, true), p -> p.stacksTo(1), ModTab.ITEMS);
-    public static final DeferredItem<Item> UAV_PAIRING_DEVICE = item("uav_pairing_device", p -> p.stacksTo(1));
-    public static final DeferredItem<Item> UAV_TABLET = item("uav_tablet", p -> p.stacksTo(1));
+    public static final DeferredItem<io.github.mcheliceport.item.UavControllerItem> UAV_PAIRING_DEVICE = register("uav_pairing_device", p -> new io.github.mcheliceport.item.UavControllerItem(p, false), p -> p.stacksTo(1), ModTab.ITEMS);
+    public static final DeferredItem<io.github.mcheliceport.item.UavControllerItem> UAV_TABLET = register("uav_tablet", p -> new io.github.mcheliceport.item.UavControllerItem(p, true), p -> p.stacksTo(1), ModTab.ITEMS);
     public static final DeferredItem<Item> MINE_DEFUSER = item("mine_defuser", p -> p.stacksTo(1));
     /** Upstream's invisible helper item ({@code MCH_InvisibleItem}). It is in no creative tab. */
     public static final DeferredItem<Item> INTERNAL = register("internal", Item::new, UnaryOperator.identity(), null);

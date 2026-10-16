@@ -33,11 +33,16 @@ towing now uses the reusable Chain item: right-click the cargo first, then the t
 right-click either linked endpoint to disconnect. Helicopters with rope hooks now deploy/retract
 ropes with **K** during a steady, level hover. After deployment, crew press **Y** to rappel. Configured searchlights/headlights toggle with **L**.
 UAV stations and portable controllers now place and deploy UAV items. Right-click a station,
-insert a UAV, then choose **Deploy** and **Connect last**. Use **I** for the aircraft's fuel/menu
+insert a UAV, then choose **Deploy**, select its row and **Connect**. Use **I** for the aircraft's fuel/menu
 and **Y** to leave remote control. The operator stays seated at the station while the main view
 follows the UAV. Portable controllers accept small UAVs; shift-right-click toggles their lid.
-Control stays within loaded nearby terrain (at most 128 blocks); pairing devices and tablets
-remain pending. The station's small preview uses telemetry and NO SIGNAL.
+Control stays within loaded nearby terrain (at most 128 blocks). Stations retain a list of paired
+UAVs (five by default); select a row to see its status and connect, or **Unpair selected** to release it.
+The pairing device selects a deployed UAV with right-click, then pairs it when you right-click a
+station. **Shift-right-click an idle UAV with the device** releases its previous pairing.
+Right-click a released small UAV with the **UAV Tablet** to pair it, then right-click air to open
+the tablet. Keep holding it during control; **Y** exits. Tablets control deployed UAVs and retain
+their pairings on the item. The small preview shows telemetry only.
 The mod also loads all of McHeli CE's content (vehicles, weapons, throwables and
 HUDs, from YAML and legacy TXT files, including addon packs).
 

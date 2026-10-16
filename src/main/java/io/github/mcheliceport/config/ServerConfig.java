@@ -19,6 +19,8 @@ public final class ServerConfig {
     public static final ModConfigSpec.IntValue ROLL_LIMIT;
     public static final ModConfigSpec.BooleanValue ENABLE_CAM_DIST_CHANGE;
     public static final ModConfigSpec SPEC;
+    public static final ModConfigSpec.IntValue MAX_PAIRED_UAVS;
+    public static final ModConfigSpec.BooleanValue TABLET_NORMAL_UAVS;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -54,6 +56,12 @@ public final class ServerConfig {
                 .define("enableCamDistChange", true);
         builder.pop();
 
+        builder.push("uav");
+        MAX_PAIRED_UAVS = builder.comment("Maximum paired UAVs per controller. Upstream: MaxPairedUavPerStation.")
+                .defineInRange("maxPairedUavs", 5, 0, 64);
+        TABLET_NORMAL_UAVS = builder.comment("Allow tablets to bind/control full-size UAVs. Default: small UAVs only.")
+                .define("tabletControlNormalUav", false);
+        builder.pop();
         SPEC = builder.build();
     }
 
