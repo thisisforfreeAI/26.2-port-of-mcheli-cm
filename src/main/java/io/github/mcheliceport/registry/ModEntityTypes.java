@@ -29,6 +29,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import io.github.mcheliceport.entity.container.CargoContainerEntity;
+import io.github.mcheliceport.entity.chain.ChainEntity;
 
 /**
  * Upstream's entity types ({@code MCH_MOD#registerEntity}), with its sizes, tracking ranges and
@@ -71,7 +72,9 @@ public final class ModEntityTypes {
     public static final DeferredHolder<EntityType<?>, EntityType<TankEntity>> TANK = register("tank",
             ModRegistries.ENTITY_TYPES.registerEntityType("tank", TankEntity::new, MobCategory.MISC,
                     builder -> builder.sized(2, 0.7F).clientTrackingRange(toChunks(1200)).updateInterval(2)));
-    public static final DeferredHolder<EntityType<?>, EntityType<PlaceholderEntity>> CHAIN = placeholder("chain", 1.0f, 1.0f, 600, 10);
+    public static final DeferredHolder<EntityType<?>, EntityType<ChainEntity>> CHAIN = register("chain",
+            ModRegistries.ENTITY_TYPES.registerEntityType("chain", ChainEntity::new, MobCategory.MISC,
+                    builder -> builder.sized(1, 1).clientTrackingRange(toChunks(600)).updateInterval(10)));
     public static final DeferredHolder<EntityType<?>, EntityType<ParachuteEntity>> PARACHUTE = register("parachute",
             ModRegistries.ENTITY_TYPES.registerEntityType("parachute", ParachuteEntity::new, MobCategory.MISC,
                     builder -> builder.sized(1.5F, 0.6F).clientTrackingRange(toChunks(200)).updateInterval(10)));

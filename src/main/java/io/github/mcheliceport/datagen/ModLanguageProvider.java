@@ -47,6 +47,10 @@ public class ModLanguageProvider extends LanguageProvider {
         addItem(ModItems.FUEL, "Fuel");
         addItem(ModItems.GLTD, "GLTD:Target Designator");
         addItem(ModItems.CHAIN, "Chain");
+        add("message.mcheli_ce_port.chain.selected", "Cargo selected. Right-click the towing vehicle.");
+        add("message.mcheli_ce_port.chain.connected", "Tow chain connected. Right-click either end to disconnect.");
+        add("message.mcheli_ce_port.chain.disconnected", "Tow chain disconnected.");
+        add("message.mcheli_ce_port.chain.range", "Chain endpoints must be 2 to 16 blocks apart.");
         addItem(ModItems.PARACHUTE, "Parachute");
         addItem(ModItems.CONTAINER, "Container");
         addItem(ModItems.UAV_STATION, "UAV Station");

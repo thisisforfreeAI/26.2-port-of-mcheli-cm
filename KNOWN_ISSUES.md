@@ -16,14 +16,14 @@ Tank/ground-vehicle placement, driving, wheel contacts, tracks, rollers, indepen
 and reactive armor state are implemented. Ground crushing/ramming, nearby fuel/ammunition supply,
 vehicle repair and medical crew effects are implemented. Cargo containers also place, float,
 save items and open a 54-slot inventory. Remaining equipment
-work is listed below. Rack loading/release and vehicle self-boarding are implemented; tow chains
-and rappelling remain pending.
+work is listed below. Rack loading/release, vehicle self-boarding and tow chains are implemented;
+ropes and rappelling remain pending.
 Automated conventional/VTOL flight sequences and plane weapons in both authority modes pass;
 broader gameplay and hardware checks remain pending.
 
 | Area | Planned milestone |
 |---|---|
-| Remaining plane/ground equipment, UAVs (and the UAV camera), search lights, ropes and rappelling, gunner NPCs and mobs in seats (and their weapon use), chains, GLTD, hand-held weapons (Stinger, Javelin), the rest of the aircraft GUI, drafting table screen, charger, tools, multiplayer teams and team spotting markers (`MCH_GuiTargetMarker`) | M6 |
+| Remaining plane/ground equipment, UAVs (and the UAV camera), search lights, ropes and rappelling, gunner NPCs and mobs in seats (and their weapon use), GLTD, hand-held weapons (Stinger, Javelin), the rest of the aircraft GUI, drafting table screen, charger, tools, multiplayer teams and team spotting markers (`MCH_GuiTargetMarker`) | M6 |
 | BVR and passive radar, GPS panel and GPS missiles, mortar radar and RWR overlays, ECM jammer, the pulse-Doppler notch, the APS "iron curtain", data link, anti-radiation missiles, `Destruct` bombs (UAVs), the targeting pod's spotting | M6 (with the vehicles that use them) |
 | Wingman (AI wingmen, marker block screens and types, missions, `/wingman`) | M6b |
 | Remaining `/mcheli` commands (including reloading content with `reconfig`), advancement triggers, long-distance tracking and rendering, thermal vision (the third camera mode), GPU-buffer model rendering, projectile chunk loading (`ProjectileChunkLoad`), HBM:NTM stubs, performance work | M7 |
@@ -240,6 +240,24 @@ These follow from how Minecraft 26.2 works or from decisions approved in PORTING
     the carried vehicle's composed world attitude.
     A near-ground driver-requested release can briefly correct the client's movement before
     settling at the exit in default movement mode; this smoothing limitation remains open.
+
+71. Tow chains synchronize distinct endpoint IDs; upstream wrote the trailer ID into both fields.
+    Disconnect lookup now finds actual links instead of always returning null. Selection uses a
+    dimension and UUID in modern item custom data, and saved chains search loaded entities by UUID
+    in their current level for fifty ticks. One active chain per endpoint prevents duplicate links
+    and cycles. Anchored placed vehicles, passengers, living entities, items, projectiles, XP and
+    helper entities are refused; linked endpoints cannot enter racks.
+    Generic entities controlled by another client (such as occupied vanilla boats) cannot be
+    trailers; McHeli vehicles support occupied towing through their synchronized authority switch.
+    The trailer is server-simulated while linked, including with a driver aboard. Disconnect uses
+    supported teleport transitions to return movement control. Tank partner collision grace is
+    retained during towing and after disconnect. The inverse-gap pull has a .1 minimum denominator
+    to avoid an explosive impulse at the taut boundary. The length-plus-two correction uses solid
+    collision movement and disconnects if blocked, instead of teleporting through walls. Stock link
+    models use supported rendering with bounds covering both endpoints, replacing direct GL drawing.
+    The tether limits maximum separation and does not copy braking or maintain a minimum gap;
+    an occupied trailer may roll towards the tug when it stops. The local default-movement check
+    logged one tug movement correction after braking, with no damage or lost link.
 
 ## Upstream content issues kept as they are
 

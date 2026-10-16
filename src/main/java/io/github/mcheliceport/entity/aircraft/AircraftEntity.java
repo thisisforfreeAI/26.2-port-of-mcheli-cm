@@ -133,6 +133,8 @@ public abstract class AircraftEntity extends Entity
     /** Upstream {@code USE_WEAPON}: which weapons fired this tick, for other clients' effects. */
     private static final EntityDataAccessor<Integer> DATA_USE_WEAPON =
             SynchedEntityData.defineId(AircraftEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Boolean> DATA_TOWED =
+            SynchedEntityData.defineId(AircraftEntity.class, EntityDataSerializers.BOOLEAN);
 
     private static final AircraftHitBox[] NO_HIT_BOXES = new AircraftHitBox[0];
     private static final SeatEntity[] NO_SEATS = new SeatEntity[0];
@@ -373,6 +375,7 @@ public abstract class AircraftEntity extends Entity
         builder.define(DATA_PART_STAT, 0);
         builder.define(DATA_HOVERING, false);
         builder.define(DATA_USE_WEAPON, 0);
+        builder.define(DATA_TOWED, false);
     }
 
     @Override
@@ -541,7 +544,7 @@ public abstract class AircraftEntity extends Entity
 
     /** Upstream {@code canMouseRot}. */
     public boolean canMouseRot() {
-        return !this.isPassenger() && !this.isRemoved() && this.getPilot() != null && !this.isDestroyed();
+        return !this.isPassenger() && !this.isTowed() && !this.isRemoved() && this.getPilot() != null && !this.isDestroyed();
     }
 
     /** Upstream {@code canUpdateYaw}: not in the first 30 ticks, nor near the ground. */
@@ -1467,13 +1470,13 @@ public abstract class AircraftEntity extends Entity
     /** Whether the pilot's client moves this vehicle (the port's default) rather than the server. */
     @Override
     public boolean isClientAuthoritative() {
-        return !this.isPassenger() && !ServerSettings.forSide(this.level().isClientSide()).serverAuthoritativeMovement()
+        return !this.isPassenger() && !this.isTowed() && !ServerSettings.forSide(this.level().isClientSide()).serverAuthoritativeMovement()
                 && !this.isDestroyed() && super.isClientAuthoritative();
     }
 
     @Override
     protected boolean isLocalClientAuthoritative() {
-        return !this.isPassenger() && !ServerSettings.client().serverAuthoritativeMovement() && !this.isDestroyed()
+        return !this.isPassenger() && !this.isTowed() && !ServerSettings.client().serverAuthoritativeMovement() && !this.isDestroyed()
                 && super.isLocalClientAuthoritative();
     }
 
@@ -1495,6 +1498,10 @@ public abstract class AircraftEntity extends Entity
     public boolean isPilotLocalClient() {
         return this.level().isClientSide() && this.getPilot() instanceof Player player && player.isLocalPlayer();
     }
+
+    /** A linked trailer is simulated by the server, including when its driver remains aboard. */
+    public boolean isTowed() { return this.entityData.get(DATA_TOWED); }
+    public void setTowed(boolean towed) { this.entityData.set(DATA_TOWED, towed); }
 
     @Override
     public InterpolationHandler getInterpolation() {
@@ -1622,6 +1629,9 @@ public abstract class AircraftEntity extends Entity
             this.prevLastRiderYaw = pilot.yRotO;
             this.lastRiderPitch = pilot.getXRot();
             this.prevLastRiderPitch = pilot.xRotO;
+        } else if (this.isTowed() || this.isPassenger()) {
+            this.lastRiderYaw = this.prevLastRiderYaw = this.getYaw();
+            this.lastRiderPitch = this.prevLastRiderPitch = this.getPitch();
         }
 
         this.missileDetector.update();
@@ -1680,7 +1690,7 @@ public abstract class AircraftEntity extends Entity
 
     /** The pilot's client sends its attitude when it changed, and its motion while it moves the vehicle. */
     private void sendPilotState() {
-        if (this.isPassenger()) { return; }
+        if (this.isPassenger() || this.isTowed()) { return; }
         ClientHooks hooks = clientHooks;
         if (hooks == null) {
             return;
@@ -1708,7 +1718,7 @@ public abstract class AircraftEntity extends Entity
             this.interpolation.cancel();
             return;
         }
-        boolean keepRotation = this.isDestroyed() || this.isPilotLocalClient()
+        boolean keepRotation = this.isDestroyed() || !this.isTowed() && this.isPilotLocalClient()
                 && !(this instanceof io.github.mcheliceport.entity.ground.GroundVehicleEntity
                 && ServerSettings.client().serverAuthoritativeMovement());
         float yaw = this.getYRot();

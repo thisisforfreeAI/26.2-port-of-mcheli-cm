@@ -52,7 +52,8 @@ public final class ModItems {
     public static final DeferredItem<Item> WRENCH = item("wrench", p -> p.durability(250));
     public static final DeferredItem<Item> FUEL = item("fuel", p -> p.durability(600).setNoCombineRepair());
     public static final DeferredItem<Item> GLTD = item("gltd", p -> p.stacksTo(1));
-    public static final DeferredItem<Item> CHAIN = item("chain", p -> p.stacksTo(1));
+    public static final DeferredItem<Item> CHAIN = register("chain", io.github.mcheliceport.item.ChainItem::new,
+            p -> p.stacksTo(1), ModTab.ITEMS);
     public static final DeferredItem<Item> PARACHUTE = register("parachute", ParachuteItem::new,
             p -> p.stacksTo(1), ModTab.ITEMS);
     public static final DeferredItem<Item> CONTAINER = register("container", CargoContainerItem::new,

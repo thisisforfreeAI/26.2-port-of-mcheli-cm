@@ -49,6 +49,7 @@ public final class McheliCePort {
         });
         ModNetwork.register(modBus);
         ModGameTests.register(modBus);
+        io.github.mcheliceport.item.ChainItem.register();
     }
 
     private void commonSetup(FMLCommonSetupEvent event) {

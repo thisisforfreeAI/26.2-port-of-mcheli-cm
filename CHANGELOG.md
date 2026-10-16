@@ -12,6 +12,14 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 
 ### Added
 
+- The reusable Chain item now selects cargo first and its towing vehicle second. Click either
+  linked endpoint to disconnect. Links preserve distinct endpoints and length across saves,
+  render the stock chain model, pull and face their trailer towards the tug, and cap extension
+  at length plus two blocks. Blocked pulls disconnect instead of crossing solid walls.
+- Occupied trailers use server-controlled movement while linked; their drivers stay aboard.
+  Linked vehicles cannot ram each other or enter racks. Protocol 9 requires matching client/host
+  builds for the new chain entity data and trailer authority state.
+
 - Aircraft racks now load containers and eligible vehicles with J; U releases the last occupied
   rack. Vehicle pilots can board nearby compatible carriers with J and leave with U. Stock rack
   names/kinds, RideRack mappings, entry ranges and seat/rack exclusion groups are enforced.

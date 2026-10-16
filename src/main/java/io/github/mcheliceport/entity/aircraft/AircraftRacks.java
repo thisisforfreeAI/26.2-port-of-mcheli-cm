@@ -36,7 +36,9 @@ public final class AircraftRacks {
     }
     /** Zero-based crew-seat index, as upstream's canRideAircraft. */
     public static boolean accepts(AircraftEntity carrier, int index, Entity cargo) {
-        if (carrier == cargo || carrier.isRemoved() || carrier.isDestroyed() || carrier.isPassenger()
+        if (io.github.mcheliceport.entity.chain.ChainEntity.linked(carrier)
+                || io.github.mcheliceport.entity.chain.ChainEntity.linked(cargo)
+                || carrier == cargo || carrier.isRemoved() || carrier.isDestroyed() || carrier.isPassenger()
                 || cargo.isRemoved() || cargo.isPassenger() || carrier.level() != cargo.level()
                 || index < 0 || index >= carrier.getSeats().length
                 || !(carrier.getSeatInfo(index + 1) instanceof SeatRackInfo rack)) { return false; }
