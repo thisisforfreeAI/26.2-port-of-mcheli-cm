@@ -12,6 +12,16 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 
 ### Added
 
+- Placed UAV stations and portable controllers now deploy UAV items, reconnect to their saved last
+  UAV and provide remote flight through the existing main camera, HUD, weapons and aircraft menu.
+  Operators remain at the console. Portable controllers accept small UAVs and have an animated
+  lid; target drones launch autonomously with full fuel. Deployment checks loaded terrain and
+  obstructions before consuming the item. Station inventory, offsets and last UAV save/load.
+- UAV movement runs on the server in both authority modes. Control validates the station operator,
+  aircraft identity, tracked terrain and bounded range; link loss clears held controls and throttle.
+  Station preview remains NO SIGNAL plus telemetry. Pairing devices and tablets remain pending.
+  Protocol 12 requires matching client/host builds; the development version remains 0.5.1.
+
 - L toggles configured searchlights/headlights for the pilot or first crew seat. Movable lamps
   follow first-crew/pilot aim, fixed lamps follow the hull, and addon steering lamps follow wheel
   steering. Light covers animate, switch/retained aim save and synchronize, and destroyed vehicles

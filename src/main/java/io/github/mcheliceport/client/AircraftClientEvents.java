@@ -84,6 +84,9 @@ public final class AircraftClientEvents {
         if (vehicle instanceof AircraftEntity aircraft) {
             return aircraft;
         }
+        if (vehicle instanceof io.github.mcheliceport.entity.uav.UavStationEntity) {
+            return io.github.mcheliceport.net.ModNetwork.riddenAircraft(player);
+        }
         return vehicle instanceof SeatEntity seat ? seat.getParent() : null;
     }
 

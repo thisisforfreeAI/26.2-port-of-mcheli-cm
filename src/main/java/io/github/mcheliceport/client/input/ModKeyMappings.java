@@ -93,7 +93,8 @@ public final class ModKeyMappings {
     }
 
     public static boolean isRidingAircraft(Entity vehicle) {
-        return vehicle instanceof AircraftEntity || vehicle instanceof SeatEntity seat && seat.getParent() != null;
+        return vehicle instanceof AircraftEntity || vehicle instanceof io.github.mcheliceport.entity.uav.UavStationEntity
+                || vehicle instanceof SeatEntity seat && seat.getParent() != null;
     }
 
     public static void register(RegisterKeyMappingsEvent event) {

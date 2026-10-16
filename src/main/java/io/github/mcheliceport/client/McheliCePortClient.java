@@ -71,6 +71,7 @@ public final class McheliCePortClient {
     }
 
     private static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
+        event.registerEntityRenderer(ModEntityTypes.UAV_STATION.get(), io.github.mcheliceport.client.render.UavStationRenderer::new);
         event.registerEntityRenderer(ModEntityTypes.HELICOPTER.get(), HeliRenderer::new);
         event.registerEntityRenderer(ModEntityTypes.PLANE.get(), io.github.mcheliceport.client.render.PlaneRenderer::new);
         event.registerEntityRenderer(ModEntityTypes.SHIP.get(), io.github.mcheliceport.client.render.ShipRenderer::new);
@@ -100,7 +101,7 @@ public final class McheliCePortClient {
                 ModEntityTypes.AS_MISSILE.get(), ModEntityTypes.TV_MISSILE.get(), ModEntityTypes.AT_MISSILE.get(),
                 ModEntityTypes.BOMB.get(), ModEntityTypes.A10.get(), ModEntityTypes.FLARE.get(),
                 ModEntityTypes.CHAFF.get(), ModEntityTypes.THROWABLE.get(), ModEntityTypes.PARACHUTE.get(),
-                ModEntityTypes.TANK.get(), ModEntityTypes.VEHICLE.get(), ModEntityTypes.CONTAINER.get(), ModEntityTypes.CHAIN.get());
+                ModEntityTypes.TANK.get(), ModEntityTypes.VEHICLE.get(), ModEntityTypes.CONTAINER.get(), ModEntityTypes.CHAIN.get(), ModEntityTypes.UAV_STATION.get());
         ModEntityTypes.all().stream()
                 .filter(type -> !drawn.contains(type.get()))
                 .forEach(type -> registerNoop(event, type.get()));
@@ -113,6 +114,7 @@ public final class McheliCePortClient {
 
     private static void registerScreens(RegisterMenuScreensEvent event) {
         event.register(ModMenuTypes.AIRCRAFT.get(), AircraftScreen::new);
+        event.register(ModMenuTypes.UAV_STATION.get(), io.github.mcheliceport.client.gui.UavStationScreen::new);
     }
 
     private static <T extends Entity> void registerNoop(EntityRenderersEvent.RegisterRenderers event,

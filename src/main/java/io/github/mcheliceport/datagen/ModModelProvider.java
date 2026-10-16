@@ -53,13 +53,13 @@ public class ModModelProvider extends ModelProvider {
 
     @Override
     protected void registerModels(BlockModelGenerators blockModels, ItemModelGenerators itemModels) {
-        for (DeferredItem<Item> item : List.of(ModItems.RANGEFINDER, ModItems.WRENCH, ModItems.FUEL, ModItems.GLTD,
+        for (DeferredItem<? extends Item> item : List.of(ModItems.RANGEFINDER, ModItems.WRENCH, ModItems.FUEL, ModItems.GLTD,
                 ModItems.CHAIN, ModItems.PARACHUTE, ModItems.CONTAINER, ModItems.UAV_STATION, ModItems.UAV_STATION2,
                 ModItems.INTERNAL, ModItems.FIM92_BULLET, ModItems.FGM148_BULLET, ModItems.FIM92, ModItems.FGM148)) {
             flatItem(itemModels, item.get(), mcheli("items/" + item.getId().getPath()));
         }
         // Upstream has no textures for these three; the port draws simple placeholders.
-        for (DeferredItem<Item> item : List.of(ModItems.UAV_PAIRING_DEVICE, ModItems.UAV_TABLET,
+        for (DeferredItem<? extends Item> item : List.of(ModItems.UAV_PAIRING_DEVICE, ModItems.UAV_TABLET,
                 ModItems.MINE_DEFUSER)) {
             flatItem(itemModels, item.get(), item.getId().withPrefix("item/"));
         }

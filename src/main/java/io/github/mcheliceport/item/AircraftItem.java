@@ -193,7 +193,7 @@ public class AircraftItem extends Item {
         if (info != null && info.creativeOnly && !player.isCreative()) {
             return null;
         }
-        if (info != null && info.isTargetDrone) {
+        if (info != null && info.isUAV) {
             if (!level.isClientSide()) {
                 player.sendSystemMessage(Component.literal("Please use the UAV station"));
             }
