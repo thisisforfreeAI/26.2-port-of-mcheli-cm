@@ -45,8 +45,9 @@ import org.slf4j.Logger;
 public final class ModNetwork {
 
     private static final Logger LOGGER = LogUtils.getLogger();
-    /** Bump when payload encoding or menu slot layout changes. */
-    public static final String VERSION = "6";
+    /** Bump when payload encoding, menu layout or synchronized entity data changes. */
+    // Cargo replaces a placeholder with entity data older clients cannot decode.
+    public static final String VERSION = "7";
 
     private ModNetwork() {
     }

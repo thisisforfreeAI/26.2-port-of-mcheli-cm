@@ -29,6 +29,7 @@ import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredItem;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
+import io.github.mcheliceport.item.CargoContainerItem;
 
 /**
  * The port's items: upstream's fixed items, the block items, and one item per vehicle and
@@ -54,7 +55,8 @@ public final class ModItems {
     public static final DeferredItem<Item> CHAIN = item("chain", p -> p.stacksTo(1));
     public static final DeferredItem<Item> PARACHUTE = register("parachute", ParachuteItem::new,
             p -> p.stacksTo(1), ModTab.ITEMS);
-    public static final DeferredItem<Item> CONTAINER = item("container", p -> p.stacksTo(1));
+    public static final DeferredItem<Item> CONTAINER = register("container", CargoContainerItem::new,
+            p -> p.stacksTo(1), ModTab.ITEMS);
     public static final DeferredItem<Item> UAV_STATION = item("uav_station", p -> p.stacksTo(1));
     /** The portable UAV controller. */
     public static final DeferredItem<Item> UAV_STATION2 = item("uav_station2", p -> p.stacksTo(1));

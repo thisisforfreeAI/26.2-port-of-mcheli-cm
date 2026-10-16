@@ -439,6 +439,66 @@ pilot exits leaves the passenger without regeneration. Captures:
 successfully, both clients return to the disconnect screen, and both quit normally with exit 0.
 
 
+## Cargo container increment
+
+- Replace the inert container entity/item with the stock two-block-wide, fireproof cargo entity.
+  The five-block placement ray accepts blocks/source fluids, snaps yaw by quarter turns and
+  preserves the upstream half-block spawn offset. Eye obstruction, occupied placement and failed
+  server spawn refuse placement without consuming the item; creative placement keeps the item.
+- Right-click opens a vanilla six-row inventory, with all 54 slots shared by viewers and normal
+  shift-click transfer. The pinned upstream `displayInventory` stub is empty, so connecting this
+  menu is an explicit fix (KNOWN_ISSUES difference 69). Validity follows current entity interaction
+  distance. Modern slot codecs save counts, components and empty-slot positions. Both direct and
+  sided automation expose NeoForge's current transactional item capability.
+- Only player melee damages the container, with external scaling, accumulated damage times 20,
+  one point of decay per tick, and the strict greater-than-40 threshold. Creative breaks instantly.
+  Survival drops one empty container and its inventory; creative drops the inventory alone.
+  Repeated destructive removal cannot drop contents twice. Unload and dimension-change removal
+  reasons retain contents and do not scatter items into the source world.
+- Server physics preserve gravity/buoyancy from five fluid slices, floating in both water and lava,
+  a .35 horizontal speed cap, .99/.95 damping, .9 ground friction and five-degree movement yaw.
+  The unused upstream speedMultiplier has no effect and is omitted. Cargo emits no walking
+  sounds/events, as upstream. Containers push one another;
+  the global collision-destruction setting gates corner-probe snow/lily-pad clearing. Preserve
+  upstream's floating-point corner-index division. Probes use current build heights/fluid tags.
+- The stock container OBJ, texture, .75 tint and .3 vertical render offset use the supported model
+  submission path. Client tracking retains the upstream thirteen-tick interpolation extension.
+  Protocol 7 rejects clients from before the new container entity data. No new payload is added.
+- Aircraft racks, container rack attachment, tow chains and ropes/rappelling remain later M6
+  equipment increments. This increment does not enable transport attachment hints prematurely.
+
+Automated validation: all 136 JUnit tests pass with zero failures, errors or skips, and all
+116 required GameTests pass. Seven new cargo scenarios exercise real placement/consumption and
+refusals, every saved slot (including item components/custom names), shared six-row menus and
+shift-click transfer, transactional capability commit/rollback, range/removal validity, damage
+threshold/decay and exactly-once drops, unload/dimension-removal reasons, gravity/speed/yaw,
+water/lava buoyancy, fire immunity and configured soft-block clearing/container pushing.
+Actual cross-dimension travel is not part of this check; its removal reasons and serialized
+inventory are covered independently.
+
+Live validation uses the isolated dedicated server with an OpenGL player (eager models) and
+Vulkan player (on-demand models) on software Mesa drivers. Both right-click the same crate at
+`(1100.5, -59, 0.5)` and see all 54 slots, including items in slot 53. The OpenGL player
+shift-clicks 32 diamonds out of slot 0 while the Vulkan player takes 12 emeralds from slot 53.
+Server queries show the crate empty and those exact counts in the two player inventories.
+Both return their items by shift-click; the crate holds 32 diamonds and 12 emeralds again.
+
+A survival player places the actual container item near `(1085.5, -59, -0.5)`; it settles on the
+ground at Y -59, and the player's inventory no longer contains the placement item. Four normal
+melee clicks break it into one container item. Breaking the loaded land crate likewise drops one
+container plus diamonds in stacks of 10 and 22, and 12 emeralds (the exact stored total).
+A crate in an enclosed three-block-deep water pool remains afloat. A server-set X impulse of
+.15 moves it from X 1127.5 to the pool wall at X 1133, with Vulkan tracking the movement. Captures:
+[OpenGL model](screens/m6-cargo-opengl.png), [Vulkan inventory](screens/m6-cargo-inventory-vulkan.png)
+and [Vulkan floating crate](screens/m6-cargo-floating-vulkan.png).
+These are local functional checks; software rendering does not establish hardware performance,
+audio or latency/loss behavior. The server saves and stops successfully. The Vulkan client
+reports a native Netty connection reset on server close, returns to its disconnect screen, and
+both clients quit normally with successful Gradle exit. No mod exception occurs during cargo
+placement, inventory interaction or movement.
+
+
+
 ## Integration points already identified
 
 ### Shared Ctrl controls follow-up
