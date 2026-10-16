@@ -46,8 +46,8 @@ public final class ModNetwork {
 
     private static final Logger LOGGER = LogUtils.getLogger();
     /** Bump when payload encoding, menu layout or synchronized entity data changes. */
-    // Controller pairings, handheld stations and UUID-based roster selection.
-    public static final String VERSION = "13";
+    // Long-range UAV chunk and entity streaming requires matching camera/terrain behavior.
+    public static final String VERSION = "14";
 
     private ModNetwork() {
     }

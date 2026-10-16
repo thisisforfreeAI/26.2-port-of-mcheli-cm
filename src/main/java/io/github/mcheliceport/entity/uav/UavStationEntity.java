@@ -45,13 +45,21 @@ public class UavStationEntity extends Entity {
     private ItemStack tabletStack = ItemStack.EMPTY;
     private @Nullable UUID lastUav;
     private boolean contentsDropped, legacyPairing;
+    private @Nullable UavRemoteSession remoteSession;
+    private @Nullable AircraftEntity linkedAircraft;
+    private @Nullable UUID loadingUav, loadingPlayer;
+    private net.minecraft.world.level.@Nullable ChunkPos loadingChunk;
+    private @Nullable ServerLevel loadingLevel;
+    private int loadingTicks;
+    public boolean streamingFor(ServerPlayer player) { return remoteSession != null && remoteSession.belongsTo(player); }
+    public int remoteTicketCount() { return remoteSession != null ? remoteSession.ticketCount() : 0; }
     private final SimpleContainer inventory = new SimpleContainer(1);
     private final InterpolationHandler interpolation = new InterpolationHandler(this, 3);
     public float cover, previousCover;
     public UavStationEntity(EntityType<? extends UavStationEntity> type, Level level) { super(type, level); }
     @Override protected void defineSynchedData(SynchedEntityData.Builder b) {
         b.define(HANDHELD, false); b.define(SMALL, false); b.define(OPEN, true); b.define(CONTROLLED, 0); b.define(LAST, 0);
-        b.define(X, 12); b.define(Y, 2); b.define(Z, 12); b.define(RANGE, 128); b.define(FEEDBACK, "");
+        b.define(X, 12); b.define(Y, 2); b.define(Z, 12); b.define(RANGE, 5000); b.define(FEEDBACK, "");
     }
     public boolean handheld() { return entityData.get(HANDHELD); }
     public UUID controllerId() { return tabletId != null ? tabletId : getUUID(); }
@@ -81,7 +89,7 @@ public class UavStationEntity extends Entity {
                 || ac.uavStation() != null) { return fail(player, "Use an idle compatible UAV."); }
         if (ac.pairedController() != null && !ac.pairedController().equals(controllerId())) { return fail(player, "UAV is paired to another controller."); }
         if (!paired.contains(ac.getUUID()) && paired.size() >= UavControllerItem.maxPairs()) { return fail(player, "Controller pairing list is full."); }
-        paired.add(ac.getUUID()); ac.setPairedController(controllerId());
+        paired.add(ac.getUUID()); ac.setPairedController(controllerId()); UavPositionIndex.update(ac);
         if (lastUav == null) { lastUav = ac.getUUID(); entityData.set(LAST, ac.getId()); }
         entityData.set(FEEDBACK, "UAV paired to station."); if (player instanceof ServerPlayer sp) { sp.sendSystemMessage(Component.literal("UAV paired to station."), true); } return true;
     }
@@ -122,27 +130,32 @@ public class UavStationEntity extends Entity {
         return !isRemoved() && getFirstPassenger() instanceof Player p && p.isAlive() && !p.isRemoved()
                 && !p.isSpectator() && p.getVehicle() == this && (level().isClientSide() || !handheld() || tabletValid(p)) ? p : null;
     }
-    public @Nullable AircraftEntity controlled() { return aircraft(entityData.get(CONTROLLED)); }
+    public @Nullable AircraftEntity controlled() {
+        // Keep the live reference while crossing a chunk edge; the level lookup can briefly
+        // hide an entity before the next camera window has become accessible.
+        return !level().isClientSide() && linkedAircraft != null && !linkedAircraft.isRemoved()
+                && linkedAircraft.getId() == entityData.get(CONTROLLED) ? linkedAircraft : aircraft(entityData.get(CONTROLLED));
+    }
     public @Nullable AircraftEntity lastAircraft() { return aircraft(entityData.get(LAST)); }
     private @Nullable AircraftEntity aircraft(int id) {
         return id != 0 && level().getEntity(id) instanceof AircraftEntity ac && !ac.isRemoved() ? ac : null;
     }
     public boolean validLink(AircraftEntity ac) {
+        return linkIdentityValid(ac) && tracked(ac) && level().hasChunkAt(ac.blockPosition());
+    }
+    private boolean linkIdentityValid(AircraftEntity ac) {
         int allowedRange = level().isClientSide() ? range() : rangeLimit(ac);
-        if (!tracked(ac)) { return false; }
         return !isPassenger() && controlled() == ac && ac.uavStation() == this && operator() != null && open() && !ac.isDestroyed() && ac.isUAV()
                 && ac.level() == level() && !ac.isPassenger() && !ac.isTowed()
                 && (!small() || ac.getAcInfo() != null && ac.getAcInfo().isSmallUAV)
                 && (level().isClientSide() || paired.contains(ac.getUUID()) && controllerId().equals(ac.pairedController()))
-                && distanceToSqr(ac) <= (double) allowedRange * allowedRange && level().hasChunkAt(ac.blockPosition());
+                && distanceToSqr(ac) <= (double) allowedRange * allowedRange;
     }
     private boolean tracked(AircraftEntity ac) {
-        return !(operator() instanceof ServerPlayer sp) || sp.connection == null || sp.getChunkTrackingView().contains(ac.chunkPosition());
+        return !(operator() instanceof ServerPlayer sp) || sp.connection == null || streamingFor(sp) || sp.getChunkTrackingView().contains(ac.chunkPosition());
     }
     private int rangeLimit(AircraftEntity ac) {
-        int chunks = ((ServerLevel) level()).getServer().getPlayerList().getViewDistance();
-        if (operator() instanceof ServerPlayer sp) { chunks = Math.min(chunks, sp.requestedViewDistance()); }
-        int cap = Math.min(128, Math.max(24, (chunks - 1) * 16));
+        int cap = io.github.mcheliceport.config.ServerConfig.SPEC.isLoaded() ? io.github.mcheliceport.config.ServerConfig.UAV_CONTROL_RANGE.get() : 5000;
         int configured = ac.getAcInfo() != null ? ac.getAcInfo().uavRange : -1;
         return configured >= 0 ? Math.min(configured, cap) : cap;
     }
@@ -178,7 +191,7 @@ public class UavStationEntity extends Entity {
         if (ac.getAcInfo().isTargetDrone) { ac.setFuel(ac.getMaxFuel()); }
         if (!level().addFreshEntity(ac)) { return fail(player, "UAV deployment was cancelled."); }
         inventory.removeItem(0, 1);
-        if (!ac.getAcInfo().isTargetDrone) { paired.add(ac.getUUID()); ac.setPairedController(controllerId()); lastUav = ac.getUUID(); entityData.set(LAST, ac.getId()); }
+        if (!ac.getAcInfo().isTargetDrone) { paired.add(ac.getUUID()); ac.setPairedController(controllerId()); UavPositionIndex.update(ac); lastUav = ac.getUUID(); entityData.set(LAST, ac.getId()); }
         entityData.set(FEEDBACK, ac.getAcInfo().isTargetDrone ? "Target drone launched." : "Deployed. Connect, then I to refuel.");
         return true;
     }
@@ -196,14 +209,26 @@ public class UavStationEntity extends Entity {
         legacyPairing = false;
         if (ac.pairedController() == null && paired.isEmpty() && UavControllerItem.maxPairs() > 0
                 && ac.isUAV() && ac.getAcInfo() != null && !ac.getAcInfo().isTargetDrone && !ac.isDestroyed()) {
-            paired.add(ac.getUUID()); ac.setPairedController(controllerId());
+            paired.add(ac.getUUID()); ac.setPairedController(controllerId()); UavPositionIndex.update(ac);
         }
     }
     public boolean connect(Player player) { return connect(player, lastUav); }
     public boolean connect(Player player, @Nullable UUID id) {
         if (level().isClientSide() || !usableBy(player) || controlled() != null || id == null) { return fail(player, "No available remote UAV selected."); }
+        if (!paired.contains(id) && !id.equals(lastUav)) { return fail(player, "UAV is not paired to this controller."); }
         var ac = resolve(id);
-        if (ac == null) { return fail(player, "Selected UAV is not loaded."); }
+        if (ac == null) {
+            var sl = (ServerLevel) level(); var pos = UavPositionIndex.get(sl).position(id);
+            int cap = io.github.mcheliceport.config.ServerConfig.SPEC.isLoaded() ? io.github.mcheliceport.config.ServerConfig.UAV_CONTROL_RANGE.get() : 5000;
+            if (pos == null) { return fail(player, "UAV location is unknown. Visit it once to update."); }
+            if (position().distanceToSqr(Vec3.atCenterOf(pos)) > (double) (cap + 2) * (cap + 2)) { return fail(player, "Selected UAV is out of control range."); }
+            if (!sl.getWorldBorder().isWithinBounds(pos)) { return fail(player, "UAV is outside the world border."); }
+            cancelLoading(); loadingChunk = new net.minecraft.world.level.ChunkPos(pos.getX() >> 4, pos.getZ() >> 4); loadingLevel = sl;
+            loadingUav = id; loadingPlayer = player.getUUID(); loadingTicks = 100;
+            UavRemoteSession.TICKETS.forceChunk(sl, getUUID(), loadingChunk.x(), loadingChunk.z(), true, false);
+            entityData.set(FEEDBACK, "Loading selected UAV..."); return false;
+        }
+        cancelLoading();
         migrateLegacyPairing(ac);
         if (!paired.contains(id) || !controllerId().equals(ac.pairedController())) { return fail(player, "UAV pairing belongs to another controller."); }
         if (!compatible(ac) || ac.uavStation() != null || ac.getAcInfo().isTargetDrone
@@ -212,15 +237,22 @@ public class UavStationEntity extends Entity {
         if (distanceToSqr(ac) > (double) range() * range() || !level().hasChunkAt(ac.blockPosition())) {
             return fail(player, "Last UAV is out of control range.");
         }
-        if (!tracked(ac)) { return fail(player, "UAV terrain is still loading."); }
         lastUav = ac.getUUID(); entityData.set(LAST, ac.getId());
-        entityData.set(CONTROLLED, ac.getId()); ac.setUavStation(this);
+        linkedAircraft = ac; entityData.set(CONTROLLED, ac.getId()); ac.setUavStation(this);
+        if (player instanceof ServerPlayer sp && sp.connection != null) { remoteSession = new UavRemoteSession(this, sp); remoteSession.update(ac); }
         player.setYRot(ac.getYaw()); player.setXRot(ac.getPitch());
         if (player instanceof ServerPlayer sp) { sp.closeContainer(); }
         return true;
     }
+    private void cancelLoading() {
+        if (loadingLevel != null && loadingChunk != null) { UavRemoteSession.TICKETS.forceChunk(loadingLevel, getUUID(), loadingChunk.x(), loadingChunk.z(), false, false); }
+        loadingUav = loadingPlayer = null; loadingChunk = null; loadingLevel = null; loadingTicks = 0;
+    }
     public void disconnect() {
+        cancelLoading();
+        if (remoteSession != null) { remoteSession.close(); remoteSession = null; }
         var ac = controlled(); entityData.set(CONTROLLED, 0);
+        linkedAircraft = null;
         if (ac != null && ac.uavStation() == this) {
             ac.setUavStation(null); ac.throttleUp = ac.throttleDown = ac.moveLeft = ac.moveRight = false;
             ac.switchGunnerMode(false); ac.switchHoveringMode(false); ac.setCurrentThrottle(0); ac.setThrottle(0);
@@ -272,12 +304,25 @@ public class UavStationEntity extends Entity {
             var found = sl.getEntity(lastUav); entityData.set(LAST, found instanceof AircraftEntity ac && !ac.isRemoved() ? ac.getId() : 0);
             if (found instanceof AircraftEntity previous && !previous.isRemoved()) { migrateLegacyPairing(previous); }
         }
+        tickLoading();
         var ac = controlled();
-        if (ac != null) { entityData.set(RANGE, rangeLimit(ac)); }
+        if (ac != null) {
+            entityData.set(RANGE, rangeLimit(ac));
+            if (remoteSession != null && linkIdentityValid(ac)) { remoteSession.update(ac); }
+        }
         if (entityData.get(CONTROLLED) != 0 && (ac == null || !validLink(ac))) { disconnect(); }
         else if (ac != null && operator() instanceof ServerPlayer sp && sp.containerMenu != sp.inventoryMenu) {
             ac.throttleUp = ac.throttleDown = ac.moveLeft = ac.moveRight = false;
         }
+    }
+    private void tickLoading() {
+        if (loadingUav == null) { return; }
+        var p = operator();
+        if (p == null || !p.getUUID().equals(loadingPlayer) || --loadingTicks <= 0) {
+            cancelLoading(); if (p != null) { fail(p, "UAV could not be found at its last location."); } return;
+        }
+        var ac = resolve(loadingUav);
+        if (ac != null) { UUID id = loadingUav; cancelLoading(); connect(p, id); }
     }
     @Override public void onPassengerTurned(Entity passenger) {
         var ac = controlled(); if (ac != null && validLink(ac)) { ac.onPassengerTurned(passenger); }

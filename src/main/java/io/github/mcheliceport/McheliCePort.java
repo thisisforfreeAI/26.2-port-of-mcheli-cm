@@ -48,6 +48,7 @@ public final class McheliCePort {
                     (cargo, side) -> VanillaContainerWrapper.of(cargo));
         });
         ModNetwork.register(modBus);
+        io.github.mcheliceport.entity.uav.UavRemoteSession.register(modBus);
         ModGameTests.register(modBus);
         io.github.mcheliceport.item.ChainItem.register();
     }

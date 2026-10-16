@@ -866,7 +866,8 @@ environment limitations; no mod exception or graphics-pipeline failure occurs in
   still exclude concurrent control. Release before transferring to a distinct controller.
 - Protocol 13 covers handheld-station metadata, typed components and roster payloads. All clients
   and hosts must update together. Version remains 0.5.1. Remote range/loaded-terrain limits,
-  telemetry-only previews and the deferred chunk-streaming work remain unchanged.
+  telemetry-only previews remain unchanged. The later 5,000-block increment below adds bounded
+  UAV control streaming.
 
 Automated validation: 151 JUnit tests and all 166 required GameTests pass. Nine new server tests
 exercise pairing transfers, one-controller exclusion, full-list item retention, stale/forged menu
@@ -978,7 +979,8 @@ explicitly scheduled special crafting recipes; do not silently replace stock YAM
 - UAV live camera remains the documented telemetry/NO SIGNAL fallback unless supported off-screen
   world rendering is established. Do not promise a live feed based on station implementation alone.
 - Charger energy uses the supported NeoForge capability; no GregTech EU dependency is introduced.
-- Wingman formation, missions, planner screens and remote chunk streaming stay in M6b.
+- Wingman formation, missions and planner screens stay in M6b. Bounded UAV control streaming
+  is implemented by the 5,000-block increment below.
 - Preserve the documented HBM limitation and all existing privacy decisions.
 
 ## Validation and completion
@@ -1006,3 +1008,25 @@ in the environment draft; draft saving does not publish a new snapshot.
 Use `JAVA_HOME=/workspace/.toolchains/jdk-25+36` and `GRADLE_USER_HOME=/workspace/.gradle-home`
 for Gradle commands in this environment. The increment sections above record the current
 automated, graphics and two-client smoke checks; full gameplay and hardware validation remain.
+
+
+## UAV 5,000-block control increment
+
+The default disconnect distance is now 5,000 blocks, measured in three dimensions from the
+console/tablet operator. `uav.controlRange` permits a smaller server cap; any smaller per-aircraft
+range still applies. Autonomous target drones retain their existing behavior.
+
+A remote session forces only the camera window (default four chunks, configurable 2..8 and
+limited by server/client view distance). It streams the union of this window and a small operator
+area, with incremental edge updates as the UAV moves. Two narrow server mixins retain the session view during vanilla tracking updates and permit
+native entity tracking around the authorized UAV camera while keeping vanilla visibility/range checks.
+The physical operator stays at the console. Disconnect releases tickets and resends the ordinary
+body terrain; death, exit, item loss and dimension/session replacement use the same cleanup.
+Session tickets are discarded on world load, so a saved session never restores itself.
+
+A per-dimension saved UUID/location index allows Connect to load one last-known chunk before
+validating aircraft ownership, compatibility and exact range. Only registered pairing IDs can
+request this lookup. Operator loss or timeout cancels it. Previously saved UAVs become indexed
+when they next load. This brings the control-streaming requirement forward from M6b; it does
+not implement Wingman or general distant projectile loading. Network protocol 14 requires the
+same build on clients and server.
