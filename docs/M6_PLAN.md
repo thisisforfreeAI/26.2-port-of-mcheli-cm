@@ -499,6 +499,78 @@ placement, inventory interaction or movement.
 
 
 
+## Aircraft rack increment
+
+- J loads every empty compatible rack in content order, querying each transformed entry point's
+  configured range. U releases one load, scanning racks in reverse order. A vehicle pilot can
+  press J to board a compatible carrier and U to leave it without leaving their own vehicle.
+  Only the actual pilot may send rack actions for that vehicle ID; outsiders and crew are denied.
+- Preserve rack name/kind matching (case insensitive), cargo-side RideRack mappings, exclusion
+  groups and the server persistent-data `CanMountEntity` opt-in for other entity types. Reject
+  occupied/missing racks, existing passengers, destroyed vehicles and nested loaded transports.
+  Normal player boarding skips rack slots rather than treating them as spare crew seats.
+- `vehicles.enablePutRackInFlying` defaults true. When false, carrier loading needs throttle at
+  most .3 and ground within three blocks. As upstream, vehicle self-boarding uses its independent
+  path and is not gated by this setting. Vanilla's three-second reboarding cooldown still applies.
+- Seats/racks remain children of their carrier, and loads become children of those seats. Vanilla
+  serializes the entire tree, including cargo inventory. Existing seats are reused on load.
+  Carried containers skip motion; carried vehicles skip their own simulation, pilot motion and
+  attitude packets, ground damage and tank crushing/ramming. Their drivers/crew remain aboard.
+- Container models receive upstream's carrier-yaw-space pitch/roll transform. Carried aircraft
+  use the equivalent composed world attitude, so their own model, weapons, crew seats and living
+  crew transforms agree without nested legacy drawing. On release the rack's fixed yaw/pitch
+  and zero local roll are restored, matching upstream's detached pose. Supported model rendering
+  remains in use. Supported same-dimension teleport transitions synchronize the driver/crew tree
+  when a release or parachute touchdown returns vehicle movement authority to the client, replacing
+  the old eight-tick release position reserve. Tank carrier-collision grace keeps refreshing while
+  carried and is renewed on release, preventing a detached truck from ramming its carrier.
+- Releases use explicit UnmountPos when present, otherwise the entry point. Carrier-requested
+  aircraft release adds upstream's twelve-block fore/aft offset when no explicit point exists.
+  Refuse solidly blocked exits without detaching cargo. If the carrier has no ground in its
+  twenty-block downward probe, deploy a type-3 transport chute and inherit carrier velocity.
+  Spawn/mount failures and cancelled dismounts retain or restore the original rack/inventory.
+  An aircraft pilot can leave a transport chute with U; normal touchdown releases its load.
+- `OpenParaAlt` remains parsed but unused by the pinned upstream rack-release code. Do not silently
+  reinterpret it as a new altitude rule. The existing stock transport/ejection canopy defect
+  remains documented in KNOWN_ISSUES; the descent behavior is independent of the missing mesh.
+- Add a dedicated rack-action channel and protocol 8, leaving existing control record layouts
+  intact. Key descriptions and capability-based HUD hints appear only with these working actions.
+  Tow chains and ropes/rappelling remain separate later M6 equipment increments.
+
+Automated validation: all 139 JUnit tests pass with no failures, errors or skips, and all
+127 required GameTests pass. New unit checks round-trip every rack action, neutralize unknown
+ordinals and compare container render tilt with composed world attitude. Eleven server scenarios
+cover stock CH-47 exclusions, named/kind/RideRack vehicle matching, nested-load rejection,
+air-loading gates and opt-in entities, pilot/ID/crew authorization, both movement authority modes,
+carried pose/physics/crushing suspension, cooldown/self-boarding, blocked/reverse-order release,
+airdrop/touchdown with cargo inventory, passenger-tree save/load, carrier removal and cancellation
+of mounting, dismounting, parachute spawning and parachute mounting. Only confirmed successful
+attachments count as loads, and cancelled releases preserve the original rack and inventory.
+Additional cases verify the released tank still damages nearby living entities while excluding
+its carrier, and aircraft touchdown safely returns the load to independent movement.
+
+Live validation uses a dedicated server with separate OpenGL and Vulkan players on software Mesa.
+The OpenGL MH-53E pilot loads a Growler occupied by the Vulkan driver using J. Holding forward
+inside the loaded truck does not move it independently. The driver leaves with U on the ground,
+waits out the vanilla cooldown, then boards again with J. The carrier flies more than forty blocks
+above the ground and releases with U; both players retain 20 health and both vehicles retain zero
+damage. After transport-chute touchdown the truck drives independently. The server-controlled
+movement setting is then enabled and synchronized to both clients; a second occupied Growler
+likewise loads, flies, releases, lands and drives, with both vehicles undamaged and both players alive.
+
+A CH-47 loads a container holding 23 diamonds in slot 53, flies thirty blocks above ground and
+releases it onto a type-3 chute. The chute's passenger data confirms the crate attachment during
+descent. After landing, a survival player opens the crate and sees the same 23 diamonds in the
+last slot. Captures: [Vulkan truck after landing](screens/m6-racks-growler-landed-vulkan.png) and
+[OpenGL cargo after drop](screens/m6-racks-cargo-after-drop-opengl.png).
+
+The near-ground driver-requested release still logs a brief client-movement correction in default
+authority mode before settling at the intended exit. No damage or lost passengers follow; airborne
+releases and touchdowns in this run produce no further movement corrections. This remains a
+release-smoothing limitation. The server saves/stops and both clients quit successfully. These
+checks do not establish hardware performance, audio, network-latency/loss behavior or actual
+cross-dimension travel; passenger-tree serialization is checked independently.
+
 ## Integration points already identified
 
 ### Shared Ctrl controls follow-up

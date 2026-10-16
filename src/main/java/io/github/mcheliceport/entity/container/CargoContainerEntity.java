@@ -75,6 +75,7 @@ public class CargoContainerEntity extends Entity implements Container, MenuProvi
         super.tick();
         if (this.entityData.get(HIT_TIME) > 0) { this.entityData.set(HIT_TIME, this.entityData.get(HIT_TIME) - 1); }
         if (this.getDamageTaken() > 0) { this.entityData.set(DAMAGE, this.getDamageTaken() - 1); }
+        if (this.isPassenger()) { this.setDeltaMovement(Vec3.ZERO); this.resetFallDistance(); return; }
         var motion = this.getDeltaMovement();
         if (this.level().isClientSide()) {
             if (this.interpolation.hasActiveInterpolation()) {

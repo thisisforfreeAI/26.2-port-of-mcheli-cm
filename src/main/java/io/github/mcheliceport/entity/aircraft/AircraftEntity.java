@@ -205,6 +205,7 @@ public abstract class AircraftEntity extends Entity
 
     private final AircraftWeapons weapons;
     private final AircraftSupport support;
+    private final AircraftRacks racks = new AircraftRacks(this);
     private final AircraftFlares flares;
     private final AircraftChaff chaff;
     private final AircraftAps aps;
@@ -540,7 +541,7 @@ public abstract class AircraftEntity extends Entity
 
     /** Upstream {@code canMouseRot}. */
     public boolean canMouseRot() {
-        return !this.isRemoved() && this.getPilot() != null && !this.isDestroyed();
+        return !this.isPassenger() && !this.isRemoved() && this.getPilot() != null && !this.isDestroyed();
     }
 
     /** Upstream {@code canUpdateYaw}: not in the first 30 ticks, nor near the ground. */
@@ -1184,7 +1185,8 @@ public abstract class AircraftEntity extends Entity
     public boolean interactFirstSeat(Player player) {
         int seatId = 1;
         for (SeatEntity seat : this.seats) {
-            if (seat != null && seat.getRider() == null && !this.isMountedEntity(player)
+            if (seat != null && !(this.getSeatInfo(seatId) instanceof SeatRackInfo)
+                    && seat.getRider() == null && !this.isMountedEntity(player)
                     && this.canRideSeatOrRack(seatId, player)) {
                 if (!this.level().isClientSide()) {
                     player.startRiding(seat);
@@ -1465,24 +1467,24 @@ public abstract class AircraftEntity extends Entity
     /** Whether the pilot's client moves this vehicle (the port's default) rather than the server. */
     @Override
     public boolean isClientAuthoritative() {
-        return !ServerSettings.forSide(this.level().isClientSide()).serverAuthoritativeMovement()
+        return !this.isPassenger() && !ServerSettings.forSide(this.level().isClientSide()).serverAuthoritativeMovement()
                 && !this.isDestroyed() && super.isClientAuthoritative();
     }
 
     @Override
     protected boolean isLocalClientAuthoritative() {
-        return !ServerSettings.client().serverAuthoritativeMovement() && !this.isDestroyed()
+        return !this.isPassenger() && !ServerSettings.client().serverAuthoritativeMovement() && !this.isDestroyed()
                 && super.isLocalClientAuthoritative();
     }
 
     /** Whether this side moves the vehicle (upstream's {@code !world.isRemote}). */
     public boolean simulates() {
-        return this.isLocalInstanceAuthoritative();
+        return !this.isPassenger() && this.isLocalInstanceAuthoritative();
     }
 
     /** The server follows its controlling pilot when movement is client-authoritative. */
     public boolean followsPilot() {
-        return !this.level().isClientSide() && !this.simulates();
+        return !this.isPassenger() && !this.level().isClientSide() && !this.simulates();
     }
 
     public double getMaxSpeedForChecks() {
@@ -1639,7 +1641,11 @@ public abstract class AircraftEntity extends Entity
                 this.weapons.initCurrentWeapon(pilot);
             }
             this.weapons.tick(this.entityData, DATA_USE_WEAPON);
-            this.onUpdateAircraft();
+            if (!this.isPassenger()) { this.onUpdateAircraft(); }
+            else {
+                this.setDeltaMovement(Vec3.ZERO); this.resetFallDistance();
+                this.setCurrentThrottle(0); this.setThrottle(0);
+            }
             this.updateParts(this.partStatus());
             this.updatePartRotation();
             if (this.level().isClientSide()) {
@@ -1674,6 +1680,7 @@ public abstract class AircraftEntity extends Entity
 
     /** The pilot's client sends its attitude when it changed, and its motion while it moves the vehicle. */
     private void sendPilotState() {
+        if (this.isPassenger()) { return; }
         ClientHooks hooks = clientHooks;
         if (hooks == null) {
             return;
@@ -2589,7 +2596,7 @@ public abstract class AircraftEntity extends Entity
 
     /** Upstream {@code onUpdate_CollisionGroundDamage}. */
     private void onUpdateCollisionGroundDamage() {
-        if (this.isDestroyed() || !(this.level() instanceof ServerLevel level) || this.info == null) {
+        if (this.isPassenger() || this.isDestroyed() || !(this.level() instanceof ServerLevel level) || this.info == null) {
             return;
         }
         if (this.blockWithin(3, -3)) {
@@ -2742,6 +2749,8 @@ public abstract class AircraftEntity extends Entity
     public AircraftWeapons weapons() {
         return this.weapons;
     }
+
+    public AircraftRacks racks() { return this.racks; }
 
     AircraftSupport support() {
         return this.support;

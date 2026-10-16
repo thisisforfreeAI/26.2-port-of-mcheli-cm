@@ -93,6 +93,24 @@ public class SeatEntity extends Entity {
         // Upstream updatePosition: the rider stands at the seat's position.
         moveFunction.accept(passenger, this.getX(), this.getY(), this.getZ());
         passenger.setDeltaMovement(Vec3.ZERO);
+        var parent = this.getParent();
+        if (parent != null && parent.getSeatInfo(this.getSeatIndex() + 1) instanceof SeatRackInfo rack) {
+            if (passenger instanceof AircraftEntity cargo) {
+                var q = io.github.mcheliceport.util.McheliMath.worldOrientationQuat(parent.getYaw(), parent.getPitch(), parent.getRoll())
+                        .mul(io.github.mcheliceport.util.McheliMath.worldOrientationQuat(rack.fixYaw, rack.fixPitch, 0));
+                var euler = io.github.mcheliceport.util.McheliMath.worldEuler(q);
+                cargo.setAttitudeFromPilot(euler[1], euler[0], euler[2]);
+                cargo.updateHitBoxPosition();
+            }
+            else { passenger.setYRot(parent.getYaw() + rack.fixYaw); passenger.setXRot(rack.fixPitch); }
+        }
+    }
+
+    /** Place a newly attached load immediately, before the normal passenger traversal. */
+    public void positionCargo() {
+        var parent = this.getParent();
+        if (parent != null) { this.setPos(parent.getSeatPosition(this.getSeatIndex() + 1)); }
+        if (this.getRider() != null) { this.positionRider(this.getRider()); }
     }
 
     @Override
