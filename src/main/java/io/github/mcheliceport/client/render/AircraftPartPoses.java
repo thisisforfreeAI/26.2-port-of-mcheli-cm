@@ -14,9 +14,7 @@ import org.joml.Matrix4f;
  * {@code MCH_RenderAircraft#renderCommonPart}, ported call for call onto a {@link GlMatrixStack}.
  *
  * <p>Pure computation from a {@link Input} snapshot, so {@code PartTransformTest} can check it.
- * Parts that need later milestones are drawn at rest: crawler tracks and track rollers (M6),
- * light hatches (search lights, M6), wheels (ground vehicles, M6). Weapon parts
- * and weapon bays are drawn at rest when the input carries no poses for them.
+ * Weapon parts and weapon bays are drawn at rest when the input carries no poses for them.
  */
 public final class AircraftPartPoses {
 
@@ -52,7 +50,8 @@ public final class AircraftPartPoses {
             float[][] prevBladeRotation,
             WeaponPartPose[] weaponParts,
             float[] weaponBayRotation,
-            float steeringYaw) {
+            float steeringYaw,
+            float lightHatchRotation) {
     }
 
     /**
@@ -137,7 +136,7 @@ public final class AircraftPartPoses {
                 || info instanceof io.github.mcheliceport.content.aircraft.VehicleInfo;
         if (!ground) { restParts(info.partTrackRoller, models, gl, out); }
         steeringWheels(info, models, in.steeringYaw, gl, out);
-        lightHatches(info, models, gl, out);
+        lightHatches(info, models, in.lightHatchRotation, gl, out);
         if (!ground) { restParts(info.partWheel, models, gl, out); }
         throttles(info, models, in, gl, out);
         cameras(info, models, in, gl, out);
@@ -171,11 +170,16 @@ public final class AircraftPartPoses {
         }
     }
 
-    private static void lightHatches(AircraftInfo info, AircraftModels.VehicleModels models, GlMatrixStack gl,
+    static void lightHatches(AircraftInfo info, AircraftModels.VehicleModels models, float rotation, GlMatrixStack gl,
             List<Draw> out) {
         // Upstream draws light hatches from the body only (their part files are never loaded).
         for (AircraftInfo.Hatch h : info.lightHatchList) {
+            gl.pushMatrix();
+            gl.translate(h.pos.x, h.pos.y, h.pos.z);
+            gl.rotate(rotation * h.maxRot, (float) h.rot.x, (float) h.rot.y, (float) h.rot.z);
+            gl.translate(-h.pos.x, -h.pos.y, -h.pos.z);
             add(out, gl, models.body().part("$" + h.modelName));
+            gl.popMatrix();
         }
     }
 

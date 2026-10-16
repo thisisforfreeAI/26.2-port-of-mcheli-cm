@@ -46,8 +46,8 @@ public final class ModNetwork {
 
     private static final Logger LOGGER = LogUtils.getLogger();
     /** Bump when payload encoding, menu layout or synchronized entity data changes. */
-    // Towing replaces a placeholder and adds synchronized trailer authority state.
-    public static final String VERSION = "9";
+    // Searchlights synchronize their retained aim when the controlling crew leaves.
+    public static final String VERSION = "11";
 
     private ModNetwork() {
     }
@@ -232,12 +232,18 @@ public final class ModNetwork {
             // Upstream always unmounted the pilot; only the pilot's client sent it.
             if (pilot) {
                 aircraft.unmountEntity();
+            } else if (aircraft.ropes().active()) {
+                aircraft.ropes().descend(player);
             } else if (!aircraft.parachuteCrew(player)) {
                 player.stopRiding();
             }
             return;
         }
         if (aircraft.isDestroyed()) {
+            return;
+        }
+        if (p.unmount() == HeliControlPayload.UnmountAction.UNMOUNT_CREW) {
+            if (pilot) { aircraft.ropes().toggle(); }
             return;
         }
         if (pilot && p.unmount() == HeliControlPayload.UnmountAction.UNMOUNT_AIRCRAFT) {
@@ -277,6 +283,7 @@ public final class ModNetwork {
             aircraft.throttleDown = s.throttleDown();
             aircraft.moveLeft = s.moveLeft();
             aircraft.moveRight = s.moveRight();
+            if (aircraft.ropes().active()) { aircraft.ropes().clearControls(); }
             if (p.hatch() != HeliControlPayload.HatchSwitch.NONE && aircraft.getAcInfo() != null
                     && aircraft.getAcInfo().haveHatch()) {
                 aircraft.foldHatch(p.hatch() == HeliControlPayload.HatchSwitch.UNFOLD);
@@ -293,6 +300,9 @@ public final class ModNetwork {
         }
         if (p.switches().openGui()) {
             aircraft.openContainer(player);
+        }
+        if (p.switches().get(PlayerControlSwitches.SWITCH_SEARCH_LIGHT) && aircraft.canSwitchSearchLight(player)) {
+            aircraft.setSearchLight(!aircraft.isSearchLightOn());
         }
         if (p.switches().switchGunnerStatus()) {
             aircraft.setGunnerStatus(!aircraft.getGunnerStatus());
@@ -360,7 +370,7 @@ public final class ModNetwork {
     static void handleAttitude(AircraftAttitudePayload p, IPayloadContext context) {
         Player player = context.player();
         if (!(player.getVehicle() instanceof AircraftEntity aircraft) || aircraft.getId() != p.entityId()
-                || !aircraft.isPilot(player) || aircraft.isDestroyed() || aircraft.isPassenger() || aircraft.isTowed()) {
+                || !aircraft.isPilot(player) || aircraft.isDestroyed() || aircraft.isPassenger() || aircraft.isTowed() || aircraft.ropes().active()) {
             return;
         }
         if (!Float.isFinite(p.yaw()) || !Float.isFinite(p.pitch()) || !Float.isFinite(p.roll())) {

@@ -19,6 +19,7 @@ import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.resources.Identifier;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.AABB;
 
@@ -49,7 +50,9 @@ public abstract class AircraftRenderer<T extends AircraftEntity> extends EntityR
         super.extractRenderState(entity, state, partialTicks);
         state.draws.clear();
         state.emissiveDraws.clear();
+        state.searchLights.clear();
         state.boxes.clear();
+        state.ropeHooks.clear(); state.ropeLength = 0;
         state.texture = null;
         io.github.mcheliceport.content.aircraft.AircraftInfo info = entity.getAcInfo();
         if (info == null) {
@@ -60,6 +63,21 @@ public abstract class AircraftRenderer<T extends AircraftEntity> extends EntityR
         state.yaw = ypr[0];
         state.pitch = ypr[1];
         state.roll = ypr[2];
+        if (entity.isSearchLightOn()) {
+            for (var light : info.searchLights) {
+                if (io.github.mcheliceport.entity.aircraft.SearchLightBeam.usable(light)) {
+                    state.searchLights.add(io.github.mcheliceport.entity.aircraft.SearchLightBeam.of(light,
+                            ypr[0], ypr[1], ypr[2], entity.searchLightYaw(partialTicks), entity.searchLightPitch(partialTicks),
+                            Mth.lerp(partialTicks, entity.previousSteeringYaw, entity.steeringYaw)));
+                }
+            }
+        }
+        if (entity.ropes().active()) {
+            state.ropeLength = entity.ropeLength();
+            for (var hook : info.repellingHooks) {
+                state.ropeHooks.add(McheliMath.rotVec3(hook.pos().x, hook.pos().y, hook.pos().z, -ypr[0], -ypr[1], -ypr[2]));
+            }
+        }
         state.testMode = ClientConfig.get(ClientConfig.TEST_MODE);
         if (state.testMode) {
             state.boxes.addAll(info.extraBoundingBox);
@@ -136,7 +154,8 @@ public abstract class AircraftRenderer<T extends AircraftEntity> extends EntityR
                 cameraYaw, cameraPitch, hideGunnerWeapons, blades, prevBlades,
                 WeaponPartPoses.weaponParts(entity, partialTicks, mc.player, mc.options.getCameraType().isFirstPerson()),
                 WeaponPartPoses.weaponBays(entity, partialTicks),
-                entity.previousSteeringYaw + (entity.steeringYaw - entity.previousSteeringYaw) * partialTicks);
+                entity.previousSteeringYaw + (entity.steeringYaw - entity.previousSteeringYaw) * partialTicks,
+                Mth.lerp(partialTicks, entity.previousLightHatchRotation, entity.lightHatchRotation));
     }
 
     @Override
@@ -158,12 +177,41 @@ public abstract class AircraftRenderer<T extends AircraftEntity> extends EntityR
                         entity.getY() + r, entity.getZ() + r));
             }
         }
+        if (entity.ropes().active() && info != null) {
+            for (int index = 0; index < info.repellingHooks.size(); index++) {
+                var hook = entity.ropes().hook(index);
+                box = box.minmax(new AABB(hook, hook.add(0, -entity.ropeLength(), 0)).inflate(1));
+            }
+        }
+        if (entity.isSearchLightOn() && info != null) {
+            for (var light : info.searchLights) {
+                if (!io.github.mcheliceport.entity.aircraft.SearchLightBeam.usable(light)) { continue; }
+                var beam = io.github.mcheliceport.entity.aircraft.SearchLightBeam.of(light, entity.getYaw(),
+                        entity.getPitch(), entity.getRoll(), entity.searchLightYaw(1), entity.searchLightPitch(1), entity.steeringYaw);
+                var origin = entity.position().add(beam.point(0, 0, 0));
+                var end = entity.position().add(beam.point(0, light.height, 0));
+                box = box.minmax(new AABB(origin, end).inflate(light.width / 2));
+            }
+        }
         return box;
     }
 
     @Override
     public void submit(AircraftRenderState state, PoseStack poseStack, SubmitNodeCollector collector,
             CameraRenderState camera) {
+        SearchLightRenderer.submit(state.searchLights, poseStack, collector);
+        if (!state.ropeHooks.isEmpty() && state.ropeLength > 0) {
+            float width = Minecraft.getInstance().gameRenderer.gameRenderState().windowRenderState.appropriateLineWidth;
+            var hooks = List.copyOf(state.ropeHooks); float length = state.ropeLength;
+            collector.submitCustomGeometry(poseStack, net.minecraft.client.renderer.rendertype.RenderTypes.lines(), (pose, buffer) -> {
+                for (var hook : hooks) {
+                    buffer.addVertex(pose, (float) hook.x, (float) hook.y, (float) hook.z).setColor(0xFF000000)
+                            .setNormal(pose, 0, -1, 0).setLineWidth(width);
+                    buffer.addVertex(pose, (float) hook.x, (float) hook.y - length, (float) hook.z).setColor(0xFF000000)
+                            .setNormal(pose, 0, -1, 0).setLineWidth(width);
+                }
+            });
+        }
         if (state.testMode) {
             AircraftDebugBoxes.submit(poseStack, collector, state.yaw, state.pitch, state.roll,
                     state.boundingBoxWidth, state.boundingBoxHeight, state.boxes);

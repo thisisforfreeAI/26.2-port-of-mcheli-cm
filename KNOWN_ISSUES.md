@@ -16,21 +16,21 @@ Tank/ground-vehicle placement, driving, wheel contacts, tracks, rollers, indepen
 and reactive armor state are implemented. Ground crushing/ramming, nearby fuel/ammunition supply,
 vehicle repair and medical crew effects are implemented. Cargo containers also place, float,
 save items and open a 54-slot inventory. Remaining equipment
-work is listed below. Rack loading/release, vehicle self-boarding and tow chains are implemented;
-ropes and rappelling remain pending.
+work is listed below. Rack loading/release, vehicle self-boarding, tow chains, ropes and rappelling
+and searchlights are implemented; remaining equipment is pending.
 Automated conventional/VTOL flight sequences and plane weapons in both authority modes pass;
 broader gameplay and hardware checks remain pending.
 
 | Area | Planned milestone |
 |---|---|
-| Remaining plane/ground equipment, UAVs (and the UAV camera), search lights, ropes and rappelling, gunner NPCs and mobs in seats (and their weapon use), GLTD, hand-held weapons (Stinger, Javelin), the rest of the aircraft GUI, drafting table screen, charger, tools, multiplayer teams and team spotting markers (`MCH_GuiTargetMarker`) | M6 |
+| Remaining plane/ground equipment, UAVs (and the UAV camera), gunner NPCs and mobs in seats (and their weapon use), GLTD, hand-held weapons (Stinger, Javelin), the rest of the aircraft GUI, drafting table screen, charger, tools, multiplayer teams and team spotting markers (`MCH_GuiTargetMarker`) | M6 |
 | BVR and passive radar, GPS panel and GPS missiles, mortar radar and RWR overlays, ECM jammer, the pulse-Doppler notch, the APS "iron curtain", data link, anti-radiation missiles, `Destruct` bombs (UAVs), the targeting pod's spotting | M6 (with the vehicles that use them) |
 | Wingman (AI wingmen, marker block screens and types, missions, `/wingman`) | M6b |
 | Remaining `/mcheli` commands (including reloading content with `reconfig`), advancement triggers, long-distance tracking and rendering, thermal vision (the third camera mode), GPU-buffer model rendering, projectile chunk loading (`ProjectileChunkLoad`), HBM:NTM stubs, performance work | M7 |
 
 Until then:
 
-- Rack controls and hints are implemented. Searchlight controls remain pending (M6).
+- Rack and searchlight controls and hints are implemented.
 - Tank movement uses the main hull collision box plus wheel terrain probes. Extra hull boxes
   contribute damage/crushing regions, but do not provide additional solid movement collision
   shapes. Ground attitude is
@@ -259,15 +259,49 @@ These follow from how Minecraft 26.2 works or from decisions approved in PORTING
     an occupied trailer may roll towards the tug when it stops. The local default-movement check
     logged one tug movement correction after braking, with no damage or lost link.
 
+72. K exposes rope deployment using the existing UNMOUNT_CREW action, whose client sender was
+    absent from the pinned upstream handler. This increment implements ropes; it does not add
+    that action's separate ground-unload or automatic transport-parachute paths. Ropes require
+    configured hooks, hover, pitch/roll below three degrees, recent movement below .3 blocks and
+    no ground within four blocks. Their canonical server length grows .25 blocks per tick to
+    terrain or fifty blocks, replacing the independent .3 client rate. Terrain uses current world
+    heights, including negative Y. Readiness and length synchronize to every client.
+    Manual round-robin hook selection and upstream's combined four-block starting drop are
+    preserved; automatic non-player crew use a two-block drop and skip the first crew/gunner seat.
+    Blocked exits and cancelled deployment retain the original seat. Descent uses current solid
+    collision movement, checks the rider's clearance, and releases outside blocks on landing.
+    The helicopter is server-simulated with free look and suppressed flight inputs while deployed;
+    ending hover retracts ropes. Supported teleport transitions synchronize release/control return.
+    Retraction or interruption releases at the current position; ordinary gravity then resumes.
+    Unlike upstream's empty descent NBT, deployed ropes and parent/hook/passenger state save and
+    recover by UUID with fifty ticks of grace. Failed dismounts keep the helper and rider together
+    for retry. Riders stand upright, and ropes hang vertically from transformed hooks with culling
+    bounds covering the full rope, through supported line submission instead of direct GL calls.
+
+73. Searchlights use a dedicated bindable L key so C remains available for camera modes.
+    The server accepts switches only from actual pilot/first-crew occupants of an intact vehicle
+    with lamps. The first crew occupant aims movable lamps, falling back to the pilot. Empty
+    vehicles retain synchronized/saved aim and switch state. Light covers open/close over two
+    ticks. Fixed and steering lamps preserve upstream's matrix order; additive, two-sided cones
+    use supported triangle submission without depth writes, with bounds spanning the cone.
+    Living-entity lightmaps take the maximum existing block light and any cone highlight. Unlike
+    upstream's last-light-wins loop, one lamp cannot darken another lamp's target. Highlight angles
+    use a single 3D cone rather than separate horizontal/vertical approximations. As upstream,
+    this is beam geometry and living-entity lighting, not terrain light-engine illumination or
+    shadow-casting spotlights. Terrain depth occludes the drawn geometry; the living highlight
+    does not ray trace intervening blocks. Stock alpha values are restored from legacy TXT, and
+    content revision 1 refreshes the extracted default pack on existing 0.5.1 installs. Keep
+    customizations in separate addon packs. Protocol 11 covers retained-aim entity data.
+
 ## Upstream content issues kept as they are
 
-The port ships upstream's stock content files unchanged, including what upstream's conversion of
+Except for restoring searchlight alpha, the port preserves what upstream's conversion of
 its stock content from TXT to YAML lost or changed (the full list, checked by a test, is in
 `src/test/resources/parity/known-differences.txt`):
 
 - Stock vehicles and throwables have no crafting recipes, and vehicles have no paint variants.
 - Some weapons lost their damage factors, bomblet, fuel-air explosive, dispenser and targeting pod
-  settings; some search lights lost their transparency; some racks lost their fixed angles.
+  settings; some racks lost their fixed angles.
 - Stock YAML vehicles sit with the opposite pitch on the ground (`OnGroundPitch` was written with
   its sign flipped).
 - The stock helicopter HUD tests `hovering==1`, but `hovering` is true or false, so the HOVERING

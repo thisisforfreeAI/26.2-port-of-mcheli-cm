@@ -43,6 +43,7 @@ public class ChainItem extends Item {
                 && !(entity instanceof LivingEntity || entity instanceof ItemEntity || entity instanceof ExperienceOrb
                 || entity instanceof Projectile || entity instanceof ChainEntity || entity instanceof SeatEntity
                 || entity instanceof ParachuteEntity || entity instanceof PlaceholderEntity
+                || entity instanceof io.github.mcheliceport.entity.rappel.RappellingEntity
                 || entity instanceof net.neoforged.neoforge.entity.PartEntity<?>)
                 && !(entity instanceof AircraftEntity aircraft && aircraft.isDestroyed())
                 && !(entity instanceof VehicleEntity && CommonConfig.FIX_VEHICLE_AT_PLACED_POINT.get());
