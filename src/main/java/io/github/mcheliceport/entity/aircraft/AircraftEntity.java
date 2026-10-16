@@ -9,6 +9,7 @@ import io.github.mcheliceport.content.aircraft.BoundingBoxInfo;
 import io.github.mcheliceport.content.aircraft.SeatInfo;
 import io.github.mcheliceport.content.aircraft.SeatRackInfo;
 import io.github.mcheliceport.entity.seat.SeatEntity;
+import io.github.mcheliceport.entity.uav.UavStationEntity;
 import io.github.mcheliceport.entity.parachute.ParachuteEntity;
 import io.github.mcheliceport.item.AircraftItem;
 import io.github.mcheliceport.menu.AircraftMenu;
@@ -145,6 +146,8 @@ public abstract class AircraftEntity extends Entity
     private static final EntityDataAccessor<Float> DATA_LIGHT_PITCH =
             SynchedEntityData.defineId(AircraftEntity.class, EntityDataSerializers.FLOAT);
     public float lightHatchRotation, previousLightHatchRotation;
+    private static final EntityDataAccessor<Integer> DATA_UAV_STATION =
+            SynchedEntityData.defineId(AircraftEntity.class, EntityDataSerializers.INT);
 
     private static final AircraftHitBox[] NO_HIT_BOXES = new AircraftHitBox[0];
     private static final SeatEntity[] NO_SEATS = new SeatEntity[0];
@@ -389,6 +392,7 @@ public abstract class AircraftEntity extends Entity
         builder.define(DATA_TOWED, false);
         builder.define(DATA_ROPE_LENGTH, 0F); builder.define(DATA_ROPE_TICKS, 0);
         builder.define(DATA_LIGHT_YAW, 0F); builder.define(DATA_LIGHT_PITCH, 0F);
+        builder.define(DATA_UAV_STATION, 0);
     }
 
     @Override
@@ -963,12 +967,13 @@ public abstract class AircraftEntity extends Entity
                 return passenger;
             }
         }
-        return null;
+        var station = this.uavStation();
+        return station != null && station.validLink(this) ? station.operator() : null;
     }
 
     @Override
     public @Nullable LivingEntity getControllingPassenger() {
-        return this.getPilot() instanceof Player player ? player : null;
+        return !this.isUAV() && this.getPilot() instanceof Player player ? player : null;
     }
 
     @Override
@@ -976,7 +981,7 @@ public abstract class AircraftEntity extends Entity
         if (passenger instanceof SeatEntity) {
             return true;
         }
-        return this.getPilot() == null;
+        return !this.isUAV() && this.getPilot() == null;
     }
 
     @Override
@@ -1373,6 +1378,7 @@ public abstract class AircraftEntity extends Entity
             this.openContainer(player);
             return InteractionResult.PASS;
         }
+        if (this.isUAV()) { return InteractionResult.PASS; }
         if (!this.info.canRide) {
             return InteractionResult.PASS;
         }
@@ -1414,6 +1420,7 @@ public abstract class AircraftEntity extends Entity
         if (this.isRemoved()) {
             return false;
         }
+        if (this.isUAV() && this.isPilot(player)) { return true; }
         return this.getSeatIdByEntity(player) >= 0 ? player.distanceToSqr(this) <= 4096.0
                 : player.distanceToSqr(this) <= 64.0;
     }
@@ -1483,13 +1490,13 @@ public abstract class AircraftEntity extends Entity
     /** Whether the pilot's client moves this vehicle (the port's default) rather than the server. */
     @Override
     public boolean isClientAuthoritative() {
-        return !this.isPassenger() && !this.isTowed() && !this.ropes.active() && !ServerSettings.forSide(this.level().isClientSide()).serverAuthoritativeMovement()
+        return !this.isUAV() && !this.isPassenger() && !this.isTowed() && !this.ropes.active() && !ServerSettings.forSide(this.level().isClientSide()).serverAuthoritativeMovement()
                 && !this.isDestroyed() && super.isClientAuthoritative();
     }
 
     @Override
     protected boolean isLocalClientAuthoritative() {
-        return !this.isPassenger() && !this.isTowed() && !this.ropes.active() && !ServerSettings.client().serverAuthoritativeMovement() && !this.isDestroyed()
+        return !this.isUAV() && !this.isPassenger() && !this.isTowed() && !this.ropes.active() && !ServerSettings.client().serverAuthoritativeMovement() && !this.isDestroyed()
                 && super.isLocalClientAuthoritative();
     }
 
@@ -1900,6 +1907,14 @@ public abstract class AircraftEntity extends Entity
     public boolean isUAV() {
         return this.info != null && this.info.isUAV;
     }
+    public @Nullable UavStationEntity uavStation() {
+        return this.entityData.get(DATA_UAV_STATION) != 0
+                && this.level().getEntity(this.entityData.get(DATA_UAV_STATION)) instanceof io.github.mcheliceport.entity.uav.UavStationEntity s
+                && !s.isRemoved() ? s : null;
+    }
+    public void setUavStation(@Nullable UavStationEntity station) {
+        this.entityData.set(DATA_UAV_STATION, station == null ? 0 : station.getId());
+    }
 
     public boolean isEntityRadarMounted() {
         return this.info != null && this.info.isEnableEntityRadar;
@@ -1926,7 +1941,7 @@ public abstract class AircraftEntity extends Entity
 
     /** The actual view source; separate from isCameraView's weapon/UAV semantics. */
     public boolean isViewFromCamera(@Nullable Entity viewer) {
-        return this.isGunnerMode(viewer) || this.isPilot(viewer) && this.info != null
+        return this.isGunnerMode(viewer) || this.isUAV() && this.isPilot(viewer) || this.isPilot(viewer) && this.info != null
                 && (this.info.alwaysCameraView || this.getCameraId() > 0);
     }
 

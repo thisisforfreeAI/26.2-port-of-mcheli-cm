@@ -17,13 +17,15 @@ and reactive armor state are implemented. Ground crushing/ramming, nearby fuel/a
 vehicle repair and medical crew effects are implemented. Cargo containers also place, float,
 save items and open a 54-slot inventory. Remaining equipment
 work is listed below. Rack loading/release, vehicle self-boarding, tow chains, ropes and rappelling
-and searchlights are implemented; remaining equipment is pending.
+and searchlights are implemented. UAV stations and portable controllers deploy stock UAVs and
+provide nearby remote piloting, a saved last-UAV identity and station inventory; pairing devices,
+tablets and remaining equipment are pending.
 Automated conventional/VTOL flight sequences and plane weapons in both authority modes pass;
 broader gameplay and hardware checks remain pending.
 
 | Area | Planned milestone |
 |---|---|
-| Remaining plane/ground equipment, UAVs (and the UAV camera), gunner NPCs and mobs in seats (and their weapon use), GLTD, hand-held weapons (Stinger, Javelin), the rest of the aircraft GUI, drafting table screen, charger, tools, multiplayer teams and team spotting markers (`MCH_GuiTargetMarker`) | M6 |
+| Remaining plane/ground equipment, UAV pairing devices/tablets and station preview camera, gunner NPCs and mobs in seats (and their weapon use), GLTD, hand-held weapons (Stinger, Javelin), the rest of the aircraft GUI, drafting table screen, charger, tools, multiplayer teams and team spotting markers (`MCH_GuiTargetMarker`) | M6 |
 | BVR and passive radar, GPS panel and GPS missiles, mortar radar and RWR overlays, ECM jammer, the pulse-Doppler notch, the APS "iron curtain", data link, anti-radiation missiles, `Destruct` bombs (UAVs), the targeting pod's spotting | M6 (with the vehicles that use them) |
 | Wingman (AI wingmen, marker block screens and types, missions, `/wingman`) | M6b |
 | Remaining `/mcheli` commands (including reloading content with `reconfig`), advancement triggers, long-distance tracking and rendering, thermal vision (the third camera mode), GPU-buffer model rendering, projectile chunk loading (`ProjectileChunkLoad`), HBM:NTM stubs, performance work | M7 |
@@ -31,6 +33,11 @@ broader gameplay and hardware checks remain pending.
 Until then:
 
 - Rack and searchlight controls and hints are implemented.
+- UAV control is bounded by the aircraft's configured range, server/client view distance and
+  tracked loaded terrain, with a maximum of 128 blocks. It does not stream remote chunks.
+  Range loss, leaving the station, death or destruction ends control and clears held inputs and
+  throttle. Active control sessions are not restored after loading; reconnect with Connect last.
+  Target drones launch autonomously and cannot be remotely piloted. Normal UAVs need fuel.
 - Tank movement uses the main hull collision box plus wheel terrain probes. Extra hull boxes
   contribute damage/crushing regions, but do not provide additional solid movement collision
   shapes. Ground attitude is
@@ -66,8 +73,9 @@ These follow from how Minecraft 26.2 works or from decisions approved in PORTING
 (sections 8 and 10). They apply as each feature is ported.
 
 1. 1.12.2 worlds and items are not migrated (different mod ID, item flattening, new save format).
-2. The UAV live camera feed shows NO SIGNAL plus telemetry: 26.2 has no supported way to render the
-   world a second time from another viewpoint.
+2. The UAV station's small preview shows NO SIGNAL plus telemetry: 26.2 has no supported way to
+   render the world a second time from another viewpoint. Remote flight uses the supported main
+   camera at the UAV instead.
 3. Stippled HUD lines are drawn as dashes, so they may not match upstream pixel for pixel.
 4. Recipe and ammo references to 1.12 items that cannot be mapped to a 26.2 item are skipped, with a
    log line.
@@ -79,7 +87,8 @@ These follow from how Minecraft 26.2 works or from decisions approved in PORTING
 8. Vehicles beyond the far plane are drawn as scaled stand-ins instead of in a second far-plane render
    pass.
 9. The pilot's client simulates its own vehicle (decision D2). Servers can switch back to upstream's
-   server-authoritative model with `vehicles.serverAuthoritativeMovement`.
+   server-authoritative model with `vehicles.serverAuthoritativeMovement`. UAV motion always runs
+   on the server because its pilot remains physically seated at the station.
 10. `/mcheli sendss` screen capture only works for players who opt in with
     `privacy.allowScreenCapture`, and they get a chat notice whenever it happens (decision D7).
 11. Content-parser bugs documented in upstream's wiki are fixed (decision D5): the map form of

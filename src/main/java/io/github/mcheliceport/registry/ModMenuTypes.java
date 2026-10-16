@@ -7,6 +7,8 @@ import net.neoforged.neoforge.common.extensions.IMenuTypeExtension;
 
 /** The port's menus. */
 public final class ModMenuTypes {
+    public static final Supplier<MenuType<io.github.mcheliceport.menu.UavStationMenu>> UAV_STATION =
+            ModRegistries.MENU_TYPES.register("uav_station", () -> IMenuTypeExtension.create(io.github.mcheliceport.menu.UavStationMenu::new));
 
     /** A vehicle's fuel slots and trunk. */
     public static final Supplier<MenuType<AircraftMenu>> AIRCRAFT =

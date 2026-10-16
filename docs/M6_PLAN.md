@@ -766,6 +766,76 @@ remain environment limitations; no mod exception or graphics-pipeline error occu
 final run. Stock has no steering lamps/light covers; those were exercised by automated synthetic
 cases, not by a live addon. Broader plane/ship lamp gameplay remains unexercised in this scene.
 
+## UAV station increment
+
+- Replace the station placeholder and both station items with placed full-size and portable
+  consoles. Right-click mounts one operator and opens a one-slot deployment menu. Portable
+  controllers accept small UAVs only; shift-right-click while unoccupied opens/closes the lid.
+  Both stock models use supported render submission, with articulated portable covers.
+- Deploy checks the item, aircraft kind, creative restriction, loaded terrain, block/entity
+  obstructions and successful entity insertion before consuming anything. XYZ offsets are
+  server-clamped to -50..50. All nine stock UAV definitions deploy; target drones launch with
+  full fuel and retain autonomous behavior, without becoming the station's controllable UAV.
+- Connect last links the station's saved aircraft UUID to its actual seated operator. Existing
+  flight controls, main camera, HUD, weapons and I aircraft menu resolve that authorized remote
+  pilot. Y leaves the station. Idle operators use I to reopen the station menu and Y to leave.
+  UAVs cannot be physically boarded or directly placed from aircraft items.
+- Remote motion runs on the server in both movement authority modes; only authorized finite
+  attitude/control inputs are accepted. Physical aircraft velocity and seat-switch packets cannot
+  move the station operator into the drone. Ordinary aircraft authority is unchanged.
+- Control requires tracked, loaded nearby terrain, the aircraft's configured range and a limit
+  based on server/client view distance, capped at 128 blocks. The minimum geometric cap is 24
+  blocks so default diagonal deployment remains reachable on small view distances; chunk tracking
+  is still required. Dismount, death, range loss, station loss and aircraft destruction clear the
+  link, held controls, throttle and hover. A cancelled dismount retains the valid session.
+- Save station inventory, lid state, offsets and last aircraft UUID. Active control links reset
+  across world loading; Connect last deliberately re-establishes them. Menus authorize actions
+  through the actual operator and current vanilla menu ID. Protocol 12 requires matching builds;
+  the development version remains 0.5.1 while M6 continues.
+- The station preview remains NO SIGNAL plus name/fuel/health/distance telemetry. Main-camera
+  remote flight does not render the world twice. Pairing devices, tablets, multi-UAV selection,
+  remote chunk streaming and UAV Destruct bombs are not part of this increment.
+
+Automated validation: 147 JUnit tests pass and all 157 required GameTests pass. The nine new server
+tests cover all stock UAVs, portable compatibility, menu/packet ownership, stale menus, offset
+clamps, shift transfers, obstructed/cancelled deployments, remote flight, both authority modes,
+finite attitude, spoofed motion, range loss, death/destruction/station removal, reconnect,
+inventory/UUID persistence, session reset and cancelled dismount. The model test checks both
+stock models, portable articulated groups and all four textures.
+
+### UAV graphics and multiplayer checks
+
+A dedicated server with default client movement, an OpenGL pilot and a Vulkan observer runs the
+survival workflow. Place and mount the full station, shift-transfer an RC Goblin, deploy and
+connect: [station](screens/m6-uav-station-opengl.png). I opens its aircraft menu remotely; a fuel
+can fills it to 100%. Take off, enable hover and steer with the mouse: the server records a rise
+from Y -59 to -27.96 during the first climb, and later yaw -79.61 while hovering around Y -44.72.
+The main flight camera and HUD follow the drone: [OpenGL](screens/m6-uav-flight-opengl.png).
+The Vulkan player sees the drone aloft while the pilot remains at the console:
+[observer](screens/m6-uav-observer-vulkan.png). Y restores the local view, dismounts, sets throttle
+to zero and disables hover. Mount again and Connect last successfully restores remote control.
+
+On Vulkan, place the portable controller, close and open its articulated lid with shift-right-click,
+and mount it. Shift-transfer refuses the MQ-9 while accepting the small Skylark. Deploy it and
+Connect last; I opens the Skylark aircraft menu from the remote view:
+[portable deployment](screens/m6-uav-portable-vulkan.png). This checks plane control/menu routing;
+manual Skylark takeoff and weapon firing were not exercised in this run.
+
+Leave an MQ-9 item in the full station, change X offset to 13 and reconnect its RC Goblin before
+saving and fully restarting the dedicated server. Both operators reconnect physically at their
+stations with idle station hints rather than active remote sessions. I reopens each menu; the full
+station retains its item, offset, last UUID and telemetry:
+[restored station](screens/m6-uav-restored-opengl.png). Connect last works on both clients after
+restart. Moving the RC Goblin beyond the actual 48-block limit clears the remote view, and a new
+connection attempt reports out of control range. Server throttle is zero after cleanup; the idle
+station menu and Exit button remain usable. Both server sessions save/stop successfully and both
+clients quit normally.
+
+Software Mesa is used for OpenGL and Vulkan. Hardware performance, audio, network latency/loss,
+manual UAV weapon firing and every stock airframe's manual flight are untested here. The expected
+missing OpenAL device, X11 cursor-shape warning and offline authentication-service warning remain
+environment limitations; no mod exception or graphics-pipeline failure occurs in this run.
+
 ## Integration points already identified
 
 ### Shared Ctrl controls follow-up

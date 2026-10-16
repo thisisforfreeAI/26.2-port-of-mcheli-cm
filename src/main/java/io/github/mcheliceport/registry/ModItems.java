@@ -58,9 +58,11 @@ public final class ModItems {
             p -> p.stacksTo(1), ModTab.ITEMS);
     public static final DeferredItem<Item> CONTAINER = register("container", CargoContainerItem::new,
             p -> p.stacksTo(1), ModTab.ITEMS);
-    public static final DeferredItem<Item> UAV_STATION = item("uav_station", p -> p.stacksTo(1));
+    public static final DeferredItem<io.github.mcheliceport.item.UavStationItem> UAV_STATION = register("uav_station",
+            p -> new io.github.mcheliceport.item.UavStationItem(p, false), p -> p.stacksTo(1), ModTab.ITEMS);
     /** The portable UAV controller. */
-    public static final DeferredItem<Item> UAV_STATION2 = item("uav_station2", p -> p.stacksTo(1));
+    public static final DeferredItem<io.github.mcheliceport.item.UavStationItem> UAV_STATION2 = register("uav_station2",
+            p -> new io.github.mcheliceport.item.UavStationItem(p, true), p -> p.stacksTo(1), ModTab.ITEMS);
     public static final DeferredItem<Item> UAV_PAIRING_DEVICE = item("uav_pairing_device", p -> p.stacksTo(1));
     public static final DeferredItem<Item> UAV_TABLET = item("uav_tablet", p -> p.stacksTo(1));
     public static final DeferredItem<Item> MINE_DEFUSER = item("mine_defuser", p -> p.stacksTo(1));

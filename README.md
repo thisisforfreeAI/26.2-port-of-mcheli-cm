@@ -32,6 +32,12 @@ can use J to board a carrier and U to leave it. High cargo releases use a transp
 towing now uses the reusable Chain item: right-click the cargo first, then the towing vehicle;
 right-click either linked endpoint to disconnect. Helicopters with rope hooks now deploy/retract
 ropes with **K** during a steady, level hover. After deployment, crew press **Y** to rappel. Configured searchlights/headlights toggle with **L**.
+UAV stations and portable controllers now place and deploy UAV items. Right-click a station,
+insert a UAV, then choose **Deploy** and **Connect last**. Use **I** for the aircraft's fuel/menu
+and **Y** to leave remote control. The operator stays seated at the station while the main view
+follows the UAV. Portable controllers accept small UAVs; shift-right-click toggles their lid.
+Control stays within loaded nearby terrain (at most 128 blocks); pairing devices and tablets
+remain pending. The station's small preview uses telemetry and NO SIGNAL.
 The mod also loads all of McHeli CE's content (vehicles, weapons, throwables and
 HUDs, from YAML and legacy TXT files, including addon packs).
 

@@ -46,8 +46,8 @@ public final class ModNetwork {
 
     private static final Logger LOGGER = LogUtils.getLogger();
     /** Bump when payload encoding, menu layout or synchronized entity data changes. */
-    // Searchlights synchronize their retained aim when the controlling crew leaves.
-    public static final String VERSION = "11";
+    // UAV stations, remote pilot links and the station menu replace placeholders.
+    public static final String VERSION = "12";
 
     private ModNetwork() {
     }
@@ -60,6 +60,9 @@ public final class ModNetwork {
 
     private static void registerPayloads(RegisterPayloadHandlersEvent event) {
         PayloadRegistrar registrar = event.registrar(VERSION);
+        registrar.playToServer(UavStationControlPayload.TYPE, UavStationControlPayload.CODEC, (p, context) -> {
+            applyUavStationControl(context.player(), p);
+        });
         registrar.playToServer(GroundControlPayload.TYPE, GroundControlPayload.CODEC, (p, context) -> {
             if (riddenAircraft(context.player()) instanceof GroundVehicleEntity ground) {
                 applyGroundControl(ground, context.player(), p);
@@ -186,6 +189,13 @@ public final class ModNetwork {
 
     // ---- client to server ----
 
+    public static void applyUavStationControl(Player player, UavStationControlPayload p) {
+        if (!player.level().isClientSide() && player.getVehicle() instanceof io.github.mcheliceport.entity.uav.UavStationEntity station
+                && station.getId() == p.stationId() && station.operator() == player) {
+            if (p.exit()) { station.exit(player); } else { station.openMenu(player); }
+        }
+    }
+
     public static void applyRackControl(Player player, RackControlPayload p) {
         AircraftEntity aircraft = riddenAircraft(player);
         if (aircraft == null || aircraft.getId() != p.aircraftId() || !aircraft.isPilot(player) || aircraft.isDestroyed()) { return; }
@@ -206,6 +216,10 @@ public final class ModNetwork {
         }
         if (vehicle instanceof SeatEntity seat) {
             return seat.getParent();
+        }
+        if (vehicle instanceof io.github.mcheliceport.entity.uav.UavStationEntity station) {
+            var ac = station.controlled();
+            return ac != null && station.operator() == player && station.validLink(ac) && ac.uavStation() == station ? ac : null;
         }
         return null;
     }
@@ -229,6 +243,9 @@ public final class ModNetwork {
         }
         boolean pilot = aircraft.isPilot(player);
         if (p.unmount() == HeliControlPayload.UnmountAction.UNMOUNT_SELF) {
+            if (player.getVehicle() instanceof io.github.mcheliceport.entity.uav.UavStationEntity station) {
+                station.exit(player); return;
+            }
             // Upstream always unmounted the pilot; only the pilot's client sent it.
             if (pilot) {
                 aircraft.unmountEntity();
@@ -368,8 +385,12 @@ public final class ModNetwork {
     }
 
     static void handleAttitude(AircraftAttitudePayload p, IPayloadContext context) {
-        Player player = context.player();
-        if (!(player.getVehicle() instanceof AircraftEntity aircraft) || aircraft.getId() != p.entityId()
+        AircraftEntity aircraft = riddenAircraft(context.player());
+        if (aircraft != null) { applyPilotAttitude(aircraft, context.player(), p); }
+    }
+
+    public static void applyPilotAttitude(AircraftEntity aircraft, Player player, AircraftAttitudePayload p) {
+        if (riddenAircraft(player) != aircraft || aircraft.getId() != p.entityId()
                 || !aircraft.isPilot(player) || aircraft.isDestroyed() || aircraft.isPassenger() || aircraft.isTowed() || aircraft.ropes().active()) {
             return;
         }
@@ -417,7 +438,7 @@ public final class ModNetwork {
     static void handleSeatControl(SeatControlPayload p, IPayloadContext context) {
         Player player = context.player();
         AircraftEntity aircraft = riddenAircraft(player);
-        if (aircraft == null) {
+        if (aircraft == null || player.getVehicle() instanceof io.github.mcheliceport.entity.uav.UavStationEntity) {
             return;
         }
         switch (p.action()) {

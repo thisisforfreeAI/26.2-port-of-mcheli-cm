@@ -101,6 +101,11 @@ public final class AircraftHudLayer implements GuiLayer {
         // MCH_GuiCommon: the hit marker for hits made outside a vehicle.
         drawHitMarker(graphics, WeaponClient.hitCount(), WeaponClient.HIT_COUNT);
         AircraftEntity ac = AircraftClientEvents.riddenAircraft(player);
+        if (player.getVehicle() instanceof io.github.mcheliceport.entity.uav.UavStationEntity station) {
+            String hint = ac == null ? "UAV station: I menu / Y exit" : "UAV remote control - Y disconnect - "
+                    + (int) station.distanceTo(ac) + " / " + station.range() + "m";
+            graphics.text(mc.font, hint, 12, graphics.guiHeight() - 36, 0xFFFFFFFF, true);
+        }
         if (ac == null || ac.isDestroyed() || ac.getAcInfo() == null) {
             return;
         }

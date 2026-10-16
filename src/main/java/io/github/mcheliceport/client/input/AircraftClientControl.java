@@ -57,6 +57,14 @@ public final class AircraftClientControl {
         AircraftEntity aircraft = player != null ? ModNetwork.riddenAircraft(player) : null;
         boolean riding = aircraft != null && aircraft.getAcInfo() != null;
         if (!riding) {
+            if (player != null && player.getVehicle() instanceof io.github.mcheliceport.entity.uav.UavStationEntity station
+                    && mc.gui.screen() == null) {
+                boolean exit = ModKeyMappings.UNMOUNT.consumeClick();
+                if (exit || ModKeyMappings.GUI.consumeClick()) {
+                    ClientPacketDistributor.sendToServer(new io.github.mcheliceport.net.UavStationControlPayload(station.getId(), exit));
+                }
+                ModKeyMappings.ALL.forEach(key -> { while (key.consumeClick()) { } });
+            }
             if (wasRiding) {
                 MouseFlight.reset();
             }

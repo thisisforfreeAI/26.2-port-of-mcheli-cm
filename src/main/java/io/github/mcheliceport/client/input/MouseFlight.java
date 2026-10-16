@@ -104,7 +104,8 @@ public final class MouseFlight {
         turnedThisFrame = false;
         Minecraft mc = Minecraft.getInstance();
         Player player = mc.player;
-        if (turned || player == null || !(player.getVehicle() instanceof AircraftEntity aircraft)
+        AircraftEntity aircraft = player != null ? io.github.mcheliceport.net.ModNetwork.riddenAircraft(player) : null;
+        if (turned || player == null || aircraft == null
                 || !aircraft.canMouseRot()) {
             if (!turned) {
                 prevNanoTime = 0L;

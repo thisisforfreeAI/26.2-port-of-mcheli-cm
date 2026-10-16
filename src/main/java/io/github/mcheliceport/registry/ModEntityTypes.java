@@ -85,7 +85,9 @@ public final class ModEntityTypes {
     public static final DeferredHolder<EntityType<?>, EntityType<VehicleEntity>> VEHICLE = register("vehicle",
             ModRegistries.ENTITY_TYPES.registerEntityType("vehicle", VehicleEntity::new, MobCategory.MISC,
                     builder -> builder.sized(2, 0.7F).clientTrackingRange(toChunks(600)).updateInterval(2)));
-    public static final DeferredHolder<EntityType<?>, EntityType<PlaceholderEntity>> UAV_STATION = placeholder("uav_station", 2.0f, 0.7f, 400, 10);
+    public static final DeferredHolder<EntityType<?>, EntityType<io.github.mcheliceport.entity.uav.UavStationEntity>> UAV_STATION = register("uav_station",
+            ModRegistries.ENTITY_TYPES.registerEntityType("uav_station", io.github.mcheliceport.entity.uav.UavStationEntity::new,
+                    MobCategory.MISC, builder -> builder.sized(2, .7F).clientTrackingRange(toChunks(400)).updateInterval(2)));
     /** Upstream's {@code MCH_EntityHide}, which carries a player down a rope from a helicopter. */
     public static final DeferredHolder<EntityType<?>, EntityType<io.github.mcheliceport.entity.rappel.RappellingEntity>> HIDE = register("hide",
             ModRegistries.ENTITY_TYPES.registerEntityType("hide", io.github.mcheliceport.entity.rappel.RappellingEntity::new,
