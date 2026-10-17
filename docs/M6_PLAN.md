@@ -943,9 +943,10 @@ recipes from `MCH_RecipeFuel` and `MCH_RecipeReloadRangeFinder`:
 
 - Fuel refill: exactly one damaged fuel can and one or more occupied coal/charcoal slots, with no
   other ingredients. Each coal slot restores 100 fuel, each charcoal slot 75, capped at full;
-  stack size within a slot does not multiply the refill. Upstream requires a 3×3 crafting grid.
+  stack size within a slot does not multiply the refill. Upstream's `canFit` names a 3×3 grid,
+  but 1.12 consulted it only for the recipe book, so the refill also crafted in the 2×2 grid.
 - Rangefinder recharge: exactly one damaged rangefinder and one occupied redstone slot, with no
-  other ingredients, producing a fully recharged rangefinder. Upstream permits a 2×2 grid.
+  other ingredients, producing a fully recharged rangefinder. It also works in a 2×2 grid.
 - Test full items, multiple tools/cans, unrelated ingredients, mixed coal/charcoal, partial and
   over-capacity refills, slot stack sizes and crafting consumption. Verify recipe serializers,
   data loading and actual crafting output in the target Minecraft version.
