@@ -10,6 +10,15 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 
 ## [Unreleased] - M6 in progress
 
+### Changed
+
+- Remove the scheduled post-port Vulkan visual-effects update and McHeli team automatic-turret
+  extension from the active roadmap. The user plans to port another mod after completing this
+  port, before revisiting those extensions. Existing Vulkan compatibility remains required.
+- Add optional Just Enough Items (JEI) recipe/usage compatibility to the remaining M6 crafting
+  plan, covering fixed/content recipes, special fuel/rangefinder recipes and drafting-table
+  recipes where applicable. Integration is pending implementation and validation.
+
 ### Added
 
 - UAV control now reaches 5,000 blocks from consoles and tablets, including vertical distance.
@@ -95,8 +104,6 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
   columns, one-in-eight block drops and sampled active extra hull regions follow upstream.
   Ramming includes speed/proximity damage, knockback, car reciprocal damage, pilot credit and
   occupant/recent-dismount exclusions. Heavy-tank damage remains disabled by default.
-- Recorded the requested McHeli team automatic turret extension after M8's Vulkan visual update.
-  Current M6 work continues without implementing that post-port feature early.
 
 - M6 ground vehicles: all 12 stock tanks/cars and 18 placed vehicles now place, mount and
   save/load as real entities. Tank throttle, reverse, steering, held Space brake, mirrored wheel

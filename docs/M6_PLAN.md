@@ -950,6 +950,17 @@ recipes from `MCH_RecipeFuel` and `MCH_RecipeReloadRangeFinder`:
   over-capacity refills, slot stack sizes and crafting consumption. Verify recipe serializers,
   data loading and actual crafting output in the target Minecraft version.
 
+JEI compatibility is also required for the M6 crafting work:
+
+- Support Just Enough Items recipe and ingredient-usage lookup for fixed recipes, generated
+  content/addon recipes and both special recipes above. Add custom category/recipe registration
+  for special or drafting-table recipes where standard crafting discovery is insufficient.
+- Show correct ingredients, tags, damaged-item requirements and outputs, including the variable
+  fuel-refill result. Recheck discovery after recipe/resource reloads.
+- Keep JEI optional and client-only. Verify with a compatible JEI build for the target Minecraft
+  and NeoForge versions, and verify normal client and dedicated-server startup without JEI.
+  Until this is implemented and tested, report JEI compatibility as pending.
+
 The earlier question about recipes and paint variants lost by upstream YAML has no recorded
 resolution in the supplied handoff. Keep that content-restoration question separate from the
 explicitly scheduled special crafting recipes; do not silently replace stock YAML definitions.
@@ -982,6 +993,9 @@ explicitly scheduled special crafting recipes; do not silently replace stock YAM
 - Wingman formation, missions and planner screens stay in M6b. Bounded UAV control streaming
   is implemented by the 5,000-block increment below.
 - Preserve the documented HBM limitation and all existing privacy decisions.
+- After M7, the user plans to port another mod. Additional Vulkan visual-effects polish and
+  automatic vehicle turrets have been removed from the active roadmap; do not schedule them
+  as the next milestones. Existing OpenGL/Vulkan compatibility remains required.
 
 ## Validation and completion
 
