@@ -27,7 +27,14 @@ sourceSets.main.resources {
 }
 
 repositories {
-    // Add here additional repositories if required by some of the dependencies below.
+    // Just Enough Items, an optional client integration (src/main/java/.../compat/jei).
+    maven {
+        url = 'https://maven.blamejared.com'
+        content {
+            includeGroup 'mezz.jei'
+            includeGroup 'net.mezzdev.config'
+        }
+    }
 }
 
 base {
@@ -139,12 +146,12 @@ dependencies {
     // Upstream's HUD expression engine, used only as the oracle of HudExpressionTest (decision D4:
     // the mod itself ships its own evaluator).
     testImplementation 'com.googlecode.aviator:aviator:5.4.3'
-    // Example optional mod dependency with JEI
-    // The JEI API is declared for compile time use, while the full JEI artifact is used at runtime
-    // compileOnly "mezz.jei:jei-${mc_version}-common-api:${jei_version}"
-    // compileOnly "mezz.jei:jei-${mc_version}-neoforge-api:${jei_version}"
-    // We add the full version to localRuntime, not runtimeOnly, so that we do not publish a dependency on it
-    // localRuntime "mezz.jei:jei-${mc_version}-neoforge:${jei_version}"
+    // Just Enough Items is optional: the mod compiles against its API only. Runs load the full JEI
+    // when Gradle gets -PwithJei, so the default runs and the GameTests check the mod without it.
+    compileOnly "mezz.jei:jei-${minecraft_version}-common-api:${jei_version}"
+    if (providers.gradleProperty('withJei').isPresent()) {
+        localRuntime "mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}"
+    }
 
     // Example mod dependency using a mod jar from ./libs with a flat dir repository
     // This maps to ./libs/coolmod-${mc_version}-${coolmod_version}.jar

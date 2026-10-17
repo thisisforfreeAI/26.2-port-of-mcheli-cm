@@ -31,6 +31,8 @@
   "itemGroup.mcheli_ce_port.ships": "MCHeli CE Ships",
   "itemGroup.mcheli_ce_port.tanks": "MCHeli CE Tanks",
   "itemGroup.mcheli_ce_port.vehicles": "MCHeli CE Vehicles",
+  "jei.mcheli_ce_port.info.charge_fuel": "Refill a used fuel can by crafting it with coal or charcoal. Each slot of coal adds %s fuel and each slot of charcoal %s, up to a full can of %s. One item is used from each slot.",
+  "jei.mcheli_ce_port.info.charge_power_range_finder": "Recharge a used rangefinder by crafting it with one redstone dust.",
   "key.category.mcheli_ce_port.vehicles": "McHeli CE (26.2 Port)",
   "key.mcheli_ce_port.airburst_reset": "Reset Airburst Distance",
   "key.mcheli_ce_port.aps": "Active Protection (APS)",

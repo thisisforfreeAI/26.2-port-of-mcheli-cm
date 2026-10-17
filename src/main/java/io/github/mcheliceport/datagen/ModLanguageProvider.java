@@ -45,6 +45,11 @@ public class ModLanguageProvider extends LanguageProvider {
         addItem(ModItems.RANGEFINDER, "Laser Rangefinder");
         addItem(ModItems.WRENCH, "Wrench");
         addItem(ModItems.FUEL, "Fuel");
+        add("jei.mcheli_ce_port.info.charge_fuel", "Refill a used fuel can by crafting it with coal or charcoal. "
+                + "Each slot of coal adds %s fuel and each slot of charcoal %s, up to a full can of %s. "
+                + "One item is used from each slot.");
+        add("jei.mcheli_ce_port.info.charge_power_range_finder",
+                "Recharge a used rangefinder by crafting it with one redstone dust.");
         addItem(ModItems.GLTD, "GLTD:Target Designator");
         addItem(ModItems.CHAIN, "Chain");
         add("message.mcheli_ce_port.chain.selected", "Cargo selected. Right-click the towing vehicle.");

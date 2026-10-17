@@ -49,3 +49,11 @@ config="mcheli_ce_port.mixins.json"
     versionRange="${minecraft_version_range}"
     ordering="NONE"
     side="BOTH"
+
+# Just Enough Items shows the mod's crafting recipes when installed; the 26.2 builds are 30.x.
+[[dependencies.${mod_id}]]
+    modId="jei"
+    type="optional"
+    versionRange="[30,)"
+    ordering="NONE"
+    side="CLIENT"
