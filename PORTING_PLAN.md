@@ -253,6 +253,14 @@ Deps columns come from a per-package scan of 1.12.2 API usage (counts are matchi
 
 - `compat/hbm`: weapon YAML `NTM` blocks are always **parsed** (no data loss). At runtime `ModList.get().isLoaded("hbm")` gates a reflection/stub bridge. Without HBM, NTM payloads fall back to the weapon's normal explosion and log once. No HBM build exists for 26.2 to test against; this is a stub only.
 - GregTech EU bridge: dropped; the charger accepts NeoForge `EnergyHandler` energy. The One Probe and Trajectory Preview hooks are stubbed (Jade could replace TOP later).
+- **Just Enough Items (JEI), M6.** Crafting recipes must support JEI recipe and ingredient-usage
+  lookup, covering fixed recipes, generated content/addon recipes and the planned fuel-refill
+  and rangefinder-recharge recipes. Use standard recipe discovery where sufficient and add
+  JEI registration/categories for special or drafting-table recipes where needed. Keep JEI
+  optional and client-side. Verify a compatible Minecraft/NeoForge/JEI version, recipe reloads,
+  ingredient tags, damaged-item inputs and displayed outputs; also verify client and dedicated
+  server startup without JEI. Fixed, content and special crafting recipes are implemented
+  (`compat/jei`, see docs/M6_PLAN.md); drafting-table recipes and a `/reload` check remain.
 
 ---
 
@@ -268,33 +276,17 @@ Every milestone ends with `./gradlew build`, `runClient` (world load, no crash),
 | **M3** | One helicopter flies | **Done 2026-10-14** (0.3.0; plan in [docs/M3_PLAN.md](docs/M3_PLAN.md)). `AircraftEntity` core + `HeliEntity` (use a stock heli such as `ah-64`), spawn item, riding/seats, controls + mouse flight, physics, fuel, synced data, control payloads, interpolation | Spawn, mount, take off, hover, land in SP; two-client LAN test shows smooth remote motion; physics unit tests (rotor/throttle/drag math vs upstream formulas) |
 | **M4** | Rendering + HUD for that heli | **Done 2026-10-14** (0.4.0; plan in [docs/M4_PLAN.md](docs/M4_PLAN.md)). OBJ/MQO loaders + threaded reload, render path A, rotor/part animation, textures, HUD layer + DSL + expression evaluator, camera/zoom, night vision post effect | Heli renders on **both GL and Vulkan**; HUD matches upstream layout for `heli.yml`; expression evaluator unit tests |
 | **M5** | Weapons | **Done 2026-10-14** (0.5.0; plan in [docs/M5_PLAN.md](docs/M5_PLAN.md)). Weapon sets, all weapon types, bullets/missiles/bombs/torpedoes, guidance, flares/chaff, explosions, particles, hit markers, sounds | Each weapon type fires in a GameTest arena or manual checklist; damage-factor unit tests |
-| **M6** | Remaining vehicle types | Planes (VTOL, sweep wing, autopilot), ships, tanks (wheels, tilt, tracks), vehicles, UAV + stations, gunner NPC, containers, chains, parachutes, GLTD, light weapons, drafting table, charger, tools, multiplayer/teams | Every stock vehicle spawns, mounts, moves and renders |
+| **M6** | Remaining vehicle types | Planes (VTOL, sweep wing, autopilot), ships, tanks (wheels, tilt, tracks), vehicles, UAV + stations, gunner NPC, containers, chains, parachutes, GLTD, light weapons, drafting table, charger, tools, special crafting recipes with JEI compatibility, multiplayer/teams | Every stock vehicle spawns, mounts, moves and renders; crafting recipes are browsable in JEI when installed |
 | **M6b** | Wingman | Marker blocks, formation AI, missions state machine, chunk loading, planner GUIs, `/wingman` | Formation + one CAP mission flies end-to-end |
 | **M7** | Polish | Full config + `/mcheli` commands, sound/particle parity, render path B (GPU buffers), long-distance tracking/rendering, HBM stubs, thermal vision, performance pass (spark profile vs. upstream numbers), docs | No crash in a 30-minute mixed-vehicle soak; frame-time target agreed at M4 |
-| **M8** | Post-port visual effects polish | After the McHeli CE 1.12.2 port is complete, refine the existing effects for Minecraft's Vulkan renderer: explosions, smoke, fire, muzzle flashes, tracers, missile trails, flares, water splashes and rotor wash. Map out the visual changes before implementing this milestone. | Before/after captures in repeatable scenes; Vulkan visual and frame-time checks under combat load; OpenGL compatibility checks; gameplay behaviour unchanged |
-| **M9** | McHeli team automatic turrets | After the M8 Vulkan visual update, add vehicle team ownership and an opt-in automatic turret firing mode that targets vehicles outside its McHeli team. | Server-owned team assignment and targeting; friendly exclusions, configurable unassigned targets, range/visibility/aim limits, real ammunition/reloads, manual override and multiplayer tests |
 
-### Post-port effects direction (M8)
+### Next project
 
-Complete M6, M6b and M7, with any remaining upstream feature gaps implemented or explicitly
-documented and accepted, before starting this visual refinement phase. The aim is to polish the
-ported effects while preserving McHeli CE's recognizable style and combat readability. Review
-particle shapes, animation, colour, transparency, lighting appearance and transitions together;
-choose the specific techniques and quality settings when mapping out M8 against the rendering
-APIs available then. Use Minecraft's supported rendering abstractions for Vulkan and retain
-OpenGL compatibility. Measure performance in representative battles and provide scalable effect
-quality where needed. Visual changes must preserve damage, projectile trajectories, targeting,
-timings and multiplayer behaviour.
-
-### Deferred gameplay extension (M9)
-
-Requested after M8: a new McHeli team system assigns vehicles to teams, persists ownership and
-lets an automatic turret mode engage vehicles outside its team. This extends the port after the
-Vulkan visual update; it does not move automatic vehicle targeting into the current M6 work.
-Build on the ported weapons and team foundations, with the server choosing targets and validating
-team changes. Support manual takeover, target indication, weapon aiming limits, ammunition and
-reloads. Decide detailed team administration and unassigned-vehicle rules when designing M9.
-Upstream NPC gunner/team behavior remains part of the original port's scope.
+After completing the McHeli port through M7, the user plans to port another mod before
+revisiting additional visual-effects polish or automatic vehicle turrets. Those extensions
+have been removed from the active roadmap; no M8 or M9 is scheduled. Existing Vulkan support
+and OpenGL/Vulkan compatibility checks remain part of the port. Upstream NPC gunners and
+multiplayer teams remain in M6.
 
 ---
 
