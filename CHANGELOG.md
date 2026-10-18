@@ -63,6 +63,9 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
   supported (see Added); JEI shows the drafting table as a crafting station for them.
 
 ### Added
+- The radar warning receiver scope and the Radar Switch key (`` ` ``), as upstream: a vehicle with
+  an `RWR` section shows its scope, and one with a `Radar` section switches its radar on and off.
+  As upstream, nothing fills the scope yet (KNOWN_ISSUES 90).
 - Lock boxes, as upstream: while the current weapon has a seeker, a green box with the distance
   hangs over everything it could lock, dimmed past its lock range, and turns red with a line to
   the vehicle while locking. Radar seekers also show the target vehicle's radar name.

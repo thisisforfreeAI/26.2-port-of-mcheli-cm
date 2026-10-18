@@ -1,7 +1,7 @@
 package io.github.mcheliceport.net;
 
 /**
- * Upstream's {@code PlayerControlSwitches}: fourteen control flags packed into a short, bit for
+ * Upstream's {@code PlayerControlSwitches}: fourteen control flags (and the radar switch) packed into a short, bit for
  * bit as CE sends them. M3 uses the throttle, move, open-GUI and gunner-status bits; the others
  * keep their places for M5 and M6.
  */
@@ -21,8 +21,11 @@ public record PlayerControlSwitches(short mask) {
     public static final int USE_CHAFF = 11;
     public static final int USE_APS = 12;
     public static final int USE_ECM_JAMMER = 13;
+    /** Upstream sent the radar switch as its own byte (1 on, 2 off); here it takes the two spare bits. */
+    public static final int RADAR_ON = 14;
+    public static final int RADAR_OFF = 15;
     /** Number of flags. */
-    public static final int COUNT = 14;
+    public static final int COUNT = 16;
 
     public static final PlayerControlSwitches NONE = new PlayerControlSwitches((short) 0);
 

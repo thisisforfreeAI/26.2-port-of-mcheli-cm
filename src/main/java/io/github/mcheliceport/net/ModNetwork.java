@@ -369,6 +369,9 @@ public final class ModNetwork {
         if (p.switches().switchGunnerStatus()) {
             aircraft.setGunnerStatus(!aircraft.getGunnerStatus());
         }
+        if (p.switches().get(PlayerControlSwitches.RADAR_ON) || p.switches().get(PlayerControlSwitches.RADAR_OFF)) {
+            aircraft.setRadarEnabledRuntime(p.switches().get(PlayerControlSwitches.RADAR_ON), false);
+        }
         if (p.switchCameraMode() > 0 && aircraft.canSwitchCameraMode(aircraft.getSeatIdByEntity(player))) {
             aircraft.switchCameraMode(player, p.switchCameraMode() - 1);
         }

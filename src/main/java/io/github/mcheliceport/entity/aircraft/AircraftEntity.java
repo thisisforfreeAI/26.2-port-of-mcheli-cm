@@ -114,6 +114,8 @@ public abstract class AircraftEntity extends Entity
     public static final int STATUS_THROTTLE_UP = 9;
     public static final int STATUS_THROTTLE_DOWN = 10;
     public static final int STATUS_GUNNER = 12;
+    /** Upstream status bit 13: the vehicle's radar is switched on. */
+    public static final int STATUS_RADAR = 13;
     /** Upstream status bit 15: the ECM jammer is running (set by the server). */
     public static final int STATUS_ECM_JAMMER = 15;
 
@@ -3413,6 +3415,15 @@ public abstract class AircraftEntity extends Entity
             case MODERN_AS -> shown.nameOnModernASRadar;
             case EARLY_AS -> shown.nameOnEarlyASRadar;
         };
+    }
+
+    /** Upstream {@code isRadarEnabledRuntime}: the radar switch, off when the vehicle appears. */
+    public boolean isRadarEnabledRuntime() {
+        return this.getCommonStatus(STATUS_RADAR);
+    }
+
+    public void setRadarEnabledRuntime(boolean enabled, boolean writeClient) {
+        this.setCommonStatus(STATUS_RADAR, enabled, writeClient);
     }
 
     public boolean haveECMJammer() {

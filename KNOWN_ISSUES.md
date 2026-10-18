@@ -26,7 +26,7 @@ broader gameplay and hardware checks remain pending.
 | Area | Planned milestone |
 |---|---|
 | Remaining plane/ground equipment and UAV station preview camera | M6 |
-| BVR and passive radar, the GPS panel, mortar radar and RWR overlays | M6 (with the vehicles that use them) |
+| BVR and passive radar, the GPS panel and mortar radar overlays | M6 (with the vehicles that use them) |
 | Wingman (AI wingmen, marker block screens and types, missions, `/wingman`) | M6b |
 | Remaining `/mcheli` commands (including reloading content with `reconfig`), advancement triggers, long-distance tracking and rendering, thermal vision (the third camera mode), GPU-buffer model rendering, projectile chunk loading (`ProjectileChunkLoad`), HBM:NTM stubs, performance work | M7 |
 
@@ -418,6 +418,13 @@ These follow from how Minecraft 26.2 works or from decisions approved in PORTING
     in-world billboard onto the screen, so they keep upstream's size, place and colours but sit
     under the vehicle HUD instead of in the world. As upstream, only targets with no block in
     the way get one.
+90. The radar warning receiver shows its scope on vehicles with an `RWR` section, as upstream, and
+    the scope stays empty, as upstream: upstream's threat manager, which would have listed radars
+    scanning or locking the vehicle and missiles homing on it, was never run, and its warning
+    sounds never played. The radar switch (Radar Switch, `` ` ``) turns a vehicle's `Radar` on
+    and off as upstream; only those threat lists and the mortar radar would have read it, so it has
+    no visible effect yet. Upstream's `radar_on`/`radar_off` switch sounds were never in its assets
+    and are left out.
 
 ## Upstream content issues kept as they are
 

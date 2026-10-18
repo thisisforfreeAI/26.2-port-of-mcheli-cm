@@ -131,6 +131,13 @@ public final class GuiHudCanvas implements HudCanvas {
                 0.0F);
     }
 
+    /** A whole texture stretched over a rectangle (upstream's direct {@code GL_QUADS} overlays). */
+    public void texture(Identifier id, double left, double top, double width, double height) {
+        AbstractTexture texture = Minecraft.getInstance().getTextureManager().getTexture(id);
+        texturedQuad(this, texture, RenderPipelines.GUI_TEXTURED, 0xFFFFFFFF, left, top, width, height, 0.0, 0.0, 1.0,
+                1.0, 0.0F);
+    }
+
     @Override
     public void points(double[] xy, int color) {
         QuadBuilder quads = new QuadBuilder(false);
