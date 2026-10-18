@@ -174,6 +174,9 @@ class PayloadCodecTest {
         LightWeaponControlPayload reload = new LightWeaponControlPayload(false, 0, 0, true,
                 LightWeaponControlPayload.NIGHT_VISION_ON);
         assertEquals(reload, roundTrip(LightWeaponControlPayload.CODEC, reload));
+        DraftingTableCreatePayload create = new DraftingTableCreatePayload(7,
+                net.minecraft.resources.Identifier.fromNamespaceAndPath("mcheli_ce_port", "content/ah-64"));
+        assertEquals(create, roundTrip(DraftingTableCreatePayload.CODEC, create));
     }
 
     @Test

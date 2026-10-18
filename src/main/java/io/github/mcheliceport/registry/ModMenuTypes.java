@@ -14,6 +14,11 @@ public final class ModMenuTypes {
     public static final Supplier<MenuType<AircraftMenu>> AIRCRAFT =
             ModRegistries.MENU_TYPES.register("aircraft", () -> IMenuTypeExtension.create(AircraftMenu::new));
 
+    /** The drafting table's recipe browser. */
+    public static final Supplier<MenuType<io.github.mcheliceport.menu.DraftingTableMenu>> DRAFTING_TABLE =
+            ModRegistries.MENU_TYPES.register("drafting_table",
+                    () -> IMenuTypeExtension.create(io.github.mcheliceport.menu.DraftingTableMenu::new));
+
     private ModMenuTypes() {
     }
 

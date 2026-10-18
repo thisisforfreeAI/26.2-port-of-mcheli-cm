@@ -47,7 +47,7 @@ public final class ModNetwork {
     private static final Logger LOGGER = LogUtils.getLogger();
     /** Bump when payload encoding, menu layout or synchronized entity data changes. */
     // Long-range UAV chunk and entity streaming requires matching camera/terrain behavior.
-    public static final String VERSION = "17";
+    public static final String VERSION = "18";
 
     private ModNetwork() {
     }
@@ -65,6 +65,17 @@ public final class ModNetwork {
         });
         registrar.playToClient(UavRosterPayload.TYPE, UavRosterPayload.CODEC, (p, context) -> {
             if (context.player().containerMenu instanceof io.github.mcheliceport.menu.UavStationMenu menu) { menu.applyRoster(p); }
+        });
+        registrar.playToServer(DraftingTableCreatePayload.TYPE, DraftingTableCreatePayload.CODEC, (p, context) -> {
+            if (context.player().containerMenu instanceof io.github.mcheliceport.menu.DraftingTableMenu menu
+                    && menu.containerId == p.menuId()) {
+                menu.create(p.recipe());
+            }
+        });
+        registrar.playToClient(DraftingTableRecipesPayload.TYPE, DraftingTableRecipesPayload.CODEC, (p, context) -> {
+            if (context.player().containerMenu instanceof io.github.mcheliceport.menu.DraftingTableMenu menu) {
+                menu.applyRecipes(p);
+            }
         });
         registrar.playToServer(UavStationControlPayload.TYPE, UavStationControlPayload.CODEC, (p, context) -> {
             applyUavStationControl(context.player(), p);

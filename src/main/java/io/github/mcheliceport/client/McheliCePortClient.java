@@ -123,6 +123,7 @@ public final class McheliCePortClient {
     private static void registerScreens(RegisterMenuScreensEvent event) {
         event.register(ModMenuTypes.AIRCRAFT.get(), AircraftScreen::new);
         event.register(ModMenuTypes.UAV_STATION.get(), io.github.mcheliceport.client.gui.UavStationScreen::new);
+        event.register(ModMenuTypes.DRAFTING_TABLE.get(), io.github.mcheliceport.client.gui.DraftingTableScreen::new);
     }
 
     private static <T extends Entity> void registerNoop(EntityRenderersEvent.RegisterRenderers event,
