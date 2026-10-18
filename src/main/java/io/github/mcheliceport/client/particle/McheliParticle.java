@@ -2,7 +2,7 @@ package io.github.mcheliceport.client.particle;
 
 import java.util.List;
 import java.util.Optional;
-import io.github.mcheliceport.config.ClientConfig;
+import io.github.mcheliceport.config.EffectQuality;
 import net.minecraft.core.particles.ParticleLimit;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -22,7 +22,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
  */
 abstract class McheliParticle extends SingleQuadParticle {
 
-    protected final boolean polished = ClientConfig.get(ClientConfig.EFFECT_STYLE) == ClientConfig.EffectStyle.POLISHED;
+    protected final boolean polished = EffectQuality.enhanced();
     private final Optional<ParticleLimit> particleLimit = EffectAdmission.limit(this instanceof FlashParticle);
 
     public boolean isEffectedWind;

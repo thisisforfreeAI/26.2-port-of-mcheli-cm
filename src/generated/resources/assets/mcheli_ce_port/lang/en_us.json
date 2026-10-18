@@ -96,6 +96,7 @@
   "mcheli_ce_port.configuration.displayEntityMarker": "Show Entity Markers",
   "mcheli_ce_port.configuration.displayInThirdPerson": "HUD in Third Person",
   "mcheli_ce_port.configuration.dropItemInCreativeMode": "Drop Item in Creative Mode",
+  "mcheli_ce_port.configuration.effectQuality": "Effect Quality",
   "mcheli_ce_port.configuration.effects": "Weapon Effects",
   "mcheli_ce_port.configuration.enableCamDistChange": "Allow Camera Distance Change",
   "mcheli_ce_port.configuration.enableEntityMarker": "Allow Entity Markers",

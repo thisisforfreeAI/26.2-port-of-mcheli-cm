@@ -12,6 +12,10 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 
 ### Changed
 
+- M8 pixel-effects follow-up: shaded smoke, flash and water sprites, a small flare halo, and
+  Low/Balanced/High particle budgets. Preserves the existing enhanced heat, tracer, missile and
+  ground-tint effects. Classic presentation remains available; see `docs/M8_PIXEL_EFFECTS.md`.
+
 - Restore the post-port Vulkan visual-effects update to the roadmap as M8, after M7: explosions,
   smoke, fire, muzzle flashes, tracers, missile trails, flares, water splashes and rotor wash,
   refined for Vulkan with OpenGL kept working. Automatic vehicle turrets stay off the roadmap.
@@ -35,6 +39,14 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
   supported (see Added); JEI shows the drafting table as a crafting station for them.
 
 ### Added
+
+- M8 effects polish, first slice, for the vehicles already ported (see docs/M8_PLAN.md): smoke
+  fades in and out and grows smoothly; explosion puffs start as fire and cool to smoke over a
+  soft additive fireball glow; muzzle flashes glow additively; machine-gun tracers burn at full
+  brightness with a soft streak; flares burn at full brightness with a flickering glow; missile
+  flames glow; downwash dust takes the ground's colour, with white spray over water. The client
+  config's `effects.effectQuality` switches back to upstream's look (`CLASSIC`). Only vanilla
+  pipeline state is used, so it draws the same on OpenGL and Vulkan.
 
 - Using a drafting table opens upstream's recipe browser: lists of helicopters, planes,
   vehicles, tanks, items and ships, a search box, a recipe page with its description pictures

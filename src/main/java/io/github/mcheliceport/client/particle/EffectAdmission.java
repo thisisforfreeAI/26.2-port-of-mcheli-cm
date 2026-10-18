@@ -1,7 +1,7 @@
 package io.github.mcheliceport.client.particle;
 
 import io.github.mcheliceport.config.ClientConfig;
-import io.github.mcheliceport.config.ClientConfig.EffectQuality;
+import io.github.mcheliceport.config.ClientConfig.EffectBudget;
 import java.lang.ref.WeakReference;
 import java.util.Optional;
 import net.minecraft.client.Minecraft;
@@ -19,9 +19,9 @@ final class EffectAdmission {
     private EffectAdmission() {}
 
     private static ParticleLimit[] limits(boolean flash) {
-        EffectQuality[] qualities = EffectQuality.values();
+        EffectBudget[] qualities = EffectBudget.values();
         ParticleLimit[] limits = new ParticleLimit[qualities.length];
-        for (EffectQuality quality : qualities) {
+        for (EffectBudget quality : qualities) {
             limits[quality.ordinal()] = new ParticleLimit(flash
                     ? EffectTuning.flashLimit(quality) : EffectTuning.smokeLimit(quality));
         }
@@ -29,7 +29,7 @@ final class EffectAdmission {
     }
 
     static Optional<ParticleLimit> limit(boolean flash) {
-        return Optional.of((flash ? FLASH_LIMITS : SMOKE_LIMITS)[ClientConfig.get(ClientConfig.EFFECT_QUALITY).ordinal()]);
+        return Optional.of((flash ? FLASH_LIMITS : SMOKE_LIMITS)[ClientConfig.get(ClientConfig.EFFECT_BUDGET).ordinal()]);
     }
 
     static boolean admit(ClientLevel level, double x, double y, double z, boolean isFlash) {
@@ -42,7 +42,7 @@ final class EffectAdmission {
             smoke = new EffectTuning.Budget();
             flash = new EffectTuning.Budget();
         }
-        EffectQuality quality = ClientConfig.get(ClientConfig.EFFECT_QUALITY);
+        EffectBudget quality = ClientConfig.get(ClientConfig.EFFECT_BUDGET);
         double distance = mc.gameRenderer.mainCamera().position().distanceToSqr(x, y, z);
         int range = EffectTuning.distance(quality);
         if (!Double.isFinite(distance) || distance > range * range) {

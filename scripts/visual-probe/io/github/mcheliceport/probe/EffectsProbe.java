@@ -19,6 +19,8 @@ import net.neoforged.neoforge.client.event.RenderFrameEvent;
 /** Opt-in scene in an isolated copy of a flat test world. Not part of the mod. */
 @EventBusSubscriber(modid = "mcheli_ce_port", value = Dist.CLIENT)
 public final class EffectsProbe {
+    private static final boolean QUICK = Boolean.getBoolean("mcheli.probeQuick");
+    private static final int PHASE_TICKS = QUICK ? 240 : 360;
     private static int tick;
     private static long lastFrame;
     private static final List<Double> frames = new ArrayList<>();
@@ -49,8 +51,10 @@ public final class EffectsProbe {
             mc.options.framerateLimit().set(120);
         }
         if (tick < 160) return;
-        int phase = (tick - 160) / 360;
-        int age = (tick - 160) % 360;
+        int sequence = (tick - 160) / PHASE_TICKS;
+        int phase = QUICK ? switch (sequence) { case 0 -> 0; case 1 -> 1; case 2 -> 5; case 3 -> 6; default -> 7; }
+                : sequence;
+        int age = (tick - 160) % PHASE_TICKS;
         if (phase >= 7) {
             mc.stop();
             return;
@@ -70,7 +74,8 @@ public final class EffectsProbe {
                 default -> "day-polished";
             };
             ClientConfig.EFFECT_STYLE.set(classic ? ClientConfig.EffectStyle.CLASSIC : ClientConfig.EffectStyle.POLISHED);
-            ClientConfig.EFFECT_QUALITY.set(phase == 4 ? ClientConfig.EffectQuality.LOW : ClientConfig.EffectQuality.BALANCED);
+            ClientConfig.EFFECT_QUALITY.set(io.github.mcheliceport.config.EffectQuality.ENHANCED);
+            ClientConfig.EFFECT_BUDGET.set(phase == 4 ? ClientConfig.EffectBudget.LOW : ClientConfig.EffectBudget.BALANCED);
             if (phase == 5) mc.player.connection.sendCommand("time set noon");
             System.out.println("M8_PROBE phase=" + phaseName);
         }
@@ -129,7 +134,7 @@ public final class EffectsProbe {
                     List.of(net.minecraft.core.BlockPos.containing(-2, -59, 15)));
         }
         if (phase == 6 && age == 227) capture = "day-explosion";
-        if (age == 359 && !frames.isEmpty()) {
+        if (age == PHASE_TICKS - 1 && !frames.isEmpty()) {
             Collections.sort(frames);
             double median = frames.get(frames.size() / 2);
             double p95 = frames.get((int) ((frames.size() - 1) * .95));
@@ -144,7 +149,7 @@ public final class EffectsProbe {
         Minecraft mc = Minecraft.getInstance();
         if (tick < 160 || mc.level == null) return;
         long now = System.nanoTime();
-        if ((tick - 160) % 360 >= 100 && lastFrame != 0) frames.add((now - lastFrame) / 1_000_000.0);
+        if ((tick - 160) % PHASE_TICKS >= 100 && lastFrame != 0) frames.add((now - lastFrame) / 1_000_000.0);
         lastFrame = now;
         if (capture != null) {
             String name = capture;

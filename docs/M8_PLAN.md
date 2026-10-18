@@ -1,132 +1,88 @@
-# M8 graphics branch
+# M8 plan: effects polish for Vulkan
 
-This separate branch starts the visual work at the user's request while Claude continues the
-port. It does not declare M6, M6b, M7 or M8 complete. Gameplay, network payloads and content
-definitions stay with the port work; the files here concern client presentation only.
+Status: started early, by the user's request, for the vehicles already ported in M6 (helicopters,
+planes, ships, tanks and vehicles). This expands the M8 row of [PORTING_PLAN.md](../PORTING_PLAN.md)
+§6. PORTING_PLAN.md places M8 after M6, M6b and M7; slices that need M7's sound/particle parity
+or render path B wait for it. Preserve decisions D1 to D23.
 
-## Visual map
+## 1. Rules
 
-Preserve the simple, pixelated silhouettes in the reference screenshot. Add depth through
-small shaded sprites and animation, rather than more particles or full-screen effects.
+- **Gameplay is untouched.** Effects stay client-only. No change to damage, projectile flight,
+  targeting, timings, payloads or what the server sends. Emitters retain upstream timing and
+  motion; client quality budgets may suppress cosmetic particles during heavy combat.
+- **Both backends.** Only vanilla pipeline state (`RenderPipeline` snippets, blend functions,
+  depth states) and vanilla shaders. No raw OpenGL and no shaders of our own. Every slice is
+  checked on OpenGL and on Vulkan.
+- **Upstream's look stays one setting away.** `effects.effectQuality` in the client config:
+  `CLASSIC` draws exactly as upstream (and as 0.5.1); `ENHANCED` (the default) draws the M8 look.
+  Later slices may add levels if a battle needs cheaper effects.
+- **Recognisably McHeli.** The stock textures remain available in Classic mode. The pixel-art
+  follow-up adds compact shaded smoke, flash and splash sprites; see §6.
 
-| Effect | First increment | Cost control |
-|---|---|---|
-| Smoke, missile trails, damage smoke, rotor dust | Shaded 32-pixel puffs, interpolated growth and a gentle fade | Existing single quad, shared atlas, no extra layers |
-| Explosions/fire | Brief warm tint inside fresh explosion smoke; one expanding flash | Short light pulse, capped flash admission |
-| Muzzle flash | Warm pixel animation, correct rotation units and fading | Existing single quad |
-| Flares | Full-bright core with a small camera-facing halo | One extra quad per visible flare; none for chaff or Low quality |
-| Water splashes | Separate pale, broken droplet sprite | Existing particle, same motion |
-| Tracers and missile exhaust | Preserve the content models/exhaust in this increment | No new trail history or geometry |
+## 2. Map of the changes
 
-Use vanilla particle and entity pipelines on both Vulkan and OpenGL. No bloom, scene copies,
-dynamic world lights, volumetrics, or shader dependencies. Stock/addon sprite overrides remain
-available through Classic style; Polished uses separate port-owned sprites. Particle colours,
-emitter positions and motion remain content-controlled.
+| Effect | Today (upstream look) | M8 look | Slice |
+|---|---|---|---|
+| Smoke (explosions, trails, damage, downwash, flares, grenades) | 8-frame puff that pops in and out at full opacity; size jumps once per tick | Fades in over 2 ticks and out over the last 30 % of its life; size grows smoothly between ticks | 1 (done) |
+| Explosions / fire | Grey-brown smoke puffs, block dust, flares from large blasts | Explosion puffs are born as fire (hot orange, glowing at block light 15) and cool to their own smoke colour over the first 35 % of their life; a soft additive fireball glow under the blast | 1 (done) |
+| Muzzle flashes | 8-frame starburst, alpha blended | Same starburst drawn additively, plus a short warm glow | 1 (done) |
+| Tracers (machine-gun rounds) | Bullet model lit by the world, dark at night | Full-bright model with a soft streak one tick's travel long (at most 8 blocks) in the round's colour | 1 (done) |
+| Missile trails | Flame quad, smoke trail | Smoke as above, plus an additive glow at the flame | 1 (done) |
+| Flares | Yellow cube lit by the world, dark at night | Full-bright cube with a flickering two-layer glow; chaff unchanged | 1 (done) |
+| Water splashes | Puffs that pop out | Fade as smoke does | 1 (done) |
+| Rotor wash / downwash | Grey puffs whatever the ground | Puffs tinted by the ground's map colour (sand, dirt, snow); white spray over water | 1 (done) |
+| Burning vehicles | Dark damage smoke | Fire at low health (needs a heat hint at the damage-smoke call sites of helicopters, planes and ground vehicles) | 2 |
+| Explosion shockwave and debris | Block dust | A brief ring on the ground for large blasts; sparks | 2 |
+| Smoke lighting | Always full sky light (upstream sampled 3000 blocks up) | Shade with the sky light and time of day at the puff's position | 2 |
+| Heat haze, exhaust | Addon exhaust flames only | Investigate a vanilla-pipeline distortion substitute; may stay out | 3 |
+| Quality levels and budgets | Vanilla particle setting only | Low/Balanced/High particle budgets and distant thinning | Pixel follow-up (§6) |
 
-## Performance and validation
+## 3. Slice 1 as built
 
-Default to Polished/Balanced. Low/Balanced/High scale smoke draw distance, emission per tick and
-live particle limits. Respect Minecraft's decreased/minimal particle setting. Reserve a separate
-budget for short flashes so smoke cannot exhaust it. Cull before allocating custom particles.
-Keep the existing vanilla explosion option working. Large explosion block scanning and terrain
-effects remain existing port costs and must not be represented as fixed by particle limits.
+- `config/EffectQuality` and `effects.effectQuality` (default `ENHANCED`).
+- `client/particle/EffectLook`: the fade, heat and glow curves, unit tested in `EffectLookTest`.
+- `client/particle/ParticleLayers`: an additive particle layer (vanilla particle shaders,
+  `BlendFunction.LIGHTNING`, depth tested without depth writes), registered as a pipeline.
+- `client/particle/GlowParticle` and `textures/particle/glow.png` (a generated radial gradient):
+  the fireball and muzzle-flash glows.
+- `client/render/GlowGeometry`: additive position-colour discs and streaks for flares, tracers and
+  missile flames, the same pipeline family as the search light's cones.
+- `ParticleParam.groundState`: the downwash's ground block, set by
+  `AircraftEntity#onUpdateParticleSandCloud`; only the client's look reads it.
 
-Verify budget reset, distance/density boundaries and animation endpoints with focused tests.
-Run the build and repeatable scenes on Vulkan and OpenGL, capture both styles, and record actual
-backend, scene settings and limitations. Mesa software rendering can check correctness and
-relative cost; it cannot establish a hardware FPS guarantee. M8 remains open until representative
-combat-load frame times and the remaining effects have been reviewed.
+## 4. Validation
 
-## Settings and integration
+Each slice: `./gradlew build` (JUnit and GameTests), `runServer`, and a scripted scene under Xvfb
+with Mesa on OpenGL (llvmpipe) and Vulkan (lavapipe), captured with `CLASSIC` and `ENHANCED`, by
+day and by night. The scene (a temporary driver, not committed, as in M4 and M5) stands in a flat
+world and plays a size-5 McHeli explosion, an M230 burst with a Hydra rocket across the view,
+muzzle flashes and four flares. It slows the server to 5 ticks a second (`/tick rate 5`) so the
+software renderer draws every tick, and grabs each picture on the next rendered frame.
 
-In `config/mcheli_ce_port-client.toml`, `[effects] style = "POLISHED"` enables this pass;
-`"CLASSIC"` retains the upstream sprites, colour and animation. Existing particles finish in
-the style they started with. Both styles share the new budgets. The existing
-`defaultExplosionParticle` switch still selects vanilla explosions.
+Frame-time checks under combat load wait for real hardware: software rendering under Xvfb is not
+representative.
 
-| `quality` | Smoke range | Smoke per tick / live | Flash per tick / live | Flare halo |
-|---|---:|---:|---:|---|
-| `LOW` | 96 blocks | 48 / 384 | 24 / 48 | Off |
-| `BALANCED` (default) | 192 blocks | 96 / 768 | 48 / 96 | On |
-| `HIGH` | 256 blocks | 192 / 1536 | 96 / 192 | On |
+## 5. As built
 
-Smoke density halves beyond 64 blocks and quarters beyond 128. Minecraft's Decreased and
-Minimal settings further halve/quarter smoke density; short flashes retain a separate bounded
-budget for weapon readability. This does not cap terrain debris, vanilla particles or flare
-entities, and it does not eliminate the existing explosion block ray march.
+See §3. Slice 1 passes `build` (all JUnit tests, including the four `EffectLookTest` cases) and
+the GameTests. The scene ran on OpenGL (llvmpipe) and Vulkan (lavapipe), each with `CLASSIC`
+(top rows) and `ENHANCED` (bottom rows), by day and by night; columns are the explosion just
+after the blast and a little later, the M230 burst, the muzzle flashes and the flares:
+[OpenGL day](screens/m8-slice1-opengl-day.png), [OpenGL night](screens/m8-slice1-opengl-night.png),
+[Vulkan day](screens/m8-slice1-vulkan-day.png), [Vulkan night](screens/m8-slice1-vulkan-night.png).
+Both backends draw the same pictures. `CLASSIC` matches 0.5.1. With `ENHANCED`, the blast is
+orange fire that cools to smoke; the tracers, which `CLASSIC` draws dark at night and too small to
+see in these frames, show as bright streaks; the flares glow. The additive glows show most at
+night; by day they barely lighten the sky behind them, as intended.
 
-Textures are original procedural artwork, reproduced with
-`python3 scripts/generate-effect-textures.py` (standard library only). Compact 4×2 sheets avoid
-a silent dropped-sprite case in the pinned Minecraft 26.2 stitcher when a wide strip makes it
-expand on an axis that cannot accommodate the sprite. `EffectTextureTest` exercises the real
-sheet dimensions through that stitcher. The opt-in visual probe also rejects missing sprites.
+Not captured: downwash over sand, snow and water, missile flames (the scene's AIM-9X needs a
+lock), and splashes. They use the same layers and pipelines as the captured effects.
 
-The implementation is restricted to `client/particle`, `client/render/FlareRenderer`, the two
-client config entries, new textures, focused tests and these graphics scripts/docs. No vehicle
-physics, weapons, networking, common effects payloads or content definitions changed. Tracer
-models and missile exhaust keep their existing rendering in this increment.
+## 6. Pixel artwork and scalable budgets
 
-## Repeating the preview
-
-Use an isolated copy of a flat test world named `M6Smoke` in
-`.run/m8-preview/saves/M6Smoke`. The probe **removes non-player entities** and changes blocks,
-time and weather inside that copy. Do not use a player world. Copy the usual test client's
-options and `config/fml.toml`; Vulkan needs `earlyWindowControl = false` with this NeoForge build.
-
-Run `./gradlew runClient -I scripts/visual-probe.init.gradle --no-configuration-cache` with a
-working display and Vulkan driver. For the compatibility pass, add
-`-Dmcheli.probeBackend=OPENGL`. The extra probe Java source directory is included only by this
-init script; normal builds do not contain the probe or its event hooks.
-
-The camera is fixed at `(0.5, -55, -9.5)`, yaw 0, pitch 8, at midnight, 1280×720, four chunks.
-The probe emits a smoke column, an explosion-like burst, a muzzle flash, a flare with its stock
-trail and water drops. It runs Classic and Polished with the same seeded emitter parameters,
-then repeats with twelve emitters under each style and Low quality, and captures both styles
-at noon. A final daylight capture also exercises the real client explosion-effect entry point.
-Individual particle random
-values and capture partial ticks vary. Captures are real engine output, not concept images.
-`M8_PROBE result` lines record observed inter-frame median/p95 and live engine counts; this is
-a synthetic stress scene, not a complete battle or GPU timer query.
-
-## Observed graphics results (2026-10-18)
-
-Both backends load all new sprites, render the scenes, save screenshots and shut down the
-integrated server cleanly. Vulkan uses the explicit lavapipe ICD (Vulkan 1.4.305); OpenGL uses
-llvmpipe (OpenGL 4.5), both Mesa 25.0.7 / LLVM 19.1.7 under Xvfb. Audio is unavailable in this
-environment. Captures:
-
-- Vulkan: [Classic night](screens/m8-vulkan-classic.png),
-  [Polished night](screens/m8-vulkan-polished.png),
-  [Classic daylight](screens/m8-vulkan-day-classic.png),
-  [Polished daylight](screens/m8-vulkan-day-polished.png),
-  [client explosion effects](screens/m8-vulkan-day-explosion.png).
-- OpenGL: [Polished night](screens/m8-opengl-polished.png),
-  [Polished daylight](screens/m8-opengl-day-polished.png).
-
-The following inter-frame times came from isolated runs after the unit tests finished; the
-earlier run overlapping test compilation is excluded. Both styles use Balanced budgets.
-Warm-up is excluded from each sample. Figures are **median / p95 milliseconds**, not GPU timings:
-
-| Backend / scene | Classic | Polished |
-|---|---:|---:|
-| Vulkan / one emitter set | 36.75 / 80.59 | 35.53 / 64.32 |
-| Vulkan / twelve emitter sets | 36.60 / 55.58 | 36.79 / 75.25 |
-| OpenGL / one emitter set | 32.30 / 45.71 | 31.27 / 45.02 |
-| OpenGL / twelve emitter sets | 33.91 / 46.18 | 34.27 / 49.77 |
-
-Low quality reduces the stress scene's live engine count from about 760 to about 384, including
-a few non-smoke particles. The matching stress medians are close, but Polished has higher p95
-times in these samples, especially on software Vulkan. This is not evidence of zero performance
-cost or a hardware FPS guarantee. Hardware combat profiling and longer frame-pacing checks
-remain open before declaring M8 complete.
-
-The normal build is blocked by this environment's HTTP 403 for the optional JEI API at
-`maven.blamejared.com`. Local validation uses an external Gradle init script that excludes only
-`compat/jei/**` and removes the `mezz.jei` compile-only dependency. The repository build settings
-and JEI adapter are unchanged. Such a local artifact is not the full JEI-enabled release build.
-The final local `build runGameTestServer` succeeds: all 164 JUnit tests (zero failures, errors or
-skips), including six new graphics regressions, and all 198 required GameTests pass. The dedicated
-GameTest server saves and shuts down cleanly. All four texture PNGs reproduce byte for byte from
-the generator. The local JAR contains the graphics classes and four new textures and contains
-neither the development probe hooks nor the excluded optional JEI adapter. Full JEI-enabled
-build validation remains blocked as described above.
+The follow-up in [M8_PIXEL_EFFECTS.md](M8_PIXEL_EFFECTS.md) adds shaded pixel artwork and
+Low/Balanced/High particle budgets on top of slice 1. It preserves the enhanced heat, additive
+flash/glow pipelines, tracer/missile effects and ground tint. Either `effectQuality = "CLASSIC"`
+or `style = "CLASSIC"` selects upstream presentation; budgets still apply. Polished flares use
+one small pixel halo instead of two glow discs, and Low disables optional particle glows/halos.
+The follow-up document records its earlier isolated captures separately from integration checks.

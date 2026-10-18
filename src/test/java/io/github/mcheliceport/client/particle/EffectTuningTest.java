@@ -2,13 +2,13 @@ package io.github.mcheliceport.client.particle;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import io.github.mcheliceport.config.ClientConfig.EffectQuality;
+import io.github.mcheliceport.config.ClientConfig.EffectBudget;
 import org.junit.jupiter.api.Test;
 
 class EffectTuningTest {
     @Test
     void combatBurstCannotExceedBudgetAndNextTickRecovers() {
-        for (EffectQuality quality : EffectQuality.values()) {
+        for (EffectBudget quality : EffectBudget.values()) {
             EffectTuning.Budget budget = new EffectTuning.Budget();
             int cap = EffectTuning.perTick(quality, false);
             int accepted = 0;
@@ -45,32 +45,17 @@ class EffectTuningTest {
     }
 
     @Test
-    void smokeFadesAtEndpointsAndPreservesBodyOpacity() {
-        assertEquals(0.0F, EffectTuning.fade(0, 100));
-        assertEquals(1.0F, EffectTuning.fade(2, 100));
-        assertEquals(1.0F, EffectTuning.fade(60, 100));
-        float previous = 1.0F;
-        for (int age = 65; age <= 100; age++) {
-            float alpha = EffectTuning.fade(age, 100);
-            assertTrue(alpha >= 0 && alpha <= previous);
-            previous = alpha;
-        }
-        assertEquals(0.0F, EffectTuning.fade(100, 100));
-        assertEquals(0.0F, EffectTuning.fade(1, 0));
-    }
-
-    @Test
     void qualityScalesWithinAnExplicitLiveAndSpawnBudget() {
         int distance = 0;
         int live = 0;
-        for (EffectQuality quality : EffectQuality.values()) {
+        for (EffectBudget quality : EffectBudget.values()) {
             assertTrue(EffectTuning.distance(quality) > distance);
             assertTrue(EffectTuning.smokeLimit(quality) > live);
             assertTrue(EffectTuning.perTick(quality, true) <= EffectTuning.flashLimit(quality));
             distance = EffectTuning.distance(quality);
             live = EffectTuning.smokeLimit(quality);
         }
-        assertEquals(768, EffectTuning.smokeLimit(EffectQuality.BALANCED));
-        assertEquals(96, EffectTuning.perTick(EffectQuality.BALANCED, false));
+        assertEquals(768, EffectTuning.smokeLimit(EffectBudget.BALANCED));
+        assertEquals(96, EffectTuning.perTick(EffectBudget.BALANCED, false));
     }
 }

@@ -18,12 +18,17 @@ public class SmokeParticle extends McheliParticle {
     static final int SKY_LIGHT = net.minecraft.util.LightCoordsUtil.FULL_SKY;
 
     protected int frame;
-    public boolean warmStart;
-    private float previousScale = Float.NaN;
+    /** Draw with the M8 look ({@link EffectLook}); set by {@link ClientEffects} at spawn. */
+    boolean enhanced;
+    /** M8: heat at birth, 0 to 1; a hot puff starts as fire and cools to its own colour. */
+    float heat;
+    /** Scale at the previous tick, for smooth growth between ticks; 0 until the first growth. */
+    private float prevScale;
     private final boolean mirror;
 
     public SmokeParticle(ClientLevel level, double x, double y, double z, double mx, double my, double mz) {
         super(level, x, y, z, mx, my, mz, TEXTURE);
+        this.enhanced = this.polished;
         if (this.polished) {
             this.setSprite(sprite(POLISHED_TEXTURE));
         }
@@ -36,13 +41,13 @@ public class SmokeParticle extends McheliParticle {
 
     @Override
     public void tick() {
-        this.previousScale = this.particleScale;
         this.xo = this.x;
         this.yo = this.y;
         this.zo = this.z;
         if (this.age < this.lifetime) {
             this.frame = (int) (8.0 * this.age / this.lifetime);
             this.age++;
+            this.prevScale = this.particleScale;
             if (this.diffusible && this.particleScale < this.particleMaxScale) {
                 this.particleScale = this.polished ? Math.min(this.particleScale + 0.8F, this.particleMaxScale)
                         : this.particleScale + 0.8F;
@@ -99,14 +104,17 @@ public class SmokeParticle extends McheliParticle {
 
     @Override
     public float getQuadSize(float partialTick) {
-        return 0.1F * (this.polished && !Float.isNaN(this.previousScale)
-                ? Mth.lerp(partialTick, this.previousScale, this.particleScale) : this.particleScale);
+        if (this.enhanced && this.prevScale > 0.0F) {
+            return 0.1F * EffectLook.lerp(partialTick, this.prevScale, this.particleScale);
+        }
+        return 0.1F * this.particleScale;
     }
 
+    /** M8: fades the puff in and out and tints it with its heat for this frame only. */
     @Override
     public void extract(net.minecraft.client.renderer.state.level.QuadParticleRenderState state,
             net.minecraft.client.Camera camera, float partialTick) {
-        if (!this.polished) {
+        if (!this.enhanced) {
             super.extract(state, camera, partialTick);
             return;
         }
@@ -114,15 +122,17 @@ public class SmokeParticle extends McheliParticle {
         float r = this.rCol;
         float g = this.gCol;
         float b = this.bCol;
-        float age = Math.max(0.0F, this.age - 1 + partialTick);
-        this.alpha *= EffectTuning.fade(age, this.lifetime);
-        float heat = this.warmStart ? Math.max(0.0F, 1.0F - age / 6.0F) : 0.0F;
-        this.rCol = Mth.lerp(heat, r, 1.0F);
-        this.gCol = Mth.lerp(heat, g, 0.58F);
-        this.bCol = Mth.lerp(heat, b, 0.22F);
+        float age = this.age - 1 + partialTick;
+        float h = EffectLook.heat(this.heat, age, this.lifetime);
+        this.alpha = a * EffectLook.smokeAlpha(age, this.lifetime);
+        this.rCol = EffectLook.fireBlend(r, EffectLook.FIRE_R, h);
+        this.gCol = EffectLook.fireBlend(g, EffectLook.FIRE_G, h);
+        this.bCol = EffectLook.fireBlend(b, EffectLook.FIRE_B, h);
         super.extract(state, camera, partialTick);
         this.alpha = a;
-        this.setColor(r, g, b);
+        this.rCol = r;
+        this.gCol = g;
+        this.bCol = b;
     }
 
     @Override
@@ -147,8 +157,10 @@ public class SmokeParticle extends McheliParticle {
 
     @Override
     protected int getLightCoords(float partialTick) {
-        int heat = this.polished && this.warmStart
-                ? (int) (12.0F * Math.max(0.0F, 1.0F - (this.age + partialTick) / 6.0F)) : 0;
-        return SKY_LIGHT | heat << 4;
+        if (this.enhanced && this.heat > 0.0F) {
+            float h = EffectLook.heat(this.heat, this.age - 1 + partialTick, this.lifetime);
+            return net.minecraft.util.LightCoordsUtil.pack(EffectLook.heatBlockLight(h), 15);
+        }
+        return SKY_LIGHT;
     }
 }

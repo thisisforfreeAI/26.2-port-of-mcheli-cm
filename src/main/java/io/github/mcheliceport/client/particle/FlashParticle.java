@@ -21,9 +21,12 @@ public class FlashParticle extends McheliParticle {
     private final int endCount;
     private final float size;
     private int currentFrame;
+    /** M8: drawn additively, so the flash lights up what is behind it instead of painting over it. */
+    boolean enhanced;
 
     public FlashParticle(ClientLevel level, double x, double y, double z, float size, double age) {
         super(level, x, y, z, 0.0, 0.0, 0.0, TEXTURE);
+        this.enhanced = this.polished;
         if (this.polished) {
             this.setSprite(sprite(POLISHED_TEXTURE));
         }
@@ -105,5 +108,10 @@ public class FlashParticle extends McheliParticle {
     @Override
     protected int getLightCoords(float partialTick) {
         return FULL_BRIGHT;
+    }
+
+    @Override
+    protected Layer getLayer() {
+        return this.enhanced ? ParticleLayers.ADDITIVE : super.getLayer();
     }
 }

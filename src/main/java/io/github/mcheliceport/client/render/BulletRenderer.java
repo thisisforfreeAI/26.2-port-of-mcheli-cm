@@ -4,11 +4,13 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import io.github.mcheliceport.client.model.BulletModels;
 import io.github.mcheliceport.client.model.McheliModel;
+import io.github.mcheliceport.config.EffectQuality;
 import io.github.mcheliceport.content.weapon.ArgbColor;
 import io.github.mcheliceport.content.weapon.WeaponInfo;
 import io.github.mcheliceport.entity.aircraft.AircraftEntity;
 import io.github.mcheliceport.entity.weapon.BaseBulletEntity;
 import io.github.mcheliceport.entity.weapon.BombEntity;
+import io.github.mcheliceport.entity.weapon.BulletEntity;
 import io.github.mcheliceport.net.ModNetwork;
 import java.util.List;
 import java.util.Locale;
@@ -25,6 +27,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
+import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -65,6 +68,14 @@ public class BulletRenderer<T extends BaseBulletEntity> extends EntityRenderer<T
         public double flameY;
         public double flameZ;
         public Identifier flameTexture = TEX_FLAME;
+        /** M8: a machine-gun round drawn as a full-bright tracer with a glowing streak. */
+        public boolean tracer;
+        /** The round's motion this frame, blocks per tick, for the tracer's streak. */
+        public double motionX;
+        public double motionY;
+        public double motionZ;
+        /** M8: a glow at the missile's flame. */
+        public boolean flameGlow;
     }
 
     private final Kind kind;
@@ -86,6 +97,8 @@ public class BulletRenderer<T extends BaseBulletEntity> extends EntityRenderer<T
         state.groups = null;
         state.texture = null;
         state.flame = false;
+        state.tracer = false;
+        state.flameGlow = false;
         WeaponInfo info = entity.getInfo();
         if (info == null || !this.isVisible(entity, info)) {
             return;
@@ -102,6 +115,11 @@ public class BulletRenderer<T extends BaseBulletEntity> extends EntityRenderer<T
         double mx = entity.prevMotionX + (entity.getDeltaMovement().x - entity.prevMotionX) * partialTicks;
         double my = entity.prevMotionY + (entity.getDeltaMovement().y - entity.prevMotionY) * partialTicks;
         double mz = entity.prevMotionZ + (entity.getDeltaMovement().z - entity.prevMotionZ) * partialTicks;
+        boolean enhanced = EffectQuality.enhanced();
+        state.tracer = enhanced && this.kind == Kind.BULLET && entity instanceof BulletEntity;
+        state.motionX = mx;
+        state.motionY = my;
+        state.motionZ = mz;
         switch (this.kind) {
             case BULLET -> {
                 state.yaw = Mth.rotLerp(partialTicks, entity.yRotO, entity.getYRot());
@@ -128,6 +146,7 @@ public class BulletRenderer<T extends BaseBulletEntity> extends EntityRenderer<T
             state.flameY = len > 1.0E-4 ? -my / len * 0.8 : 0.0;
             state.flameZ = len > 1.0E-4 ? -mz / len * 0.8 : 0.0;
             state.flameTexture = entity.tickCount / 5 % 2 == 0 ? TEX_FLAME : TEX_FLAME_1;
+            state.flameGlow = enhanced;
         }
     }
 
@@ -164,7 +183,8 @@ public class BulletRenderer<T extends BaseBulletEntity> extends EntityRenderer<T
         if (state.groups != null && state.texture != null) {
             List<McheliModel.Group> groups = state.groups;
             int color = state.color;
-            int light = state.lightCoords;
+            // M8: tracers burn at full brightness; upstream lit them by the world.
+            int light = state.tracer ? LightCoordsUtil.FULL_BRIGHT : state.lightCoords;
             poseStack.pushPose();
             poseStack.mulPose(Axis.YP.rotationDegrees(-state.yaw));
             poseStack.mulPose(Axis.XP.rotationDegrees(state.pitch));
@@ -172,11 +192,40 @@ public class BulletRenderer<T extends BaseBulletEntity> extends EntityRenderer<T
                     (pose, buffer) -> ModelVertices.emit(buffer, pose, groups, color, light, false));
             poseStack.popPose();
         }
+        if (state.tracer) {
+            submitTracerGlow(state, poseStack, collector, camera);
+        }
+        if (state.flameGlow) {
+            poseStack.pushPose();
+            poseStack.translate(state.flameX, state.flameY, state.flameZ);
+            GlowGeometry.disc(poseStack, collector, camera, 1.6F, 0xFFA850, 0.55F);
+            poseStack.popPose();
+        }
         if (state.flame) {
             submitFlame(poseStack, collector, camera, state.flameX, state.flameY, state.flameZ, state.flameTexture,
                     4.0F);
         }
         super.submit(state, poseStack, collector, camera);
+    }
+
+    /**
+     * M8 tracer streak: one tick's travel long (at most 8 blocks), behind the round, in the round's
+     * colour brightened toward white.
+     */
+    private static void submitTracerGlow(State state, PoseStack poseStack, SubmitNodeCollector collector,
+            CameraRenderState camera) {
+        Vec3 motion = new Vec3(state.motionX, state.motionY, state.motionZ);
+        double speed = motion.length();
+        if (speed < 1.0E-3) {
+            return;
+        }
+        Vec3 tail = motion.scale(-Math.min(speed, 8.0) / speed);
+        Vec3 toCamera = camera.pos.subtract(state.x, state.y, state.z);
+        int c = state.color;
+        int rgb = ((c >> 16 & 0xFF) + 255) / 2 << 16 | ((c >> 8 & 0xFF) + 255) / 2 << 8 | ((c & 0xFF) + 255) / 2;
+        float alpha = 0.75F * (c >>> 24) / 255.0F;
+        GlowGeometry.streak(poseStack, collector, tail, toCamera, 0.22F, rgb, alpha);
+        GlowGeometry.disc(poseStack, collector, camera, 0.35F, rgb, alpha);
     }
 
     /** Upstream {@code renderMissileFlame}: a full-bright quad of {@code size} facing the camera. */

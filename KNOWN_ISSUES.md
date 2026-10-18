@@ -352,6 +352,13 @@ These follow from how Minecraft 26.2 works or from decisions approved in PORTING
     takes twice as long) and the lines show each quad's diagonal. Crawler tracks are not drawn
     there: upstream's call had no vehicle and threw for every tracked vehicle. The page is there
     when the vehicle has a model file and stays empty while the model loads in the background.
+80. McHeli's effects are drawn with the M8 look by default (client config
+    `effects.effectQuality = ENHANCED`): smoke fades in and out and grows smoothly, explosion
+    puffs start as fire, muzzle flashes, fireballs, flares, tracers and missile flames glow
+    additively, flares and tracers burn at full brightness at night, and downwash takes the
+    ground's colour (white spray over water). `CLASSIC` draws exactly as upstream. The same
+    particles spawn at the same moments either way, so gameplay does not change
+    (docs/M8_PLAN.md).
 
 ## Upstream content issues kept as they are
 

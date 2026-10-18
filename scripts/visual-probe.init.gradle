@@ -2,6 +2,7 @@
 gradle.projectsEvaluated {
     def project = gradle.rootProject
     project.sourceSets.main.java.srcDir(project.file('scripts/visual-probe'))
+    project.neoForge.runs.client.systemProperty('mcheli.probeQuick', System.getProperty('mcheli.probeQuick', 'false'))
     project.neoForge.runs.client.gameDirectory = project.file('.run/m8-preview')
     project.neoForge.runs.client.programArguments.addAll('--quickPlaySingleplayer', 'M6Smoke',
             '--graphicsBackend', System.getProperty('mcheli.probeBackend', 'VULKAN'), '--width', '1280', '--height', '720')

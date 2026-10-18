@@ -3,6 +3,7 @@ package io.github.mcheliceport.client.render;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
+import io.github.mcheliceport.config.EffectQuality;
 import io.github.mcheliceport.config.ClientConfig;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.EntityRenderer;
@@ -12,13 +13,14 @@ import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
+import net.minecraft.util.LightCoordsUtil;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 
 /**
  * Draws flares (a yellow-tinted quarter-block cube) and chaff (half that size). Ported from upstream
  * {@code MCH_RenderFlare}, {@code MCH_RenderChaff} and {@code MCH_ModelFlare}. Upstream's chaff
  * texture ({@code textures/chaff.png}) was never shipped, so chaff uses the flare texture untinted.
- * Polished style keeps the cube full-bright and adds one small halo, except at Low quality.
  */
 public class FlareRenderer<T extends Entity> extends EntityRenderer<T, FlareRenderer.State> {
 
@@ -28,25 +30,29 @@ public class FlareRenderer<T extends Entity> extends EntityRenderer<T, FlareRend
     public static class State extends EntityRenderState {
         public float yaw;
         public float pitch;
-        public boolean polished;
+        /** M8: drawn full bright with a flickering glow. */
+        public boolean enhanced;
         public boolean halo;
     }
 
     private final float scale;
     private final int color;
+    /** Flares burn; chaff (metal strips) does not. */
+    private final boolean glows;
 
-    private FlareRenderer(EntityRendererProvider.Context context, float scale, int color) {
+    private FlareRenderer(EntityRendererProvider.Context context, float scale, int color, boolean glows) {
         super(context);
         this.scale = scale;
         this.color = color;
+        this.glows = glows;
     }
 
     public static <T extends Entity> FlareRenderer<T> flare(EntityRendererProvider.Context context) {
-        return new FlareRenderer<>(context, 1.0F, 0xFFFFFF80);
+        return new FlareRenderer<>(context, 1.0F, 0xFFFFFF80, true);
     }
 
     public static <T extends Entity> FlareRenderer<T> chaff(EntityRendererProvider.Context context) {
-        return new FlareRenderer<>(context, 0.5F, 0xFFFFFFFF);
+        return new FlareRenderer<>(context, 0.5F, 0xFFFFFFFF, false);
     }
 
     @Override
@@ -59,14 +65,16 @@ public class FlareRenderer<T extends Entity> extends EntityRenderer<T, FlareRend
         super.extractRenderState(entity, state, partialTicks);
         state.yaw = entity.getYRot();
         state.pitch = entity.getXRot();
-        state.polished = this.scale == 1.0F
-                && ClientConfig.get(ClientConfig.EFFECT_STYLE) == ClientConfig.EffectStyle.POLISHED;
-        state.halo = state.polished && ClientConfig.get(ClientConfig.EFFECT_QUALITY) != ClientConfig.EffectQuality.LOW;
+        state.enhanced = EffectQuality.enhanced();
+        state.halo = state.enhanced
+                && ClientConfig.get(ClientConfig.EFFECT_BUDGET) != ClientConfig.EffectBudget.LOW;
     }
 
     @Override
     public void submit(State state, PoseStack poseStack, SubmitNodeCollector collector, CameraRenderState camera) {
-        int light = state.polished ? net.minecraft.util.LightCoordsUtil.FULL_BRIGHT : state.lightCoords;
+        boolean glow = state.enhanced && this.glows;
+        // Upstream lit flares by the world, so they went dark at night; the M8 look burns at full brightness.
+        int light = glow ? LightCoordsUtil.FULL_BRIGHT : state.lightCoords;
         int color = this.color;
         poseStack.pushPose();
         poseStack.mulPose(Axis.YP.rotationDegrees(-state.yaw));
@@ -76,8 +84,10 @@ public class FlareRenderer<T extends Entity> extends EntityRenderer<T, FlareRend
         collector.submitCustomGeometry(poseStack, RenderTypes.entityTranslucent(TEXTURE),
                 (pose, buffer) -> cube(buffer, pose, 0.125F, color, light));
         poseStack.popPose();
-        if (state.halo) {
-            BulletRenderer.submitFlame(poseStack, collector, camera, 0.0, 0.0, 0.0, HALO, 0.65F);
+        if (glow && state.halo) {
+            float flicker = 0.85F + 0.15F * Mth.sin(state.ageInTicks * 1.7F);
+            BulletRenderer.submitFlame(poseStack, collector, camera, 0, 0, 0, HALO,
+                    0.65F * this.scale * flicker);
         }
         super.submit(state, poseStack, collector, camera);
     }
