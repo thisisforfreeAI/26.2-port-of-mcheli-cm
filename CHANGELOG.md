@@ -42,6 +42,10 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
   supported (see Added); JEI shows the drafting table as a crafting station for them.
 
 ### Added
+- Upstream's team screens for multiplayer: hold L for the team lists with each player's list
+  score and ping, and press M for the multiplay manager, where operators toggle PVP, shuffle the
+  players over the teams, send everyone to their spawn point, remove every vehicle and create a
+  team with its colour and friendly fire setting.
 - Upstream's `mch_fuel` fluid and its fuel bucket. Buckets and other fluid containers in a
   vehicle's fuel slot refuel it, with the emptied container going to the output slot, and pipes
   and tanks from other mods can fill and drain fuelled vehicles through NeoForge's fluid

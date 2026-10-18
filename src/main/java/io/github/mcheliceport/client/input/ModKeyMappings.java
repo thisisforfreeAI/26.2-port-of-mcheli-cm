@@ -41,6 +41,25 @@ public final class ModKeyMappings {
         }
     };
 
+    /**
+     * Upstream's multiplayer keys work outside vehicles too, but only off singleplayer (or with the
+     * debug log on), with no screen open.
+     */
+    public static final IKeyConflictContext MULTIPLAY = new IKeyConflictContext() {
+        @Override
+        public boolean isActive() {
+            Minecraft mc = Minecraft.getInstance();
+            return mc.gui.screen() == null && mc.player != null
+                    && (!mc.hasSingleplayerServer() || io.github.mcheliceport.config.CommonConfig.SPEC.isLoaded()
+                            && io.github.mcheliceport.config.CommonConfig.DEBUG_LOG.get());
+        }
+
+        @Override
+        public boolean conflicts(IKeyConflictContext other) {
+            return other == this || other == KeyConflictContext.IN_GAME;
+        }
+    };
+
     public static final KeyMapping UP = key("up", GLFW.GLFW_KEY_W);
     public static final KeyMapping DOWN = key("down", GLFW.GLFW_KEY_S);
     public static final KeyMapping RIGHT = key("right", GLFW.GLFW_KEY_D);
@@ -62,6 +81,14 @@ public final class ModKeyMappings {
     public static final KeyMapping CAMERA_DISTANCE_UP = key("camera_distance_up", GLFW.GLFW_KEY_PAGE_UP);
     public static final KeyMapping CAMERA_DISTANCE_DOWN = key("camera_distance_down", GLFW.GLFW_KEY_PAGE_DOWN);
 
+    /** Upstream {@code KeyScoreboard}: held, it shows the team lists. */
+    public static final KeyMapping SCOREBOARD = new KeyMapping("key." + McheliCePort.MOD_ID + ".scoreboard",
+            MULTIPLAY, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_L, CATEGORY);
+    /** Upstream {@code KeyMultiplayManager}: opens the multiplay manager. */
+    public static final KeyMapping MULTIPLAY_MANAGER = new KeyMapping(
+            "key." + McheliCePort.MOD_ID + ".multiplay_manager", MULTIPLAY, InputConstants.Type.KEYSYM,
+            GLFW.GLFW_KEY_M, CATEGORY);
+
     /** Upstream's fixed {@code KeyUseWeapon} (-100, the left mouse button); bindable here. */
     public static final KeyMapping USE_WEAPON = mouse("use_weapon", GLFW.GLFW_MOUSE_BUTTON_LEFT);
     /** Upstream {@code KeySwitchWeapon1} (-98, the middle mouse button). */
@@ -78,7 +105,7 @@ public final class ModKeyMappings {
     public static final List<KeyMapping> ALL = List.of(UP, DOWN, RIGHT, LEFT, SWITCH_GUNNER, SWITCH_HOVERING, ZOOM,
             UNMOUNT, EXTRA, FREE_LOOK, GUI, GEAR_UP_DOWN, CAMERA_MODE, CAMERA_DISTANCE_UP, CAMERA_DISTANCE_DOWN,
             USE_WEAPON, SWITCH_WEAPON_1, SWITCH_WEAPON_2, SWITCH_WEAPON_MODE, RELOAD_WEAPON, FLARE, CHAFF, APS,
-            AIRBURST_RESET, PUT_TO_RACK, DOWN_FROM_RACK, ROPES, SEARCH_LIGHT);
+            AIRBURST_RESET, PUT_TO_RACK, DOWN_FROM_RACK, ROPES, SEARCH_LIGHT, SCOREBOARD, MULTIPLAY_MANAGER);
 
     private ModKeyMappings() {
     }

@@ -48,6 +48,7 @@ public final class AircraftClientEvents {
         });
         NeoForge.EVENT_BUS.addListener((ClientTickEvent.Post event) -> {
             AircraftCameraClient.handleKeys();
+            io.github.mcheliceport.client.hud.TeamListOverlay.handleKeys();
             WeaponClientControl.onClientTick();
             AircraftClientControl.onClientTick();
             AircraftCameraClient.tick();
@@ -83,10 +84,12 @@ public final class AircraftClientEvents {
         NeoForge.EVENT_BUS.addListener(AircraftClientEvents::onRenderHand);
         NeoForge.EVENT_BUS.addListener(WeaponClientControl::onInteractionKey);
         NeoForge.EVENT_BUS.addListener(AircraftClientControl::onKey);
+        NeoForge.EVENT_BUS.addListener(io.github.mcheliceport.client.hud.TeamListOverlay::onKey);
         NeoForge.EVENT_BUS.addListener(WeaponClientControl::onMouseScroll);
         NeoForge.EVENT_BUS.addListener(AircraftHudLayer::onRenderLayer);
         NeoForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.LoggingOut event) -> {
             ServerSettings.setClient(ServerSettings.Values.DEFAULT);
+            io.github.mcheliceport.multiplay.MultiplayManager.setClientPvp(true);
             MouseFlight.reset();
             AircraftCameraClient.reset();
             WeaponClient.reset();
