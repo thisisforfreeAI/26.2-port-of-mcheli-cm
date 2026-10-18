@@ -53,8 +53,12 @@ public final class ExplosionSequence {
     }
 
     public static float cloudAlpha(float age, int life, int delay, boolean fire) {
+        return cloudAlpha(age, life, delay, fire, 28);
+    }
+
+    public static float cloudAlpha(float age, int life, int delay, boolean fire, int fadeTicks) {
         float entrance = Math.clamp((age - delay) / (fire ? 1.5F : 5), 0, 1);
-        return entrance * EffectLook.smoothstep(Math.clamp((life - age) / 28, 0, 1));
+        return entrance * EffectLook.smoothstep(Math.clamp((life - age) / Math.max(1F, fadeTicks), 0, 1));
     }
 
     public static float flashGrowth(float age, int life) {

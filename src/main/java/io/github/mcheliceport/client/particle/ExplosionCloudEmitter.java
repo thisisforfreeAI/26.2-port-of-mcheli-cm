@@ -28,6 +28,7 @@ final class ExplosionCloudEmitter {
                 oldSmoke(level, x + Math.cos(angle) * spread, y + random.nextDouble() * radius * 0.4,
                         z + Math.sin(angle) * spread, power, style, random);
             }
+            ClientEffects.spawnExplosionAccents(level, x, y, z, power, style);
             ClientEffects.spawnExplosionSparks(level, x, y, z, power, style);
             return;
         }

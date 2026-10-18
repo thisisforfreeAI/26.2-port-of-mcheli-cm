@@ -4,16 +4,24 @@ import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.state.level.QuadParticleRenderState;
 
-/** Fast, low dust fans, reusing the wash sheet without changing helicopter downwash. */
+/** Fast, low dust fans with their own compact sheet; helicopter downwash is unchanged. */
 final class BlastGroundDustParticle extends SmokeParticle {
+    static final net.minecraft.resources.Identifier TEXTURE = net.minecraft.resources.Identifier.fromNamespaceAndPath("mcheli_ce_port", "m8_ground_dust");
     private final float radius;
+    private final float opacity;
     private final org.joml.Quaternionf rotation = new org.joml.Quaternionf();
 
     BlastGroundDustParticle(ClientLevel level, double x, double y, double z, double mx, double mz,
             float radius, float r, float g, float b, int life) {
+        this(level, x, y, z, mx, mz, radius, r, g, b, life, 0.8F);
+    }
+
+    BlastGroundDustParticle(ClientLevel level, double x, double y, double z, double mx, double mz,
+            float radius, float r, float g, float b, int life, float opacity) {
         super(level, x, y, z, mx, 0.006, mz);
-        this.setSprite(sprite(RotorWashParticle.TEXTURE));
+        this.setSprite(sprite(TEXTURE));
         this.radius = radius;
+        this.opacity = opacity;
         this.lifetime = life;
         this.hasPhysics = false;
         this.setColor(r, g, b);
@@ -29,7 +37,7 @@ final class BlastGroundDustParticle extends SmokeParticle {
     @Override public void extract(QuadParticleRenderState state, Camera camera, float partialTick) {
         float progress = Math.clamp((this.age + partialTick) / this.lifetime, 0, 1);
         this.frame = Math.min(3, (int) (progress * 4));
-        this.alpha = 0.8F * Math.min(1, (this.age + partialTick) / 2) * (1 - progress) * (1 - progress);
+        this.alpha = this.opacity * Math.min(1, (this.age + partialTick) / 2) * (1 - progress) * (1 - progress);
         this.getFacingCameraMode().setRotation(this.rotation, camera, partialTick);
         this.extractRotatedQuad(state, camera, this.rotation, partialTick);
     }

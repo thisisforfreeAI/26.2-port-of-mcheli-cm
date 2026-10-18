@@ -46,16 +46,21 @@ final class EffectAdmission {
     }
 
     static boolean admit(ClientLevel level, double x, double y, double z, boolean isFlash, float radius) {
-        return admit(level, x, y, z, isFlash, radius, false);
+        return admit(level, x, y, z, isFlash, radius, false, 1);
     }
 
     /** Only the primary explosion emitter, whose request count is already pressure-scaled. */
     static boolean admitBlastLobe(ClientLevel level, double x, double y, double z, float radius) {
-        return admit(level, x, y, z, false, radius, true);
+        return admit(level, x, y, z, false, radius, true, 1);
+    }
+
+    static boolean admitFragment(ClientLevel level, double x, double y, double z, float radius) {
+        // A cube contributes three visible faces and pays for its full bounding radius.
+        return admit(level, x, y, z, false, radius * 1.733F, false, 3);
     }
 
     private static boolean admit(ClientLevel level, double x, double y, double z, boolean isFlash,
-            float radius, boolean blastLobe) {
+            float radius, boolean blastLobe, int quads) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.level != level || mc.getCameraEntity() == null) {
             return false;
@@ -75,7 +80,7 @@ final class EffectAdmission {
         int stride = EffectTuning.admissionStride(distance, mc.options.particles().get().ordinal(), isFlash,
                 pressure, blastLobe);
         int cap = Math.max(16, EffectTuning.perTick(quality, isFlash) / (1 + pressure));
-        int cost = isFlash ? 1 : EffectTuning.coverageCost(radius, distance);
+        int cost = isFlash ? 1 : EffectTuning.coverageCost(radius, distance) * quads;
         return (isFlash ? flash : smoke).admit(level.getGameTime(), cap, stride, cost);
     }
 }

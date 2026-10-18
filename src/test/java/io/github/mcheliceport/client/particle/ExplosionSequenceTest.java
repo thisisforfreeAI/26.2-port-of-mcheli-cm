@@ -6,6 +6,16 @@ import io.github.mcheliceport.effect.BlastStyle;
 import org.junit.jupiter.api.Test;
 
 class ExplosionSequenceTest {
+    @Test void billowsCanDissolveAtDifferentRatesWithoutGrowingOrOutlivingTheCloud() {
+        assertTrue(ExplosionSequence.cloudAlpha(85, 100, 0, false, 24)
+                > ExplosionSequence.cloudAlpha(85, 100, 0, false, 47));
+        for (int fade = 24; fade <= 47; fade++) {
+            assertEquals(0, ExplosionSequence.cloudAlpha(100, 100, 0, false, fade));
+            assertEquals(0, ExplosionSequence.cloudAlpha(4, 100, 4, false, fade));
+            assertEquals(1, ExplosionSequence.cloudAlpha(30, 100, 4, false, fade));
+        }
+    }
+
     @Test void smallerImpactsKeepEarlierSmokeWhileLargeBombsMixFireAndSmoke() {
         assertTrue(ExplosionSequence.smokeLed(4, BlastStyle.BLAST));
         assertTrue(ExplosionSequence.smokeLed(12, BlastStyle.PENETRATOR));

@@ -158,36 +158,7 @@ public final class ClientEffects implements McheliEffects.Sink {
     }
 
     static void spawnExplosionAccents(ClientLevel level, double x, double y, double z, float size, BlastStyle style) {
-        var budget = ClientConfig.get(ClientConfig.EFFECT_BUDGET);
-        int pressure = EffectPerformance.pressure();
-        if (budget == ClientConfig.EffectBudget.LOW || pressure >= 2) return;
-        int count = ExplosionLook.dustCount(size, style, budget, pressure);
-        if (count == 0) return;
-        // One loaded column only, bounded search; no dust from high airbursts, water or leaf canopies.
-        BlockPos.MutableBlockPos pos = BlockPos.containing(x, y, z).mutable();
-        for (int depth = 0; depth <= Math.min(12, (int) (size * 1.5F)); depth++, pos.move(0, -1, 0)) {
-            if (pos.getY() < level.getMinY() || !level.hasChunkAt(pos)) return;
-            BlockState ground = level.getBlockState(pos);
-            if (!ground.getFluidState().isEmpty() || ground.is(net.minecraft.tags.BlockTags.LEAVES)) return;
-            var shape = ground.getCollisionShape(level, pos);
-            if (shape.isEmpty()) continue;
-            double surface = pos.getY() + shape.bounds().maxY;
-            if (surface > y + 0.25) return;
-            float[] tint = groundTint(level, pos, ground, 0.6F, 0.6F, 0.6F);
-            java.util.Random random = new java.util.Random(Double.doubleToLongBits(x)
-                    ^ Long.rotateLeft(Double.doubleToLongBits(z), 21) ^ level.getGameTime() ^ 0xD057L);
-            for (int i = 0; i < count; i++) {
-                double angle = (i + random.nextDouble()) * Math.PI * 2 / count;
-                double dx = Math.cos(angle), dz = Math.sin(angle);
-                float radius = Math.min(3.4F, 0.9F + size * 0.16F);
-                if (!EffectAdmission.admit(level, x + dx * 0.6, surface + 0.35, z + dz * 0.6, false, radius)) continue;
-                double speed = Math.min(1.25, 0.3 + size * 0.07) * (0.7 + random.nextDouble() * 0.3);
-                Minecraft.getInstance().particleEngine.add(new BlastGroundDustParticle(level,
-                        x + dx * 0.6, surface + 0.35, z + dz * 0.6, dx * speed, dz * speed,
-                        radius, tint[0], tint[1], tint[2], 26 + random.nextInt(8)));
-            }
-            return;
-        }
+        BlastGroundEffects.emit(level, x, y, z, size, style);
     }
 
     /** Optional glow shares the smoke budget, keeping the flash budget available for weapon cues. */

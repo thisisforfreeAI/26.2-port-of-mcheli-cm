@@ -179,6 +179,29 @@ def blast_flash(x, y):
             round(min(1, depth * 4) * (1 - frame / 10) * 255))
 
 
+def ground_dust(x, y):
+    # Four compact 64px cells: broad ragged billows, brighter than carbon smoke for tinting.
+    cell = 64
+    frame = x // cell + y // cell * 2
+    px, py = (x % cell - 31.5) / 31, (y % cell - 31.5) / 31
+    depth = -1
+    for i, (cx, cy, rx, ry) in enumerate([(-.56, .08, .34, .30), (-.18, -.05, .42, .40),
+                                         (.22, .02, .42, .34), (.59, .11, .31, .24),
+                                         (.06, -.30, .25, .23)]):
+        cx += math.sin(i * 2.1 + frame * .5) * .035
+        cy += math.cos(i * 1.7 + frame * .6) * .025
+        depth = max(depth, 1 - ((px - cx) / rx) ** 2 - ((py - cy) / ry) ** 2)
+    coarse = noise2(px * 4 + 5 - frame * .12, py * 4 + 6, 53)
+    detail = noise2(px * 12 + 2, py * 12 + 3 - frame * .16, 71)
+    depth += (coarse - .5) * .35 + (detail - .5) * .18
+    if depth <= 0:
+        return (0, 0, 0, 0)
+    alpha = min(192, round(min(1, depth * 3) * (.7 + detail * .3) * 12) * 16)
+    shade = max(0, min(1, .6 - py * .3 + (coarse - .5) * .4 + (detail - .5) * .2))
+    value = min(255, round((190 + shade * 65) / 8) * 8)
+    return (value, value, value, alpha)
+
+
 if __name__ == '__main__':
     # Compact sheets avoid a dropped slot for wide strips in the pinned 26.2 stitcher.
     png('m8_smoke.png', SIZE * 4, SIZE * 2, smoke)
@@ -187,5 +210,6 @@ if __name__ == '__main__':
     png('m8_flare_halo.png', SIZE, SIZE, halo)
     png('m8_wash.png', SIZE * 2, SIZE * 2, wash)
     png('m8_wash_ripple.png', SIZE, SIZE, ripple)
+    png('m8_ground_dust.png', 128, 128, ground_dust)
     png('m8_blast_cloud.png', 64 * 4, 64 * 2, blast_cloud)
     png('m8_blast_flash.png', SIZE * 4, SIZE * 2, blast_flash)
