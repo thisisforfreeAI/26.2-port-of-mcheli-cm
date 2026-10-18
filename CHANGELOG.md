@@ -63,6 +63,19 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
   supported (see Added); JEI shows the drafting table as a crafting station for them.
 
 ### Added
+- Lock boxes, as upstream: while the current weapon has a seeker, a green box with the distance
+  hangs over everything it could lock, dimmed past its lock range, and turns red with a line to
+  the vehicle while locking. Radar seekers also show the target vehicle's radar name.
+- A creative gunner can be removed with `/kill`.
+- `Destruct` bombs, as upstream: the RC Goblin's plastic bomb now blows up the UAV that drops it.
+- The pulse-Doppler notch: a plane flying across a plane's seeker by more than the weapon's
+  `PDHDNMaxDegree` breaks its lock, as upstream.
+- The APS iron curtain (an APS with range 100): the vehicle takes no damage while it runs and
+  glows red, tanks give off a red haze, and hits on it throw up red sparks.
+- The ECM jammer, as upstream: an addon vehicle with an `ECM` section switches it on with the ECM
+  Jammer key (V). While a lock-breaking jammer (`Type: 2`) runs, radar and anti-radiation
+  missiles homing on the vehicle lose it and radar seekers cannot lock it. Gunner NPCs switch it
+  on against incoming missiles.
 - Gunner NPCs, as upstream: the Gunner (vs Monster) and Gunner (vs Player) items seat a gunner
   on a free seat within five blocks (a square at the crosshair shows the seat), and using one on
   a gunner takes it off. A gunner turns its seat's weapon towards the nearest monster, or the

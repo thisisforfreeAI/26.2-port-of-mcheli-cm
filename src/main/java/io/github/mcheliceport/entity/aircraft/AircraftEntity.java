@@ -114,6 +114,8 @@ public abstract class AircraftEntity extends Entity
     public static final int STATUS_THROTTLE_UP = 9;
     public static final int STATUS_THROTTLE_DOWN = 10;
     public static final int STATUS_GUNNER = 12;
+    /** Upstream status bit 15: the ECM jammer is running (set by the server). */
+    public static final int STATUS_ECM_JAMMER = 15;
 
     /** Fuel can slots of the aircraft inventory; the trunk follows them. */
     public static final int SLOT_FUEL_IN = 0;
@@ -159,6 +161,9 @@ public abstract class AircraftEntity extends Entity
             SynchedEntityData.defineId(AircraftEntity.class, EntityDataSerializers.FLOAT);
     public float lightHatchRotation, previousLightHatchRotation;
     private static final EntityDataAccessor<Integer> DATA_UAV_STATION =
+            SynchedEntityData.defineId(AircraftEntity.class, EntityDataSerializers.INT);
+    /** Ticks left on the APS iron curtain (upstream {@code PacketIronCurtainUse}). */
+    private static final EntityDataAccessor<Integer> DATA_IRON_CURTAIN =
             SynchedEntityData.defineId(AircraftEntity.class, EntityDataSerializers.INT);
 
     private static final AircraftHitBox[] NO_HIT_BOXES = new AircraftHitBox[0];
@@ -241,6 +246,12 @@ public abstract class AircraftEntity extends Entity
     private final AircraftChaff chaff;
     private final AircraftAps aps;
     private final AircraftMissileDetector missileDetector;
+    private int ecmJammerRunningTick;
+    private int ironCurtainRunningTick;
+    private int ironCurtainWaveTimer;
+    private float ironCurtainLastFactor = 0.5F;
+    private float ironCurtainCurrentFactor = 0.5F;
+    private int ecmJammerWaitTick;
     private int currentFlareIndex;
 
     /**
@@ -410,11 +421,20 @@ public abstract class AircraftEntity extends Entity
         builder.define(DATA_ROPE_LENGTH, 0F); builder.define(DATA_ROPE_TICKS, 0);
         builder.define(DATA_LIGHT_YAW, 0F); builder.define(DATA_LIGHT_PITCH, 0F);
         builder.define(DATA_UAV_STATION, 0);
+        builder.define(DATA_IRON_CURTAIN, 0);
     }
 
     @Override
     public void onSyncedDataUpdated(EntityDataAccessor<?> accessor) {
         super.onSyncedDataUpdated(accessor);
+        if (DATA_IRON_CURTAIN.equals(accessor) && this.level().isClientSide()) {
+            int ticks = this.entityData.get(DATA_IRON_CURTAIN);
+            if (ticks > 0) {
+                this.ironCurtainRunningTick = ticks;
+            } else {
+                this.resetIronCurtain();
+            }
+        }
         if (DATA_TYPE_NAME.equals(accessor) && this.level().isClientSide()) {
             String name = this.getAircraftTypeName();
             if (this.info == null || !name.equals(this.info.name)) {
@@ -2721,6 +2741,9 @@ public abstract class AircraftEntity extends Entity
     /** Upstream {@code attackEntityFrom}. */
     @Override
     public boolean hurtServer(ServerLevel level, DamageSource source, float originalDamage) {
+        if (this.ironCurtainRunningTick > 0) {
+            return false;
+        }
         AircraftDamage.Kind kind = kindOf(source);
         if (this.isInvulnerableToBase(source) || this.isRemoved() || this.timeSinceHit > 0
                 || kind == AircraftDamage.Kind.IGNORED) {
@@ -3206,8 +3229,27 @@ public abstract class AircraftEntity extends Entity
             this.aps.range = this.info.apsRange;
             this.aps.onUpdate();
         }
+        if (this.ironCurtainRunningTick > 0) {
+            this.ironCurtainRunningTick--;
+            this.ironCurtainWaveTimer++;
+            this.ironCurtainLastFactor = this.ironCurtainCurrentFactor;
+            this.ironCurtainCurrentFactor = 0.75F + 0.25F * (float) Math.sin(this.ironCurtainWaveTimer * 0.15);
+        } else {
+            this.ironCurtainWaveTimer = 0;
+            this.ironCurtainCurrentFactor = 0.5F;
+            this.ironCurtainLastFactor = 0.5F;
+        }
         if (!this.level().isClientSide() && this.flares.tick == 0 && ft != 0) {
             this.setCommonStatus(STATUS_FLARE, false);
+        }
+        if (this.ecmJammerRunningTick > 0) {
+            this.ecmJammerRunningTick--;
+            if (this.ecmJammerRunningTick <= 0 && !this.level().isClientSide()) {
+                this.setECMJammerUsing(false);
+            }
+        }
+        if (this.ecmJammerWaitTick > 0) {
+            this.ecmJammerWaitTick--;
         }
     }
 
@@ -3309,6 +3351,105 @@ public abstract class AircraftEntity extends Entity
 
     public int getApsTick() {
         return this.aps.tick;
+    }
+
+    /** Upstream's iron curtain (an APS with range 100): the vehicle takes no damage for {@code ticks}. */
+    public void startIronCurtain(int ticks) {
+        this.ironCurtainRunningTick = ticks;
+        if (!this.level().isClientSide()) {
+            this.entityData.set(DATA_IRON_CURTAIN, ticks);
+        }
+    }
+
+    /** Upstream {@code MCH_APS.onEnd}. */
+    public void endIronCurtain() {
+        this.resetIronCurtain();
+        if (!this.level().isClientSide()) {
+            this.entityData.set(DATA_IRON_CURTAIN, 0);
+        }
+    }
+
+    private void resetIronCurtain() {
+        this.ironCurtainRunningTick = 0;
+        this.ironCurtainWaveTimer = 0;
+        this.ironCurtainCurrentFactor = 0.5F;
+        this.ironCurtainLastFactor = 0.5F;
+    }
+
+    public boolean isIronCurtainActive() {
+        return this.ironCurtainRunningTick > 0;
+    }
+
+    public int getIronCurtainTick() {
+        return this.ironCurtainRunningTick;
+    }
+
+    /** The red tint's brightness between ticks, as upstream's renderer eased it. */
+    public float getIronCurtainFactor(float partialTicks) {
+        return this.ironCurtainLastFactor + (this.ironCurtainCurrentFactor - this.ironCurtainLastFactor)
+                * (float) Math.sin(partialTicks * Math.PI / 2);
+    }
+
+    /** Upstream {@code getNameOnMyRadar}: what this vehicle's radar calls {@code other}. */
+    public String getNameOnMyRadar(AircraftEntity other) {
+        if (other.getAcInfo() == null || this.info == null || this.info.radarType == null) {
+            return "";
+        }
+        return radarName(other.getAcInfo(), this.info.radarType);
+    }
+
+    /** Upstream {@code getNameOnOtherRadar}: what {@code other}'s radar calls this vehicle. */
+    public String getNameOnOtherRadar(AircraftEntity other) {
+        if (other.getAcInfo() == null || this.info == null || other.getAcInfo().radarType == null) {
+            return "?";
+        }
+        return radarName(this.info, other.getAcInfo().radarType);
+    }
+
+    private static String radarName(AircraftInfo shown, io.github.mcheliceport.content.aircraft.RadarType radar) {
+        return switch (radar) {
+            case MODERN_AA -> shown.nameOnModernAARadar;
+            case EARLY_AA -> shown.nameOnEarlyAARadar;
+            case MODERN_AS -> shown.nameOnModernASRadar;
+            case EARLY_AS -> shown.nameOnEarlyASRadar;
+        };
+    }
+
+    public boolean haveECMJammer() {
+        return this.info != null && this.info.enableECMJammer;
+    }
+
+    /** Upstream {@code isECMJammerUsing}: the server's jammer status, seen on both sides. */
+    public boolean isECMJammerUsing() {
+        return this.getCommonStatus(STATUS_ECM_JAMMER);
+    }
+
+    public void setECMJammerUsing(boolean enabled) {
+        this.setCommonStatus(STATUS_ECM_JAMMER, enabled, true);
+    }
+
+    public boolean canUseECMJammer() {
+        return this.haveECMJammer() && this.ecmJammerWaitTick <= 0;
+    }
+
+    /**
+     * Upstream {@code useECMJammer}: runs the jammer for {@code UseTime} ticks, then it waits
+     * {@code WaitTime} ticks from the start before it can run again.
+     */
+    public boolean useECMJammer() {
+        if (!this.canUseECMJammer()) {
+            return false;
+        }
+        this.ecmJammerRunningTick = this.info.ecmJammerUseTime;
+        this.ecmJammerWaitTick = this.info.ecmJammerWaitTime;
+        if (!this.level().isClientSide()) {
+            this.setECMJammerUsing(true);
+        }
+        return true;
+    }
+
+    public int getECMJammerWaitTick() {
+        return this.ecmJammerWaitTick;
     }
 
     // ---- searchlights ----

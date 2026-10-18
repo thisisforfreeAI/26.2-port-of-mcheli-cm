@@ -26,7 +26,7 @@ broader gameplay and hardware checks remain pending.
 | Area | Planned milestone |
 |---|---|
 | Remaining plane/ground equipment and UAV station preview camera | M6 |
-| BVR and passive radar, GPS panel and GPS missiles, mortar radar and RWR overlays, ECM jammer, the pulse-Doppler notch, the APS "iron curtain", data link, anti-radiation missiles, `Destruct` bombs (UAVs) | M6 (with the vehicles that use them) |
+| BVR and passive radar, the GPS panel, mortar radar and RWR overlays | M6 (with the vehicles that use them) |
 | Wingman (AI wingmen, marker block screens and types, missions, `/wingman`) | M6b |
 | Remaining `/mcheli` commands (including reloading content with `reconfig`), advancement triggers, long-distance tracking and rendering, thermal vision (the third camera mode), GPU-buffer model rendering, projectile chunk loading (`ProjectileChunkLoad`), HBM:NTM stubs, performance work | M7 |
 
@@ -62,10 +62,7 @@ Until then:
   the fuel slot. Upstream's GregTech EU and HBM HE energy systems are dropped, so the
   `EnergySystem` and ratio settings are gone; the port registers no battery item, as upstream.
 - Every placed wingman marker is a waypoint until the marker screen is ported (M6b).
-- An APS with upstream's "iron curtain" range (100) only plays its sounds (M6).
 - Turret ballistics lines (upstream `drawTurretBallistics`) are not drawn yet (M7).
-- Gunner NPCs fire no ECM jammer, which is not ported yet (M6); they still use flares, chaff
-  and the APS.
 
 This config entry already exists but has no effect yet:
 
@@ -401,8 +398,26 @@ These follow from how Minecraft 26.2 works or from decisions approved in PORTING
     behind; one placed in survival uses the vehicle's loaded ammunition (a new vehicle has none)
     and drops its spawn item when it is killed or leaves its vehicle. The spawn item's five-block
     search uses the player's body rotation, as upstream, so it can differ slightly from the
-    crosshair while the head turns ahead of the body. The ECM jammer is the one countermeasure a
-    gunner does not use yet, because it is not ported (M6).
+    crosshair while the head turns ahead of the body.
+86. The ECM jammer has its own key (ECM Jammer, V like the other countermeasures), as upstream's
+    `KeyECMJammer`. No stock vehicle carries one; addon vehicles with `ECM: Type: 2` strip radar
+    and anti-radiation missiles within 80 blocks of their lock and deny radar locks while it
+    runs. Upstream's other types only hid the vehicle from radar warning displays, which are not
+    ported yet (M6). `PhotoelectricJammer` and `DIRCM` are read but did nothing upstream either.
+87. The APS iron curtain (an APS with range 100) follows upstream: the vehicle takes no damage
+    while it runs and its model pulses red. Upstream tinted vanilla clouds and block cracks red
+    for the tank haze and for hits on the vehicle; vanilla particles take no tint in 26.2, so
+    McHeli's own smoke particle is tinted instead. The APS takes its settings on the vehicle's
+    first tick, so, as upstream, it cannot fire on the tick the vehicle appears.
+88. Content settings that upstream read but never acted on stay inert: `DataLink`/`OnlyDataLink`,
+    the anti-radiation missile tuning (`ARM*`; anti-radiation missiles only fall to a type 2 ECM
+    jammer, as upstream), `PassiveRadarLockOutCount`, `SemiActiveRadar`,
+    `PDHDNMaxDegreeLockOutCount`, the aircraft-level `PassiveRadar` and `EnableBVR`, and the
+    weapon's `HasMortarRadar`. GPS missiles do not steer to the GPS point, as upstream.
+89. Lock boxes (upstream's `renderEntityMarker`) are drawn on the HUD by projecting upstream's
+    in-world billboard onto the screen, so they keep upstream's size, place and colours but sit
+    under the vehicle HUD instead of in the world. As upstream, only targets with no block in
+    the way get one.
 
 ## Upstream content issues kept as they are
 

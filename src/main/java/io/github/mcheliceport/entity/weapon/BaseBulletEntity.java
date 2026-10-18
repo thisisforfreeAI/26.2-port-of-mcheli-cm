@@ -1087,6 +1087,42 @@ public abstract class BaseBulletEntity extends Entity implements WeaponTargets.P
         }
     }
 
+    private static @Nullable AircraftEntity ironCurtainOf(@Nullable Entity hit) {
+        AircraftEntity ac = hit instanceof AircraftEntity a ? a
+                : hit instanceof AircraftHitBox box ? box.getParent() : null;
+        return ac != null && ac.isIronCurtainActive() ? ac : null;
+    }
+
+    /**
+     * Upstream {@code spawnIronCurtainParticle}: a hit on a vehicle under the iron curtain throws up
+     * red sparks and a red cloud. Upstream tinted block cracks and vanilla clouds; here McHeli's
+     * smoke is tinted for both.
+     */
+    protected void spawnIronCurtainParticle(Vec3 hitVec) {
+        WeaponInfo info = this.getInfo();
+        int crackCount = info.flakParticlesCrack + this.random.nextInt(3);
+        int cloudCount = 50 + (int) info.flakParticlesDiff;
+        for (int i = 0; i < crackCount + cloudCount; i++) {
+            boolean crack = i < crackCount;
+            ParticleParam p = crack
+                    ? new ParticleParam("smoke", hitVec.x + (this.random.nextFloat() - 0.5) * this.getBbWidth(),
+                            hitVec.y + 0.1, hitVec.z + (this.random.nextFloat() - 0.5) * this.getBbWidth(),
+                            info.flakParticlesDiff * this.random.nextGaussian() * 0.5,
+                            info.flakParticlesDiff * Math.abs(this.random.nextGaussian()),
+                            info.flakParticlesDiff * this.random.nextGaussian() * 0.5, 0.8F)
+                    : new ParticleParam("smoke", hitVec.x + (this.random.nextFloat() - 0.5) * this.getBbWidth(),
+                            hitVec.y + this.random.nextGaussian() * this.getBbHeight(),
+                            hitVec.z + (this.random.nextFloat() - 0.5) * this.getBbWidth(),
+                            this.random.nextGaussian() / 100.0, this.random.nextGaussian() / 100.0,
+                            this.random.nextGaussian() / 100.0, 1.0F);
+            p.r = 0.5F;
+            p.g = 0.1F;
+            p.b = 0.1F;
+            p.age = crack ? 10 : 20;
+            McheliEffects.spawnParticle(this.level(), p);
+        }
+    }
+
     /** The block a block hit hit, or null for an entity hit. */
     protected static @Nullable BlockPos blockOf(HitResult m) {
         return m instanceof BlockHitResult b && m.getType() == HitResult.Type.BLOCK ? b.getBlockPos() : null;
@@ -1109,6 +1145,8 @@ public abstract class BaseBulletEntity extends Entity implements WeaponTargets.P
         if (this.level().isClientSide()) {
             if (this.getInfo() != null && hitEntity == null && hitBlock != null) {
                 this.spawnBlockPar(hitVec, hitBlock);
+            } else if (this.getInfo() != null && ironCurtainOf(hitEntity) != null) {
+                this.spawnIronCurtainParticle(hitVec);
             }
             return;
         }

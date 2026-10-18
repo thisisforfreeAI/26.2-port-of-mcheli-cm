@@ -99,12 +99,13 @@ public final class ModKeyMappings {
     public static final KeyMapping FLARE = key("flare", GLFW.GLFW_KEY_V);
     public static final KeyMapping CHAFF = key("chaff", GLFW.GLFW_KEY_V);
     public static final KeyMapping APS = key("aps", GLFW.GLFW_KEY_V);
+    public static final KeyMapping ECM_JAMMER = key("ecm_jammer", GLFW.GLFW_KEY_V);
     /** Upstream {@code KeyAirburstDistReset} (-99, the right mouse button). */
     public static final KeyMapping AIRBURST_RESET = mouse("airburst_reset", GLFW.GLFW_MOUSE_BUTTON_RIGHT);
 
     public static final List<KeyMapping> ALL = List.of(UP, DOWN, RIGHT, LEFT, SWITCH_GUNNER, SWITCH_HOVERING, ZOOM,
             UNMOUNT, EXTRA, FREE_LOOK, GUI, GEAR_UP_DOWN, CAMERA_MODE, CAMERA_DISTANCE_UP, CAMERA_DISTANCE_DOWN,
-            USE_WEAPON, SWITCH_WEAPON_1, SWITCH_WEAPON_2, SWITCH_WEAPON_MODE, RELOAD_WEAPON, FLARE, CHAFF, APS,
+            USE_WEAPON, SWITCH_WEAPON_1, SWITCH_WEAPON_2, SWITCH_WEAPON_MODE, RELOAD_WEAPON, FLARE, CHAFF, APS, ECM_JAMMER,
             AIRBURST_RESET, PUT_TO_RACK, DOWN_FROM_RACK, ROPES, SEARCH_LIGHT, SCOREBOARD, MULTIPLAY_MANAGER);
 
     private ModKeyMappings() {

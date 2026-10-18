@@ -1449,3 +1449,64 @@ killed a husk twenty blocks away within a second of it appearing
 ([firing](screens/m6-gunner-firing.png)). A gunner placed in survival on a new AH-64 aimed but
 did not fire, because the vehicle had no ammunition loaded, as upstream. Not run: vs-player
 gunners and countermeasures in the client, Vulkan.
+
+## ECM jammer increment
+
+- `AircraftEntity` ports upstream's jammer: `useECMJammer` runs it for `ECM.UseTime` ticks
+  (status bit 15, as upstream, so riders see it) and blocks it for `ECM.WaitTime` ticks from the
+  start. The ECM Jammer key (V) sends it with the other countermeasures from the pilot or seat 1.
+- `AircraftMissileDetector.destroyMissileECM` ports the soft kill: while a `Type: 2` jammer runs,
+  radar and anti-radiation missiles within 80 blocks that home on the vehicle or a rider lose their
+  target. `WeaponGuidanceSystem.canLockEntity` refuses radar locks on such a vehicle.
+- Gunner NPCs switch the jammer on against incoming missiles, as upstream's gunner did.
+
+Validation: `build` passed and the GameTest server passed all 219 required tests, including four
+new ones: the jammer runs for its use time and waits out its wait time; a type 2 jammer strips a
+radar missile but not a heat seeker, and a type 1 jammer strips nothing; a radar seeker cannot
+lock a jamming vehicle while a heat seeker can; and a gunner switches the jammer on against an
+incoming missile. No stock vehicle has a jammer, so it was not tried in the client.
+
+## Destruct bombs, notch and iron curtain increment
+
+- `BombWeapon` ports the `Destruct` branch of upstream's `MCH_WeaponBomb.shot`: on a crewless UAV
+  helicopter (the RC Goblin's plastic bomb) the server explodes the weapon's charge at the vehicle
+  for the user and removes the vehicle, dropping its contents (upstream `destruct`).
+- `WeaponGuidanceSystem.canContinueLocking` ports the pulse-Doppler notch: when the shooter's
+  vehicle and the target are both planes, a lock breaks when their courses differ by more than
+  `PDHDNMaxDegree` (folded to the acute angle, so head-on and tail-on count alike). The in-flight
+  half was already in `BaseBulletEntity`.
+- The iron curtain: `AircraftAps` starts `AircraftEntity.startIronCurtain` for an APS with range
+  100 and ends it with the APS. The remaining ticks are synced entity data (upstream
+  `PacketIronCurtainUse`); `hurtServer` refuses damage while they run; the renderer pulses the
+  model red with upstream's wave; `TankParticles.ironCurtain` and
+  `BaseBulletEntity.spawnIronCurtainParticle` port the red haze and impact sparks.
+- A survey of the remaining combat settings found that upstream never acted on data link, the
+  anti-radiation tuning, passive-radar lock-out and several aircraft-level radar flags; they stay
+  parsed and inert (KNOWN_ISSUES 88).
+
+Validation: `build` passed and the GameTest server passed all 222 required tests, including three
+new ones: the RC Goblin's plastic bomb removes the UAV and hurts a husk beside it; a plane beaming
+another plane's seeker breaks its lock past 60° while head-on, tail-on and still targets keep it;
+and an iron curtain refuses damage for its use time, after which damage lands. Not run in the
+client: no stock vehicle has an iron curtain or crosses planes in a lock, and the RC Goblin's
+explosion was checked only by the test.
+
+## Lock boxes increment
+
+- `LockMarkerHudLayer` ports `MCH_RenderAircraft.renderEntityMarker`. While the rider's current
+  weapon has a guidance system, every living thing, vehicle and chaff cloud it could lock
+  (`canLockEntity`) within 1000 blocks and in clear sight gets upstream's box: its size grows with
+  distance on upstream's curve, it dims past `MaxLockOnRange` or the notch angle, and BVR weapons
+  skip targets beyond their minimum BVR range. The locking target's box is red and thicker, and in
+  first person on a crewed vehicle a red line joins it to the vehicle. The box is upstream's world
+  billboard projected with the frame's camera, drawn as a GUI layer below the vehicle HUD.
+- `AircraftEntity.getNameOnMyRadar`/`getNameOnOtherRadar` port upstream's radar names (modern or
+  early, air or surface); radar seekers print the target vehicle's name before the distance.
+- A creative gunner was invulnerable even to `/kill`; it now takes damage that bypasses
+  invulnerability, as vanilla mobs do.
+
+Validation: `build` passed and the GameTest server passed all 222 required tests. In the client
+(AH-64, AIM-92 Stinger), cows in the air at 45 and 73 blocks showed green boxes with their
+distances ([boxes](screens/m6-lock-markers.png)); one held ahead turned red with the line to the
+vehicle while locking, and the Stinger fired
+([locking](screens/m6-lock-marker-locking.png)). `/kill` removed a creative Blue Gunner.

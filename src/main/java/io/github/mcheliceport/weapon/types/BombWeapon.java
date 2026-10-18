@@ -1,9 +1,11 @@
 package io.github.mcheliceport.weapon.types;
 
 import io.github.mcheliceport.content.weapon.WeaponInfo;
+import io.github.mcheliceport.entity.heli.HeliEntity;
 import io.github.mcheliceport.entity.weapon.BombEntity;
 import io.github.mcheliceport.weapon.WeaponBase;
 import io.github.mcheliceport.weapon.WeaponParam;
+import io.github.mcheliceport.weapon.explosion.McheliExplosion;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
@@ -11,8 +13,8 @@ import net.minecraft.world.phys.Vec3;
  * Free-fall bombs and mines, released with the vehicle's velocity. Ported from upstream
  * {@code MCH_WeaponBomb}.
  *
- * <p>A {@code Destruct} bomb blows up the UAV carrying it; UAVs come in M6, so until then such a
- * bomb does nothing (as upstream on a manned vehicle) but still uses its ammunition.
+ * <p>A {@code Destruct} bomb blows up the crewless UAV helicopter carrying it, which goes with it; on
+ * any other vehicle it does nothing but still uses its ammunition, as upstream.
  */
 public class BombWeapon extends WeaponBase {
 
@@ -30,6 +32,13 @@ public class BombWeapon extends WeaponBase {
     @Override
     public boolean shot(WeaponParam prm) {
         if (this.getInfo() != null && this.getInfo().destruct) {
+            if (!this.world.isClientSide() && prm.entity instanceof HeliEntity ac && ac.isUAV()
+                    && ac.getSeatNum() == 0) {
+                McheliExplosion.newExplosion(this.world, null, prm.user, ac.getX(), ac.getY(), ac.getZ(),
+                        this.getInfo().explosion, this.getInfo().explosionBlock, true, this.getInfo().flaming, true, 0);
+                this.playSound(prm.entity);
+                ac.removeVehicle(true);
+            }
             return true;
         }
         if (!this.world.isClientSide() && prm.entity != null) {
