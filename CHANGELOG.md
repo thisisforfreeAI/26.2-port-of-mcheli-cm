@@ -59,6 +59,9 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
   supported (see Added); JEI shows the drafting table as a crafting station for them.
 
 ### Added
+- M8 aircraft engine exhaust: short throttle-responsive turbine wisps at defined outlets and
+  restrained hot jet accents, with shared smoke admission and global quality/load caps. Stock
+  Apache and two Black Hawk variants include outlets; Classic nozzle smoke remains available.
 - Mobs in seats, as upstream: animals and other mobs next to a vehicle board its free seats when
   a player takes the pilot seat, and the pilot's unload key (K) puts them out on the ground or,
   from vehicles that drop by parachute, sends them down one by one under parachutes. The

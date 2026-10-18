@@ -22,7 +22,8 @@ import net.neoforged.neoforge.client.event.RenderFrameEvent;
 @EventBusSubscriber(modid = "mcheli_ce_port", value = Dist.CLIENT)
 public final class EngineExhaustProbe {
     private static final String[] NAMES = {"off", "apache", "blackhawk", "jet", "vtol", "classic", "water", "empty", "models", "fixed", "adaptive"};
-    private static final int LENGTH = 180;
+    private static final int LENGTH = 320;
+    private static final boolean PERF_ONLY = Boolean.getBoolean("mcheli.probeExhaustPerfOnly");
     private static final List<AircraftEntity> vehicles = new ArrayList<>();
     private static final List<Double> frames = new ArrayList<>();
     private static int tick, peak;
@@ -30,12 +31,18 @@ public final class EngineExhaustProbe {
     private static String capture;
 
     private static final class HeldHeli extends HeliEntity {
+        private int probeFuel;
         HeldHeli(Minecraft mc) { super(ModEntityTypes.HELICOPTER.get(), mc.level); }
+        @Override public int getFuel() { return this.probeFuel; }
+        @Override public void setFuel(int fuel) { this.probeFuel = fuel; }
         @Override public void tick() { this.xo = this.getX(); this.yo = this.getY(); this.zo = this.getZ(); }
     }
     private static final class HeldPlane extends PlaneEntity {
         private final boolean vtol;
+        private int probeFuel;
         HeldPlane(Minecraft mc, boolean vtol) { super(ModEntityTypes.PLANE.get(), mc.level); this.vtol = vtol; }
+        @Override public int getFuel() { return this.probeFuel; }
+        @Override public void setFuel(int fuel) { this.probeFuel = fuel; }
         @Override public float getNozzleRotation() { return this.vtol ? 90 : 0; }
         @Override public void tick() {
             this.xo = this.getX(); this.yo = this.getY(); this.zo = this.getZ();
@@ -58,7 +65,7 @@ public final class EngineExhaustProbe {
             mc.options.enableVsync().set(false); mc.options.framerateLimit().set(120);
         }
         if (tick < 160) return;
-        int phase = (tick - 160) / LENGTH, age = (tick - 160) % LENGTH;
+        int phase = (tick - 160) / LENGTH + (PERF_ONLY ? 7 : 0), age = (tick - 160) % LENGTH;
         if (phase >= NAMES.length) { mc.stop(); return; }
         if (age == 0) {
             for (var v : vehicles) v.discard(); vehicles.clear();
@@ -112,7 +119,9 @@ public final class EngineExhaustProbe {
         if (age == 100 && phase < 6) capture = NAMES[phase];
         if (phase == 1 && age == 130) capture = "apache-low-throttle";
         if (phase == 3 && age == 140) capture = "jet-day";
-        if (age == 170) {
+        // Software rendering may need more wall time to collect useful frame distributions.
+        if (phase >= 7 && age == 289 && frames.size() < 48) tick--;
+        if (age == 300) {
             if ((phase == 0 || phase == 5 || phase == 6 || phase == 7 || phase == 8) && peak != 0) throw new IllegalStateException("Off/Classic/water emitted new exhaust");
             if (phase >= 1 && phase <= 4 && peak == 0) throw new IllegalStateException("Supported outlet emitted nothing");
             System.out.println("M8_EXHAUST result=" + NAMES[phase] + " peak=" + peak + " pressure=" + EffectPerformance.pressure() + " particles=" + mc.particleEngine.countParticles());
@@ -128,9 +137,9 @@ public final class EngineExhaustProbe {
     private static void commands(Minecraft mc, String... cmds) { for (String cmd : cmds) mc.player.connection.sendCommand(cmd); }
     @SubscribeEvent public static void frame(RenderFrameEvent.Post event) {
         if (!Boolean.getBoolean("mcheli.probeEngineExhaust") || tick < 160) return;
-        int phase = (tick - 160) / LENGTH, age = (tick - 160) % LENGTH;
+        int phase = (tick - 160) / LENGTH + (PERF_ONLY ? 7 : 0), age = (tick - 160) % LENGTH;
         long now = System.nanoTime();
-        if (phase >= 7 && age >= 50 && age < 165 && last != 0) frames.add((now - last) / 1_000_000.0);
+        if (phase >= 7 && age >= 100 && age < 290 && last != 0) frames.add((now - last) / 1_000_000.0);
         last = now;
         if (capture == null) return;
         Minecraft mc = Minecraft.getInstance(); String name = capture; capture = null;

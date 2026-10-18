@@ -156,3 +156,12 @@ pass on both Vulkan and OpenGL, including thin snow/powder snow. Hardware FPS re
 
 These requests follow the current rotor-wash work. The 80 FPS target on the specified PC
 remains the acceptance goal; each added layer needs native captures and measured cost.
+
+## 13. Engine exhaust implementation
+
+[M8_ENGINE_EXHAUST.md](M8_ENGINE_EXHAUST.md) implements the engine-outlet item in §12: short
+throttle-responsive turbine wisps, restrained hot jet accents, explicit helicopter outlets and
+existing plane nozzle/flame attachments. Low/Balanced/High global emission, shared smoke admission,
+range and adaptive periods bound cost. Classic nozzle smoke and existing damage smoke remain.
+Stock Apache and two Black Hawk variants include calibrated outlet positions; other helicopter
+definitions can opt in. Heat distortion remains deferred and target-PC acceptance remains open.
