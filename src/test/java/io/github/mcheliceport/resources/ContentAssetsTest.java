@@ -83,13 +83,15 @@ class ContentAssetsTest {
                 assertEquals("mcheli_ce_port:item/" + name + "_hand", model.get("base").getAsString());
                 assertTrue(Files.isRegularFile(MAIN.resolve("assets/mcheli_ce_port/models/item/" + name + "_hand.json")),
                         "display transforms of " + name);
-                assertEquals("mcheli_ce_port:item/" + name,
-                        model.getAsJsonObject("fallback").get("model").getAsString());
-                assertTrue(Files.isRegularFile(GENERATED.resolve("assets/mcheli_ce_port/models/item/" + name + ".json")),
-                        "flat model of " + name);
+                // The hand tools fall back to their flat item, the drafting table to its block model.
+                String fallback = model.getAsJsonObject("fallback").get("model").getAsString();
+                String folder = name.equals("drafting_table") ? "block/" : "item/";
+                assertEquals("mcheli_ce_port:" + folder + name, fallback);
+                assertTrue(Files.isRegularFile(GENERATED.resolve("assets/mcheli_ce_port/models/" + folder + name + ".json")),
+                        "fallback model of " + name);
             }
         }
-        assertEquals(List.of("fgm148", "fim92", "gltd", "rangefinder", "wrench"), tools);
+        assertEquals(List.of("drafting_table", "fgm148", "fim92", "gltd", "rangefinder", "wrench"), tools);
     }
 
     @Test

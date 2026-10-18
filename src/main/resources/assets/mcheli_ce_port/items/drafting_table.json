@@ -1,0 +1,11 @@
+{
+  "model": {
+    "type": "mcheli_ce_port:tool",
+    "tool": "drafting_table",
+    "base": "mcheli_ce_port:item/drafting_table_hand",
+    "fallback": {
+      "type": "minecraft:model",
+      "model": "mcheli_ce_port:block/drafting_table"
+    }
+  }
+}

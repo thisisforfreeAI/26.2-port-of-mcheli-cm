@@ -12,6 +12,13 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 
 ### Changed
 
+- Restore the post-port Vulkan visual-effects update to the roadmap as M8, after M7: explosions,
+  smoke, fire, muzzle flashes, tracers, missile trails, flares, water splashes and rotor wash,
+  refined for Vulkan with OpenGL kept working. Automatic vehicle turrets stay off the roadmap.
+
+- The drafting table is drawn with upstream's 3D model by a block entity renderer, facing any of
+  its eight directions and tinted grey as upstream, and the item shows the same model in the
+  inventory, the hand and on the ground with upstream's offsets.
 - The Stinger's and Javelin's lock now holds once complete, until the shot, until the target
   leaves the sight or until the launcher is lowered. Upstream's lock lasted a single tick and
   started again, so the attack key had to be held at the right moment.

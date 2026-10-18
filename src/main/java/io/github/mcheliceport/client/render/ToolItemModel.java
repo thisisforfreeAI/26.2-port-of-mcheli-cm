@@ -42,8 +42,9 @@ import org.jspecify.annotations.Nullable;
 /**
  * The 3D models of the hand tools in the hand and on the ground: upstream's built-in item
  * renderers ({@code BuiltInLightWeaponItemRenderer}, {@code BuiltInGLTDItemRenderer},
- * {@code BuiltInWrenchItemRenderer} and {@code BuiltInRangeFinderItemRenderer}). Everywhere else
- * (the inventory, frames, the head) the item keeps its flat model, the {@code fallback}.
+ * {@code BuiltInWrenchItemRenderer}, {@code BuiltInRangeFinderItemRenderer} and
+ * {@code BuiltInDraftingTableItemRenderer}). Everywhere else (the inventory, frames, the head) the
+ * hand tools keep their flat model, the {@code fallback}; the drafting table is drawn everywhere.
  *
  * <p>As upstream's {@code MCH_BakedModel}, the base model's display transforms place the model,
  * which is then drawn from the corner of the item's unit cube.
@@ -58,7 +59,9 @@ public final class ToolItemModel implements ItemModel {
         FGM148("fgm148", "lweapons/fgm148", "textures/lweapon/fgm148.png", false),
         GLTD("gltd", "gltd", "textures/gltd.png", true),
         WRENCH("wrench", "wrench", "textures/wrench.png", false),
-        RANGEFINDER("rangefinder", "rangefinder", "textures/rangefinder.png", true);
+        RANGEFINDER("rangefinder", "rangefinder", "textures/rangefinder.png", true),
+        /** Upstream {@code BuiltInDraftingTableItemRenderer}: drawn everywhere, the inventory included. */
+        DRAFTING_TABLE("drafting_table", DraftingTableRenderer.MODEL, "textures/blocks/drafting_table.png", true);
 
         public static final Codec<Tool> CODEC = StringRepresentable.fromEnum(Tool::values);
 
@@ -81,7 +84,7 @@ public final class ToolItemModel implements ItemModel {
 
         /** Upstream {@code shouldRenderer}: in either hand, and on the ground for some. */
         boolean drawsIn(ItemDisplayContext context) {
-            return context.firstPerson() || context == ItemDisplayContext.THIRD_PERSON_LEFT_HAND
+            return this == DRAFTING_TABLE || context.firstPerson() || context == ItemDisplayContext.THIRD_PERSON_LEFT_HAND
                     || context == ItemDisplayContext.THIRD_PERSON_RIGHT_HAND
                     || this.onGround && context == ItemDisplayContext.GROUND;
         }
@@ -91,8 +94,8 @@ public final class ToolItemModel implements ItemModel {
         }
     }
 
-    /** How one frame draws a tool: in first person, held up in use, and the wrench's swing. */
-    public record Pose(boolean firstPersonInUse, float wrenchSwing) {
+    /** How one frame draws a tool: where, in first person held up in use, and the wrench's swing. */
+    public record Pose(ItemDisplayContext context, boolean firstPersonInUse, float wrenchSwing) {
     }
 
     private final Tool tool;
@@ -129,7 +132,7 @@ public final class ToolItemModel implements ItemModel {
         boolean inUse = firstPerson && entity != null && entity.isUsingItem()
                 && entity.getUsedItemHand() == InteractionHand.MAIN_HAND;
         float swing = this.tool == Tool.WRENCH && inUse ? WrenchSwing.smooth() : 0.0F;
-        Pose pose = new Pose(inUse, swing);
+        Pose pose = new Pose(displayContext, inUse, swing);
         ItemStackRenderState.LayerRenderState layer = output.newLayer();
         if (item.hasFoil()) {
             layer.setFoilType(ItemStackRenderState.FoilType.STANDARD);
@@ -184,6 +187,14 @@ public final class ToolItemModel implements ItemModel {
                 return;
             }
             poseStack.pushPose();
+            if (this.tool == Tool.DRAFTING_TABLE) {
+                if (pose != null) {
+                    draftingTablePose(pose.context(), poseStack);
+                }
+                DraftingTableRenderer.submitModel(poseStack, collector, 0xFFFFFFFF, light);
+                poseStack.popPose();
+                return;
+            }
             if (pose != null && pose.firstPersonInUse()) {
                 switch (this.tool) {
                     case FIM92, FGM148 -> poseStack.translate(0.13F, 0.27F, 0.01F);
@@ -202,6 +213,27 @@ public final class ToolItemModel implements ItemModel {
             collector.submitCustomGeometry(poseStack, AircraftRenderTypes.aircraft(this.tool.texture),
                     (p, buffer) -> ModelVertices.emit(buffer, p, groups, 0xFFFFFFFF, light, flat));
             poseStack.popPose();
+        }
+
+        /** Upstream {@code BuiltInDraftingTableItemRenderer#renderItem}'s offsets for each place. */
+        private static void draftingTablePose(ItemDisplayContext context, PoseStack poseStack) {
+            switch (context) {
+                case GROUND -> {
+                    poseStack.translate(0.0F, 0.5F, 0.0F);
+                    poseStack.scale(1.5F, 1.5F, 1.5F);
+                }
+                case GUI, FIXED -> {
+                    poseStack.translate(0.0F, -0.5F, 0.0F);
+                    poseStack.scale(0.75F, 0.75F, 0.75F);
+                }
+                case THIRD_PERSON_LEFT_HAND, THIRD_PERSON_RIGHT_HAND -> poseStack.translate(0.0F, 0.0F, 0.5F);
+                case FIRST_PERSON_LEFT_HAND, FIRST_PERSON_RIGHT_HAND -> {
+                    poseStack.translate(0.75F, 0.0F, 0.0F);
+                    poseStack.mulPose(com.mojang.math.Axis.YN.rotationDegrees(90.0F));
+                }
+                default -> {
+                }
+            }
         }
 
         @Override
