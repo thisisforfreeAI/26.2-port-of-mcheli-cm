@@ -25,7 +25,7 @@ broader gameplay and hardware checks remain pending.
 
 | Area | Planned milestone |
 |---|---|
-| Remaining plane/ground equipment and UAV station preview camera, gunner NPCs and mobs in seats (and their weapon use), the rest of the aircraft GUI, the team scoreboard screens | M6 |
+| Remaining plane/ground equipment and UAV station preview camera, gunner NPCs and mobs in seats (and their weapon use), the team scoreboard screens | M6 |
 | BVR and passive radar, GPS panel and GPS missiles, mortar radar and RWR overlays, ECM jammer, the pulse-Doppler notch, the APS "iron curtain", data link, anti-radiation missiles, `Destruct` bombs (UAVs) | M6 (with the vehicles that use them) |
 | Wingman (AI wingmen, marker block screens and types, missions, `/wingman`) | M6b |
 | Remaining `/mcheli` commands (including reloading content with `reconfig`), advancement triggers, long-distance tracking and rendering, thermal vision (the third camera mode), GPU-buffer model rendering, projectile chunk loading (`ProjectileChunkLoad`), HBM:NTM stubs, performance work | M7 |
@@ -53,9 +53,9 @@ Until then:
   updated at a fixed simulation tick; it is not tied to the client's frame rate.
 - The stock MXT-MV definition references a canopy missing from its upstream model. That part
   remains absent; the shipped definition and model are preserved.
-- The aircraft menu has the fuel slots, the trunk and the weapon list with its reload buttons, on a
-  plain container background. Supported planes also expose parachute reserves; the remaining
-  aircraft menu controls come with M6.
+- The aircraft menu has the fuel slots, the trunk, the weapon list with its reload buttons and the
+  command field with an Options button, on a plain container background rather than upstream's
+  `gui.png`. Supported planes also expose parachute reserves.
 - Fuel comes from fuel cans or nearby supply vehicles. Refuelling from fluid containers and
   external fluid capabilities still needs a registered fuel fluid (M6). Electric vehicles take
   energy from the charger and from batteries (any item with NeoForge's item energy capability) in
@@ -361,6 +361,14 @@ These follow from how Minecraft 26.2 works or from decisions approved in PORTING
     ground's colour (white spray over water). `CLASSIC` draws exactly as upstream. The same
     particles spawn at the same moments either way, so gameplay does not change
     (docs/M8_PLAN.md).
+81. Only players who may use game-master commands (permission level 2) can set a vehicle's
+    command in the aircraft menu; for others the field is read-only. Upstream let any player set
+    it, and it runs with full permissions when the vehicle is destroyed by anything but a player,
+    so anyone could run any command. Enter in the field runs the command at once as the player,
+    with their own permissions; upstream built that packet but never sent it, so Enter did
+    nothing. The menu's "MOD Options" button (Options) closes the menu and opens NeoForge's
+    config screen for the mod. Upstream's Close and Inventory buttons are left out: Escape
+    closes the menu and the trunk is already part of it.
 
 ## Upstream content issues kept as they are
 

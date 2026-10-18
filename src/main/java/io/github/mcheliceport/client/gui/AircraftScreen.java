@@ -1,24 +1,31 @@
 package io.github.mcheliceport.client.gui;
 
+import io.github.mcheliceport.McheliCePort;
 import io.github.mcheliceport.content.weapon.WeaponInfo;
 import io.github.mcheliceport.entity.aircraft.AircraftEntity;
 import io.github.mcheliceport.entity.aircraft.AircraftWeapons;
 import io.github.mcheliceport.menu.AircraftMenu;
+import io.github.mcheliceport.net.AircraftCommandPayload;
 import io.github.mcheliceport.net.ResupplyPayload;
 import io.github.mcheliceport.weapon.WeaponSet;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.neoforged.fml.ModList;
+import net.neoforged.neoforge.client.gui.ConfigurationScreen;
 import net.neoforged.neoforge.client.network.ClientPacketDistributor;
+import org.lwjgl.glfw.GLFW;
 
 /**
  * The fuel slots and trunk of a vehicle (decision D12): the trunk and player inventory on
@@ -27,7 +34,12 @@ import net.neoforged.neoforge.client.network.ClientPacketDistributor;
  *
  * <p>Beside them, the weapon list of upstream CE's aircraft GUI: each weapon set with a magazine,
  * its magazine and reserve counts, the round items one supply costs, and a reload button that
- * pays them ({@link AircraftWeapons#supplyAmmo}). The rest of that GUI comes with M6.
+ * pays them ({@link AircraftWeapons#supplyAmmo}).
+ *
+ * <p>Along the bottom, upstream's command field and its "MOD Options" button. The command runs on
+ * the server when the vehicle is destroyed by anything but a player; Enter runs it now as the
+ * player. Upstream's Close and Inventory buttons are left out: Escape closes the menu, and the
+ * trunk is already part of it.
  */
 public class AircraftScreen extends AbstractContainerScreen<AircraftMenu> {
 
@@ -39,15 +51,20 @@ public class AircraftScreen extends AbstractContainerScreen<AircraftMenu> {
     private static final int SLOT_BG = 0xFF8B8B8B;
     private static final int WEAPON_PANEL_W = 176;
     private static final int WEAPON_ROW_H = 22;
+    /** The strip under the player inventory holding the command field. */
+    private static final int COMMAND_STRIP_H = 24;
 
     /** A weapon set with a magazine and its reload button. */
     private record WeaponRow(int weaponId, WeaponSet set, Button button) {
     }
 
     private final List<WeaponRow> weaponRows = new ArrayList<>();
+    private EditBox commandField;
+    private boolean commandEditable;
 
     public AircraftScreen(AircraftMenu menu, Inventory inventory, Component title) {
-        super(menu, inventory, title, AircraftMenu.CONTENT_X + 176, menu.getPlayerInventoryY() + 82 + 1);
+        super(menu, inventory, title, AircraftMenu.CONTENT_X + 176,
+                menu.getPlayerInventoryY() + 82 + 1 + COMMAND_STRIP_H);
         this.titleLabelX = AircraftMenu.CONTENT_X + 8;
         this.inventoryLabelX = AircraftMenu.CONTENT_X + 8;
         this.inventoryLabelY = menu.getPlayerInventoryY() - 11;
@@ -76,11 +93,14 @@ public class AircraftScreen extends AbstractContainerScreen<AircraftMenu> {
         this.weaponRows.clear();
         List<Integer> ids = this.weaponIds();
         AircraftEntity aircraft = this.menu.getAircraft();
+        if (!ids.isEmpty() && aircraft != null) {
+            // Centre the menu and the weapon list together.
+            this.leftPos = Math.max(0, (this.width - this.imageWidth - 2 - WEAPON_PANEL_W) / 2);
+        }
+        this.initCommandStrip(aircraft);
         if (ids.isEmpty() || aircraft == null) {
             return;
         }
-        // Centre the menu and the weapon list together.
-        this.leftPos = Math.max(0, (this.width - this.imageWidth - 2 - WEAPON_PANEL_W) / 2);
         int px = this.weaponPanelX();
         for (int r = 0; r < ids.size(); r++) {
             int id = ids.get(r);
@@ -93,6 +113,76 @@ public class AircraftScreen extends AbstractContainerScreen<AircraftMenu> {
             this.weaponRows.add(new WeaponRow(id, ws, button));
         }
         this.updateButtons();
+    }
+
+    private void initCommandStrip(AircraftEntity aircraft) {
+        int sy = this.topPos + this.imageHeight - COMMAND_STRIP_H + 4;
+        this.commandField = new EditBox(this.font, this.leftPos + 6, sy + 1, 150, 16, Component.literal("Command"));
+        this.commandField.setMaxLength(AircraftCommandPayload.MAX_LENGTH);
+        this.commandField.setValue(aircraft != null ? aircraft.getCommand() : "");
+        this.commandField.setHint(Component.literal("Command when destroyed"));
+        boolean editable = aircraft != null && this.minecraft != null && this.minecraft.player != null
+                && AircraftEntity.canSetCommand(this.minecraft.player);
+        this.commandEditable = editable;
+        this.commandField.setEditable(editable);
+        this.commandField.setTooltip(Tooltip.create(Component.literal(editable
+                ? "Runs on the server when this vehicle is destroyed. Enter runs it now as you."
+                : "Setting the command needs operator permission.")));
+        this.addRenderableWidget(this.commandField);
+        this.addRenderableWidget(Button.builder(Component.literal("Options"), b -> this.openOptions())
+                .bounds(this.leftPos + this.imageWidth - 56, sy, 50, 18)
+                .tooltip(Tooltip.create(Component.literal("MOD Options")))
+                .build());
+    }
+
+    /**
+     * Upstream's "MOD Options" button, which closed this menu and opened the mod's settings; the
+     * port's settings are NeoForge's config screen.
+     */
+    private void openOptions() {
+        ModList.get().getModContainerById(McheliCePort.MOD_ID).ifPresent(container -> {
+            this.onClose();
+            this.minecraft.setScreenAndShow(new ConfigurationScreen(container, null));
+        });
+    }
+
+    /** Upstream sends the field's text as a command on Enter (CE built the packet but never sent it). */
+    private void runCommandNow() {
+        String s = this.commandField.getValue().trim();
+        if (s.startsWith("/")) {
+            s = s.substring(1);
+        }
+        if (!s.isEmpty() && this.minecraft != null && this.minecraft.player != null) {
+            this.minecraft.player.connection.sendCommand(s);
+        }
+    }
+
+    @Override
+    public boolean keyPressed(KeyEvent event) {
+        if (this.commandField != null && this.commandField.isFocused() && event.key() != GLFW.GLFW_KEY_ESCAPE) {
+            if (event.key() == GLFW.GLFW_KEY_ENTER || event.key() == GLFW.GLFW_KEY_KP_ENTER) {
+                this.runCommandNow();
+            } else {
+                this.commandField.keyPressed(event);
+            }
+            return true;
+        }
+        return super.keyPressed(event);
+    }
+
+    /**
+     * Upstream {@code closeScreen}: the command is saved when the menu closes. It goes out before
+     * the menu's close packet, since the server takes it only from an open menu of this vehicle.
+     */
+    @Override
+    public void onClose() {
+        AircraftEntity aircraft = this.menu.getAircraft();
+        if (aircraft != null && this.commandField != null && this.commandEditable
+                && !this.commandField.getValue().equals(aircraft.getCommand())) {
+            ClientPacketDistributor.sendToServer(new AircraftCommandPayload(aircraft.getId(),
+                    this.commandField.getValue()));
+        }
+        super.onClose();
     }
 
     private void resupply(int weaponId) {
@@ -172,6 +262,11 @@ public class AircraftScreen extends AbstractContainerScreen<AircraftMenu> {
         int ff = (int) (fuel * 50.0F);
         int color = fuel > 0.2F ? 0xFF20C020 : 0xFFE03030;
         graphics.fill(gaugeX, gaugeTop + 50 - ff, gaugeX + 4, gaugeTop + 50, color);
+
+        // The command strip under the player inventory.
+        int sy = y + this.imageHeight - COMMAND_STRIP_H;
+        graphics.fill(x, sy, x + this.imageWidth, y + this.imageHeight, DARK);
+        graphics.fill(x + 1, sy, x + this.imageWidth - 1, y + this.imageHeight - 1, PANEL_BG);
 
         if (!this.weaponRows.isEmpty()) {
             int wx = this.weaponPanelX();

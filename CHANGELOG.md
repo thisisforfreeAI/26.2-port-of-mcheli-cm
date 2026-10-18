@@ -39,6 +39,10 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
   supported (see Added); JEI shows the drafting table as a crafting station for them.
 
 ### Added
+- The aircraft menu has upstream's command field and Options button. A command set there by an
+  operator runs on the server when the vehicle is destroyed by anything but a player; Enter runs
+  it at once. Options opens the mod's settings. Only game masters can set the command, unlike
+  upstream, where any player could.
 - The aircraft charger works: cables and generators fill it through NeoForge's energy capability
   (up to 100,000 by default), using it shows what it holds, and every 10 ticks it feeds up to 256
   energy to the electric vehicles within 6 blocks, then to a battery in a full vehicle's fuel slot.
