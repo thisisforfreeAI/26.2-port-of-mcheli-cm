@@ -1,5 +1,8 @@
 # M8 pixel graphics and particle budgets
 
+The newer [impact/flare follow-up](M8_IMPACT_FLARE.md) strengthens bomb/missile accents and
+flare halos; the one-quad flare cost below describes the earlier pass.
+
 The current 80 FPS performance follow-up is documented in [M8_PERFORMANCE.md](M8_PERFORMANCE.md).
 It adds adaptive detail, coverage weighting, bounded McHeli terrain dust and secondary spray.
 The measurements in this document describe earlier passes.

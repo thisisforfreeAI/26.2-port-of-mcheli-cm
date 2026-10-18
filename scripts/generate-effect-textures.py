@@ -94,7 +94,9 @@ def halo(x, y):
         return (0, 0, 0, 0)
     ray = max(0, 1 - min(abs(x), abs(y)) * 12) * max(0, 1 - r)
     a = min(1, max(0, 1 - r * 1.4) ** 3 + ray * .24)
-    return (255, 207, 105, round(a * 150))
+    # Bright warm core and a quieter amber edge, still one tiny texture and one quad.
+    inner = max(0, 1 - r * 4)
+    return (255, round(185 + 60 * inner), round(65 + 140 * inner), round(a * 220))
 
 
 if __name__ == '__main__':

@@ -3,9 +3,36 @@ package io.github.mcheliceport.client.particle;
 import io.github.mcheliceport.config.ClientConfig.EffectBudget;
 import io.github.mcheliceport.effect.BlastStyle;
 
-/** Cosmetic bomb scaling; counts, lifetime, trajectories and random draws stay with the emitter. */
+/** Cosmetic footprint/timing policies; gameplay and the original smoke emitter remain unchanged. */
 public final class ExplosionLook {
     private ExplosionLook() {}
+
+    public static boolean broad(BlastStyle style) {
+        return style == BlastStyle.HEAVY || style == BlastStyle.INCENDIARY;
+    }
+
+    public static float coreRadius(float power, BlastStyle style) {
+        if (!Float.isFinite(power) || power < 1 || style == BlastStyle.CANNON) return 0;
+        return broad(style) ? Math.clamp(power * 0.25F, 0.6F, 3.0F)
+                : Math.clamp(power * 0.16F, 0.25F, style == BlastStyle.PENETRATOR ? 0.8F : 1.2F);
+    }
+
+    public static int coreLife(BlastStyle style) { return broad(style) ? 7 : 4; }
+
+    /** Change only the fire tint's duration; smoke lifetime and motion are unchanged. */
+    public static float coolingShare(BlastStyle style) {
+        return switch (style) {
+            case BLAST, PENETRATOR -> 0.18F;
+            case INCENDIARY -> 0.45F;
+            default -> 0.35F;
+        };
+    }
+
+    public static int dustCount(float power, BlastStyle style, EffectBudget budget, int pressure) {
+        if (!Float.isFinite(power) || power < 3 || !broad(style) || budget == EffectBudget.LOW || pressure >= 2) return 0;
+        int cap = budget == EffectBudget.HIGH ? 10 : 6;
+        return Math.min(cap, (int) Math.min(power * 1.5F, cap)) / (1 + Math.clamp(pressure, 0, 1));
+    }
 
     private static float strength(float power, BlastStyle style) {
         if (!Float.isFinite(power) || style != BlastStyle.HEAVY && style != BlastStyle.INCENDIARY) return 0;

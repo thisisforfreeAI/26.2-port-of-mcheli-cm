@@ -4,7 +4,8 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import io.github.mcheliceport.config.EffectQuality;
-import io.github.mcheliceport.client.particle.EffectPerformance;
+import io.github.mcheliceport.client.particle.EntityGlowAdmission;
+import io.github.mcheliceport.client.particle.FlareLook;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
@@ -14,7 +15,6 @@ import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.LightCoordsUtil;
-import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 
 /**
@@ -33,6 +33,7 @@ public class FlareRenderer<T extends Entity> extends EntityRenderer<T, FlareRend
         /** M8: drawn full bright with a flickering glow. */
         public boolean enhanced;
         public boolean halo;
+        public int flickerId;
     }
 
     private static final float[][] NORMALS = {{0, 0, -1}, {0, 0, 1}, {-1, 0, 0}, {1, 0, 0}, {0, -1, 0}, {0, 1, 0}};
@@ -76,7 +77,10 @@ public class FlareRenderer<T extends Entity> extends EntityRenderer<T, FlareRend
         state.yaw = entity.getYRot();
         state.pitch = entity.getXRot();
         state.enhanced = EffectQuality.enhanced();
-        state.halo = state.enhanced && EffectPerformance.optionalGlows();
+        state.flickerId = entity.getId();
+        state.halo = state.enhanced && this.glows
+                && EntityGlowAdmission.flare((net.minecraft.client.multiplayer.ClientLevel) entity.level(),
+                        entity.getX(), entity.getY(), entity.getZ());
     }
 
     @Override
@@ -84,7 +88,7 @@ public class FlareRenderer<T extends Entity> extends EntityRenderer<T, FlareRend
         boolean glow = state.enhanced && this.glows;
         // Upstream lit flares by the world, so they went dark at night; the M8 look burns at full brightness.
         int light = glow ? LightCoordsUtil.FULL_BRIGHT : state.lightCoords;
-        int color = this.color;
+        int color = glow ? 0xFFFFF3D2 : this.color;
         poseStack.pushPose();
         poseStack.mulPose(Axis.YP.rotationDegrees(-state.yaw));
         poseStack.mulPose(Axis.XP.rotationDegrees(state.pitch));
@@ -94,9 +98,10 @@ public class FlareRenderer<T extends Entity> extends EntityRenderer<T, FlareRend
                 (pose, buffer) -> cube(buffer, pose, 0.125F, color, light));
         poseStack.popPose();
         if (glow && state.halo) {
-            float flicker = 0.85F + 0.15F * Mth.sin(state.ageInTicks * 1.7F);
+            float flicker = FlareLook.flicker(state.ageInTicks, state.flickerId);
             BulletRenderer.submitFlame(poseStack, collector, camera, 0, 0, 0, HALO,
-                    0.65F * this.scale * flicker);
+                    1.25F * this.scale * flicker);
+            GlowGeometry.disc(poseStack, collector, camera, 1.55F * this.scale * flicker, 0xFFB34F, 0.28F);
         }
         super.submit(state, poseStack, collector, camera);
     }

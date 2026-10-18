@@ -51,8 +51,9 @@ public final class ExplosionEffects {
         blocks.addAll(McheliExplosion.rayMarchBlocks(level, null, x, y, z, size, 1.0F, false, level.getRandom()));
         boolean vanilla = ClientConfig.get(ClientConfig.DEFAULT_EXPLOSION_PARTICLE);
         if (!vanilla && size >= 1.0F && EffectQuality.enhanced()) {
+            ClientEffects.spawnExplosionAccents(level, x, y, z, size, style);
             ClientEffects.spawnExplosionGlow(level, x, y, z, size, style);
-            ClientEffects.spawnExplosionSparks(level, x, y, z, size);
+            ClientEffects.spawnExplosionSparks(level, x, y, z, size, style);
         }
         int cnt = 0;
         int flareCnt = (int) size;
@@ -126,6 +127,7 @@ public final class ExplosionEffects {
                 var budget = ClientConfig.get(ClientConfig.EFFECT_BUDGET);
                 prm.size = ExplosionLook.puffSize(prm.size, size, style, budget);
                 prm.diffusionStart = ExplosionLook.startScale(size, style, budget);
+                prm.coolingShare = ExplosionLook.coolingShare(style);
             }
             ClientEffects.INSTANCE.spawnParticle(level, prm);
         }

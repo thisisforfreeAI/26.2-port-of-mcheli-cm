@@ -30,6 +30,8 @@ public class ParticleParam {
     public float damageHeat;
     /** Initial scale of a diffusible puff relative to its nominal size; upstream uses 0.2. */
     public float diffusionStart = 0.2F;
+    /** Share of life spent cooling from fire, used only by enhanced explosion puffs. */
+    public float coolingShare = 0.35F;
 
     public void setDamageHeat(int hp, int maxHp) {
         this.damageHeat = maxHp <= 0 ? 0 : Math.clamp((0.3F - (float) hp / maxHp) / 0.2F, 0, 1);
