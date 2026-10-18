@@ -51,6 +51,7 @@ public final class AircraftClientEvents {
             WeaponClientControl.onClientTick();
             AircraftClientControl.onClientTick();
             AircraftCameraClient.tick();
+            io.github.mcheliceport.client.camera.GltdCameraClient.tick();
             AircraftModels.tick();
             AircraftEngineSound.tickAll();
             WeaponClient.tick();
@@ -67,6 +68,11 @@ public final class AircraftClientEvents {
         NeoForge.EVENT_BUS.addListener(AircraftClientEvents::onCameraAngles);
         NeoForge.EVENT_BUS.addListener(AircraftCameraClient::onComputeFov);
         NeoForge.EVENT_BUS.addListener(RangeFinderClient::onComputeFov);
+        NeoForge.EVENT_BUS.addListener(io.github.mcheliceport.client.camera.GltdCameraClient::onComputeFov);
+        NeoForge.EVENT_BUS.addListener(io.github.mcheliceport.client.camera.GltdCameraClient::onCameraAngles);
+        NeoForge.EVENT_BUS.addListener(io.github.mcheliceport.client.camera.GltdCameraClient::onRenderHand);
+        NeoForge.EVENT_BUS.addListener(io.github.mcheliceport.client.camera.GltdCameraClient::onInteractionKey);
+        NeoForge.EVENT_BUS.addListener(io.github.mcheliceport.client.camera.GltdCameraClient::onNameTag);
         NeoForge.EVENT_BUS.addListener(io.github.mcheliceport.client.hud.ToolHudLayer::onRenderHand);
         NeoForge.EVENT_BUS.addListener(AircraftCameraClient::onDetachedDistance);
         NeoForge.EVENT_BUS.addListener(AircraftCameraClient::onNameTag);
@@ -81,6 +87,7 @@ public final class AircraftClientEvents {
             AircraftCameraClient.reset();
             WeaponClient.reset();
             TargetMarkers.INSTANCE.reset();
+            io.github.mcheliceport.client.camera.GltdCameraClient.reset();
         });
         NeoForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.LoggingIn event) -> {
             RangeFinderClient.onLogin();

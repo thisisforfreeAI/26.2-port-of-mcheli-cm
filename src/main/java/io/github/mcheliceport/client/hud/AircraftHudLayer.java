@@ -114,7 +114,7 @@ public final class AircraftHudLayer implements GuiLayer {
         boolean showHud = !thirdPerson || ClientConfig.get(ClientConfig.HUD_IN_THIRD_PERSON);
         int seatId = ac.getSeatIdByEntity(player);
         if (ac.getCameraMode(player) == AircraftCamera.MODE_NIGHTVISION) {
-            this.drawNightVisionNoise(graphics);
+            drawNightVisionNoise(graphics, this.rand);
         }
         if (showHud) {
             this.drawHud(graphics, ac, player, seatId == 0 && ac.isGunnerMode(player) ? 1 : seatId, partialTicks);
@@ -237,10 +237,10 @@ public final class AircraftHudLayer implements GuiLayer {
     }
 
     /** Upstream {@code drawNightVisionNoise}: green noise added over the view, moving every frame. */
-    private void drawNightVisionNoise(GuiGraphicsExtractor graphics) {
+    static void drawNightVisionNoise(GuiGraphicsExtractor graphics, Random rand) {
         AbstractTexture texture = Minecraft.getInstance().getTextureManager().getTexture(NOISE);
-        double u = this.rand.nextInt(256) / 256.0;
-        double v = this.rand.nextInt(256) / 256.0;
+        double u = rand.nextInt(256) / 256.0;
+        double v = rand.nextInt(256) / 256.0;
         GuiHudCanvas.texturedQuad(new GuiHudCanvas(graphics), texture, GUI_TEXTURED_ADDITIVE,
                 0x4C00FF00, 0, 0, graphics.guiWidth(), graphics.guiHeight(), u, v, u + 1.0, v + 1.0, 0.0F);
     }

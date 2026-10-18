@@ -64,7 +64,8 @@ public final class ModItems {
                             .build()),
             ModTab.ITEMS);
     public static final DeferredItem<Item> FUEL = item("fuel", p -> p.durability(600).setNoCombineRepair());
-    public static final DeferredItem<Item> GLTD = item("gltd", p -> p.stacksTo(1));
+    public static final DeferredItem<Item> GLTD = register("gltd", io.github.mcheliceport.item.GltdItem::new,
+            p -> p.stacksTo(1), ModTab.ITEMS);
     public static final DeferredItem<Item> CHAIN = register("chain", io.github.mcheliceport.item.ChainItem::new,
             p -> p.stacksTo(1), ModTab.ITEMS);
     public static final DeferredItem<Item> PARACHUTE = register("parachute", ParachuteItem::new,
@@ -78,7 +79,8 @@ public final class ModItems {
             p -> new io.github.mcheliceport.item.UavStationItem(p, true), p -> p.stacksTo(1), ModTab.ITEMS);
     public static final DeferredItem<io.github.mcheliceport.item.UavControllerItem> UAV_PAIRING_DEVICE = register("uav_pairing_device", p -> new io.github.mcheliceport.item.UavControllerItem(p, false), p -> p.stacksTo(1), ModTab.ITEMS);
     public static final DeferredItem<io.github.mcheliceport.item.UavControllerItem> UAV_TABLET = register("uav_tablet", p -> new io.github.mcheliceport.item.UavControllerItem(p, true), p -> p.stacksTo(1), ModTab.ITEMS);
-    public static final DeferredItem<Item> MINE_DEFUSER = item("mine_defuser", p -> p.stacksTo(1));
+    public static final DeferredItem<Item> MINE_DEFUSER = register("mine_defuser",
+            io.github.mcheliceport.item.MineDefuserItem::new, p -> p.stacksTo(1), ModTab.ITEMS);
     /** Upstream's invisible helper item ({@code MCH_InvisibleItem}). It is in no creative tab. */
     public static final DeferredItem<Item> INTERNAL = register("internal", Item::new, UnaryOperator.identity(), null);
     public static final DeferredItem<Item> FIM92_BULLET = item("fim92_bullet", p -> p.stacksTo(2));

@@ -1119,3 +1119,38 @@ repaired it to 80 in about four seconds with the health bar shown
 ([wrench](screens/m6-wrench-repair.png)). Not run: Vulkan, two players on one team (the GameTests
 cover the team rules, not delivery to a second client or its teammate markers), and targeting
 pods in flight (stock content has none with spotting settings; see the parity list).
+
+## Ground laser target designator increment
+
+- `GltdItem` ports `MCH_ItemGLTD`: used on a block within five blocks it sets a `GltdEntity` on
+  top, centred and facing the player's way, unless the player's eyes are inside another entity or
+  the spot is blocked; creative keeps the item.
+- `GltdEntity` ports `MCH_EntityGLTD`: one operator sits half a block behind it, the optics sit
+  0.7 up and 0.6 in front, it falls and slows on the ground as upstream, any hit worth more than
+  0.4 breaks it (dropping the item unless the attacker is creative), and leaving puts the operator
+  1.2 behind. The operator's view stays within 70 degrees of its heading and 70 up or down. Its
+  `AircraftCamera` keeps the zoom (1 to 10) and the camera mode, so night vision gives the operator
+  the night-vision effect and leaving ends it. The strike is upstream's `MCH_WeaponCAS`
+  (`a10gau8`, three A-10 runs 45 ticks apart, the first 50 ticks after the call), owned by the
+  operator and by no vehicle, with a 450-tick cool-down (see KNOWN_ISSUES 77).
+- `GltdControlPayload` carries `PacketGLTDControl` (camera mode, strike, leave), accepted only
+  from the operator. `GltdCameraClient` ports `MCH_ClientGLTDTickHandler` (view entity at the
+  optics, zoom by the field of view, night-vision post effect, hidden hand, controls),
+  `GltdHudLayer` ports `MCH_GuiGLTD` and `GltdRenderer` ports `MCH_RenderGLTD` (body, the head
+  turned with the operator's view and hidden from the operator in first person, and the laser).
+- `MineDefuserItem` adds the upstream tooltip; defusing was already ported in `BombEntity`.
+
+Validation: `build` passed and the GameTest server passed all 188 required tests in three runs,
+including five new GLTD tests: placement (position, heading, item use, saving, nothing in reach,
+eyes inside an entity, creative); mounting (seat position, a second player refused, another
+player's controls ignored, the 70-degree view limits, the unmount key and the exit point); night
+vision (the camera mode, the operator's effect, and both ended by leaving); the strike (the
+450-tick wait, no second strike while waiting, and the operator's A-10 50 ticks later); and damage
+(the item dropped, the operator thrown off, nothing dropped for a creative hit). On a dedicated
+server with an OpenGL client: the item set the designator up and the laser showed
+([placed](screens/m6-gltd-placed.png)); sitting at it gave the camera view and HUD
+([HUD](screens/m6-gltd-hud.png)); Z zoomed to x7.4 and C switched night vision with its green
+noise ([night vision](screens/m6-gltd-night-vision.png)); the attack key at a block 37 m away
+turned the strike red and the A-10's run hit near the mark ([strike](screens/m6-gltd-strike.png),
+taken before the laser was narrowed); and the unmount key left, giving the view back. Not run:
+Vulkan, a second player watching the operator's head and laser, and sneaking to leave.

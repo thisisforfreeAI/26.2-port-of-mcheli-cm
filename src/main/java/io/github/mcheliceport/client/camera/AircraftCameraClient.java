@@ -219,7 +219,7 @@ public final class AircraftCameraClient {
      * clears post effects when the camera entity or perspective changes, so this runs every tick;
      * it only clears an effect that is its own.
      */
-    private static void updatePostEffect(Minecraft mc, boolean nightVision) {
+    static void updatePostEffect(Minecraft mc, boolean nightVision) {
         Identifier current = mc.gameRenderer.currentPostEffect();
         if (nightVision) {
             if (!NIGHT_VISION_EFFECT.equals(current)) {
@@ -315,7 +315,7 @@ public final class AircraftCameraClient {
     }
 
     /** The view entity: a marker with the rider's eye height, so switching views does not slide. */
-    private static final class ViewMarker extends Marker {
+    static final class ViewMarker extends Marker {
         private final EntityDimensions viewDimensions;
 
         ViewMarker(Level level, float eyeHeight) {

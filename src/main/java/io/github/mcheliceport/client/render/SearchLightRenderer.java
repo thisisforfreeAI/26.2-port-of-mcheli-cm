@@ -32,7 +32,8 @@ public final class SearchLightRenderer {
             .withLocation(Identifier.fromNamespaceAndPath("mcheli_ce_port", "pipeline/searchlight"))
             .withColorTargetState(new ColorTargetState(BlendFunction.LIGHTNING))
             .withPrimitiveTopology(PrimitiveTopology.TRIANGLES).build();
-    private static final RenderType TYPE = RenderType.create("mcheli_searchlight",
+    /** Additive position-colour triangles; the laser designator's beam uses it too. */
+    static final RenderType TYPE = RenderType.create("mcheli_searchlight",
             RenderSetup.builder(PIPELINE).createRenderSetup());
     private SearchLightRenderer() { }
 

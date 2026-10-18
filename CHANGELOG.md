@@ -22,6 +22,13 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 
 ### Added
 
+- The GLTD (ground laser target designator) works: use the item on a block to set it up, then use
+  the designator to sit behind it. Through its optics (zoom x1 to x10 with Z and X, night vision
+  with C) the attack key calls in three A-10 strafing runs on the block in view; the designator
+  then cools down for 22.5 seconds. Its HUD shows the zoom, the strike's readiness, positions and
+  the range to the target, and other players see its head follow the operator's view with a green
+  laser. Leave with sneak or the unmount key. Network protocol is now 16.
+- The mine defuser has its upstream tooltip ("Sneak up to a mine and right-click it to defuse").
 - The wrench repairs vehicles: hold use while looking at a vehicle within four blocks to restore
   10 HP a second, one durability each, with the vehicle's health shown under the crosshair. As a
   tool it mines metal blocks fast, hits like an iron tool (6 damage) and sometimes knocks iron or
