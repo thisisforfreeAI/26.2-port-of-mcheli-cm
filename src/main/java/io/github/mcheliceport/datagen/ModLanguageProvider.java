@@ -40,6 +40,7 @@ public class ModLanguageProvider extends LanguageProvider {
         add("entity.mcheli_ce_port.helicopter", "Helicopter");
         add("entity.mcheli_ce_port.seat", "Seat");
         add("entity.mcheli_ce_port.gltd", "GLTD");
+        add("entity.mcheli_ce_port.gunner", "Gunner");
         keys();
         addItem(ModItems.SPAWN_GUNNER_VS_MONSTER, "Gunner (vs Monster)");
         addItem(ModItems.SPAWN_GUNNER_VS_PLAYER, "Gunner (vs Player of other team)");
@@ -99,6 +100,8 @@ public class ModLanguageProvider extends LanguageProvider {
         add(prefix + "down_from_rack", "Unload / Leave Rack");
         add(prefix + "ropes", "Unload Crew / Ropes");
         add(prefix + "search_light", "Searchlights / Headlights");
+        add(prefix + "radar_switch", "Radar Switch");
+        add(prefix + "open_gps_panel", "Open GPS Panel");
         add(prefix + "scoreboard", "[MP] Scoreboard");
         add(prefix + "multiplay_manager", "[MP][OP] Multiplay Manager");
         add(prefix + "camera_mode", "Camera Mode (Night Vision)");
@@ -112,6 +115,7 @@ public class ModLanguageProvider extends LanguageProvider {
         add(prefix + "flare", "Flare");
         add(prefix + "chaff", "Chaff");
         add(prefix + "aps", "Active Protection (APS)");
+        add(prefix + "ecm_jammer", "ECM Jammer");
         add(prefix + "airburst_reset", "Reset Airburst Distance");
     }
 
@@ -146,6 +150,11 @@ public class ModLanguageProvider extends LanguageProvider {
         add(prefix + "weapons", "Weapons");
         add(prefix + "infinityAmmo", "Infinite Ammunition");
         add(prefix + "hurtResistantTime", "Invulnerability After Hits");
+        add(prefix + "hitBoxDelayTick", "Gunner Lead on Riders");
+        add(prefix + "rangeOfGunnerVsMonsterHorizontal", "Gunner vs Monster Range (Sideways)");
+        add(prefix + "rangeOfGunnerVsMonsterVertical", "Gunner vs Monster Range (Vertical)");
+        add(prefix + "rangeOfGunnerVsPlayerHorizontal", "Gunner vs Player Range (Sideways)");
+        add(prefix + "rangeOfGunnerVsPlayerVertical", "Gunner vs Player Range (Vertical)");
         add(prefix + "bulletBreakableBlocks", "Blocks Bullets Break");
         add(prefix + "damageVsEntity", "Damage vs Other Entities");
         add(prefix + "damageVsLiving", "Damage vs Mobs");

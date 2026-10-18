@@ -19,6 +19,7 @@ import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.resources.Identifier;
+import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.AABB;
@@ -88,7 +89,15 @@ public abstract class AircraftRenderer<T extends AircraftEntity> extends EntityR
         }
         state.texture = Identifier.fromNamespaceAndPath("mcheli",
                 "textures/" + this.directory() + "/" + entity.getTextureName() + ".png");
-        state.color = entity.isDestroyed() ? DESTROYED_COLOR : COLOR;
+        if (entity.isDestroyed()) {
+            state.color = DESTROYED_COLOR;
+        } else if (entity.isIronCurtainActive()) {
+            // Upstream's iron curtain tint, pulsing red.
+            float f = entity.getIronCurtainFactor(partialTicks);
+            state.color = ARGB.colorFromFloat(1.0F, 0.8F * f, 0.4F * f, 0.4F * f);
+        } else {
+            state.color = COLOR;
+        }
         state.flat = !(info.smoothShading && ClientConfig.get(ClientConfig.SMOOTH_SHADING));
         this.drawParts(entity, info, models, input(entity, ypr, partialTicks), partialTicks, state.draws);
         GlMatrixStack eraPose = AircraftPartPoses.bodyStack(input(entity, ypr, partialTicks));

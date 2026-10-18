@@ -55,7 +55,8 @@ public final class WeaponClientControl {
         boolean flareKey = ModKeyMappings.FLARE.consumeClick();
         boolean chaffKey = ModKeyMappings.CHAFF.consumeClick();
         boolean apsKey = ModKeyMappings.APS.consumeClick();
-        if ((flareKey || chaffKey || apsKey) && sid <= 1) {
+        boolean ecmKey = ModKeyMappings.ECM_JAMMER.consumeClick();
+        if ((flareKey || chaffKey || apsKey || ecmKey) && sid <= 1) {
             boolean used = false;
             boolean tried = false;
             if (flareKey && ac.haveFlare()) {
@@ -77,6 +78,13 @@ public final class WeaponClientControl {
                 tried = true;
                 if (ac.canUseAPS() && ac.useAPS()) {
                     pc = pc.withAps();
+                    used = true;
+                }
+            }
+            if (ecmKey && ac.haveECMJammer()) {
+                tried = true;
+                if (ac.useECMJammer()) {
+                    pc = pc.withEcm();
                     used = true;
                 }
             }
