@@ -31,7 +31,8 @@ public final class EffectsProbe {
 
     @SubscribeEvent
     public static void tick(ClientTickEvent.Post event) {
-        if (Boolean.getBoolean("mcheli.probeLook") || Boolean.getBoolean("mcheli.probeGround")) return;
+        if (Boolean.getBoolean("mcheli.probeLook") || Boolean.getBoolean("mcheli.probeGround")
+                || Boolean.getBoolean("mcheli.probeBombScale")) return;
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null || mc.player == null || mc.isPaused()) return;
         tick++;

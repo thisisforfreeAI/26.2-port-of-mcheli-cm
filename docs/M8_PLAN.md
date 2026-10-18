@@ -114,7 +114,9 @@ range and lifetime are bounded; texture rendering uses the existing vanilla enti
 Requested by the user after the blast-mark concept preview. These are follow-up work; the
 current small flare halo and the existing explosion heat/glow are already implemented.
 
-- [ ] **Bomb explosions:** add a more readable initial hot core, a brief outward dust/debris
+- [x] **Bomb size:** enlarge heavy-bomb/incendiary ground marks and power-scaled initial
+  fire/smoke after playtest feedback. Shared quad, particle and coverage budgets still apply.
+- [ ] **Bomb accents:** add a more readable initial hot core, a brief outward dust/debris
   accent and a fuller smoke silhouette scaled to the bomb's existing explosion power. Heavy
   blasts should feel broader than cannon impacts without obscuring the whole scene.
 - [ ] **Missile explosions:** add a sharper, tighter impact flash and short spark/debris accents,

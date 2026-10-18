@@ -3,6 +3,7 @@ package io.github.mcheliceport.client.particle;
 import io.github.mcheliceport.config.ClientConfig;
 import io.github.mcheliceport.config.EffectQuality;
 import io.github.mcheliceport.effect.ParticleParam;
+import io.github.mcheliceport.effect.BlastStyle;
 import io.github.mcheliceport.weapon.explosion.McheliExplosion;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,7 +41,7 @@ public final class ExplosionEffects {
     }
 
     static void play(ClientLevel level, double x, double y, double z, float size, boolean inWater,
-            List<BlockPos> affected) {
+            List<BlockPos> affected, BlastStyle style) {
         if (!EffectAdmission.inRange(level, x, y, z, size * 2)) return;
         if (inWater) {
             effectExplosionInWater(level, x, y, z, size);
@@ -50,7 +51,7 @@ public final class ExplosionEffects {
         blocks.addAll(McheliExplosion.rayMarchBlocks(level, null, x, y, z, size, 1.0F, false, level.getRandom()));
         boolean vanilla = ClientConfig.get(ClientConfig.DEFAULT_EXPLOSION_PARTICLE);
         if (!vanilla && size >= 1.0F && EffectQuality.enhanced()) {
-            ClientEffects.spawnExplosionGlow(level, x, y, z, size);
+            ClientEffects.spawnExplosionGlow(level, x, y, z, size, style);
             ClientEffects.spawnExplosionSparks(level, x, y, z, size);
         }
         int cnt = 0;
@@ -60,7 +61,7 @@ public final class ExplosionEffects {
             if (vanilla) {
                 spawnVanillaExplosionEffect(level, x, y, z, size, pos.getX(), pos.getY(), pos.getZ());
             } else if (spawnExplosionEffect(level, x, y, z, size, cnt, pos.getX(), pos.getY(), pos.getZ(),
-                    flareCnt > 0)) {
+                    flareCnt > 0, style)) {
                 flareCnt--;
             }
         }
@@ -68,7 +69,7 @@ public final class ExplosionEffects {
 
     /** Upstream {@code spawnExlosionEffect}: flares, block dust and smoke for one affected block. */
     private static boolean spawnExplosionEffect(ClientLevel level, double ex, double ey, double ez, float size,
-            int cnt, int i, int j, int k, boolean spawnFlare) {
+            int cnt, int i, int j, int k, boolean spawnFlare, BlastStyle style) {
         RandomSource rand = level.getRandom();
         boolean spawnedFlare = false;
         double d0 = i + rand.nextFloat();
@@ -121,6 +122,11 @@ public final class ExplosionEffects {
             prm.age = (int) (prm.age * Math.min(size, 6.0F));
             prm.age = prm.age * 2 / 3;
             prm.diffusible = true;
+            if (EffectQuality.enhanced()) {
+                var budget = ClientConfig.get(ClientConfig.EFFECT_BUDGET);
+                prm.size = ExplosionLook.puffSize(prm.size, size, style, budget);
+                prm.diffusionStart = ExplosionLook.startScale(size, style, budget);
+            }
             ClientEffects.INSTANCE.spawnParticle(level, prm);
         }
         return spawnedFlare;

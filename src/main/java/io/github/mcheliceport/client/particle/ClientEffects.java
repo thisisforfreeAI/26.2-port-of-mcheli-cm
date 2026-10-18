@@ -77,7 +77,7 @@ public final class ClientEffects implements McheliEffects.Sink {
         fx.diffusible = p.diffusible;
         fx.toWhite = p.toWhite;
         if (p.diffusible) {
-            fx.particleScale = p.size * 0.2F;
+            fx.particleScale = p.size * (enhanced ? Math.clamp(p.diffusionStart, 0.2F, 1.0F) : 0.2F);
             fx.particleMaxScale = p.size * 2.0F;
         } else {
             fx.particleScale = p.size;
@@ -109,11 +109,11 @@ public final class ClientEffects implements McheliEffects.Sink {
     }
 
     /** M8 glow under an explosion's fireball (not in water). */
-    static void spawnExplosionGlow(ClientLevel level, double x, double y, double z, float size) {
-        if (!optionalGlow(level, x, y, z, Math.min(size * 1.2F, 12.0F) * 1.5F)) {
+    static void spawnExplosionGlow(ClientLevel level, double x, double y, double z, float size, BlastStyle style) {
+        float radius = ExplosionLook.glowRadius(size, style, ClientConfig.get(ClientConfig.EFFECT_BUDGET));
+        if (!optionalGlow(level, x, y, z, radius * 1.5F)) {
             return;
         }
-        float radius = Math.min(size * 1.2F, 12.0F);
         int life = (int) Math.min(6.0F + size, 14.0F);
         Minecraft.getInstance().particleEngine.add(new GlowParticle(level, x, y, z, radius, 0.5F, life,
                 1.0F, 0.6F, 0.25F, 0.9F));
@@ -202,7 +202,7 @@ public final class ClientEffects implements McheliEffects.Sink {
     public void explosionEffects(Level level, double x, double y, double z, float size, boolean inWater,
             List<BlockPos> affectedBlocks, BlastStyle style) {
         if (level instanceof ClientLevel clientLevel) {
-            ExplosionEffects.play(clientLevel, x, y, z, size, inWater, affectedBlocks);
+            ExplosionEffects.play(clientLevel, x, y, z, size, inWater, affectedBlocks, style);
             if (!inWater) BlastMarks.add(clientLevel, x, y, z, size, style);
         }
     }

@@ -43,11 +43,15 @@ them independently. The underlying explosion damage settings retain control of a
 
 ## Graphics budget
 
-| Quality | Maximum radius | Live marks | Total surface quads | Draw range |
+| Quality | Ordinary / bomb-char maximum radius | Live marks | Total surface quads | Draw range |
 |---|---:|---:|---:|---:|
-| Low | 2.5 blocks | 8 | 128 | 64 blocks |
-| Balanced | 4 blocks | 24 | 384 | 96 blocks |
-| High | 5 blocks | 48 | 768 | 128 blocks |
+| Low | 2.5 / 4 blocks | 8 | 128 | 64 blocks |
+| Balanced | 4 / 6 blocks | 24 | 384 | 96 blocks |
+| High | 5 / 7 blocks | 48 | 768 | 128 blocks |
+
+Bomb and incendiary marks scale at 1.15 / 1.25 times explosion power before these caps.
+Large bombs therefore get broader ground coverage than ordinary impacts. The fixed shared
+quad limit means fewer large footprints can coexist, rather than raising the rendering ceiling.
 
 The pending queue holds at most sixteen events; at most two are projected per tick, each capped
 at 256 surface pieces and a sixteen-block downward search. Old marks are evicted as complete
@@ -83,7 +87,7 @@ marks, with adaptive detail disabled to measure the explicit ceiling. Screenshot
 performance phases. Raw frame intervals can be summarized using
 `scripts/summarize-effect-frames.py`. Development probes remain excluded from normal builds.
 
-The Vulkan 1920×1080 scene passes its projection, material, step, airburst/water rejection,
+The initial PR #44 Vulkan 1920×1080 scene passes its projection, material, step, airburst/water rejection,
 terrain invalidation, Classic reset and budget assertions under Mesa 25.0.7 lavapipe / LLVM 19.1.7.
 The repeated-hit scene retains nine marks / 354 quads; the steady marked phase retains ten marks /
 360 quads against an explicit ceiling of 24 / 384. It saves and stops cleanly.
@@ -108,8 +112,34 @@ Its [raw frame summary](performance/m8-ground-llvmpipe/summary.json) reports med
 63.32/88.15 ms empty versus 69.30/93.24 ms marked. This software run shows additional rendering
 cost and still does not meet 80 FPS; hardware combat profiling remains open.
 
-The combined `build runGameTestServer` passes **180 JUnit tests and 209 required GameTests**
+The initial PR #44 combined `build runGameTestServer` passed **180 JUnit tests and 209 required GameTests**
 with zero failures. The normal jar includes all three textures and excludes development probes;
 the texture generator reproduces the committed assets byte for byte. Local builds use the
 documented external optional-JEI exclusion because its Maven host is blocked here. The concept preview is
 an illustration of the intended style; native renderer captures are identified separately.
+
+## Bomb-size follow-up
+
+After playtest feedback that both the ground texture and airborne effect looked too small,
+bomb/char caps increased to the values above. Enhanced bomb puffs also start broader and grow
+with explosion power; [M8_LIGHTING_FIRE.md](M8_LIGHTING_FIRE.md) describes those bounds.
+
+The opt-in `-Dmcheli.probeBombScale=true` scene compares a size-12 ordinary profile (the previous
+bomb scale at that power) with the larger bomb profile using the same emitter seed, then shows
+the bomb over a stepped sandstone crater. It captures ages 4, 12 and 40 plus the cleared-smoke
+ground view, checks each mark against the 256-quad per-mark cap, and shuts down cleanly.
+Use the same disposable world and init script as the ground probe; add
+`-Dmcheli.probeBackend=OPENGL` to repeat on OpenGL.
+
+The corrected size-12 Vulkan scene passes on Mesa lavapipe at 1920×1080: one 64-quad
+reference mark versus one 144-quad bomb mark, with 144 quads on the stepped crater.
+Native early-blast comparison: [previous scale](screens/m8-bomb-scale-vulkan-before.png),
+[larger bomb](screens/m8-bomb-scale-vulkan-after.png). Both views use power 12, the same emitter
+seed, camera, quality and capture age. The previous-scale reference uses the ordinary blast
+profile, whose size-12 puff, glow and capped ground scale match the previous heavy-bomb values.
+
+The OpenGL repeat also passes at 1920×1080 on Mesa llvmpipe with the same 64/144/144 quad
+counts. [Native stepped-crater ground view](screens/m8-bomb-scale-opengl-crater.png).
+The follow-up build passes all **183 JUnit tests** with the same external optional-JEI
+exclusion described above. No additional particle or surface-budget allowance was added.
+These visual checks do not establish the target PC's 80 FPS; hardware acceptance remains open.

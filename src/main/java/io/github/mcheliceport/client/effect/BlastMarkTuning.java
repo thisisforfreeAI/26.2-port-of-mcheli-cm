@@ -13,10 +13,15 @@ public final class BlastMarkTuning {
             case CANNON -> 0.4F;
             case PENETRATOR -> 0.45F;
             case BLAST -> 0.65F;
-            case HEAVY -> 0.9F;
-            case INCENDIARY -> 1.0F;
+            case HEAVY -> 1.15F;
+            case INCENDIARY -> 1.25F;
         };
         float cap = switch (budget) { case LOW -> 2.5F; case BALANCED -> 4.0F; case HIGH -> 5.0F; };
+        if (style == BlastStyle.HEAVY || style == BlastStyle.INCENDIARY) {
+            // A large bomb must not hit the same small footprint ceiling as an ordinary rocket.
+            // Even the largest flat footprint fits the existing 256-piece per-mark cap.
+            cap = switch (budget) { case LOW -> 4.0F; case BALANCED -> 6.0F; case HIGH -> 7.0F; };
+        }
         return Math.clamp(size * scale, 0.6F, cap);
     }
 

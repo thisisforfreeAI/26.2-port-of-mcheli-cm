@@ -14,12 +14,25 @@ class BlastMarkTuningTest {
                 > BlastMarkTuning.radius(4, BlastStyle.PENETRATOR, EffectBudget.BALANCED));
         for (EffectBudget budget : EffectBudget.values()) {
             for (BlastStyle style : BlastStyle.values()) {
-                assertTrue(BlastMarkTuning.radius(Float.MAX_VALUE, style, budget) <= 5);
+                assertTrue(BlastMarkTuning.radius(Float.MAX_VALUE, style, budget) <= 7);
                 assertEquals(0, BlastMarkTuning.radius(Float.NaN, style, budget));
                 assertEquals(0, BlastMarkTuning.radius(-10, style, budget));
             }
             assertTrue(BlastMarkTuning.markLimit(budget) <= 48);
             assertTrue(BlastMarkTuning.quadLimit(budget) <= 768);
+        }
+    }
+
+    @Test
+    void largeBombsHaveMoreHeadroomWithoutIncreasingTheSharedSurfaceBudget() {
+        assertEquals(6, BlastMarkTuning.radius(12, BlastStyle.HEAVY, EffectBudget.BALANCED));
+        assertEquals(4, BlastMarkTuning.radius(12, BlastStyle.BLAST, EffectBudget.BALANCED));
+        assertTrue(BlastMarkTuning.radius(6, BlastStyle.HEAVY, EffectBudget.BALANCED)
+                > BlastMarkTuning.radius(4, BlastStyle.HEAVY, EffectBudget.BALANCED));
+        for (EffectBudget budget : EffectBudget.values()) {
+            int radius = (int) BlastMarkTuning.radius(100, BlastStyle.HEAVY, budget);
+            int flatFootprint = (2 * radius + 1) * (2 * radius + 1);
+            assertTrue(flatFootprint <= Math.min(256, BlastMarkTuning.quadLimit(budget)));
         }
     }
 
