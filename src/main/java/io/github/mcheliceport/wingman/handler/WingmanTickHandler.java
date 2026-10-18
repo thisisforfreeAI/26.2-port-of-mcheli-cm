@@ -28,6 +28,7 @@ import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.server.ServerStartedEvent;
 import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 import net.neoforged.neoforge.event.tick.LevelTickEvent;
 import org.jspecify.annotations.Nullable;
@@ -80,6 +81,8 @@ public final class WingmanTickHandler {
     public static void register() {
         NeoForge.EVENT_BUS.addListener(WingmanTickHandler::onLevelTickPre);
         NeoForge.EVENT_BUS.addListener(WingmanTickHandler::onLevelTickPost);
+        NeoForge.EVENT_BUS.addListener((ServerStartedEvent event) ->
+                WingmanConfig.loadFromServerConfig());
         NeoForge.EVENT_BUS.addListener((ServerStoppedEvent event) -> {
             WingmanRegistry.clear();
             MissionChunkLoader.clear();
@@ -348,7 +351,7 @@ public final class WingmanTickHandler {
         for (Map.Entry<UUID, WingmanEntry> e : WingmanRegistry.snapshot().entrySet()) {
             UUID id = e.getKey();
             WingmanEntry entry = e.getValue();
-            if (!entry.isAutonomous() && (entry.leader == null || entry.leader.isRemoved())) {
+            if (!entry.isAutonomous() && !entry.parkingHold && (entry.leader == null || entry.leader.isRemoved())) {
                 WingmanRegistry.remove(id);
                 McheliCePort.LOGGER.info("[Wingman] {} unregistered - leader gone", id);
                 continue;
@@ -506,7 +509,7 @@ public final class WingmanTickHandler {
      * Upstream {@code computeOrbitTarget}: circles the target 2 degrees a tick, at an order's orbit
      * radius, else at the weapon's standoff.
      */
-    private static Vec3 computeOrbitTarget(Entity target, WingmanEntry entry) {
+    public static Vec3 computeOrbitTarget(Entity target, WingmanEntry entry) {
         double orbitRadius = entry.order != null && entry.order.orbitRadius > 0 ? entry.order.orbitRadius
                 : standoffForWeapon(entry.weaponType);
         double idealY = clampAttackAltitude(target.getY() + altOffsetForWeapon(entry.weaponType));
@@ -546,7 +549,7 @@ public final class WingmanTickHandler {
      * Upstream: guided missiles orbit the target, as does every weapon of an order with Orbit Atk set
      * (its AC-130 mode).
      */
-    private static boolean isOrbitFireWeapon(@Nullable String type, boolean orbitAttack) {
+    public static boolean isOrbitFireWeapon(@Nullable String type, boolean orbitAttack) {
         if (orbitAttack) {
             return true;
         }

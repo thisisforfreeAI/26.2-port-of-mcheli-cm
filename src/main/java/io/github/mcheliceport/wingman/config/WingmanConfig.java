@@ -1,9 +1,11 @@
 package io.github.mcheliceport.wingman.config;
 
+import io.github.mcheliceport.config.ServerConfig;
+
 /**
- * Upstream's {@code WingmanConfig} formation values, which the wingman panel and (later) the
- * {@code /wingman} command change while the server runs. They start at upstream's defaults on
- * each server start; the config file entries come with the command.
+ * Upstream's {@code WingmanConfig} formation values, which the wingman panel and the
+ * {@code /wingman} command change while the server runs. They are read from the server config's
+ * {@code [wingman]} section when the server starts, and as upstream changes are not saved.
  */
 public final class WingmanConfig {
 
@@ -28,6 +30,21 @@ public final class WingmanConfig {
     private WingmanConfig() {
     }
 
+    /** Upstream {@code load}: the values of the server config, or upstream's defaults before it loads. */
+    public static void loadFromServerConfig() {
+        if (!ServerConfig.SPEC.isLoaded()) {
+            reset();
+            return;
+        }
+        formationSideDist = ServerConfig.WINGMAN_SIDE_DIST.get();
+        formationAltOffset = ServerConfig.WINGMAN_ALT_OFFSET.get();
+        formationRearDist = ServerConfig.WINGMAN_REAR_DIST.get();
+        maxWingmen = ServerConfig.WINGMAN_MAX_WINGMEN.get();
+        minAttackAltitude = ServerConfig.WINGMAN_MIN_ATTACK_ALTITUDE.get();
+        maxAttackAltitude = ServerConfig.WINGMAN_MAX_ATTACK_ALTITUDE.get();
+    }
+
+    /** Upstream's defaults. */
     public static void reset() {
         formationSideDist = DEFAULT_SIDE_DIST;
         formationAltOffset = DEFAULT_ALT_OFFSET;

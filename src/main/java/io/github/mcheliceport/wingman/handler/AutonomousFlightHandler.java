@@ -993,7 +993,7 @@ public final class AutonomousFlightHandler {
      * the ends with that ID. Upstream needed both ends to have the ID, so the runway-end IDs its
      * planner offered skipped the node; the port also finds the other end through the end's base.
      */
-    static MarkerRegistry.MarkerInfo @Nullable [] resolveNodeRunway(ServerLevel level, String runwayId) {
+    public static MarkerRegistry.MarkerInfo @Nullable [] resolveNodeRunway(ServerLevel level, String runwayId) {
         MarkerRegistry.MarkerInfo rwyA = MarkerRegistry.resolveMarker(level, runwayId, MarkerType.RUNWAY_A);
         MarkerRegistry.MarkerInfo rwyB = MarkerRegistry.resolveMarker(level, runwayId, MarkerType.RUNWAY_B);
         if (rwyA == null && rwyB != null && !rwyB.baseId().isEmpty()) {

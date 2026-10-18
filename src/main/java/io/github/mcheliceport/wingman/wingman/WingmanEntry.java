@@ -64,6 +64,11 @@ public class WingmanEntry {
     public int strikePassesRemaining;
     /** The parking spot or helipad the aircraft left from or is taxiing to. */
     public String assignedParkingId = "";
+    /**
+     * Set by {@code /wingman order park}: the aircraft waits on {@link #assignedParkingId} for its
+     * next order, so the entry is kept without a leader.
+     */
+    public boolean parkingHold;
     /** The taxi route the order named for departure. */
     public String departureRouteId = "";
     /** The marker IDs of the taxi in progress, and the next one's index. */
@@ -128,6 +133,7 @@ public class WingmanEntry {
 
     /** Starts a planner mission from its first node. */
     public void startMission(List<MissionNode> nodes) {
+        this.parkingHold = false;
         this.mission = List.copyOf(nodes);
         this.missionIndex = 0;
         this.missionNodeTimer = 0;

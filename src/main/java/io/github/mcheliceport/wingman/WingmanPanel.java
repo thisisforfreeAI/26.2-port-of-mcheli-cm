@@ -73,7 +73,7 @@ public final class WingmanPanel {
         return list;
     }
 
-    private static boolean canFollow(AircraftEntity leader, AircraftEntity ac) {
+    public static boolean canFollow(AircraftEntity leader, AircraftEntity ac) {
         return ac != leader && !ac.isRemoved() && !ac.isDestroyed() && !(ac.getPilot() instanceof Player)
                 && WingmanRegistry.get(ac.getUUID()) == null
                 && leader.distanceToSqr(ac) <= NEARBY_RANGE * NEARBY_RANGE;
