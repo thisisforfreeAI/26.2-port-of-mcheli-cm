@@ -1,5 +1,7 @@
 package io.github.mcheliceport.registry;
 
+import io.github.mcheliceport.block.ChargerBlock;
+import io.github.mcheliceport.block.ChargerBlockEntity;
 import io.github.mcheliceport.block.DraftingTableBlock;
 import io.github.mcheliceport.block.DraftingTableBlockEntity;
 import java.util.function.Supplier;
@@ -28,9 +30,13 @@ public final class ModBlocks {
     public static final Supplier<BlockEntityType<DraftingTableBlockEntity>> DRAFTING_TABLE_ENTITY =
             ModRegistries.BLOCK_ENTITY_TYPES.register("drafting_table", () -> new BlockEntityType<>(
                     DraftingTableBlockEntity::new, DRAFTING_TABLE.get(), LIT_DRAFTING_TABLE.get()));
-    public static final DeferredBlock<Block> CHARGER = ModRegistries.BLOCKS.registerSimpleBlock("charger",
-            p -> p.mapColor(MapColor.METAL).sound(SoundType.METAL).strength(1.5f, 6.0f)
+    public static final DeferredBlock<ChargerBlock> CHARGER = ModRegistries.BLOCKS.registerBlock("charger",
+            ChargerBlock::new, p -> p.mapColor(MapColor.METAL).sound(SoundType.METAL).strength(1.5f, 6.0f)
                     .requiresCorrectToolForDrops());
+    /** Upstream {@code MCH_TileEntityCharger}: the charger's energy buffer. */
+    public static final Supplier<BlockEntityType<ChargerBlockEntity>> CHARGER_ENTITY =
+            ModRegistries.BLOCK_ENTITY_TYPES.register("charger", () -> new BlockEntityType<>(
+                    ChargerBlockEntity::new, CHARGER.get()));
     public static final DeferredBlock<WingmanMarkerBlock> WINGMAN_MARKER = ModRegistries.BLOCKS.registerBlock(
             "wingman_marker", WingmanMarkerBlock::new,
             p -> p.mapColor(MapColor.METAL).strength(2.0f, 6.0f).requiresCorrectToolForDrops());

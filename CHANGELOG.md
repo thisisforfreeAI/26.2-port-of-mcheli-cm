@@ -39,6 +39,12 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
   supported (see Added); JEI shows the drafting table as a crafting station for them.
 
 ### Added
+- The aircraft charger works: cables and generators fill it through NeoForge's energy capability
+  (up to 100,000 by default), using it shows what it holds, and every 10 ticks it feeds up to 256
+  energy to the electric vehicles within 6 blocks, then to a battery in a full vehicle's fuel slot.
+  Electric vehicles that take batteries accept any NeoForge energy item in the fuel slot and draw
+  from it, in flight too. The range, rate and capacity are server settings.
+
 
 - M8 effects polish, first slice, for the vehicles already ported (see docs/M8_PLAN.md): smoke
   fades in and out and grows smoothly; explosion puffs start as fire and cool to smoke over a

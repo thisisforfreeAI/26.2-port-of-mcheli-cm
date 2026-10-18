@@ -1,5 +1,6 @@
 package io.github.mcheliceport.menu;
 
+import io.github.mcheliceport.compat.energy.EnergyCompat;
 import io.github.mcheliceport.entity.aircraft.AircraftEntity;
 import io.github.mcheliceport.registry.ModItems;
 import io.github.mcheliceport.registry.ModMenuTypes;
@@ -62,7 +63,7 @@ public class AircraftMenu extends AbstractContainerMenu {
         this.addSlot(new Slot(this.container, AircraftEntity.SLOT_FUEL_IN, 11, 18) {
             @Override
             public boolean mayPlace(ItemStack stack) {
-                return isFuelCan(stack);
+                return AircraftMenu.this.isFuelSlotItem(stack);
             }
         });
         this.addSlot(new Slot(this.container, AircraftEntity.SLOT_FUEL_OUT, 11, 18 + 3 * 18) {
@@ -121,6 +122,15 @@ public class AircraftMenu extends AbstractContainerMenu {
      * A fuel can with fuel left. Upstream's slot also took empty cans, which then sat there doing
      * nothing and looked like a full can that would not refuel.
      */
+    /**
+     * Upstream {@code isFuelSlotItem}: a fuel can, or a battery for an electric vehicle that takes
+     * one. Fluid containers wait for the fuel fluid (KNOWN_ISSUES).
+     */
+    private boolean isFuelSlotItem(ItemStack stack) {
+        return isFuelCan(stack) || this.aircraft != null && this.aircraft.allowBattery()
+                && EnergyCompat.isBattery(stack);
+    }
+
     public static boolean isFuelCan(ItemStack stack) {
         return stack.is(ModItems.FUEL.get()) && stack.getDamageValue() < stack.getMaxDamage();
     }
@@ -163,7 +173,7 @@ public class AircraftMenu extends AbstractContainerMenu {
             if (!this.moveItemStackTo(stack, vehicleSlots, this.slots.size(), true)) {
                 return ItemStack.EMPTY;
             }
-        } else if (isFuelCan(stack) && this.moveItemStackTo(stack, AircraftEntity.SLOT_FUEL_IN,
+        } else if (this.isFuelSlotItem(stack) && this.moveItemStackTo(stack, AircraftEntity.SLOT_FUEL_IN,
                 AircraftEntity.SLOT_FUEL_IN + 1, false)) {
             // Moved into the fuel slot.
         } else if (stack.is(ModItems.PARACHUTE.get()) && this.parachuteSlots > 0

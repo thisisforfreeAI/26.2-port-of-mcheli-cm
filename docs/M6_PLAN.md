@@ -1282,3 +1282,27 @@ noise ([night vision](screens/m6-gltd-night-vision.png)); the attack key at a bl
 turned the strike red and the A-10's run hit near the mark ([strike](screens/m6-gltd-strike.png),
 taken before the laser was narrowed); and the unmount key left, giving the view back. Not run:
 Vulkan, a second player watching the operator's head and laser, and sneaking to leave.
+
+## Aircraft charger increment
+
+- `ChargerBlock` and `ChargerBlockEntity` port `MCH_BlockCharger` and `MCH_TileEntityCharger`:
+  the buffer (NBT `Energy`) takes energy through `Capabilities.Energy.BLOCK` up to
+  `charger.chargerCapacity`, gives none back, and every 10 ticks shares one budget of
+  `charger.chargerTransferRate` among the electric vehicles within `charger.chargerRange`: first
+  each vehicle's store, then a battery in the fuel slot of a vehicle that allows batteries. Using
+  the charger shows `Charger: <energy> / <capacity>` above the hotbar.
+- `EnergyCompat` ports the Forge Energy half of `MCH_EnergyCompat` with NeoForge's item energy
+  capability; GregTech EU and HBM HE are dropped (PORTING_PLAN.md section 5.9).
+- `AircraftEntity` ports `isElectric`, `allowBattery`, `addEnergy` and `updateElectricBattery`, and
+  the aircraft menu's fuel slot accepts a battery for vehicles that allow one, as upstream's
+  `isFuelSlotItem`.
+
+Validation: `build` passed and the GameTest server passed all 200 required tests, including two
+new ones: the energy capability and capacity, the transfer rate shared by vehicles in range,
+fuelled and distant vehicles left alone, range 0, battery overflow and top-up, and the fuel slot
+accepting batteries only for vehicles that allow them. The port has no battery item, so with
+GameTests enabled (development runs only) a copper ingot is a 10,000-energy test battery. On a
+dedicated server with an OpenGL client, a charger set with `/setblock` drew its texture, and after
+`/data merge` gave it 12,345 energy, using it showed `Charger: 12,345 / 100,000`
+([use](screens/m6-charger-use.png)). No stock vehicle is electric, so none was charged in the
+client. Not run: Vulkan, an energy mod's cables.
