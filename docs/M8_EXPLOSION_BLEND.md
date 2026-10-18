@@ -42,7 +42,31 @@ Its isolated explosions deliberately receive empty affected-block lists, followe
 fixed-detail and adaptive overlap frame samples. `-Dmcheli.probeStructureQuick=true` runs a short
 large-bomb visual iteration; full validation omits that flag.
 
-The production build excludes development scenes. The local build uses an external init script
+The final build passes 194 JUnit tests and all 225 required GameTests on the integrated M6 base.
+The production jar excludes development scenes; all eight effect textures reproduce byte-for-byte.
+The local build uses an external init script
 excluding optional JEI because its Maven host is blocked; repository JEI sources/configuration
 remain unchanged. Native checks here use software Mesa, so **80 FPS on the RTX 3060 8 GB /
 7800X3D at 1080p remains a hardware acceptance check**.
+
+Native Vulkan/lavapipe and OpenGL/llvmpipe scenes completed, including empty affected lists,
+expiry/shared-limit checks and adaptive overlap. Vulkan was repeated after integrating the
+latest M6 port changes. Real captures: [large fire](screens/m8-blend-vulkan-fire.png),
+[dark column](screens/m8-blend-vulkan-column.png), [night flash](screens/m8-blend-vulkan-night.png),
+[earlier missile puffs](screens/m8-blend-opengl-missile.png). Small-impact captures use a closer
+camera; all frame-sampling scenes use the same wide camera, 1080p, four render chunks, VSync off
+and a runtime cap of 120 FPS. No builds/tests or other native scenes ran during these samples.
+
+| Software renderer | Scene | Frames | Median ms | p95 ms |
+|---|---|---:|---:|---:|
+| Vulkan / lavapipe | Empty | 91 | 66.805 | 81.144 |
+| Vulkan / lavapipe | Fixed | 73 | 82.011 | 127.761 |
+| Vulkan / lavapipe | Adaptive | 89 | 69.572 | 80.217 |
+| OpenGL / llvmpipe | Empty | 93 | 68.181 | 89.506 |
+| OpenGL / llvmpipe | Fixed | 74 | 84.511 | 106.516 |
+| OpenGL / llvmpipe | Adaptive | 87 | 71.998 | 87.941 |
+
+Three overlapping impacts recur every 25 ticks. End-scene particle snapshots are 67/68 at fixed
+detail and 2/4 at adaptive pressure three (Vulkan/OpenGL); these are not averages or universal
+savings. All scenes miss 12.5 ms on software rendering. CSVs and summaries are saved under
+`docs/performance/m8-energy-lavapipe` and `m8-energy-llvmpipe`.
