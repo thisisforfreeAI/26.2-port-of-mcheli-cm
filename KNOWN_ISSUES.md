@@ -25,7 +25,7 @@ broader gameplay and hardware checks remain pending.
 
 | Area | Planned milestone |
 |---|---|
-| Remaining plane/ground equipment and UAV station preview camera, gunner NPCs and mobs in seats (and their weapon use), hand-held weapons (Stinger, Javelin), the rest of the aircraft GUI, drafting table screen, charger, the team scoreboard screens | M6 |
+| Remaining plane/ground equipment and UAV station preview camera, gunner NPCs and mobs in seats (and their weapon use), the rest of the aircraft GUI, drafting table screen, charger, the team scoreboard screens | M6 |
 | BVR and passive radar, GPS panel and GPS missiles, mortar radar and RWR overlays, ECM jammer, the pulse-Doppler notch, the APS "iron curtain", data link, anti-radiation missiles, `Destruct` bombs (UAVs) | M6 (with the vehicles that use them) |
 | Wingman (AI wingmen, marker block screens and types, missions, `/wingman`) | M6b |
 | Remaining `/mcheli` commands (including reloading content with `reconfig`), advancement triggers, long-distance tracking and rendering, thermal vision (the third camera mode), GPU-buffer model rendering, projectile chunk loading (`ProjectileChunkLoad`), HBM:NTM stubs, performance work | M7 |
@@ -334,6 +334,15 @@ These follow from how Minecraft 26.2 works or from decisions approved in PORTING
     unmount key or sneak to leave). The server also checks that the operator sending controls
     sits at the designator. Its laser is two crossed strips that widen with distance, so it stays
     about a pixel wide from the designator, instead of a GL line.
+78. The hand-held Stinger and Javelin fire from the player's eyes on the server; upstream fired
+    from the position the client sent. The server also needs the player to be aiming the launcher
+    and the target to be alive and within 1.5 times `stingerLockRange`, where upstream took the
+    client's target on trust, and a refused shot leaves the launcher loaded. Their keys are the
+    vehicle keys (attack, Z, C and X), read while the player is on foot. The zoom is applied
+    through the field of view rather than upstream's camera-zoom reflection. The launchers keep
+    upstream's lock cycle: a complete lock lasts one tick before it starts again, so the attack
+    key is held, not clicked. They still show as flat items in the hand until the item models
+    are ported.
 
 ## Upstream content issues kept as they are
 

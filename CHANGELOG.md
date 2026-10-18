@@ -22,6 +22,15 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 
 ### Added
 
+- The hand-held FIM-92 Stinger and FGM-148 Javelin work: hold use to raise the sight, which
+  zooms and locks on to an aircraft or flying mob (Stinger) or a ground target (Javelin) in view;
+  hold the attack key and the missile leaves once the lock is complete. A shot empties the
+  launcher, and a missile item in the inventory reloads it two seconds after the sight comes
+  down. **Z** cycles the zoom, **C** switches night vision after three seconds of aiming, and
+  **X** switches the Javelin between direct and top attack (top attack needs a target 40 m
+  away). The Stinger's scope and the Javelin's command launch unit, with its indicators, lock box
+  and tracking lines, are upstream's. New server setting `stingerLockRange` (320 blocks) and
+  client setting `lightWeaponAutoFire`. Network protocol is now 17.
 - The GLTD (ground laser target designator) works: use the item on a block to set it up, then use
   the designator to sit behind it. Through its optics (zoom x1 to x10 with Z and X, night vision
   with C) the attack key calls in three A-10 strafing runs on the block in view; the designator
