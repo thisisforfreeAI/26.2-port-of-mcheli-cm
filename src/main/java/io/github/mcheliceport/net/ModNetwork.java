@@ -47,7 +47,7 @@ public final class ModNetwork {
     private static final Logger LOGGER = LogUtils.getLogger();
     /** Bump when payload encoding, menu layout or synchronized entity data changes. */
     // Wingman markers: the marker screen's payloads.
-    public static final String VERSION = "24";
+    public static final String VERSION = "25";
 
     private ModNetwork() {
     }

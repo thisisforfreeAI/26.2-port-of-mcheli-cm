@@ -88,6 +88,16 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
   taxis back to a free parking spot. A helicopter, or a VTOL plane returning to a helipad, takes
   off and lands vertically. The chunks around an aircraft on a mission stay loaded (KNOWN_ISSUES
   98, 99).
+- The wingman mission planner, as upstream: `/wingman gui` lists the loaded aircraft and the saved
+  routes. Assign sends an aircraft on a route; New Route builds one from take-off, fly-to, attack,
+  loiter, landing and parking nodes, with quick picks from the markers and the player's position.
+  An aircraft flies a route node by node: it taxis to the runway and takes off, flies to points,
+  circles, attacks the hostile mobs around, flies the landing circuit and taxis to a parking spot
+  (KNOWN_ISSUES 100).
+- `/wingman`, as upstream: wingman orders (`follow`, `stop`, `engage`, `auto`, `hold`, `weapon`),
+  the formation values (`dist`, `maxwings`, `minalt`, `maxalt`, `alt clear`), `status`, `marker`,
+  `route`, `mission` and `order` (dispatch, abort, status and park), and `spawnuav` for operators.
+- The server config's `[wingman]` section, upstream's formation entries of its wingman config.
 - M8 aircraft engine exhaust: short throttle-responsive turbine wisps at defined outlets and
   restrained hot jet accents, with shared smoke admission and global quality/load caps. Stock
   Apache and two Black Hawk variants include outlets; Classic nozzle smoke remains available.
@@ -348,6 +358,9 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 
 ### Fixed
 
+- The Mission tab's Orbit Atk did nothing: an aircraft ordered with it now attacks while keeping
+  its orbit, with any weapon, as upstream's AC-130 mode, and attack orbits use the order's orbit
+  radius.
 - Hide the local rider in the primary first-person marker camera so placed-gun views are clear.
   Honor pilot `HideRiders` through the shared rider render state.
 
