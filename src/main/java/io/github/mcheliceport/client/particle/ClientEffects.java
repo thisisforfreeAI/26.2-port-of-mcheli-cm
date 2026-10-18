@@ -38,6 +38,13 @@ public final class ClientEffects implements McheliEffects.Sink {
     }
 
     @Override
+    public boolean rotorWash(io.github.mcheliceport.entity.aircraft.AircraftEntity aircraft, boolean seaOnly) {
+        if (!EffectQuality.enhanced() || seaOnly || !(aircraft instanceof io.github.mcheliceport.entity.heli.HeliEntity heli)) return false;
+        RotorWashEmitter.emit(heli);
+        return true;
+    }
+
+    @Override
     public void spawnParticle(Level level, ParticleParam p) {
         if (!(level instanceof ClientLevel clientLevel)) {
             return;

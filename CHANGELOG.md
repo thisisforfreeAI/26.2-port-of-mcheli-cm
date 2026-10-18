@@ -12,6 +12,10 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 
 ### Changed
 
+- M8 helicopter rotor wash: low, outward-moving animated dust/spray, material-specific density,
+  rotor-height/throttle/speed fading and faint water ripples. Terrain sampling and emission are
+  bounded across helicopters; Classic and other vehicles' sea-only wake emitters remain available.
+
 - M8 impact/flare polish: bounded bomb hot cores and material-tinted outward dust, tighter
   missile impact timing, and stronger warm flare halos with weighted distance/load admission.
   Chaff and countermeasure physics are unchanged; hardware FPS validation remains open.

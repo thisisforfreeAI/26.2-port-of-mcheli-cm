@@ -30,6 +30,17 @@ class EffectTextureTest {
                         Identifier.fromNamespaceAndPath("mcheli_ce_port", "m8_" + effect)));
             }
         }
+        for (String effect : List.of("wash", "wash_ripple")) {
+            String path = "/assets/mcheli_ce_port/textures/particle/m8_" + effect + ".png";
+            try (var stream = getClass().getResourceAsStream(path)) {
+                assertNotNull(stream, path);
+                var image = ImageIO.read(stream);
+                int size = effect.equals("wash") ? 64 : 32;
+                assertEquals(size, image.getWidth());
+                assertEquals(size, image.getHeight());
+                sprites.add(new Sprite(size, size, Identifier.fromNamespaceAndPath("mcheli_ce_port", "m8_" + effect)));
+            }
+        }
         Stitcher<Sprite> stitcher = new Stitcher<>(4096, 4096, 0, 0);
         sprites.forEach(stitcher::registerSprite);
         stitcher.stitch();

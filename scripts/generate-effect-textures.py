@@ -99,9 +99,38 @@ def halo(x, y):
     return (255, round(185 + 60 * inner), round(65 + 140 * inner), round(a * 220))
 
 
+def wash(x, y):
+    frame = x // SIZE + y // SIZE * 2
+    x, y = x % SIZE, y % SIZE
+    px, py = (x - 15.5) / 15, (y - 15.5) / 15
+    depth = -1
+    for i in range(5):
+        cx = (i - 2) * .3 + math.sin(frame + i * 1.7) * .07
+        cy = math.sin(i * 2.3 + frame * .5) * .09
+        q = 1 - ((px - cx) / .33) ** 2 - ((py - cy) / (.23 + (i % 2) * .07)) ** 2
+        depth = max(depth, q)
+    grain = (x * 17 + y * 29 + frame * 11) % 19
+    if depth <= 0 or grain < 2 and depth < .5:
+        return (0, 0, 0, 0)
+    shade = 190 if py > .03 else 224 if depth < .6 else 242
+    return (shade, shade, shade, 96 if depth < .25 else 160 if depth < .6 else 208)
+
+
+def ripple(x, y):
+    px, py = (x - 15.5) / 15, (y - 15.5) / 15
+    angle = math.atan2(py, px)
+    radius = math.hypot(px, py)
+    edge = .7 + .035 * math.sin(angle * 7)
+    if abs(radius - edge) > .055 or math.sin(angle * 5 + 1) < -.25:
+        return (0, 0, 0, 0)
+    return (225, 241, 248, 88 if abs(radius - edge) < .025 else 42)
+
+
 if __name__ == '__main__':
     # Compact sheets avoid a dropped slot for wide strips in the pinned 26.2 stitcher.
     png('m8_smoke.png', SIZE * 4, SIZE * 2, smoke)
     png('m8_splash.png', SIZE * 4, SIZE * 2, splash)
     png('m8_flash.png', SIZE * 4, SIZE * 2, flash)
     png('m8_flare_halo.png', SIZE, SIZE, halo)
+    png('m8_wash.png', SIZE * 2, SIZE * 2, wash)
+    png('m8_wash_ripple.png', SIZE, SIZE, ripple)

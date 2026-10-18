@@ -2872,6 +2872,7 @@ public abstract class AircraftEntity extends Entity
         if (!this.level().isClientSide() || this.info == null || seaOnly && !this.info.enableSeaSurfaceParticle) {
             return;
         }
+        if (io.github.mcheliceport.effect.McheliEffects.rotorWash(this, seaOnly)) return;
         double particlePosY = (int) this.getY();
         boolean found = false;
         net.minecraft.world.level.block.state.BlockState ground = null;
