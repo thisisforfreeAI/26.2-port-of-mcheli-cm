@@ -62,14 +62,19 @@ final class EcmGameTests {
         return info;
     }
 
-    /** A still missile 30 blocks off that homes on the vehicle and reads as the given seeker. */
+    /** A missile held still six blocks above that homes on the vehicle and reads as the given seeker. */
     private static ATMissileEntity missile(GameTestHelper h, HeliEntity target, WeaponInfo seeker) {
-        Vec3 from = target.position().add(30.0, 0.0, 0.0);
+        Vec3 from = target.position().add(0.0, 6.0, 0.0);
         ATMissileEntity missile = new ATMissileEntity(h.getLevel(), from.x, from.y, from.z, 0.0, 0.0, 0.0, 0.0F, 0.0F,
                 0.0F) {
             @Override
             public @Nullable WeaponInfo getInfo() {
                 return seeker;
+            }
+
+            @Override
+            public void tick() {
+                // Held in place, so it neither flies into the vehicle nor times out during the test.
             }
         };
         missile.setName("9k114");

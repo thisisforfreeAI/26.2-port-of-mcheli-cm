@@ -63,6 +63,11 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
   supported (see Added); JEI shows the drafting table as a crafting station for them.
 
 ### Added
+- `Destruct` bombs, as upstream: the RC Goblin's plastic bomb now blows up the UAV that drops it.
+- The pulse-Doppler notch: a plane flying across a plane's seeker by more than the weapon's
+  `PDHDNMaxDegree` breaks its lock, as upstream.
+- The APS iron curtain (an APS with range 100): the vehicle takes no damage while it runs and
+  glows red, tanks give off a red haze, and hits on it throw up red sparks.
 - The ECM jammer, as upstream: an addon vehicle with an `ECM` section switches it on with the ECM
   Jammer key (V). While a lock-breaking jammer (`Type: 2`) runs, radar and anti-radiation
   missiles homing on the vehicle lose it and radar seekers cannot lock it. Gunner NPCs switch it

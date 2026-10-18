@@ -3,11 +3,14 @@ package io.github.mcheliceport.weapon.guidance;
 import io.github.mcheliceport.entity.aircraft.AircraftEntity;
 import io.github.mcheliceport.entity.flare.ChaffEntity;
 import io.github.mcheliceport.entity.flare.FlareEntity;
+import io.github.mcheliceport.entity.plane.PlaneEntity;
+import io.github.mcheliceport.entity.seat.SeatEntity;
 import io.github.mcheliceport.entity.weapon.AAMissileEntity;
 import io.github.mcheliceport.entity.weapon.ASMissileEntity;
 import io.github.mcheliceport.entity.weapon.ATMissileEntity;
 import io.github.mcheliceport.entity.weapon.BaseBulletEntity;
 import io.github.mcheliceport.entity.weapon.TvMissileEntity;
+import io.github.mcheliceport.net.ModNetwork;
 import io.github.mcheliceport.util.McheliMath;
 import io.github.mcheliceport.util.McheliSounds;
 import io.github.mcheliceport.weapon.DamageScaling;
@@ -30,8 +33,8 @@ import org.jspecify.annotations.Nullable;
  *
  * <p>Differences from upstream:
  * <ul>
- *   <li>The pulse-Doppler notch check between two planes and the ECM jammer come with planes in
- *       M6.</li>
+ *   <li>The pulse-Doppler notch compares against this seeker's {@code PDHDNMaxDegree}, where
+ *       upstream read it from the shooter's current weapon, which is this seeker's own.</li>
  *   <li>Other mods' vehicles count as targets when their entity type ID contains
  *       {@code vehicle}, {@code plane}, {@code mecha} or {@code aagun} (upstream matched the
  *       Java class names {@code EntityVehicle} and so on; decision D19).</li>
@@ -193,7 +196,7 @@ public class WeaponGuidanceSystem extends EntityGuidanceSystem {
             this.clearLock();
             return this.playLockSound(user, false);
         }
-        if (!this.canContinueLocking()) {
+        if (!this.canContinueLocking(user)) {
             this.clearLock();
             return this.playLockSound(user, false);
         }
@@ -234,7 +237,8 @@ public class WeaponGuidanceSystem extends EntityGuidanceSystem {
         return this.playLockSound(user, false);
     }
 
-    private boolean canContinueLocking() {
+    /** Whether a lock already started may go on this tick (upstream {@code canContinueLocking}). */
+    public boolean canContinueLocking(Entity user) {
         if (this.targetEntity instanceof AircraftEntity ac && this.isRadarMissile && ac.getChaffUseTime() > 0) {
             return false;
         }
@@ -245,7 +249,28 @@ public class WeaponGuidanceSystem extends EntityGuidanceSystem {
         if (!this.canLockOnGround && onGround) {
             return false;
         }
-        return this.canLockInAir || onGround;
+        if (!this.canLockInAir && !onGround) {
+            return false;
+        }
+        // Upstream's pulse-Doppler notch: a plane beaming a plane's seeker breaks the lock.
+        if (riddenAircraft(user) instanceof PlaneEntity p1 && this.targetEntity instanceof PlaneEntity p2) {
+            Vec3 v1 = p1.getDeltaMovement();
+            Vec3 v2 = p2.getDeltaMovement();
+            if (v1.length() > 0.001 && v2.length() > 0.001) {
+                double angle = Math.acos(Mth.clamp(v1.dot(v2) / (v1.length() * v2.length()), -1.0, 1.0));
+                if (angle > Math.PI / 2) {
+                    angle = Math.PI - angle;
+                }
+                return Math.toDegrees(angle) <= this.pdHDNMaxDegree;
+            }
+        }
+        return true;
+    }
+
+    private static @Nullable AircraftEntity riddenAircraft(Entity user) {
+        return user instanceof Player player ? ModNetwork.riddenAircraft(player)
+                : user.getVehicle() instanceof AircraftEntity ac ? ac
+                : user.getVehicle() instanceof SeatEntity seat ? seat.getParent() : null;
     }
 
     private void processLockLogic(Entity user, boolean isLockContinue) {

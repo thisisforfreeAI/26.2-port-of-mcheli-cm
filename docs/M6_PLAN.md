@@ -1465,3 +1465,28 @@ new ones: the jammer runs for its use time and waits out its wait time; a type 2
 radar missile but not a heat seeker, and a type 1 jammer strips nothing; a radar seeker cannot
 lock a jamming vehicle while a heat seeker can; and a gunner switches the jammer on against an
 incoming missile. No stock vehicle has a jammer, so it was not tried in the client.
+
+## Destruct bombs, notch and iron curtain increment
+
+- `BombWeapon` ports the `Destruct` branch of upstream's `MCH_WeaponBomb.shot`: on a crewless UAV
+  helicopter (the RC Goblin's plastic bomb) the server explodes the weapon's charge at the vehicle
+  for the user and removes the vehicle, dropping its contents (upstream `destruct`).
+- `WeaponGuidanceSystem.canContinueLocking` ports the pulse-Doppler notch: when the shooter's
+  vehicle and the target are both planes, a lock breaks when their courses differ by more than
+  `PDHDNMaxDegree` (folded to the acute angle, so head-on and tail-on count alike). The in-flight
+  half was already in `BaseBulletEntity`.
+- The iron curtain: `AircraftAps` starts `AircraftEntity.startIronCurtain` for an APS with range
+  100 and ends it with the APS. The remaining ticks are synced entity data (upstream
+  `PacketIronCurtainUse`); `hurtServer` refuses damage while they run; the renderer pulses the
+  model red with upstream's wave; `TankParticles.ironCurtain` and
+  `BaseBulletEntity.spawnIronCurtainParticle` port the red haze and impact sparks.
+- A survey of the remaining combat settings found that upstream never acted on data link, the
+  anti-radiation tuning, passive-radar lock-out and several aircraft-level radar flags; they stay
+  parsed and inert (KNOWN_ISSUES 88).
+
+Validation: `build` passed and the GameTest server passed all 222 required tests, including three
+new ones: the RC Goblin's plastic bomb removes the UAV and hurts a husk beside it; a plane beaming
+another plane's seeker breaks its lock past 60° while head-on, tail-on and still targets keep it;
+and an iron curtain refuses damage for its use time, after which damage lands. Not run in the
+client: no stock vehicle has an iron curtain or crosses planes in a lock, and the RC Goblin's
+explosion was checked only by the test.
