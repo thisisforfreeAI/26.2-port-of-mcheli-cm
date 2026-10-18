@@ -47,7 +47,7 @@ public final class ModNetwork {
     private static final Logger LOGGER = LogUtils.getLogger();
     /** Bump when payload encoding, menu layout or synchronized entity data changes. */
     // Long-range UAV chunk and entity streaming requires matching camera/terrain behavior.
-    public static final String VERSION = "16";
+    public static final String VERSION = "17";
 
     private ModNetwork() {
     }
@@ -133,6 +133,11 @@ public final class ModNetwork {
         registrar.playToServer(RangeFinderSpotPayload.TYPE, RangeFinderSpotPayload.CODEC, (p, context) -> {
             if (context.player() instanceof ServerPlayer player) {
                 io.github.mcheliceport.item.RangeFinderItem.handleSpotRequest(player, p.targetFilter());
+            }
+        });
+        registrar.playToServer(LightWeaponControlPayload.TYPE, LightWeaponControlPayload.CODEC, (p, context) -> {
+            if (context.player() instanceof ServerPlayer player) {
+                io.github.mcheliceport.item.LightWeaponItem.handleControl(player, p);
             }
         });
         registrar.playToServer(GltdControlPayload.TYPE, GltdControlPayload.CODEC, (p, context) -> {

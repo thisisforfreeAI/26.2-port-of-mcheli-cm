@@ -1120,6 +1120,38 @@ repaired it to 80 in about four seconds with the health bar shown
 cover the team rules, not delivery to a second client or its teammate markers), and targeting
 pods in flight (stock content has none with spotting settings; see the parity list).
 
+## Hand-held Stinger and Javelin increment
+
+- `LightWeaponItem` ports `MCH_ItemLightWeaponBase` for `fim92` and `fgm148`: used like a bow for
+  up to an hour, never swung, and night vision switched on while aiming is topped up from 220 to
+  250 ticks. Each launcher reloads with its own missile item.
+- `LightWeaponControlPayload` carries `PacketPlayerLightWeaponControl` (fire with target and
+  mode, finish a reload, night vision off or on). The server fires the item's weapon definition
+  from the player's eyes at the target, empties a survival player's launcher, and reloads it
+  from a missile item (see KNOWN_ISSUES 78).
+- `LightWeaponClient` ports `MCH_ClientLightWeaponTickHandler`: the lock with the weapon's own
+  guidance system and the server's `stingerLockRange`, the lock-on beeps, the 40-tick reload
+  with its sound, the zoom, night vision, the Javelin's top-attack mode with its 40-block minimum,
+  `lightWeaponAutoFire`, and the hand hidden while aiming. `LightWeaponHudLayer` ports
+  `MCH_GuiLightWeapon` (the Stinger scope, the Javelin's sight with its indicators, target box and
+  tracking lines, the lock bar, the range and the key hints).
+
+Validation: `build` passed and the GameTest server passed all 194 required tests, including six
+new ones: the items (missiles, stack sizes, using, the bow pose, no swing, the weapon names and
+aiming after ten ticks); the Stinger's shot (one missile from the eyes chasing the target, the
+launcher emptied, no second shot); refused shots (not aiming, the player as target, a missing
+target and one beyond the lock range); the Javelin's top attack (mode 1, a wrapped mode, creative
+keeping it loaded); reloading (no missile, the wrong missile, one used, creative keeping it); and
+night vision (refused without aiming, on, topped up, off). On a dedicated server with an OpenGL
+client: the Stinger's scope hid the hand, locked on to a bee 44 m away and up 30 m
+([lock](screens/m6-lweapon-stinger-lock.png)) and the held attack key destroyed it
+([hit](screens/m6-lweapon-stinger-hit.png)); the Javelin's sight tracked a cow 50 m away
+([seek](screens/m6-lweapon-javelin-seek.png)) and its missile killed it, the launcher emptied and
+reloaded from a missile after the sight came down; C, X and Z switched night vision, top attack
+and the narrow field of view ([night and top](screens/m6-lweapon-javelin-night-top.png)), and
+lowering the sight ended night vision. Not run: Vulkan, a second player watching, and firing
+from a passenger seat.
+
 ## Ground laser target designator increment
 
 - `GltdItem` ports `MCH_ItemGLTD`: used on a block within five blocks it sets a `GltdEntity` on

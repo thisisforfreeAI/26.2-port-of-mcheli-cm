@@ -53,6 +53,7 @@ public final class McheliCePortClient {
         modBus.addListener(AircraftHudLayer::register);
         modBus.addListener(io.github.mcheliceport.client.hud.ToolHudLayer::register);
         modBus.addListener(io.github.mcheliceport.client.hud.GltdHudLayer::register);
+        modBus.addListener(io.github.mcheliceport.client.hud.LightWeaponHudLayer::register);
         modBus.addListener(AircraftHudLayer::registerPipelines);
         modBus.addListener((AddClientReloadListenersEvent event) -> {
             event.addListener(Identifier.fromNamespaceAndPath(McheliCePort.MOD_ID, "aircraft_models"),

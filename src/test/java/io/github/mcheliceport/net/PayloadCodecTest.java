@@ -147,7 +147,7 @@ class PayloadCodecTest {
     @Test
     void serverSettingsRoundTrip() {
         ServerSettings.Values values = new ServerSettings.Values(true,
-                new HeliFlightModel.RotationLimits(true, 25.0F, -15.0F, 40.0F), false, false);
+                new HeliFlightModel.RotationLimits(true, 25.0F, -15.0F, 40.0F), false, false, 250.5);
         ServerSettingsPayload p = ServerSettingsPayload.of(values);
         ServerSettingsPayload read = roundTrip(ServerSettingsPayload.CODEC, p);
         assertEquals(p, read);
@@ -169,6 +169,11 @@ class PayloadCodecTest {
         assertEquals(gltd, roundTrip(GltdControlPayload.CODEC, gltd));
         GltdControlPayload leave = new GltdControlPayload((byte) 1, false, true);
         assertEquals(leave, roundTrip(GltdControlPayload.CODEC, leave));
+        LightWeaponControlPayload fire = new LightWeaponControlPayload(true, 123456, 1, false, (byte) 0);
+        assertEquals(fire, roundTrip(LightWeaponControlPayload.CODEC, fire));
+        LightWeaponControlPayload reload = new LightWeaponControlPayload(false, 0, 0, true,
+                LightWeaponControlPayload.NIGHT_VISION_ON);
+        assertEquals(reload, roundTrip(LightWeaponControlPayload.CODEC, reload));
     }
 
     @Test

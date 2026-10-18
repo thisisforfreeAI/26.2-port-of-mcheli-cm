@@ -85,8 +85,11 @@ public final class ModItems {
     public static final DeferredItem<Item> INTERNAL = register("internal", Item::new, UnaryOperator.identity(), null);
     public static final DeferredItem<Item> FIM92_BULLET = item("fim92_bullet", p -> p.stacksTo(2));
     public static final DeferredItem<Item> FGM148_BULLET = item("fgm148_bullet", p -> p.stacksTo(2));
-    public static final DeferredItem<Item> FIM92 = item("fim92", p -> p.durability(10));
-    public static final DeferredItem<Item> FGM148 = item("fgm148", p -> p.durability(10));
+    public static final DeferredItem<Item> FIM92 = register("fim92",
+            p -> new io.github.mcheliceport.item.LightWeaponItem(p, FIM92_BULLET), p -> p.durability(10), ModTab.ITEMS);
+    public static final DeferredItem<Item> FGM148 = register("fgm148",
+            p -> new io.github.mcheliceport.item.LightWeaponItem(p, FGM148_BULLET), p -> p.durability(10),
+            ModTab.ITEMS);
     public static final DeferredItem<BlockItem> DRAFTING_TABLE = blockItem(ModBlocks.DRAFTING_TABLE);
     public static final DeferredItem<BlockItem> CHARGER = blockItem(ModBlocks.CHARGER);
     public static final DeferredItem<BlockItem> WINGMAN_MARKER = blockItem(ModBlocks.WINGMAN_MARKER);

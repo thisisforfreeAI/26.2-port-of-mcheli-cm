@@ -98,6 +98,10 @@ The wrench repairs a vehicle while you hold right-click looking at it, 10 HP a s
 rangefinder's scope comes up when you hold right-click: left-click spots for your team, **Z**/**X**
 zoom and **V** switches between players and vehicles, mobs and a mark point.
 
+The Stinger and Javelin: hold right-click to raise the sight and hold left-click on a target
+until the lock completes to fire. A missile in your inventory reloads the launcher once you lower
+it. **Z** zooms, **C** switches night vision and **X** switches the Javelin to top attack.
+
 The GLTD: right-click a block to set it up, then right-click it to sit behind it. Left-click calls
 in three A-10 strafing runs on the block you look at (at least 20 m away), then it cools down for
 22.5 seconds. **Z**/**X** zoom, **C** switches night vision, and **Y** or sneaking leaves. Sneak

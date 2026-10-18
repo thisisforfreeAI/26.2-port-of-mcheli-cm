@@ -27,6 +27,7 @@ public final class ServerConfig {
     public static final ModConfigSpec.IntValue RANGE_FINDER_SPOT_DIST;
     public static final ModConfigSpec.IntValue RANGE_FINDER_SPOT_TIME;
     public static final ModConfigSpec.BooleanValue RANGE_FINDER_CONSUME;
+    public static final ModConfigSpec.DoubleValue STINGER_LOCK_RANGE;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -88,6 +89,12 @@ public final class ServerConfig {
         RANGE_FINDER_CONSUME = builder
                 .comment("Each spot uses one charge of the rangefinder. Upstream: RangeFinderConsume.")
                 .define("rangeFinderConsume", true);
+        builder.pop();
+
+        builder.comment("The hand-held Stinger and Javelin.").push("lightWeapons");
+        STINGER_LOCK_RANGE = builder
+                .comment("How far the hand-held Stinger and Javelin lock on, in blocks. Upstream: StingerLockRange.")
+                .defineInRange("stingerLockRange", 320.0, 1.0, 10000.0);
         builder.pop();
         SPEC = builder.build();
     }

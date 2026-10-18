@@ -27,6 +27,7 @@ public final class ClientConfig {
     public static final ModConfigSpec.IntValue ON_DEMAND_MODEL_LIFETIME_SECONDS;
     public static final ModConfigSpec.BooleanValue HUD_IN_THIRD_PERSON;
     public static final ModConfigSpec.BooleanValue HIDE_KEY_HINTS;
+    public static final ModConfigSpec.BooleanValue LIGHT_WEAPON_AUTO_FIRE;
     public static final ModConfigSpec.BooleanValue HUD_AUTO_SCALE;
     public static final ModConfigSpec.ConfigValue<String> HIT_MARK_COLOR;
     public static final ModConfigSpec.BooleanValue DEFAULT_EXPLOSION_PARTICLE;
@@ -96,6 +97,9 @@ public final class ClientConfig {
         HIDE_KEY_HINTS = builder
                 .comment("Hide the key hints next to the HUD. Upstream: HideKeybind.")
                 .define("hideKeyHints", false);
+        LIGHT_WEAPON_AUTO_FIRE = builder
+                .comment("Fire the hand-held Stinger and Javelin as soon as they lock on. Upstream: LWeaponAutoFire.")
+                .define("lightWeaponAutoFire", false);
         HUD_AUTO_SCALE = builder
                 .comment("Scale HUDs to the screen instead of drawing them at a fixed size. Upstream: ExperimentalAutoScaleAircraftGui.")
                 .define("autoScale", false);
