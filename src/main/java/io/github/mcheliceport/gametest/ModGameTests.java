@@ -33,7 +33,7 @@ public final class ModGameTests {
     private static final DeferredRegister<Consumer<GameTestHelper>> FUNCTIONS =
             DeferredRegister.create(Registries.TEST_FUNCTION, McheliCePort.MOD_ID);
 
-    private record Spec(String name, int maxTicks, ResourceKey<Consumer<GameTestHelper>> function) {
+    private record Spec(String name, int maxTicks, ResourceKey<Consumer<GameTestHelper>> function, boolean alone) {
     }
 
     private static final List<Spec> SPECS = new ArrayList<>();
@@ -75,6 +75,7 @@ public final class ModGameTests {
         ChargerGameTests.register();
         AircraftMenuGameTests.register();
         FuelFluidGameTests.register();
+        MultiplayGameTests.register();
         if (System.getProperty("neoforge.enabledGameTestNamespaces") != null) {
             ChargerGameTests.registerTestBattery(modBus);
         }
@@ -85,15 +86,26 @@ public final class ModGameTests {
     /** Adds a test that fails unless it succeeds within {@code maxTicks}. */
     static void test(String name, int maxTicks, Consumer<GameTestHelper> function) {
         FUNCTIONS.register(name, () -> function);
-        SPECS.add(new Spec(name, maxTicks, ResourceKey.create(Registries.TEST_FUNCTION, id(name))));
+        SPECS.add(new Spec(name, maxTicks, ResourceKey.create(Registries.TEST_FUNCTION, id(name)), false));
+    }
+
+    /**
+     * Adds a test that runs in a batch of its own, after the others, for what reaches every entity of
+     * the level (and so the other tests' vehicles).
+     */
+    static void testAlone(String name, int maxTicks, Consumer<GameTestHelper> function) {
+        FUNCTIONS.register(name, () -> function);
+        SPECS.add(new Spec(name, maxTicks, ResourceKey.create(Registries.TEST_FUNCTION, id(name)), true));
     }
 
     private static void onRegisterGameTests(RegisterGameTestsEvent event) {
         Holder<TestEnvironmentDefinition<?>> environment =
                 event.registerEnvironment(id("default"), new TestEnvironmentDefinition.AllOf(List.of()));
+        Holder<TestEnvironmentDefinition<?>> alone =
+                event.registerEnvironment(id("alone"), new TestEnvironmentDefinition.AllOf(List.of()));
         for (Spec spec : SPECS) {
             event.registerTest(id(spec.name()), new FunctionGameTestInstance(spec.function(),
-                    new TestData<>(environment, STRUCTURE, spec.maxTicks(), 0, true, Rotation.NONE, false, 1, 1, false,
+                    new TestData<>(spec.alone() ? alone : environment, STRUCTURE, spec.maxTicks(), 0, true, Rotation.NONE, false, 1, 1, false,
                             0)));
         }
     }

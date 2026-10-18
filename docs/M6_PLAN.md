@@ -1352,3 +1352,37 @@ dedicated server with an OpenGL client, the fuel bucket drew brown fuel in the i
 with an empty bucket in the output slot ([refuel](screens/m6-fuel-bucket-refuel.png)), and a
 water bucket stayed in the slot. Not run: Vulkan, another mod's pipes or tanks.
 
+
+## Team scoreboard screens increment
+
+- `TeamListOverlay` ports `MCH_GuiScoreboard_Base.drawList`: a column for the players in no team
+  and one per team by name, with the team's colour, friendly fire, and each player's
+  list-objective score and ping. The scoreboard key (L, `ModKeyMappings.SCOREBOARD`) shows it
+  while held, and the multiplay manager key (M) opens `MultiplayManagerScreen`; both work only
+  off singleplayer or with the debug log on, as upstream's `handleScoreboardAndMultiplayer`
+  (KNOWN_ISSUES difference 83).
+- `MultiplayManagerScreen` ports `MCH_GuiScoreboard` with its main and create-team screens, at
+  upstream's positions: PVP, Team shuffle, New team, Jump spawn pos and Destroy All, and the
+  create-team panel (`mp_new_team.png`) with the name, the 16 colours and friendly fire, which
+  sends `/team add` and `/team modify` as the player's own commands. A new or removed team lays
+  the screen out again.
+- `MultiplayActionPayload` carries the buttons (upstream `PacketHandleCommand`) to
+  `MultiplayManager`, which checks the game-master level and ports `shuffleTeam`,
+  `jumpSpawnPoint`, SETPVP (the `pvp` gamerule) and `destoryAllAircraft`.
+  `MultiplayStatePayload` sends the PVP state when the manager opens and to everyone when it
+  changes.
+- GameTests can run in a batch of their own (`ModGameTests.testAlone`), for the action that
+  removes every vehicle of the level.
+- The network version is 20.
+
+Validation: `build` passed and the GameTest server passed all 207 required tests, including three
+new ones: shuffling puts five players in teams of three and two (and nobody in one with no
+teams); a player goes to their respawn point and off their vehicle; and PVP and Destroy All do
+nothing for a player or a moderator, while a game master flips PVP and removes the vehicles
+without drops. On a dedicated server with an OpenGL client: holding L showed No team, Blue and
+Red with Dev's score of 7 and ping ([lists](screens/m6-team-list.png)) without opening
+Advancements; M opened the manager ([manager](screens/m6-multiplay-manager.png)); as a
+non-operator PVP and Team shuffle changed nothing; as an operator PVP turned OFF, Team shuffle
+moved Dev from Red to Blue, New team created a dark green team Green with friendly fire off
+([new team](screens/m6-create-team.png)) and the lists made room for it, Jump spawn pos took Dev
+to the world spawn, and Destroy All removed an AH-64 in view. Not run: Vulkan, a second player.

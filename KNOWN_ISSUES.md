@@ -25,7 +25,7 @@ broader gameplay and hardware checks remain pending.
 
 | Area | Planned milestone |
 |---|---|
-| Remaining plane/ground equipment and UAV station preview camera, gunner NPCs and mobs in seats (and their weapon use), the team scoreboard screens | M6 |
+| Remaining plane/ground equipment and UAV station preview camera, gunner NPCs and mobs in seats (and their weapon use) | M6 |
 | BVR and passive radar, GPS panel and GPS missiles, mortar radar and RWR overlays, ECM jammer, the pulse-Doppler notch, the APS "iron curtain", data link, anti-radiation missiles, `Destruct` bombs (UAVs) | M6 (with the vehicles that use them) |
 | Wingman (AI wingmen, marker block screens and types, missions, `/wingman`) | M6b |
 | Remaining `/mcheli` commands (including reloading content with `reconfig`), advancement triggers, long-distance tracking and rendering, thermal vision (the third camera mode), GPU-buffer model rendering, projectile chunk loading (`ProjectileChunkLoad`), HBM:NTM stubs, performance work | M7 |
@@ -378,6 +378,15 @@ These follow from how Minecraft 26.2 works or from decisions approved in PORTING
     until 1000 fits. Upstream drained the container before checking the output slot, so a full
     output slot could empty a tank item without fuelling the vehicle; here nothing moves until
     the output slot can take what is left of the container.
+
+83. The scoreboard key (L) shows the team lists only off singleplayer (or with the debug log on),
+    as upstream, and while it can show them it keeps L from vanilla's Advancements key, which
+    upstream's L also opened. The multiplay manager (M) toggles PVP through the `pvp` gamerule,
+    which the server has instead of upstream's server property, and its buttons need the
+    game-master permission level, as upstream's scoreboard, teleport and summon commands did.
+    Its lists show at least ten rows in steps of five; upstream also capped them at the server's
+    player limit, which clients no longer receive. Team names take the characters `/team add`
+    reads as one word, so OK stays greyed out for others; upstream sent the command and let it fail.
 
 ## Upstream content issues kept as they are
 

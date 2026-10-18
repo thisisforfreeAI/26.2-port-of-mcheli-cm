@@ -47,7 +47,7 @@ public final class ModNetwork {
     private static final Logger LOGGER = LogUtils.getLogger();
     /** Bump when payload encoding, menu layout or synchronized entity data changes. */
     // Long-range UAV chunk and entity streaming requires matching camera/terrain behavior.
-    public static final String VERSION = "19";
+    public static final String VERSION = "20";
 
     private ModNetwork() {
     }
@@ -108,6 +108,13 @@ public final class ModNetwork {
         registrar.playToServer(ResupplyPayload.TYPE, ResupplyPayload.CODEC, ModNetwork::handleResupply);
         registrar.playToServer(AircraftCommandPayload.TYPE, AircraftCommandPayload.CODEC,
                 ModNetwork::handleAircraftCommand);
+        registrar.playToServer(MultiplayActionPayload.TYPE, MultiplayActionPayload.CODEC, (p, context) -> {
+            if (context.player() instanceof ServerPlayer player) {
+                io.github.mcheliceport.multiplay.MultiplayManager.handle(player, p.action());
+            }
+        });
+        registrar.playToClient(MultiplayStatePayload.TYPE, MultiplayStatePayload.CODEC,
+                (p, context) -> io.github.mcheliceport.multiplay.MultiplayManager.setClientPvp(p.pvp()));
         registrar.playToServer(AirburstDistPayload.TYPE, AirburstDistPayload.CODEC, ModNetwork::handleAirburstDist);
         registrar.playToClient(WeaponSyncPayload.TYPE, WeaponSyncPayload.CODEC, ModNetwork::handleWeaponSync);
         registrar.playToClient(NotifyAmmoPayload.TYPE, NotifyAmmoPayload.CODEC, (p, context) -> {
