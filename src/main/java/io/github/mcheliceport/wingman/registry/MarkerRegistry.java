@@ -3,6 +3,7 @@ package io.github.mcheliceport.wingman.registry;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.github.mcheliceport.McheliCePort;
+import io.github.mcheliceport.entity.aircraft.AircraftEntity;
 import io.github.mcheliceport.wingman.block.MarkerType;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -12,6 +13,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.level.saveddata.SavedDataType;
+import net.minecraft.world.phys.AABB;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -147,6 +149,30 @@ public final class MarkerRegistry extends SavedData {
             }
         }
         return result;
+    }
+
+    /**
+     * Upstream {@code findAvailableParking}: the base's first parking spot with no loaded aircraft
+     * within 8 blocks of it horizontally.
+     */
+    public static @Nullable MarkerInfo findAvailableParking(ServerLevel level, String baseId) {
+        for (MarkerInfo m : get(level).markers) {
+            if (m.type() != MarkerType.PARKING || !baseId.equals(m.baseId())) {
+                continue;
+            }
+            double px = m.pos().getX() + 0.5;
+            double pz = m.pos().getZ() + 0.5;
+            AABB box = new AABB(px - 8, level.getMinY(), pz - 8, px + 8, level.getMaxY(), pz + 8);
+            boolean occupied = !level.getEntitiesOfClass(AircraftEntity.class, box, e -> {
+                double dx = e.getX() - px;
+                double dz = e.getZ() - pz;
+                return dx * dx + dz * dz < 8.0 * 8.0;
+            }).isEmpty();
+            if (!occupied) {
+                return m;
+            }
+        }
+        return null;
     }
 
     /** A route node: the base's child of the type when a base has that ID, else a marker with the ID. */

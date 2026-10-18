@@ -26,7 +26,7 @@ broader gameplay and hardware checks remain pending.
 | Area | Planned milestone |
 |---|---|
 | Remaining plane/ground equipment | M6 |
-| Wingman (the base screen's Mission tab and the mission planner, missions, `/wingman`, the wingman config file) | M6b |
+| Wingman (the mission planner and its route-node missions, `/wingman`, the wingman config file) | M6b |
 | Remaining `/mcheli` commands (including reloading content with `reconfig`), advancement triggers, long-distance tracking and rendering, thermal vision (the third camera mode), GPU-buffer model rendering, projectile chunk loading (`ProjectileChunkLoad`), HBM:NTM stubs, performance work | M7 |
 
 Until then:
@@ -60,10 +60,11 @@ Until then:
   energy from the charger and from batteries (any item with NeoForge's item energy capability) in
   the fuel slot. Upstream's GregTech EU and HBM HE energy systems are dropped, so the
   `EnergySystem` and ratio settings are gone; the port registers no battery item, as upstream.
-- Wingmen fly in formation and attack, but wingman markers and a base's taxi routes are kept
-  without a mission using them until missions are ported (M6b). The base screen's Mission tab
-  cannot be selected until then. The formation values start at upstream's defaults on each
-  server start and have no config file entries until `/wingman` is ported.
+- Wingmen fly in formation and attack, and the base screen's Mission tab sends aircraft on
+  missions from the base's taxi routes, runways and helipads. Upstream's mission planner, its
+  route-node missions and `/wingman` are not ported yet (M6b). The formation values start at
+  upstream's defaults on each server start and have no config file entries until `/wingman` is
+  ported.
 - Turret ballistics lines (upstream `drawTurretBallistics`) are not drawn yet (M7).
 
 This config entry already exists but has no effect yet:
@@ -473,6 +474,7 @@ These follow from how Minecraft 26.2 works or from decisions approved in PORTING
     do. Upstream's auto-attack also took any entity its team check passed, which an aircraft's
     check always did (items, animals, parked aircraft); the port takes what upstream's comments
     describe: hostile mobs, target drones and McHeli gunners of a team the leader's pilot is not on.
+    An aircraft on a mission has no leader, so to it every McHeli gunner on a team is an enemy.
 97. Upstream flew helicopter wingmen as planes: the formation throttle (full throttle while far
     from the slot, the leader's near it) and full throttle to attack made them climb without end,
     0.35 throttle beside a stopped leader was too little for a stock helicopter to hover, and they
@@ -483,6 +485,30 @@ These follow from how Minecraft 26.2 works or from decisions approved in PORTING
     closes (from 15 degrees up to 20 down), to fly there without overshooting, levelling it again
     while it waits beside a stopped leader. A helicopter
     attacking with a fixed gun still aims with its nose, and planes keep upstream's flying.
+    On a mission a helicopter holds its target height the same way while it flies to the area,
+    orbits and returns, where upstream gave it a plane's full throttle; it hovers over the helipad
+    on that throttle, and descends onto it as far below its hover throttle as upstream's planes
+    flew below 0.57, plus 0.03 so that it settles on the pad. Returning below a raised helipad (a
+    roof or a deck), it climbs where it is before flying in, so it does not end up under the pad,
+    where upstream took any height below the pad as landed and cut the engine.
+98. Upstream kept chunks loaded around every aircraft only with its `forceChunkload` option, off
+    by default. The port always keeps the 5 by 5 chunks around an aircraft on a mission loaded,
+    and no others, so a mission flies on away from players; they are released when the order
+    ends. Orders are not saved, so a mission ends when the server stops, as upstream.
+99. The base screen's Mission tab orders an aircraft only for a player who can reach and edit the
+    base marker, takes the base from that marker, and orders only an aircraft within 512 blocks
+    of it that no player flies and that is not destroyed; upstream took the base from the client
+    and ordered any aircraft by UUID. The tab lists the eight such aircraft nearest the base,
+    where upstream showed the first eight it found. The order's numbers are kept within limits
+    (target within the world border's range, orbit up to 10,000 blocks, cruise height within the
+    world plus 256, up to 100 strike passes and a day's time limit); a number that is not one
+    takes upstream's default. A player taking the controls, or the aircraft being destroyed,
+    ends its order; upstream flew on under a player. Upstream turned the mission orbit with the
+    attack orbit's angle, in degrees, so attacking on station threw the orbit around; the port
+    keeps them apart. Upstream never turned a parked aircraft to its spot's heading, since the
+    order had ended by then; the port turns it as it parks. The tab's VTOL landing note is drawn
+    at the bottom left, where upstream's clipping hid it, and a button scrolled partly off the top
+    of either tab is hidden rather than drawn over the tab buttons.
 
 ## Upstream content issues kept as they are
 

@@ -3,6 +3,7 @@ package io.github.mcheliceport.wingman.block;
 import io.github.mcheliceport.net.ModNetwork;
 import io.github.mcheliceport.net.OpenBaseScreenPayload;
 import io.github.mcheliceport.net.OpenMarkerScreenPayload;
+import io.github.mcheliceport.wingman.MissionDispatch;
 import io.github.mcheliceport.wingman.registry.MarkerRegistry;
 import io.github.mcheliceport.wingman.registry.TaxiRouteRegistry;
 import java.util.ArrayList;
@@ -68,9 +69,9 @@ public class WingmanMarkerBlock extends Block implements EntityBlock {
     }
 
     /**
-     * Upstream {@code openBaseGui}: the base's taxi routes and its markers by type. Waypoints
-     * without the base set still show when within 500 blocks of the base marker, so one placed
-     * without its parent base can be used.
+     * Upstream {@code openBaseGui}: the base's taxi routes, its markers by type and the aircraft
+     * near it. Waypoints without the base set still show when within 500 blocks of the base marker,
+     * so one placed without its parent base can be used.
      */
     public static OpenBaseScreenPayload baseScreen(ServerLevel level, BlockPos pos, String baseId) {
         List<OpenBaseScreenPayload.Marker> parking = new ArrayList<>();
@@ -104,7 +105,7 @@ public class WingmanMarkerBlock extends Block implements EntityBlock {
             }
         }
         return new OpenBaseScreenPayload(pos, baseId, TaxiRouteRegistry.getForBase(level, baseId), parking, runwayA,
-                runwayB, helipads, helipadB, waypoints);
+                runwayB, helipads, helipadB, waypoints, MissionDispatch.nearbyAircraft(level, pos));
     }
 
     /** Upstream {@code autoId}: the type's prefix and one more than the markers of that type. */

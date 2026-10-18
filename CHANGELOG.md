@@ -75,6 +75,15 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
   in a V (or a column) behind the leader, match its roll and landing gear, and on Auto attack the
   nearest hostile mob, target drone or enemy-team gunner with the chosen weapon type. The Formation tab
   sets the spacing, the number of wingmen and the attack altitude limits while the server runs.
+- Wingman missions from the base screen's Mission tab, as upstream: pick CAP, CAS, escort and
+  reconnaissance (or a strike or a ferry flight alone), the weapons, the target area, orbit,
+  cruise height, strike passes and time limit, then one of the eight aircraft nearest the base and
+  optionally its departure and arrival taxi routes. A plane taxis out, takes off along the runway,
+  flies to the area and orbits it attacking (a strike makes passes, a reconnaissance counts the
+  hostile mobs), returns at the time limit or on low fuel, flies the landing circuit, lands and
+  taxis back to a free parking spot. A helicopter, or a VTOL plane returning to a helipad, takes
+  off and lands vertically. The chunks around an aircraft on a mission stay loaded (KNOWN_ISSUES
+  98, 99).
 - The GPS panel, as upstream: Open GPS Panel (N) in a vehicle takes X, Y and Z (or the player's
   position) for a GPS point, marked on the HUD with its distance until the player gets off.
 - The BVR scope and the mortar radar, as upstream: a weapon with `EnableBVR` marks vehicles, chaff

@@ -4,9 +4,11 @@ import io.github.mcheliceport.McheliCePort;
 import io.github.mcheliceport.entity.aircraft.AircraftEntity;
 import io.github.mcheliceport.entity.gunner.GunnerEntity;
 import io.github.mcheliceport.entity.heli.HeliEntity;
+import io.github.mcheliceport.entity.plane.PlaneEntity;
 import io.github.mcheliceport.weapon.WeaponParam;
 import io.github.mcheliceport.weapon.WeaponSet;
 import io.github.mcheliceport.wingman.config.WingmanConfig;
+import io.github.mcheliceport.wingman.mission.AutonomousState;
 import io.github.mcheliceport.wingman.wingman.WingmanEntry;
 import io.github.mcheliceport.wingman.wingman.WingmanRegistry;
 import io.github.mcheliceport.wingman.wingman.WingmanState;
@@ -31,12 +33,13 @@ import net.neoforged.neoforge.event.tick.LevelTickEvent;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Upstream's {@code WingmanTickHandler}, its formation and attack half: each server level tick
- * steers the level's wingmen, as upstream, by setting throttle, yaw, pitch and roll within rate
- * limits before the aircraft move ({@link LevelTickEvent.Pre}) and lets the aircraft's own flight
- * model fly them. After they move ({@link LevelTickEvent.Post}) it fires, pushes a wingman that has
- * fallen far behind its slot and copies the leader's landing gear. The mission states come with the
- * mission increment.
+ * Upstream's {@code WingmanTickHandler}: each server level tick steers the level's wingmen, as
+ * upstream, by setting throttle, yaw, pitch and roll within rate limits before the aircraft move
+ * ({@link LevelTickEvent.Pre}) and lets the aircraft's own flight model fly them, towards their
+ * formation slot, their attack path or the target their mission sets. After they move
+ * ({@link LevelTickEvent.Post}) it fires, pushes a wingman that has fallen far behind its slot,
+ * moves a taxiing aircraft along the ground and sets the landing gear. {@link AutonomousFlightHandler}
+ * runs right after it in both phases, as upstream registered it.
  */
 public final class WingmanTickHandler {
 
@@ -79,6 +82,7 @@ public final class WingmanTickHandler {
         NeoForge.EVENT_BUS.addListener(WingmanTickHandler::onLevelTickPost);
         NeoForge.EVENT_BUS.addListener((ServerStoppedEvent event) -> {
             WingmanRegistry.clear();
+            MissionChunkLoader.clear();
             FIRE_COOLDOWNS.clear();
             POST_FIRE_ESCAPE.clear();
             ENEMY_LOGGED.clear();
@@ -90,7 +94,9 @@ public final class WingmanTickHandler {
 
     private static void onLevelTickPre(LevelTickEvent.Pre event) {
         if (event.getLevel() instanceof ServerLevel level) {
+            MissionChunkLoader.tick(level);
             tickStart(level);
+            AutonomousFlightHandler.tickStart(level);
         }
     }
 
@@ -101,10 +107,15 @@ public final class WingmanTickHandler {
                 continue;
             }
             WingmanEntry entry = e.getValue();
+            if (wingman instanceof PlaneEntity plane && plane.partNozzle != null) {
+                controlVtol(plane, entry);
+            }
             if (entry.attackMode != WingmanEntry.ATK_NONE) {
                 Vec3 movTarget = wingman instanceof HeliEntity ? computeMoveTarget(level, wingman, entry) : null;
                 applyThrottle(wingman, movTarget != null ? heliAltitudeThrottle(wingman, movTarget.y) : 1.0);
                 steerToTarget(level, wingman, entry);
+            } else if (entry.isAutonomous()) {
+                tickAutonomousStart(level, wingman, entry);
             } else if (entry.leader != null) {
                 Vec3 fp = formationPos(entry.leader, entry.formationSlot);
                 double distToSlot = fp.distanceTo(wingman.position());
@@ -119,6 +130,80 @@ public final class WingmanTickHandler {
                     steerToTarget(level, wingman, entry);
                 }
             }
+        }
+    }
+
+    /**
+     * Upstream's VTOL switch: the plane's nozzles go down when its mission wants hover mode and
+     * forward again after, switched once per change so the toggle does not flip back and forth.
+     */
+    private static void controlVtol(PlaneEntity plane, WingmanEntry entry) {
+        entry.vtolNozzleMode = plane.getVtolMode();
+        boolean needsVtol = entry.isAutonomous() && entry.vtolHoverMode;
+        if (needsVtol && !entry.vtolOnSent) {
+            if (plane.getVtolMode() == 0) {
+                plane.switchVtol(true);
+                McheliCePort.LOGGER.info("[VTOL] {} VTOL=ON (hover mode)", AutonomousFlightHandler.shortId(plane));
+            }
+            entry.vtolOnSent = true;
+        } else if (!needsVtol && entry.vtolOnSent) {
+            if (plane.getVtolMode() != 0) {
+                plane.switchVtol(false);
+                McheliCePort.LOGGER.info("[VTOL] {} VTOL=OFF (fixed-wing mode)", AutonomousFlightHandler.shortId(plane));
+            }
+            entry.vtolOnSent = false;
+        }
+    }
+
+    /**
+     * Upstream's autonomous branch of {@code onWorldTickStart}: lining up holds the aircraft still
+     * and turns it; taxiing aims the motion at the next marker and records where it started, for
+     * the push after it moves; take-off, climb and landing steer while the mission sets the throttle,
+     * level in hover mode; parked or starting it holds still; otherwise it steers towards the target
+     * at full throttle, half within 20 blocks.
+     */
+    private static void tickAutonomousStart(ServerLevel level, AircraftEntity wingman, WingmanEntry entry) {
+        if (entry.autoState == AutonomousState.ALIGN) {
+            applyThrottle(wingman, 0.0);
+            wingman.setDeltaMovement(Vec3.ZERO);
+            steerToTarget(level, wingman, entry);
+            wingman.setPitch(0.0F);
+            wingman.setRoll(0.0F);
+        } else if (isTaxiingState(entry.autoState)) {
+            applyThrottle(wingman, 0.0);
+            entry.taxiPreX = wingman.getX();
+            entry.taxiPreZ = wingman.getZ();
+            double tdx = entry.autoTargetX - wingman.getX();
+            double tdz = entry.autoTargetZ - wingman.getZ();
+            double tDist = Math.sqrt(tdx * tdx + tdz * tdz);
+            if (tDist > 0.5) {
+                wingman.setDeltaMovement(tdx / tDist * TAXI_SPEED, 0, tdz / tDist * TAXI_SPEED);
+                wingman.setYaw((float) Math.toDegrees(Math.atan2(-tdx, tdz)));
+            } else {
+                wingman.setDeltaMovement(Vec3.ZERO);
+            }
+            wingman.setPitch(0.0F);
+            wingman.setRoll(0.0F);
+        } else if (isAfhThrottleState(entry.autoState)) {
+            steerToTarget(level, wingman, entry);
+            if (entry.autoState == AutonomousState.TAKEOFF_ROLL || entry.autoState == AutonomousState.CLIMB) {
+                applyThrottle(wingman, 1.0);
+            }
+            if (entry.vtolHoverMode) {
+                wingman.setPitch(0.0F);
+            }
+        } else if (entry.autoState == AutonomousState.NONE || entry.autoState == AutonomousState.PARKED) {
+            applyThrottle(wingman, 0.0);
+            wingman.setDeltaMovement(Vec3.ZERO);
+        } else {
+            if (wingman instanceof HeliEntity) {
+                applyThrottle(wingman, heliAltitudeThrottle(wingman, entry.autoTargetY));
+            } else {
+                double dist = Math.sqrt(Math.pow(entry.autoTargetX - wingman.getX(), 2)
+                        + Math.pow(entry.autoTargetY - wingman.getY(), 2) + Math.pow(entry.autoTargetZ - wingman.getZ(), 2));
+                applyThrottle(wingman, dist > 20 ? 1.0 : 0.5);
+            }
+            steerToTarget(level, wingman, entry);
         }
     }
 
@@ -151,22 +236,31 @@ public final class WingmanTickHandler {
             double dz = aimRef.z - wingman.getZ();
             double hDist = Math.sqrt(dx * dx + dz * dz);
             // Within a block horizontally the heading is undefined, so it is left alone.
+            float yawStep = 0.0F;
             if (hDist >= 1.0) {
                 float targetYaw = (float) Math.toDegrees(Math.atan2(-dx, dz));
-                if (!inAttack && entry.leader != null) {
+                if (!inAttack && !entry.isAutonomous() && entry.leader != null) {
                     float alpha = (float) Math.min(1.0, hDist / 30.0);
                     float leaderYaw = entry.leader.getYRot();
                     targetYaw = leaderYaw + Mth.wrapDegrees(targetYaw - leaderYaw) * alpha;
                 }
-                float yawStep = Mth.clamp(Mth.wrapDegrees(targetYaw - currentYaw), -maxYawRate, maxYawRate);
+                yawStep = Mth.clamp(Mth.wrapDegrees(targetYaw - currentYaw), -maxYawRate, maxYawRate);
                 wingman.setYaw(currentYaw + yawStep);
                 wingman.lastRiderYaw = targetYaw;
             }
-            if (!inAttack && entry.leader != null) {
+            if (!inAttack && !entry.isAutonomous() && entry.leader != null) {
                 float leaderRoll = entry.leader instanceof AircraftEntity la ? la.getRoll() : 0.0F;
                 float currentRoll = wingman.getRoll();
                 float rollStep = Mth.clamp(Mth.wrapDegrees(leaderRoll - currentRoll), -MAX_ROLL_RATE, MAX_ROLL_RATE);
                 wingman.setRoll(currentRoll + rollStep);
+            }
+            // An autonomous plane banks into its turns, 7 degrees for each degree a tick of turn,
+            // except on the ground and hovering.
+            if (entry.isAutonomous() && !heli && !entry.vtolHoverMode && entry.autoState != AutonomousState.TAKEOFF_ROLL
+                    && entry.autoState != AutonomousState.ALIGN) {
+                float targetRoll = Mth.clamp(yawStep * 7.0F, -45.0F, 45.0F);
+                float curRoll = wingman.getRoll();
+                wingman.setRoll(curRoll + Mth.clamp(Mth.wrapDegrees(targetRoll - curRoll), -MAX_ROLL_RATE, MAX_ROLL_RATE));
             }
             // Fixed guns aim with the nose; other weapons keep the aircraft level and aim through lastRiderPitch.
             boolean fixedGun = inAttack && isFixedGunWeapon(entry.weaponType);
@@ -245,10 +339,11 @@ public final class WingmanTickHandler {
     private static void onLevelTickPost(LevelTickEvent.Post event) {
         if (event.getLevel() instanceof ServerLevel level) {
             tickEnd(level);
+            AutonomousFlightHandler.tickEnd(level);
         }
     }
 
-    /** Upstream {@code onWorldTickEnd}: firing, the slot boost and the landing gear. */
+    /** Upstream {@code onWorldTickEnd}: firing, the slot boost, the landing gear and the taxi push. */
     public static void tickEnd(ServerLevel level) {
         for (Map.Entry<UUID, WingmanEntry> e : WingmanRegistry.snapshot().entrySet()) {
             UUID id = e.getKey();
@@ -280,8 +375,13 @@ public final class WingmanTickHandler {
                 applySlotBoost(wingman, fdx, fdz, Math.sqrt(fdx * fdx + fdz * fdz),
                         entry.leader.getDeltaMovement().length());
             }
-            if (entry.leader != null) {
+            if (entry.leader != null && !entry.isAutonomous()) {
                 syncGear(wingman, entry.leader);
+            } else if (entry.isAutonomous()) {
+                autoGear(wingman, entry.autoState);
+            }
+            if (entry.isAutonomous() && isTaxiingState(entry.autoState)) {
+                taxiPushPosition(wingman, entry);
             }
         }
     }
@@ -336,6 +436,25 @@ public final class WingmanTickHandler {
                 }
                 return computeApproachTarget(wingman, target, entry);
             }
+        }
+        if (entry.isAutonomous()) {
+            Vec3 raw = new Vec3(entry.autoTargetX, entry.autoTargetY, entry.autoTargetZ);
+            // Cruising, a target more than 60 degrees off the nose is replaced by a point 40 blocks
+            // out 60 degrees round, so the thrust keeps the aircraft moving forward through the turn.
+            if (!isTaxiingState(entry.autoState) && !isAfhThrottleState(entry.autoState)
+                    && entry.autoState != AutonomousState.ALIGN && !entry.vtolHoverMode) {
+                double tdx = raw.x - wingman.getX();
+                double tdz = raw.z - wingman.getZ();
+                if (Math.sqrt(tdx * tdx + tdz * tdz) > 20) {
+                    float curYaw = wingman.getYaw();
+                    float yawDiff = Mth.wrapDegrees((float) Math.toDegrees(Math.atan2(-tdx, tdz)) - curYaw);
+                    if (Math.abs(yawDiff) > 60.0F) {
+                        double rad = Math.toRadians(curYaw + Math.signum(yawDiff) * 60.0F);
+                        return new Vec3(wingman.getX() - Math.sin(rad) * 40.0, raw.y, wingman.getZ() + Math.cos(rad) * 40.0);
+                    }
+                }
+            }
+            return raw;
         }
         if (entry.state == WingmanState.FOLLOWING && entry.leader != null) {
             return formationPos(entry.leader, entry.formationSlot);
@@ -804,6 +923,75 @@ public final class WingmanTickHandler {
         } else if (!lf && wf) {
             wingman.unfoldLandingGear();
         }
+    }
+
+    /**
+     * Upstream {@code autoGear}: on a mission the gear is up while flying and down on the ground,
+     * on final and landing vertically.
+     */
+    private static void autoGear(AircraftEntity wingman, AutonomousState state) {
+        boolean retract = switch (state) {
+            case CLIMB, ENROUTE, ATTACK, LOITER, DESCEND, CIRCUIT_DOWNWIND, CIRCUIT_BASE, TRANSIT_TO, ON_STATION,
+                    STRIKE_PASS, RTB, VTOL_TAKEOFF -> true;
+            default -> false;
+        };
+        if (!wingman.canFoldLandingGear()) {
+            return;
+        }
+        boolean folded = wingman.isLandingGearFolded();
+        if (retract && !folded) {
+            wingman.foldLandingGear();
+        } else if (!retract && folded) {
+            wingman.unfoldLandingGear();
+        }
+    }
+
+    // ---- taxiing ----
+
+    /** About 5 metres a second. */
+    private static final double TAXI_SPEED = 0.25;
+
+    /** Upstream {@code isTaxiingState}: taxiing and the roll-out after touchdown move along the ground. */
+    static boolean isTaxiingState(AutonomousState state) {
+        return state == AutonomousState.TAXI_OUT || state == AutonomousState.TAXI_IN || state == AutonomousState.LANDING;
+    }
+
+    /** Upstream {@code isAfhThrottleState}: the states whose throttle the mission sets precisely. */
+    static boolean isAfhThrottleState(AutonomousState state) {
+        return switch (state) {
+            case TAKEOFF_ROLL, CLIMB, DESCEND, CIRCUIT_DOWNWIND, CIRCUIT_BASE, CIRCUIT_FINAL, LANDING, VTOL_TAKEOFF,
+                    VTOL_LAND -> true;
+            default -> false;
+        };
+    }
+
+    /**
+     * Upstream {@code taxiPushPosition}: after the flight model has moved the aircraft, it is put
+     * at the taxi speed from where it started the tick towards the next marker, at the height the
+     * flight model left it, level and facing the way it goes. After touchdown the speed falls from
+     * the landing speed to the taxi speed by 3.5% a tick.
+     */
+    private static void taxiPushPosition(AircraftEntity wingman, WingmanEntry entry) {
+        double baseX = entry.taxiPreX;
+        double baseZ = entry.taxiPreZ;
+        double dx = entry.autoTargetX - baseX;
+        double dz = entry.autoTargetZ - baseZ;
+        double dist = Math.sqrt(dx * dx + dz * dz);
+        if (dist < 0.5) {
+            wingman.setDeltaMovement(0, wingman.getDeltaMovement().y, 0);
+            return;
+        }
+        double speed = TAXI_SPEED;
+        if (entry.autoState == AutonomousState.LANDING && entry.landingRollSpeed > TAXI_SPEED) {
+            entry.landingRollSpeed = Math.max(TAXI_SPEED, entry.landingRollSpeed * 0.965);
+            speed = entry.landingRollSpeed;
+        }
+        double step = Math.min(speed, dist);
+        wingman.setPos(baseX + dx / dist * step, wingman.getY(), baseZ + dz / dist * step);
+        wingman.setDeltaMovement(dx / dist * speed, wingman.getDeltaMovement().y, dz / dist * speed);
+        wingman.setYaw((float) Math.toDegrees(Math.atan2(-dx, dz)));
+        wingman.setPitch(0.0F);
+        wingman.setRoll(0.0F);
     }
 
     public static boolean isLeaderStopped(Entity leader) {

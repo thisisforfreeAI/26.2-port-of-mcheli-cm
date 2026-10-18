@@ -47,7 +47,7 @@ public final class ModNetwork {
     private static final Logger LOGGER = LogUtils.getLogger();
     /** Bump when payload encoding, menu layout or synchronized entity data changes. */
     // Wingman markers: the marker screen's payloads.
-    public static final String VERSION = "23";
+    public static final String VERSION = "24";
 
     private ModNetwork() {
     }
@@ -119,6 +119,8 @@ public final class ModNetwork {
                 (p, context) -> io.github.mcheliceport.wingman.WingmanClientHooks.openBaseScreen(p));
         registrar.playToServer(TaxiRouteActionPayload.TYPE, TaxiRouteActionPayload.CODEC,
                 (p, context) -> applyTaxiRouteAction(context.player(), p));
+        registrar.playToServer(DispatchOrderPayload.TYPE, DispatchOrderPayload.CODEC,
+                (p, context) -> applyDispatchOrder(context.player(), p));
         registrar.playToServer(WingmanPanelOpenPayload.TYPE, WingmanPanelOpenPayload.CODEC,
                 (p, context) -> {
                     if (context.player() instanceof ServerPlayer sp) {
@@ -302,6 +304,11 @@ public final class ModNetwork {
             return null;
         }
         return marker;
+    }
+
+    /** Upstream {@code PacketBaseAction}'s {@code DISPATCH_ORDER}, from the base marker the player can edit. */
+    public static void applyDispatchOrder(Player player, DispatchOrderPayload p) {
+        io.github.mcheliceport.wingman.MissionDispatch.apply(player, p, editableMarker(player, p.pos()));
     }
 
     /**

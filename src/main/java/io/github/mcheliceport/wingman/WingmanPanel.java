@@ -50,7 +50,7 @@ public final class WingmanPanel {
                     break;
                 }
                 wingmen.add(new WingmanPanelDataPayload.Wingman(e.getKey(), aircraftName(level.getEntity(e.getKey())),
-                        entry.formationSlot, entry.leader != null ? "FOLLOWING" : "IDLE", entry.attackMode,
+                        entry.formationSlot, entry.leader != null ? "FOLLOWING" : entry.autoState.name(), entry.attackMode,
                         entry.weaponType != null ? entry.weaponType : ""));
             }
             for (AircraftEntity ac : candidates(leader)) {

@@ -1,11 +1,15 @@
 package io.github.mcheliceport.client.gui;
 
+import io.github.mcheliceport.net.DispatchOrderPayload;
 import io.github.mcheliceport.net.OpenBaseScreenPayload;
 import io.github.mcheliceport.net.TaxiRouteActionPayload;
 import io.github.mcheliceport.wingman.mission.TaxiRoute;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
@@ -19,14 +23,13 @@ import org.jspecify.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 
 /**
- * Upstream's {@code GuiBaseConfig}, opened by right-clicking a base marker, on its Taxi Routes tab:
- * the base's routes on the left (New, Save, Delete), and on the right the route ID and buttons
- * picking its parking spot, runway ends or helipad, then its departure or arrival waypoints in
- * order. The form scrolls with the mouse wheel. Upstream's labels, including its Japanese ones,
- * are kept.
- *
- * <p>Upstream's Mission tab dispatches wingmen, which are not ported yet; its tab button is shown
- * but cannot be selected.
+ * Upstream's {@code GuiBaseConfig}, opened by right-clicking a base marker. Its Taxi Routes tab
+ * lists the base's routes on the left (New, Save, Delete), and on the right the route ID and
+ * buttons picking its parking spot, runway ends or helipad, then its departure or arrival
+ * waypoints in order. Its Mission tab orders one of the aircraft near the base on a mission: the
+ * mission types and weapons, the target, orbit, cruise height, strike passes and time limit, and
+ * the taxi routes to leave and return by; an arrival route ending at a helipad lands vertically.
+ * Each tab scrolls with the mouse wheel. Upstream's labels, including its Japanese ones, are kept.
  */
 public class BaseConfigScreen extends Screen {
 
@@ -35,7 +38,17 @@ public class BaseConfigScreen extends Screen {
     private static final int MAX_ARR_RUNWAY_SEL = 8;
     /** Upstream's height of the Taxi Routes content, for scrolling. */
     private static final int ROUTES_CONTENT_H = 480;
+    /** Upstream's height of the Mission content, for scrolling. */
+    private static final int MISSION_CONTENT_H = 460;
+    private static final int MAX_AIRCRAFT = 8;
+    private static final int MAX_ROUTE_PICK = 8;
     private static final int HIGHLIGHT = 0xAAFFAA00;
+    private static final int TOGGLED = 0xFFFFAA00;
+    private static final String[] MISSION_TYPES = {"CAP", "CAS", "STRIKE", "ESCORT", "RECON", "FERRY"};
+    private static final String[] WEAPON_LABELS = {"GUN", "AA Msl", "AS Msl", "CAS", "Rocket", "Bomb"};
+    private static final String[] WEAPONS = {"gun", "aamissile", "asmissile", "cas", "rocket", "bomb"};
+    private static final String[] MISSION_FIELD_LABELS = {"Target X:", "Z:", "Orbit R:", "Cruise Y:", "Passes:",
+            "Limit(s):"};
 
     private final OpenBaseScreenPayload base;
     private final List<TaxiRoute> routes;
@@ -52,7 +65,29 @@ public class BaseConfigScreen extends Screen {
     private boolean editingArrivalWps;
     private int scrollRoutes;
 
+    /** 0 for Taxi Routes, 1 for Mission. */
+    private int currentTab;
+    private final Set<String> selectedMissionTypes = new LinkedHashSet<>();
+    private final Set<String> selectedWeapons = new LinkedHashSet<>();
+    private @Nullable UUID selectedAircraft;
+    /** The departure route, or empty for an airborne start. */
+    private String selectedRouteForDispatch = "";
+    /** The arrival route, or empty for upstream's fallback. */
+    private String selectedArrivalRouteId = "";
+    private boolean orbitAttackMode;
+    private int scrollMission;
+    /** The mission fields' text, kept across layouts: target X and Z, orbit, cruise, passes, limit. */
+    private final String[] missionValues = {"0", "0", "300", "80", "2", "600"};
+    private final List<EditBox> missionFields = new ArrayList<>();
+    private final Button[] missionTypeButtons = new Button[MISSION_TYPES.length];
+    private final Button[] weaponButtons = new Button[WEAPONS.length];
+    private final List<Button> aircraftButtons = new ArrayList<>();
+    private final List<Button> departureButtons = new ArrayList<>();
+    private final List<Button> arrivalButtons = new ArrayList<>();
+    private @Nullable Button orbitAttackButton;
+
     private Button routesTab;
+    private Button missionTab;
     private final List<Button> routeButtons = new ArrayList<>();
     private final List<Button> parkingButtons = new ArrayList<>();
     private final List<Button> runwayAButtons = new ArrayList<>();
@@ -65,6 +100,7 @@ public class BaseConfigScreen extends Screen {
         super(Component.literal("Base: " + base.baseId()));
         this.base = base;
         this.routes = new ArrayList<>(base.routes());
+        this.selectedWeapons.add("gun");
     }
 
     // Layout, as upstream's initRoutesTab.
@@ -90,14 +126,27 @@ public class BaseConfigScreen extends Screen {
     @Override
     protected void init() {
         int cx = this.width / 2;
-        this.routesTab = this.addRenderableWidget(Button.builder(Component.literal("Taxi Routes"), b -> {
-        }).bounds(cx - 82, this.height / 4 - 12, 80, 18).build());
-        Button missionTab = this.addRenderableWidget(Button.builder(Component.literal("Mission"), b -> {
-        }).bounds(cx + 2, this.height / 4 - 12, 80, 18).build());
-        missionTab.active = false;
-        this.initRoutesTab();
+        this.routesTab = this.addRenderableWidget(Button.builder(Component.literal("Taxi Routes"), b -> this.selectTab(0))
+                .bounds(cx - 82, this.height / 4 - 12, 80, 18).build());
+        this.missionTab = this.addRenderableWidget(Button.builder(Component.literal("Mission"), b -> this.selectTab(1))
+                .bounds(cx + 2, this.height / 4 - 12, 80, 18).build());
+        if (this.currentTab == 0) {
+            this.initRoutesTab();
+        } else {
+            this.initMissionTab();
+        }
         this.addRenderableWidget(Button.builder(Component.literal("Close"), b -> this.onClose())
                 .bounds(cx - 25, this.height - 26, 50, 16).build());
+    }
+
+    private void selectTab(int tab) {
+        if (this.currentTab != tab) {
+            this.saveMissionValues();
+            this.currentTab = tab;
+            this.scrollRoutes = 0;
+            this.scrollMission = 0;
+            this.rebuildWidgets();
+        }
     }
 
     private void initRoutesTab() {
@@ -227,14 +276,21 @@ public class BaseConfigScreen extends Screen {
                     () -> this.editWaypoints(() -> active.add(id)));
         }
 
-        // Upstream hid the tab's widgets outside the scrolling area.
+        this.clip(clipped);
+        if (!this.routeIdField.visible) {
+            this.routeIdField.setFocused(false);
+        }
+    }
+
+    /**
+     * Upstream hid the tab's widgets outside the scrolling area, but showed one partly scrolled off
+     * its top over the tab buttons, where a click on a tab pressed it; the port hides that one too.
+     */
+    private void clip(List<AbstractWidget> clipped) {
         int clipTop = this.clipTop();
         int clipBot = this.clipBottom();
         for (AbstractWidget w : clipped) {
-            w.visible = w.getY() + w.getHeight() > clipTop && w.getY() < clipBot;
-        }
-        if (!this.routeIdField.visible) {
-            this.routeIdField.setFocused(false);
+            w.visible = w.getY() >= clipTop && w.getY() < clipBot;
         }
     }
 
@@ -281,10 +337,185 @@ public class BaseConfigScreen extends Screen {
         return result;
     }
 
+    // The Mission tab, as upstream's initMissionTab.
+
+    /** The left edge of the Mission tab's centred three-column grid. */
+    private int missionGridX() {
+        return this.width / 2 - missionGridW() / 2;
+    }
+
+    private static int missionGridW() {
+        return 3 * 58 + 2 * 4;
+    }
+
+    private int missionAircraftY(int sty) {
+        return sty + 204;
+    }
+
+    private int missionDepartureY(int sty) {
+        int acRows = Math.min((Math.min(this.base.aircraft().size(), MAX_AIRCRAFT) + 1) / 2, MAX_AIRCRAFT / 2);
+        return this.missionAircraftY(sty) + acRows * 20 + 14;
+    }
+
+    private int routeRows() {
+        return this.routes.isEmpty() ? 0 : Math.min((this.routes.size() + 1) / 2, MAX_ROUTE_PICK / 2);
+    }
+
+    private int missionArrivalY(int sty) {
+        return this.missionDepartureY(sty) + this.routeRows() * 20 + 14;
+    }
+
+    private void saveMissionValues() {
+        for (int i = 0; i < this.missionFields.size(); i++) {
+            this.missionValues[i] = this.missionFields.get(i).getValue();
+        }
+    }
+
+    private void initMissionTab() {
+        this.saveMissionValues();
+        this.missionFields.clear();
+        this.aircraftButtons.clear();
+        this.departureButtons.clear();
+        this.arrivalButtons.clear();
+        int cx = this.width / 2;
+        int sty = this.clipTop() - this.scrollMission;
+        int btnW = 58;
+        int gap = 4;
+        int gridW = missionGridW();
+        int gx = this.missionGridX();
+        List<AbstractWidget> clipped = new ArrayList<>();
+
+        for (int i = 0; i < MISSION_TYPES.length; i++) {
+            String type = MISSION_TYPES[i];
+            boolean exclusive = "STRIKE".equals(type) || "FERRY".equals(type);
+            this.missionTypeButtons[i] = this.button(clipped, type, gx + (i % 3) * (btnW + gap),
+                    sty + 10 + (i / 3) * 20, btnW, 16, () -> this.toggleMission(type, exclusive));
+        }
+        for (int i = 0; i < WEAPONS.length; i++) {
+            String weapon = WEAPONS[i];
+            this.weaponButtons[i] = this.button(clipped, WEAPON_LABELS[i], gx + (i % 3) * (btnW + gap),
+                    sty + 58 + (i / 3) * 20, btnW, 16, () -> {
+                        if (!this.selectedWeapons.remove(weapon)) {
+                            this.selectedWeapons.add(weapon);
+                        }
+                    });
+        }
+
+        int fy = sty + 112;
+        int fw = (gridW - 8) / 2;
+        for (int i = 0; i < this.missionValues.length; i++) {
+            EditBox field = new EditBox(this.font, i % 2 == 0 ? gx : gx + fw + 8, fy + (i / 2) * 30, fw, 16,
+                    Component.literal(MISSION_FIELD_LABELS[i]));
+            field.setMaxLength(128);
+            field.setValue(this.missionValues[i]);
+            this.missionFields.add(this.addRenderableWidget(field));
+            clipped.add(field);
+        }
+
+        int ay = this.missionAircraftY(sty);
+        int abW = (gridW - gap) / 2;
+        List<OpenBaseScreenPayload.Aircraft> aircraft = this.base.aircraft();
+        for (int i = 0; i < aircraft.size() && i < MAX_AIRCRAFT; i++) {
+            UUID id = aircraft.get(i).uuid();
+            this.aircraftButtons.add(this.button(clipped, shorten(aircraft.get(i).name()),
+                    gx + (i % 2) * (abW + gap), ay + (i / 2) * 20, abW, 16, () -> this.selectedAircraft = id));
+        }
+
+        int pky = this.missionDepartureY(sty);
+        for (int i = 0; i < this.routes.size() && i < MAX_ROUTE_PICK; i++) {
+            String rid = this.routes.get(i).routeId();
+            this.departureButtons.add(this.button(clipped, shorten(rid), gx + (i % 2) * (abW + gap),
+                    pky + (i / 2) * 20, abW, 16, () -> this.selectedRouteForDispatch =
+                            this.selectedRouteForDispatch.equals(rid) ? "" : rid));
+        }
+        int ary = this.missionArrivalY(sty);
+        for (int i = 0; i < this.routes.size() && i < MAX_ROUTE_PICK; i++) {
+            String rid = this.routes.get(i).routeId();
+            this.arrivalButtons.add(this.button(clipped, shorten(rid), gx + (i % 2) * (abW + gap),
+                    ary + (i / 2) * 20, abW, 16, () -> this.selectedArrivalRouteId =
+                            this.selectedArrivalRouteId.equals(rid) ? "" : rid));
+        }
+
+        int dispY = ary + this.routeRows() * 20 + 6;
+        this.button(clipped, "Dispatch", cx - 40, dispY, 80, 16, this::dispatchOrder);
+        this.orbitAttackButton = this.button(clipped, "Orbit Atk", cx + 44, dispY, 70, 16,
+                () -> this.orbitAttackMode = !this.orbitAttackMode);
+
+        this.clip(clipped);
+    }
+
+    /** Upstream cut a button's label to 13 characters and an ellipsis. */
+    private static String shorten(String label) {
+        return label.length() > 14 ? label.substring(0, 13) + "…" : label;
+    }
+
+    /** Upstream: STRIKE and FERRY are flown alone; the others combine. */
+    private void toggleMission(String type, boolean exclusive) {
+        if (exclusive) {
+            if (!this.selectedMissionTypes.remove(type)) {
+                this.selectedMissionTypes.clear();
+                this.selectedMissionTypes.add(type);
+            }
+        } else {
+            if (this.selectedMissionTypes.contains("STRIKE") || this.selectedMissionTypes.contains("FERRY")) {
+                this.selectedMissionTypes.clear();
+            }
+            if (!this.selectedMissionTypes.remove(type)) {
+                this.selectedMissionTypes.add(type);
+            }
+        }
+    }
+
+    /** Upstream: an arrival route that ends at a helipad lands vertically. */
+    private boolean isVtolArrivalRoute(String routeId) {
+        if (routeId.isEmpty()) {
+            return false;
+        }
+        for (TaxiRoute r : this.routes) {
+            if (r.routeId().equals(routeId)) {
+                return this.isHelipad(r.runwayId());
+            }
+        }
+        return false;
+    }
+
+    private void dispatchOrder() {
+        if (this.selectedAircraft == null || this.selectedMissionTypes.isEmpty()) {
+            return;
+        }
+        this.saveMissionValues();
+        ClientPacketDistributor.sendToServer(new DispatchOrderPayload(this.base.pos(), this.selectedAircraft,
+                this.selectedRouteForDispatch, List.copyOf(this.selectedMissionTypes), List.copyOf(this.selectedWeapons),
+                parseDouble(this.missionValues[0], 0.0), parseDouble(this.missionValues[1], 0.0),
+                parseDouble(this.missionValues[2], 300.0), parseDouble(this.missionValues[3], 80.0),
+                parseInt(this.missionValues[4], 2), parseInt(this.missionValues[5], 600), this.orbitAttackMode,
+                this.isVtolArrivalRoute(this.selectedArrivalRouteId), this.selectedArrivalRouteId));
+    }
+
+    private static double parseDouble(String text, double fallback) {
+        try {
+            return Double.parseDouble(text.trim());
+        } catch (NumberFormatException e) {
+            return fallback;
+        }
+    }
+
+    private static int parseInt(String text, int fallback) {
+        try {
+            return Integer.parseInt(text.trim());
+        } catch (NumberFormatException e) {
+            return fallback;
+        }
+    }
+
     @Override
     protected void setInitialFocus() {
-        if (this.routeIdField != null && this.routeIdField.visible) {
-            this.setInitialFocus(this.routeIdField);
+        if (this.currentTab == 0) {
+            if (this.routeIdField != null && this.routeIdField.visible) {
+                this.setInitialFocus(this.routeIdField);
+            }
+        } else if (!this.missionFields.isEmpty() && this.missionFields.get(0).visible) {
+            this.setInitialFocus(this.missionFields.get(0));
         }
     }
 
@@ -381,19 +612,35 @@ public class BaseConfigScreen extends Screen {
             return false;
         }
         int visH = this.clipBottom() - this.clipTop();
-        int maxScroll = Math.max(0, ROUTES_CONTENT_H - visH);
-        this.scrollRoutes = Math.clamp(this.scrollRoutes + (scrollY > 0.0 ? -14 : 14), 0, maxScroll);
+        int step = scrollY > 0.0 ? -14 : 14;
+        if (this.currentTab == 0) {
+            this.scrollRoutes = Math.clamp(this.scrollRoutes + step, 0, Math.max(0, ROUTES_CONTENT_H - visH));
+        } else {
+            this.scrollMission = Math.clamp(this.scrollMission + step, 0, Math.max(0, MISSION_CONTENT_H - visH));
+        }
         this.rebuildWidgets();
         return true;
     }
 
-    /** Upstream's Tab did nothing on this tab. */
+    /** Upstream's Tab moved between the Mission tab's fields, and did nothing on the Taxi Routes tab. */
     @Override
     public boolean keyPressed(KeyEvent event) {
         if (event.key() == GLFW.GLFW_KEY_TAB) {
+            if (this.currentTab == 1) {
+                this.cycleFocus();
+            }
             return true;
         }
         return super.keyPressed(event);
+    }
+
+    private void cycleFocus() {
+        List<EditBox> visible = this.missionFields.stream().filter(f -> f.visible).toList();
+        if (visible.isEmpty()) {
+            return;
+        }
+        int next = (visible.indexOf(this.getFocused()) + 1) % visible.size();
+        this.setFocused(visible.get(next));
     }
 
     @Override
@@ -408,10 +655,14 @@ public class BaseConfigScreen extends Screen {
         int cx = this.width / 2;
         int ty = this.height / 4;
         graphics.centeredText(this.font, "§eBase: §f" + this.base.baseId(), cx, ty - 26, 0xFFFFFFFF);
-        Button tab = this.routesTab;
+        Button tab = this.currentTab == 0 ? this.routesTab : this.missionTab;
         graphics.fill(tab.getX(), tab.getY() + tab.getHeight(), tab.getX() + tab.getWidth(),
                 tab.getY() + tab.getHeight() + 2, 0xFFFFAA00);
-        this.drawRoutesTab(graphics, cx);
+        if (this.currentTab == 0) {
+            this.drawRoutesTab(graphics, cx);
+        } else {
+            this.drawMissionTab(graphics);
+        }
         super.extractRenderState(graphics, mouseX, mouseY, a);
     }
 
@@ -531,7 +782,83 @@ public class BaseConfigScreen extends Screen {
             }
         }
         graphics.disableScissor();
-        this.drawScrollbar(graphics, clipTop, clipBot);
+        this.drawScrollbar(graphics, clipTop, clipBot, ROUTES_CONTENT_H, this.scrollRoutes);
+    }
+
+    /** Upstream's drawMissionTab. */
+    private void drawMissionTab(GuiGraphicsExtractor graphics) {
+        int clipTop = this.clipTop();
+        int clipBot = this.clipBottom();
+        graphics.enableScissor(0, clipTop, this.width, clipBot);
+        int sty = clipTop - this.scrollMission;
+        int gx = this.missionGridX();
+        int gridW = missionGridW();
+
+        this.label(graphics, "Mission Types:", gx, sty, 0xAAAAAA);
+        this.label(graphics, "Weapons:", gx, sty + 48, 0xAAAAAA);
+        int fy = sty + 112;
+        int fw = (gridW - 8) / 2;
+        for (int i = 0; i < MISSION_FIELD_LABELS.length; i++) {
+            this.label(graphics, MISSION_FIELD_LABELS[i], i % 2 == 0 ? gx : gx + fw + 8, fy - 12 + (i / 2) * 30,
+                    0xAAAAAA);
+        }
+
+        int ay = this.missionAircraftY(sty);
+        this.label(graphics, "Select Aircraft:", gx, ay - 12, 0xAAAAAA);
+        List<OpenBaseScreenPayload.Aircraft> aircraft = this.base.aircraft();
+        if (aircraft.isEmpty()) {
+            this.label(graphics, "§7(no aircraft nearby)", gx, ay + 3, 0x666666);
+        }
+        for (int i = 0; i < this.aircraftButtons.size(); i++) {
+            if (aircraft.get(i).uuid().equals(this.selectedAircraft)) {
+                this.highlight(graphics, this.aircraftButtons.get(i), HIGHLIGHT);
+            }
+        }
+
+        int pky = this.missionDepartureY(sty);
+        this.label(graphics, "§f出発ルート §7(Departure, optional):", gx, pky - 12, 0xAAAAAA);
+        if (this.routes.isEmpty()) {
+            this.label(graphics, "§7(none — Routes tab で作成)", gx, pky + 3, 0x666666);
+        }
+        this.highlightRoute(graphics, this.departureButtons, this.selectedRouteForDispatch);
+
+        int ary = this.missionArrivalY(sty);
+        this.label(graphics, "§f帰着ルート §7(Arrival, optional):", gx, ary - 12, 0xAAAAAA);
+        if (this.routes.isEmpty()) {
+            this.label(graphics, "§7(none)", gx, ary + 3, 0x666666);
+        }
+        this.highlightRoute(graphics, this.arrivalButtons, this.selectedArrivalRouteId);
+        if (this.selectedArrivalRouteId.isEmpty()) {
+            this.label(graphics, "§7← §f(fallback)", gx + gridW + 4, ary + 3, 0x888888);
+        }
+
+        for (int i = 0; i < MISSION_TYPES.length; i++) {
+            if (this.selectedMissionTypes.contains(MISSION_TYPES[i])) {
+                this.highlight(graphics, this.missionTypeButtons[i], TOGGLED);
+            }
+        }
+        for (int i = 0; i < WEAPONS.length; i++) {
+            if (this.selectedWeapons.contains(WEAPONS[i])) {
+                this.highlight(graphics, this.weaponButtons[i], TOGGLED);
+            }
+        }
+        if (this.orbitAttackMode && this.orbitAttackButton != null) {
+            this.highlight(graphics, this.orbitAttackButton, TOGGLED);
+        }
+        graphics.disableScissor();
+        // Upstream drew this note just below the scrolling area, where its clipping hid it.
+        if (this.isVtolArrivalRoute(this.selectedArrivalRouteId)) {
+            this.label(graphics, "§b⬆ VTOL着陸 §7(帰着ルートから自動)", 6, this.height - 22, 0x55FFFF);
+        }
+        this.drawScrollbar(graphics, clipTop, clipBot, MISSION_CONTENT_H, this.scrollMission);
+    }
+
+    private void highlightRoute(GuiGraphicsExtractor graphics, List<Button> buttons, String selected) {
+        for (int i = 0; i < buttons.size(); i++) {
+            if (this.routes.get(i).routeId().equals(selected)) {
+                this.highlight(graphics, buttons.get(i), HIGHLIGHT);
+            }
+        }
     }
 
     /** Upstream's departure line, shortened to its first and last waypoints when too wide. */
@@ -567,15 +894,15 @@ public class BaseConfigScreen extends Screen {
                 + (this.selectedParkingId.isEmpty() ? "?" : "§a" + this.selectedParkingId + "§7") + ")";
     }
 
-    private void drawScrollbar(GuiGraphicsExtractor graphics, int top, int bot) {
+    private void drawScrollbar(GuiGraphicsExtractor graphics, int top, int bot, int contentH, int scroll) {
         int visH = bot - top;
-        int maxScroll = Math.max(0, ROUTES_CONTENT_H - visH);
+        int maxScroll = Math.max(0, contentH - visH);
         if (maxScroll <= 0) {
             return;
         }
         int bx = this.width - 7;
-        int barH = Math.max(16, visH * visH / ROUTES_CONTENT_H);
-        int barY = top + (int) ((long) this.scrollRoutes * (visH - barH) / maxScroll);
+        int barH = Math.max(16, visH * visH / contentH);
+        int barY = top + (int) ((long) scroll * (visH - barH) / maxScroll);
         graphics.fill(bx, top, bx + 4, bot, 0x44FFFFFF);
         graphics.fill(bx, barY, bx + 4, barY + barH, 0xCCCCCCCC);
     }
