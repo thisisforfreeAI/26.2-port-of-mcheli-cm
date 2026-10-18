@@ -41,6 +41,7 @@ public final class ExplosionEffects {
 
     static void play(ClientLevel level, double x, double y, double z, float size, boolean inWater,
             List<BlockPos> affected) {
+        if (!EffectAdmission.inRange(level, x, y, z, size * 2)) return;
         if (inWater) {
             effectExplosionInWater(level, x, y, z, size);
             return;

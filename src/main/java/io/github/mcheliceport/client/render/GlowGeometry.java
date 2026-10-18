@@ -32,6 +32,15 @@ public final class GlowGeometry {
     private static final RenderType TYPE = RenderType.create("mcheli_ce_port_glow",
             RenderSetup.builder(PIPELINE).createRenderSetup());
     private static final int SEGMENTS = 16;
+    private static final float[] RIM_X = new float[SEGMENTS + 1];
+    private static final float[] RIM_Y = new float[SEGMENTS + 1];
+    static {
+        for (int i = 0; i <= SEGMENTS; i++) {
+            float angle = i * Mth.TWO_PI / SEGMENTS;
+            RIM_X[i] = Mth.cos(angle);
+            RIM_Y[i] = Mth.sin(angle);
+        }
+    }
 
     private GlowGeometry() {
     }
@@ -52,11 +61,9 @@ public final class GlowGeometry {
         poseStack.mulPose(camera.orientation);
         collector.submitCustomGeometry(poseStack, TYPE, (pose, buffer) -> {
             for (int i = 0; i < SEGMENTS; i++) {
-                float a0 = i * Mth.TWO_PI / SEGMENTS;
-                float a1 = (i + 1) * Mth.TWO_PI / SEGMENTS;
                 buffer.addVertex(pose, 0.0F, 0.0F, 0.0F).setColor(center);
-                buffer.addVertex(pose, Mth.cos(a0) * radius, Mth.sin(a0) * radius, 0.0F).setColor(rim);
-                buffer.addVertex(pose, Mth.cos(a1) * radius, Mth.sin(a1) * radius, 0.0F).setColor(rim);
+                buffer.addVertex(pose, RIM_X[i] * radius, RIM_Y[i] * radius, 0.0F).setColor(rim);
+                buffer.addVertex(pose, RIM_X[i + 1] * radius, RIM_Y[i + 1] * radius, 0.0F).setColor(rim);
             }
         });
         poseStack.popPose();

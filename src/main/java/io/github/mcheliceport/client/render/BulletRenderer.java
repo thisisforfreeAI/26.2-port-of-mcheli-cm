@@ -5,6 +5,7 @@ import com.mojang.math.Axis;
 import io.github.mcheliceport.client.model.BulletModels;
 import io.github.mcheliceport.client.model.McheliModel;
 import io.github.mcheliceport.config.EffectQuality;
+import io.github.mcheliceport.client.particle.EffectPerformance;
 import io.github.mcheliceport.content.weapon.ArgbColor;
 import io.github.mcheliceport.content.weapon.WeaponInfo;
 import io.github.mcheliceport.entity.aircraft.AircraftEntity;
@@ -76,6 +77,7 @@ public class BulletRenderer<T extends BaseBulletEntity> extends EntityRenderer<T
         public double motionZ;
         /** M8: a glow at the missile's flame. */
         public boolean flameGlow;
+        public boolean tracerHalo;
     }
 
     private final Kind kind;
@@ -116,6 +118,7 @@ public class BulletRenderer<T extends BaseBulletEntity> extends EntityRenderer<T
         double my = entity.prevMotionY + (entity.getDeltaMovement().y - entity.prevMotionY) * partialTicks;
         double mz = entity.prevMotionZ + (entity.getDeltaMovement().z - entity.prevMotionZ) * partialTicks;
         boolean enhanced = EffectQuality.enhanced();
+        state.tracerHalo = EffectPerformance.optionalGlows();
         state.tracer = enhanced && this.kind == Kind.BULLET && entity instanceof BulletEntity;
         state.motionX = mx;
         state.motionY = my;
@@ -146,7 +149,7 @@ public class BulletRenderer<T extends BaseBulletEntity> extends EntityRenderer<T
             state.flameY = len > 1.0E-4 ? -my / len * 0.8 : 0.0;
             state.flameZ = len > 1.0E-4 ? -mz / len * 0.8 : 0.0;
             state.flameTexture = entity.tickCount / 5 % 2 == 0 ? TEX_FLAME : TEX_FLAME_1;
-            state.flameGlow = enhanced;
+            state.flameGlow = enhanced && EffectPerformance.optionalGlows();
         }
     }
 
@@ -225,7 +228,7 @@ public class BulletRenderer<T extends BaseBulletEntity> extends EntityRenderer<T
         int rgb = ((c >> 16 & 0xFF) + 255) / 2 << 16 | ((c >> 8 & 0xFF) + 255) / 2 << 8 | ((c & 0xFF) + 255) / 2;
         float alpha = 0.75F * (c >>> 24) / 255.0F;
         GlowGeometry.streak(poseStack, collector, tail, toCamera, 0.22F, rgb, alpha);
-        GlowGeometry.disc(poseStack, collector, camera, 0.35F, rgb, alpha);
+        if (state.tracerHalo) GlowGeometry.disc(poseStack, collector, camera, 0.35F, rgb, alpha);
     }
 
     /** Upstream {@code renderMissileFlame}: a full-bright quad of {@code size} facing the camera. */

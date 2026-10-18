@@ -4,7 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import io.github.mcheliceport.config.EffectQuality;
-import io.github.mcheliceport.config.ClientConfig;
+import io.github.mcheliceport.client.particle.EffectPerformance;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
@@ -34,6 +34,16 @@ public class FlareRenderer<T extends Entity> extends EntityRenderer<T, FlareRend
         public boolean enhanced;
         public boolean halo;
     }
+
+    private static final float[][] NORMALS = {{0, 0, -1}, {0, 0, 1}, {-1, 0, 0}, {1, 0, 0}, {0, -1, 0}, {0, 1, 0}};
+    private static final float[][][] FACES = {
+                {{-1, -1, -1}, {-1, 1, -1}, {1, 1, -1}, {1, -1, -1}},
+                {{-1, -1, 1}, {1, -1, 1}, {1, 1, 1}, {-1, 1, 1}},
+                {{-1, -1, -1}, {-1, -1, 1}, {-1, 1, 1}, {-1, 1, -1}},
+                {{1, -1, -1}, {1, 1, -1}, {1, 1, 1}, {1, -1, 1}},
+                {{-1, -1, -1}, {1, -1, -1}, {1, -1, 1}, {-1, -1, 1}},
+                {{-1, 1, -1}, {-1, 1, 1}, {1, 1, 1}, {1, 1, -1}}};
+    private static final float[][] UV = {{0, 1}, {0, 0}, {1, 0}, {1, 1}};
 
     private final float scale;
     private final int color;
@@ -66,8 +76,7 @@ public class FlareRenderer<T extends Entity> extends EntityRenderer<T, FlareRend
         state.yaw = entity.getYRot();
         state.pitch = entity.getXRot();
         state.enhanced = EffectQuality.enhanced();
-        state.halo = state.enhanced
-                && ClientConfig.get(ClientConfig.EFFECT_BUDGET) != ClientConfig.EffectBudget.LOW;
+        state.halo = state.enhanced && EffectPerformance.optionalGlows();
     }
 
     @Override
@@ -97,24 +106,15 @@ public class FlareRenderer<T extends Entity> extends EntityRenderer<T, FlareRend
      * scale), drawn without culling so the faces' winding does not matter.
      */
     private static void cube(VertexConsumer buffer, PoseStack.Pose pose, float h, int color, int light) {
-        float[][] n = {{0, 0, -1}, {0, 0, 1}, {-1, 0, 0}, {1, 0, 0}, {0, -1, 0}, {0, 1, 0}};
-        float[][][] faces = {
-                {{-h, -h, -h}, {-h, h, -h}, {h, h, -h}, {h, -h, -h}},
-                {{-h, -h, h}, {h, -h, h}, {h, h, h}, {-h, h, h}},
-                {{-h, -h, -h}, {-h, -h, h}, {-h, h, h}, {-h, h, -h}},
-                {{h, -h, -h}, {h, h, -h}, {h, h, h}, {h, -h, h}},
-                {{-h, -h, -h}, {h, -h, -h}, {h, -h, h}, {-h, -h, h}},
-                {{-h, h, -h}, {-h, h, h}, {h, h, h}, {h, h, -h}}};
-        float[][] uv = {{0, 1}, {0, 0}, {1, 0}, {1, 1}};
         for (int f = 0; f < 6; f++) {
             for (int v = 0; v < 4; v++) {
-                float[] p = faces[f][v];
-                buffer.addVertex(pose, p[0], p[1], p[2])
+                float[] p = FACES[f][v];
+                buffer.addVertex(pose, p[0] * h, p[1] * h, p[2] * h)
                         .setColor(color)
-                        .setUv(uv[v][0], uv[v][1])
+                        .setUv(UV[v][0], UV[v][1])
                         .setOverlay(OverlayTexture.NO_OVERLAY)
                         .setLight(light)
-                        .setNormal(pose, n[f][0], n[f][1], n[f][2]);
+                        .setNormal(pose, NORMALS[f][0], NORMALS[f][1], NORMALS[f][2]);
             }
         }
     }

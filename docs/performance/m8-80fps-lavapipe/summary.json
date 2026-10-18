@@ -1,0 +1,61 @@
+{
+  "target_fps": 80,
+  "frame_budget_ms": 12.5,
+  "results": [
+    {
+      "scene": "combat-adaptive-2",
+      "frames": 188,
+      "mean_ms": 69.024,
+      "median_ms": 65.902,
+      "p95_ms": 92.589,
+      "p99_ms": 155.516,
+      "average_fps": 14.49,
+      "within_budget_percent": 0.0,
+      "p95_within_target": false
+    },
+    {
+      "scene": "combat-adaptive-4",
+      "frames": 184,
+      "mean_ms": 70.251,
+      "median_ms": 65.7,
+      "p95_ms": 96.683,
+      "p99_ms": 216.773,
+      "average_fps": 14.23,
+      "within_budget_percent": 0.0,
+      "p95_within_target": false
+    },
+    {
+      "scene": "combat-fixed-1",
+      "frames": 167,
+      "mean_ms": 77.87,
+      "median_ms": 71.23,
+      "p95_ms": 122.601,
+      "p99_ms": 160.511,
+      "average_fps": 12.84,
+      "within_budget_percent": 0.0,
+      "p95_within_target": false
+    },
+    {
+      "scene": "combat-fixed-3",
+      "frames": 169,
+      "mean_ms": 76.734,
+      "median_ms": 69.498,
+      "p95_ms": 115.127,
+      "p99_ms": 168.139,
+      "average_fps": 13.03,
+      "within_budget_percent": 0.0,
+      "p95_within_target": false
+    },
+    {
+      "scene": "empty",
+      "frames": 190,
+      "mean_ms": 68.302,
+      "median_ms": 62.877,
+      "p95_ms": 106.278,
+      "p99_ms": 160.913,
+      "average_fps": 14.64,
+      "within_budget_percent": 0.0,
+      "p95_within_target": false
+    }
+  ]
+}

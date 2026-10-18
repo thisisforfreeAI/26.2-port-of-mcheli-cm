@@ -32,6 +32,12 @@ public final class EffectTuning {
         return distanceStride * (1 << Math.clamp(particleSetting, 0, 2));
     }
 
+    /** Estimate relative fill cost at the largest expected radius; no projection or allocations needed. */
+    public static int coverageCost(float radius, double distanceSquared) {
+        if (!Float.isFinite(radius) || !Double.isFinite(distanceSquared)) return 16;
+        return (int) Math.clamp(Math.ceil(64.0 * radius * radius / Math.max(1.0, distanceSquared)), 1, 16);
+    }
+
     /** Each family owns a counter, so a cloud cannot starve weapon flashes. */
     public static final class Budget {
         private long tick = Long.MIN_VALUE;
@@ -39,14 +45,18 @@ public final class EffectTuning {
         private int sequence;
 
         public boolean admit(long now, int limit, int stride) {
+            return admit(now, limit, stride, 1);
+        }
+
+        public boolean admit(long now, int limit, int stride, int cost) {
             if (now != this.tick) {
                 this.tick = now;
                 this.emitted = 0;
             }
-            if (this.sequence++ % stride != 0 || this.emitted >= limit) {
+            if (Math.floorMod(this.sequence++, stride) != 0 || cost > limit - this.emitted) {
                 return false;
             }
-            this.emitted++;
+            this.emitted += cost;
             return true;
         }
     }

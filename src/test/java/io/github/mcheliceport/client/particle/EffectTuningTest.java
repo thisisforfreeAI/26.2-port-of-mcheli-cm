@@ -45,6 +45,20 @@ class EffectTuningTest {
     }
 
     @Test
+    void closeLargeCloudsConsumeMoreBudgetWithoutOverspending() {
+        assertEquals(1, EffectTuning.coverageCost(1, 10000));
+        assertEquals(16, EffectTuning.coverageCost(10, 0));
+        assertEquals(16, EffectTuning.coverageCost(Float.NaN, 100));
+        assertTrue(EffectTuning.coverageCost(4, 100) > EffectTuning.coverageCost(4, 10000));
+        EffectTuning.Budget budget = new EffectTuning.Budget();
+        assertTrue(budget.admit(0, 17, 1, 16));
+        assertFalse(budget.admit(0, 17, 1, 2));
+        assertTrue(budget.admit(0, 17, 1, 1));
+        assertFalse(budget.admit(0, 17, 1, 1));
+        assertTrue(budget.admit(1, 17, 1, 16));
+    }
+
+    @Test
     void qualityScalesWithinAnExplicitLiveAndSpawnBudget() {
         int distance = 0;
         int live = 0;

@@ -42,11 +42,14 @@ public class SplashParticle extends SmokeParticle {
         if (this.yd < -0.6 && !beforeInWater && nowInWater) {
             double p = -this.yd * 10.0;
             for (int i = 0; i < p; i++) {
+                // Bound the secondary spray as well as the parent drop.
+                if (!EffectAdmission.admit(this.level, this.x, this.y, this.z, false)) continue;
                 this.level.addParticle(ParticleTypes.SPLASH,
                         this.x + 0.5 + (this.random.nextDouble() - 0.5) * 2.0,
                         this.y + this.random.nextDouble(),
                         this.z + 0.5 + (this.random.nextDouble() - 0.5) * 2.0,
                         (this.random.nextDouble() - 0.5) * 2.0, 4.0, (this.random.nextDouble() - 0.5) * 2.0);
+                if (!EffectAdmission.admit(this.level, this.x, this.y, this.z, false)) continue;
                 this.level.addParticle(ParticleTypes.BUBBLE,
                         this.x + 0.5 + (this.random.nextDouble() - 0.5) * 2.0,
                         this.y - this.random.nextDouble(),

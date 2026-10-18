@@ -40,7 +40,8 @@ public final class ClientEffects implements McheliEffects.Sink {
         if (!(level instanceof ClientLevel clientLevel)) {
             return;
         }
-        if (!EffectAdmission.admit(clientLevel, p.posX, p.posY, p.posZ, false)) {
+        if (!EffectAdmission.admit(clientLevel, p.posX, p.posY, p.posZ, false,
+                Math.abs(p.size) * (p.diffusible ? 0.2F : 0.1F))) {
             return;
         }
         SmokeParticle fx = p.name.equalsIgnoreCase("Splash")
@@ -93,7 +94,7 @@ public final class ClientEffects implements McheliEffects.Sink {
         boolean enhanced = EffectQuality.enhanced();
         fx.enhanced = enhanced;
         Minecraft.getInstance().particleEngine.add(fx);
-        if (enhanced && optionalGlow(clientLevel, x, y, z)) {
+        if (enhanced && optionalGlow(clientLevel, x, y, z, size * 2.08F)) {
             // M8: a short warm glow around the flash.
             Minecraft.getInstance().particleEngine.add(new GlowParticle(clientLevel, x, y, z, size * 1.6F, 0.3F,
                     3, Math.min(1.0F, r * 1.1F), g * 0.85F, b * 0.6F, a * 0.55F));
@@ -102,7 +103,7 @@ public final class ClientEffects implements McheliEffects.Sink {
 
     /** M8 glow under an explosion's fireball (not in water). */
     static void spawnExplosionGlow(ClientLevel level, double x, double y, double z, float size) {
-        if (!optionalGlow(level, x, y, z)) {
+        if (!optionalGlow(level, x, y, z, Math.min(size * 1.2F, 12.0F) * 1.5F)) {
             return;
         }
         float radius = Math.min(size * 1.2F, 12.0F);
@@ -112,9 +113,9 @@ public final class ClientEffects implements McheliEffects.Sink {
     }
 
     /** Optional glow shares the smoke budget, keeping the flash budget available for weapon cues. */
-    private static boolean optionalGlow(ClientLevel level, double x, double y, double z) {
-        return ClientConfig.get(ClientConfig.EFFECT_BUDGET) != ClientConfig.EffectBudget.LOW
-                && EffectAdmission.admit(level, x, y, z, false);
+    private static boolean optionalGlow(ClientLevel level, double x, double y, double z, float radius) {
+        return EffectPerformance.optionalGlows()
+                && EffectAdmission.admit(level, x, y, z, false, radius);
     }
 
     /**
@@ -201,6 +202,7 @@ public final class ClientEffects implements McheliEffects.Sink {
             if (state == null || state.getRenderShape() == RenderShape.INVISIBLE) {
                 return null;
             }
+            if (!EffectAdmission.admit(clientLevel, x, y, z, false)) return null;
             BlockDustParticle dust = new BlockDustParticle(clientLevel, x, y, z, mx, my, mz, state,
                     pos != null ? pos : BlockPos.containing(x, y, z));
             mc.particleEngine.add(dust);
