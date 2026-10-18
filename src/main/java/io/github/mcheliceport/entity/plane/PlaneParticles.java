@@ -36,8 +36,12 @@ public final class PlaneParticles {
     }
 
     public void tick(WingedAircraftInfo info, Frame frame, RandomSource random, World world, Sink sink) {
+        this.tick(info, frame, random, world, sink, true);
+    }
+
+    public void tick(WingedAircraftInfo info, Frame frame, RandomSource random, World world, Sink sink, boolean legacyNozzle) {
         landingGear(frame, random, sink);
-        nozzle(info, frame, random, world, sink);
+        if (legacyNozzle) nozzle(info, frame, random, world, sink);
         this.damage(info, frame, random, sink);
         splash(info, frame, random, world, sink);
     }

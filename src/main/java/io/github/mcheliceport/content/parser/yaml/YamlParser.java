@@ -746,6 +746,14 @@ public final class YamlParser implements ContentParser {
                 case "ModelPitch" -> info.entityPitch = ((Number) entry.getValue()).floatValue();
                 case "ModelRoll" -> info.entityRoll = ((Number) entry.getValue()).floatValue();
                 case "ParticleScale" -> info.particlesScale = getClamped(50f, entry.getValue());
+                case "EngineOutlets" -> {
+                    for (Map<String, Object> outlet : (List<Map<String, Object>>) entry.getValue()) {
+                        info.engineOutlets.add(new AircraftInfo.EngineOutlet(parseVector(outlet.get("Position")),
+                                parseVector(outlet.getOrDefault("Direction", List.of(0, 0, -1))),
+                                ((Number) outlet.getOrDefault("Size", 1)).floatValue(),
+                                (Boolean) outlet.getOrDefault("Jet", false)));
+                    }
+                }
                 case "OneProbeScale" -> info.oneProbeScale = ((Number) entry.getValue()).floatValue();
                 case "EnableSeaSurfaceParticle" -> info.enableSeaSurfaceParticle = (Boolean) entry.getValue();
                 case "SplashParticles" -> {

@@ -240,6 +240,13 @@ public final class TxtParser implements ContentParser {
             case "itemid" -> info.itemID = info.toInt(data, 0, 65535);
             case "addtexture" -> info.addTextureName(data.toLowerCase(Locale.ROOT));
             case "particlesscale" -> info.particlesScale = info.toFloat(data, 0.0F, 50.0F);
+            case "addengineoutlet" -> {
+                String[] s = info.splitParam(data);
+                if (s.length < 6) throw new IllegalArgumentException("AddEngineOutlet requires x,y,z,dx,dy,dz[,size,jet]");
+                info.engineOutlets.add(new AircraftInfo.EngineOutlet(info.toVec3(s[0], s[1], s[2]),
+                        info.toVec3(s[3], s[4], s[5]), s.length > 6 ? info.toFloat(s[6]) : 1,
+                        s.length > 7 && info.toBool(s[7])));
+            }
             case "enableseasurfaceparticle" -> info.enableSeaSurfaceParticle = info.toBool(data);
             case "addparticlesplash" -> {
                 String[] s = info.splitParam(data);

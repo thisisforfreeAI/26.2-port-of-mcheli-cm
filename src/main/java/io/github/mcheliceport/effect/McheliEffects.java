@@ -14,6 +14,8 @@ public final class McheliEffects {
 
     /** What the client draws. Every method is only called on the client thread. */
     public interface Sink {
+        /** True replaces a plane's legacy nozzle smoke; false preserves that emitter. */
+        default boolean engineExhaust(io.github.mcheliceport.entity.aircraft.AircraftEntity aircraft) { return false; }
         /** True when the client handled enhanced helicopter wash; false keeps the upstream emitter. */
         default boolean rotorWash(io.github.mcheliceport.entity.aircraft.AircraftEntity aircraft, boolean seaOnly) {
             return false;
@@ -56,6 +58,11 @@ public final class McheliEffects {
 
     public static void setSink(@Nullable Sink value) {
         sink = value;
+    }
+
+    public static boolean engineExhaust(io.github.mcheliceport.entity.aircraft.AircraftEntity aircraft) {
+        Sink s = sink(aircraft.level());
+        return s != null && s.engineExhaust(aircraft);
     }
 
     private static @Nullable Sink sink(Level level) {

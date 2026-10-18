@@ -166,6 +166,8 @@ public abstract class AircraftInfo extends BaseInfo {
     /** Round-robin index into the texture list for newly placed vehicles. */
     public int textureCount = 0;
     public float particlesScale = 1.0F;
+    /** Optional cosmetic engine outlets, in model coordinates; absent outlets are never guessed. */
+    public final List<EngineOutlet> engineOutlets = new ArrayList<>();
     public boolean hideEntity = false;
     public boolean smoothShading = true;
     /** Engine sound event name in the {@code mcheli} namespace, or null for the type's default. */
@@ -685,6 +687,20 @@ public abstract class AircraftInfo extends BaseInfo {
     }
 
     /** A model part drawn at a position and rotation. Upstream {@code MCH_AircraftInfo.DrawnPart}. */
+    public record EngineOutlet(Vec3 position, Vec3 direction, float size, boolean jet) {
+        public EngineOutlet {
+            if (!finite(position) || !finite(direction) || direction.lengthSqr() < 1.0E-6
+                    || !Float.isFinite(size) || size <= 0 || size > 4) {
+                throw new IllegalArgumentException("Engine outlet needs finite position/direction, nonzero direction and size in (0,4]");
+            }
+            direction = direction.normalize();
+        }
+        private static boolean finite(Vec3 value) {
+            return Double.isFinite(value.x) && Double.isFinite(value.y) && Double.isFinite(value.z)
+                    && Math.abs(value.x) <= 1024 && Math.abs(value.y) <= 1024 && Math.abs(value.z) <= 1024;
+        }
+    }
+
     public static class DrawnPart {
 
         public final Vec3 pos;
