@@ -59,8 +59,6 @@ Until then:
 - Fuel comes from fuel cans or nearby supply vehicles. Refuelling from fluid containers and
   external fluid capabilities still needs a registered fuel fluid (M6). Electric batteries and
   charger energy remain pending; named vehicle-to-vehicle fuel transfer is not an energy capability.
-- The drafting table is drawn with a simple block model; upstream drew a 3D model with a block
-  entity renderer (M6).
 - Every placed wingman marker is a waypoint until the marker screen is ported (M6b).
 - An APS with upstream's "iron curtain" range (100) only plays its sounds (M6).
 - Turret ballistics lines (upstream `drawTurretBallistics`) are not drawn yet (M7).

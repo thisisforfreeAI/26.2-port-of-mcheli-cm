@@ -279,14 +279,25 @@ Every milestone ends with `./gradlew build`, `runClient` (world load, no crash),
 | **M6** | Remaining vehicle types | Planes (VTOL, sweep wing, autopilot), ships, tanks (wheels, tilt, tracks), vehicles, UAV + stations, gunner NPC, containers, chains, parachutes, GLTD, light weapons, drafting table, charger, tools, special crafting recipes with JEI compatibility, multiplayer/teams | Every stock vehicle spawns, mounts, moves and renders; crafting recipes are browsable in JEI when installed |
 | **M6b** | Wingman | Marker blocks, formation AI, missions state machine, chunk loading, planner GUIs, `/wingman` | Formation + one CAP mission flies end-to-end |
 | **M7** | Polish | Full config + `/mcheli` commands, sound/particle parity, render path B (GPU buffers), long-distance tracking/rendering, HBM stubs, thermal vision, performance pass (spark profile vs. upstream numbers), docs | No crash in a 30-minute mixed-vehicle soak; frame-time target agreed at M4 |
+| **M8** | Post-port visual effects polish | After the McHeli CE 1.12.2 port is complete, refine the existing effects for Minecraft's Vulkan renderer: explosions, smoke, fire, muzzle flashes, tracers, missile trails, flares, water splashes and rotor wash. Map out the visual changes before implementing this milestone. | Before/after captures in repeatable scenes; Vulkan visual and frame-time checks under combat load; OpenGL compatibility checks; gameplay behaviour unchanged |
+
+### Post-port effects direction (M8)
+
+Complete M6, M6b and M7, with any remaining upstream feature gaps implemented or explicitly
+documented and accepted, before starting this visual refinement phase. The aim is to polish the
+ported effects while preserving McHeli CE's recognizable style and combat readability. Review
+particle shapes, animation, colour, transparency, lighting appearance and transitions together;
+choose the specific techniques and quality settings when mapping out M8 against the rendering
+APIs available then. Use Minecraft's supported rendering abstractions for Vulkan and retain
+OpenGL compatibility. Measure performance in representative battles and provide scalable effect
+quality where needed. Visual changes must preserve damage, projectile trajectories, targeting,
+timings and multiplayer behaviour.
 
 ### Next project
 
-After completing the McHeli port through M7, the user plans to port another mod before
-revisiting additional visual-effects polish or automatic vehicle turrets. Those extensions
-have been removed from the active roadmap; no M8 or M9 is scheduled. Existing Vulkan support
-and OpenGL/Vulkan compatibility checks remain part of the port. Upstream NPC gunners and
-multiplayer teams remain in M6.
+After completing the McHeli port through M8, the user plans to port another mod before
+revisiting automatic vehicle turrets, which have been removed from the active roadmap (no M9 is
+scheduled). Upstream NPC gunners and multiplayer teams remain in M6.
 
 ---
 

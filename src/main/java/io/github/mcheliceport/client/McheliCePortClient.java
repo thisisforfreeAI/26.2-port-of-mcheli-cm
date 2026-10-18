@@ -99,6 +99,8 @@ public final class McheliCePortClient {
         event.registerEntityRenderer(ModEntityTypes.CONTAINER.get(), CargoContainerRenderer::new);
         event.registerEntityRenderer(ModEntityTypes.CHAIN.get(), io.github.mcheliceport.client.render.ChainRenderer::new);
         event.registerEntityRenderer(ModEntityTypes.GLTD.get(), io.github.mcheliceport.client.render.GltdRenderer::new);
+        event.registerBlockEntityRenderer(io.github.mcheliceport.registry.ModBlocks.DRAFTING_TABLE_ENTITY.get(),
+                io.github.mcheliceport.client.render.DraftingTableRenderer::new);
         // Remaining vehicles and support entities draw nothing until their M6 implementation.
         Set<EntityType<?>> drawn = Set.of(ModEntityTypes.HELICOPTER.get(), ModEntityTypes.PLANE.get(), ModEntityTypes.SHIP.get(), ModEntityTypes.BULLET.get(),
                 ModEntityTypes.ROCKET.get(), ModEntityTypes.TORPEDO.get(), ModEntityTypes.MARKER_ROCKET.get(),

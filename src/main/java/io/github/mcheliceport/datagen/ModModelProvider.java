@@ -21,18 +21,14 @@ import net.minecraft.client.data.models.blockstates.MultiVariantGenerator;
 import net.minecraft.client.data.models.blockstates.PropertyDispatch;
 import net.minecraft.client.data.models.model.ItemModelUtils;
 import net.minecraft.client.data.models.model.ModelLocationUtils;
-import net.minecraft.client.data.models.model.ModelTemplate;
 import net.minecraft.client.data.models.model.ModelTemplates;
 import net.minecraft.client.data.models.model.TextureMapping;
-import net.minecraft.client.data.models.model.TextureSlot;
 import net.minecraft.client.resources.model.sprite.Material;
-import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
-import net.neoforged.neoforge.client.model.generators.template.ExtendedModelTemplateBuilder;
 import net.neoforged.neoforge.registries.DeferredItem;
 
 /**
@@ -44,8 +40,6 @@ import net.neoforged.neoforge.registries.DeferredItem;
  */
 public class ModModelProvider extends ModelProvider {
 
-    /** The board of the placeholder drafting table: the blueprint area of upstream's texture. */
-    private static final TextureSlot BOARD = TextureSlot.create("board");
     /** Items whose item model is hand-written (assets/mcheli_ce_port/items). */
     private static final List<DeferredItem<? extends Item>> TOOLS = List.of(ModItems.RANGEFINDER, ModItems.WRENCH,
             ModItems.GLTD, ModItems.FIM92, ModItems.FGM148);
@@ -89,7 +83,7 @@ public class ModModelProvider extends ModelProvider {
         Identifier draftingTable = draftingTableModel(blockModels);
         draftingTableState(blockModels, ModBlocks.DRAFTING_TABLE.get(), draftingTable);
         draftingTableState(blockModels, ModBlocks.LIT_DRAFTING_TABLE.get(), draftingTable);
-        itemModels.itemModelOutput.accept(ModItems.DRAFTING_TABLE.get(), ItemModelUtils.plainModel(draftingTable));
+        // The drafting table item's model is hand-written (ToolItemModel), as the hand tools'.
     }
 
     @Override
@@ -102,7 +96,8 @@ public class ModModelProvider extends ModelProvider {
     protected Stream<? extends Holder<Item>> getKnownItems() {
         return ModRegistries.ITEMS.getEntries().stream()
                 .filter(holder -> !(holder.get() instanceof AircraftItem) && !(holder.get() instanceof ThrowableItem))
-                .filter(holder -> TOOLS.stream().noneMatch(tool -> tool.get() == holder.get()));
+                .filter(holder -> TOOLS.stream().noneMatch(tool -> tool.get() == holder.get())
+                        && holder.get() != ModItems.DRAFTING_TABLE.get());
     }
 
     private static Identifier mcheli(String path) {
@@ -139,34 +134,12 @@ public class ModModelProvider extends ModelProvider {
     }
 
     /**
-     * A stand-in for upstream's drafting table model (an MQO model drawn by a block entity
-     * renderer, ported later): four wooden legs and a tilted board showing the blueprint of
-     * upstream's texture. Coordinates on the 512 px texture are divided by 32 for UVs.
+     * The drafting table block draws nothing itself (its block entity renderer draws upstream's
+     * MQO model); this model only gives its breaking particles.
      */
     private static Identifier draftingTableModel(BlockModelGenerators blockModels) {
-        ModelTemplate template = ExtendedModelTemplateBuilder.builder()
-                .parent(Identifier.withDefaultNamespace("block/block"))
-                .requiredTextureSlot(TextureSlot.PARTICLE)
-                .requiredTextureSlot(BOARD)
-                .element(e -> leg(e, 1, 2))
-                .element(e -> leg(e, 14, 2))
-                .element(e -> leg(e, 1, 13))
-                .element(e -> leg(e, 14, 13))
-                .element(e -> e.from(0, 9, 1).to(16, 10, 15)
-                        .rotation(r -> r.origin(8, 9.5f, 8).singleAxis(Direction.Axis.X, -22.5f))
-                        .allFaces((dir, face) -> face.texture(BOARD).uvs(1.2f, 0.4f, 8.1f, 5.3f))
-                        .face(Direction.UP, face -> face.texture(BOARD).uvs(0.7f, 9.95f, 11.0f, 15.5f)))
-                .build();
-        Material texture = new Material(mcheli("blocks/drafting_table"));
-        return template.create(ModelLocationUtils.getModelLocation(ModBlocks.DRAFTING_TABLE.get()),
-                new TextureMapping().put(TextureSlot.PARTICLE, texture).put(BOARD, texture), blockModels.modelOutput);
-    }
-
-    private static void leg(net.neoforged.neoforge.client.model.generators.template.ElementBuilder element, float x,
-            float z) {
-        // The wooden planks area of upstream's texture.
-        element.from(x, 0, z).to(x + 1, 9, z + 1)
-                .allFaces((dir, face) -> face.texture(BOARD).uvs(8.5f, 0.2f, 9.0f, 5.3f));
+        return ModelTemplates.PARTICLE_ONLY.create(ModBlocks.DRAFTING_TABLE.get(),
+                TextureMapping.particle(new Material(mcheli("blocks/drafting_table"))), blockModels.modelOutput);
     }
 
     private static void draftingTableState(BlockModelGenerators blockModels, Block block, Identifier model) {

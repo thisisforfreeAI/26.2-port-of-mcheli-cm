@@ -995,9 +995,9 @@ explicitly scheduled special crafting recipes; do not silently replace stock YAM
 - Wingman formation, missions and planner screens stay in M6b. Bounded UAV control streaming
   is implemented by the 5,000-block increment below.
 - Preserve the documented HBM limitation and all existing privacy decisions.
-- After M7, the user plans to port another mod. Additional Vulkan visual-effects polish and
-  automatic vehicle turrets have been removed from the active roadmap; do not schedule them
-  as the next milestones. Existing OpenGL/Vulkan compatibility remains required.
+- The Vulkan visual-effects update is back on the roadmap as M8, after M7 (PORTING_PLAN.md);
+  it is not part of M6. Automatic vehicle turrets stay off the roadmap. Existing OpenGL/Vulkan
+  compatibility remains required.
 
 ## Validation and completion
 
@@ -1151,6 +1151,23 @@ reloaded from a missile after the sight came down; C, X and Z switched night vis
 and the narrow field of view ([night and top](screens/m6-lweapon-javelin-night-top.png)), and
 lowering the sight ended night vision. Not run: Vulkan, a second player watching, and firing
 from a passenger seat.
+
+## Drafting table model increment
+
+- `DraftingTableBlockEntity` ports `MCH_DraftingTableTileEntity` (no data) on both tables, and the
+  block is invisible as upstream's `BlockContainer` was; its block model only gives the breaking
+  particles. `DraftingTableRenderer` ports `MCH_DraftingTableRenderer`: `blocks/drafting_table.mqo`
+  centred on the block, turned by `-direction * 45 + 180` degrees and tinted 75% grey.
+- The item uses `ToolItemModel` (`drafting_table`) in every display context, with upstream's
+  display transforms from `models/block/drafting_table.json` and the offsets of
+  `BuiltInDraftingTableItemRenderer`.
+
+Validation: `build` passed (the item model definition test now covers the table) and the
+GameTest server passed all 194 required tests. On a dedicated server with an OpenGL client, tables
+set facing north, north-east and west and one placed by hand facing the player drew upstream's
+model the right way round, with the 3D item in the hotbar and hand
+([tables](screens/m6-drafting-table-model.png), [placed](screens/m6-drafting-table-placed.png),
+[third person](screens/m6-drafting-table-third-person.png)). Not run: Vulkan.
 
 ## Hand tool item models increment
 

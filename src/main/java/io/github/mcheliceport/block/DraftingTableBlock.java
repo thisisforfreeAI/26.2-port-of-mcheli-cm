@@ -13,7 +13,10 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Mirror;
+import net.minecraft.world.level.block.EntityBlock;
+import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
@@ -23,10 +26,10 @@ import net.minecraft.world.phys.BlockHitResult;
  * The drafting table, where vehicles are crafted. There are two blocks, unlit and lit, as upstream
  * ({@code MCH_DraftingTableBlock}): sneak-using the table switches its lamp.
  *
- * <p>Not ported yet: the crafting screen (milestone M6) and the table's 3D model, which upstream
- * drew with a block entity renderer. Until then the table uses a simple block model.
+ * <p>As upstream, the block itself is invisible: its block entity's renderer draws the table's
+ * 3D model. Not ported yet: the crafting screen (milestone M6).
  */
-public class DraftingTableBlock extends Block {
+public class DraftingTableBlock extends Block implements EntityBlock {
 
     public static final EnumProperty<Direction8> DIRECTION8 = EnumProperty.create("direction8", Direction8.class);
 
@@ -42,6 +45,17 @@ public class DraftingTableBlock extends Block {
 
     public boolean isLit() {
         return this.lit;
+    }
+
+    @Override
+    public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+        return new DraftingTableBlockEntity(pos, state);
+    }
+
+    /** Upstream {@code BlockContainer}: drawn by the block entity renderer only. */
+    @Override
+    protected RenderShape getRenderShape(BlockState state) {
+        return RenderShape.INVISIBLE;
     }
 
     @Override
