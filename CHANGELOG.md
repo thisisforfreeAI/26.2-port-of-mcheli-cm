@@ -63,6 +63,16 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
   supported (see Added); JEI shows the drafting table as a crafting station for them.
 
 ### Added
+- The GPS panel, as upstream: Open GPS Panel (N) in a vehicle takes X, Y and Z (or the player's
+  position) for a GPS point, marked on the HUD with its distance until the player gets off.
+- The BVR scope and the mortar radar, as upstream: a weapon with `EnableBVR` marks vehicles, chaff
+  and incoming missiles reported by the server out to 2000 blocks, and the one held at the centre
+  becomes its target; a vehicle with its radar switched on shows a top-down scope with the
+  players and vehicles around it and where its weapon will land. Planes are shown on both,
+  which upstream missed (KNOWN_ISSUES 91).
+- The radar warning receiver scope and the Radar Switch key (`` ` ``), as upstream: a vehicle with
+  an `RWR` section shows its scope, and one with a `Radar` section switches its radar on and off.
+  As upstream, nothing fills the scope yet (KNOWN_ISSUES 90).
 - Lock boxes, as upstream: while the current weapon has a seeker, a green box with the distance
   hangs over everything it could lock, dimmed past its lock range, and turns red with a line to
   the vehicle while locking. Radar seekers also show the target vehicle's radar name.

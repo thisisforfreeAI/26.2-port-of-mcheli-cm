@@ -33,6 +33,14 @@ class PayloadCodecTest {
     }
 
     @Test
+    void radarPayloadsRoundTrip() {
+        GpsSetPayload gps = new GpsSetPayload(-1024.5, 63.25, 77.0, true);
+        assertEquals(gps, roundTrip(GpsSetPayload.CODEC, gps));
+        BvrLockPayload bvr = new BvrLockPayload(4242);
+        assertEquals(bvr, roundTrip(BvrLockPayload.CODEC, bvr));
+    }
+
+    @Test
     void heliControlRoundTrips() {
         PlayerControlSwitches switches = PlayerControlSwitches.NONE
                 .with(PlayerControlSwitches.THROTTLE_UP, true)
@@ -108,15 +116,17 @@ class PayloadCodecTest {
     @Test
     void switchBitsMatchCe() {
         // DataPlayerControlAircraft.PlayerControlSwitches#serialize: ejectSeat is bit 0 ... useECMJammer bit 13.
+        // CE's separate switchRadar byte (1 on, 2 off) takes the two spare bits here.
         String[] ceOrder = {"ejectSeat", "useWeapon", "switchSearchLight", "useBrake", "switchGunnerStatus",
                 "throttleUp", "throttleDown", "moveLeft", "moveRight", "openGui", "reload", "useChaff", "useAPS",
-                "useECMJammer"};
+                "useECMJammer", "switchRadar 1", "switchRadar 2"};
         int[] port = {PlayerControlSwitches.EJECT_SEAT, PlayerControlSwitches.USE_WEAPON,
                 PlayerControlSwitches.SWITCH_SEARCH_LIGHT, PlayerControlSwitches.USE_BRAKE,
                 PlayerControlSwitches.SWITCH_GUNNER_STATUS, PlayerControlSwitches.THROTTLE_UP,
                 PlayerControlSwitches.THROTTLE_DOWN, PlayerControlSwitches.MOVE_LEFT, PlayerControlSwitches.MOVE_RIGHT,
                 PlayerControlSwitches.OPEN_GUI, PlayerControlSwitches.RELOAD, PlayerControlSwitches.USE_CHAFF,
-                PlayerControlSwitches.USE_APS, PlayerControlSwitches.USE_ECM_JAMMER};
+                PlayerControlSwitches.USE_APS, PlayerControlSwitches.USE_ECM_JAMMER, PlayerControlSwitches.RADAR_ON,
+                PlayerControlSwitches.RADAR_OFF};
         assertEquals(ceOrder.length, PlayerControlSwitches.COUNT);
         for (int i = 0; i < port.length; i++) {
             assertEquals(i, port[i], ceOrder[i]);

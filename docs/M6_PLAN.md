@@ -1510,3 +1510,74 @@ Validation: `build` passed and the GameTest server passed all 222 required tests
 distances ([boxes](screens/m6-lock-markers.png)); one held ahead turned red with the line to the
 vehicle while locking, and the Stinger fired
 ([locking](screens/m6-lock-marker-locking.png)). `/kill` removed a creative Blue Gunner.
+
+## Radar switch and RWR scope increment
+
+- `ModKeyMappings.RADAR_SWITCH` (upstream `KeyRadarSwitch`, default grave) toggles
+  `AircraftEntity.STATUS_RADAR` (upstream common status 13, `isRadarEnabledRuntime`) for a vehicle
+  with a `Radar` section, from any seat, and takes the key tick as upstream's
+  `handleCameraAndModes`. Other vehicles play the NG sound. Upstream's separate `switchRadar` byte
+  rides in the two spare control-switch bits (`RADAR_ON`, `RADAR_OFF`).
+- `RwrHudLayer` ports `HudRWR`'s scope: the plane, helicopter, tank and FAC textures at upstream's
+  height-scaled place and size, drawn twice as upstream's HUD list held it twice.
+- Upstream's `MCH_RWRThreatManager.serverTick` had no caller, so its threat table, the scope's
+  threat labels and the `locked`/`alert_radar` warnings never showed; they are not ported
+  (KNOWN_ISSUES 90). E4's radar names (`getNameOnMyRadar`/`getNameOnOtherRadar`) came with the
+  lock boxes.
+
+Validation: `build` passed and the GameTest server passed all 223 required tests, including a new
+one that sends the switch through the control payload's codec and turns an AH-64's radar on and
+off; the payload unit test covers the two new bits. In the client, an AH-64 given `Radar` and
+`RWR` sections in the extracted stock pack showed the helicopter scope on the left of its HUD
+([scope](screens/m6-rwr-scope.png)). No stock vehicle has either section.
+
+## Entity-info feed, BVR scope and mortar radar increment
+
+- E1, the entity-info feed: `EntityInfoFeed` ports `EntityInfoManagerAsync`. Every ten server
+  ticks each player is sent (`EntityInfoSyncPayload`) the players, vehicles, flares, chaff and
+  air-to-air missiles of their dimension within 2000 blocks horizontally; planes, helicopters and
+  chaff count only 30 blocks above the ground and at 0.5 blocks a tick or more. `EntityInfo`
+  carries a kind instead of upstream's class name. `EntityInfoClientTracker` ports the client
+  tracker, forgetting an entity after five seconds or 100 snapshots without it.
+- `BvrHudLayer` ports `HudBVRLock` with its own look-and-FOV projection, alpha rings, edge ring
+  and missile markers; the target held at the centre goes to the server every ten ticks
+  (`BvrLockPayload`, upstream `PacketLockTargetBVR`), which sets the rider's seeker target, the
+  target an active or passive radar missile then flies at.
+- `MortarRadarHudLayer` ports `HudMortarRadar`: shown while `isRadarEnabledRuntime`, turned with
+  the weapon set's yaw, with `AircraftWeapons` now keeping upstream's `impactPos`/`prevImpactPos`
+  from `getLandInDistance`, and the cross red when a tracked entity is within six blocks of it.
+- Planes are found by kind, so they show on both scopes (KNOWN_ISSUES 91, the owner's choice).
+
+Validation: `build` passed and the GameTest server passed all 225 required tests, including two
+new ones: the feed's tracking rules and its payload's codec, and the BVR lock setting and clearing
+an AH-64 seeker's target. In the client, an AH-64 given a `Radar` section and a Stinger given
+`EnableBVR` (`MinRangeBVR: 50`) in the extracted stock pack showed a green BVR box on an A-10 at
+124 m, red once centred, and the mortar radar listed the A-10 and a Merkava with their distances
+([BVR and mortar radar](screens/m6-bvr-mortar-radar.png), [locked](screens/m6-bvr-locked.png)).
+No stock weapon has `EnableBVR`.
+
+## GPS panel increment
+
+- `GpsInputScreen` ports `MCH_GuiGPSInput`: three coordinate fields, Fill with player position,
+  Done or Enter (an unreadable entry says "Invalid coordinates"), Cancel or Escape. It opens from
+  any seat with `ModKeyMappings.OPEN_GPS_PANEL` (upstream `KeyOpenGPSPanel`), N because the
+  port's ropes key holds upstream's K.
+- `GpsPosition` ports `GPSPosition`: the client's point for the HUD, cleared when the player is
+  off a vehicle (upstream `handleGps`), and `GpsSetPayload` (upstream `PacketResetGPS`) keeps each
+  player's point on the server, which nothing reads, as upstream.
+- `GpsHudLayer` ports `HudGPS`'s marker and `[GPS distance]` label with its alpha steps and red
+  within 1.5°, projected onto the point (KNOWN_ISSUES 92).
+
+Validation: `build` passed, the GameTest server passed all 225 required tests and the payload
+unit test covers the GPS and BVR payloads. In the client, N in an AH-64 opened the panel
+([panel](screens/m6-gps-panel.png)); 48, 150, 140 marked the point 59.8 m ahead
+([marker](screens/m6-gps-marker.png)), and the marker was gone after getting off and back on.
+
+## Passive radar survey
+
+The last radar row in KNOWN_ISSUES was passive radar. Upstream's `MCH_WeaponAAMissile.lock` and
+`onUnlock`, which would hand a passive-radar missile in flight the shooter's current lock through
+`clientSetTargetEntity` and `PacketLockTarget`, have no callers, and the guidance system's
+`passiveRadar` fields are never read. What runs is already ported: passive and active radar
+missiles fire without a client lock and take the seeker's server target, which the BVR scope
+sets. The row is closed and the dead path recorded in KNOWN_ISSUES 88.

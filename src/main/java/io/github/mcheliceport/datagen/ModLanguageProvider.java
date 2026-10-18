@@ -100,6 +100,8 @@ public class ModLanguageProvider extends LanguageProvider {
         add(prefix + "down_from_rack", "Unload / Leave Rack");
         add(prefix + "ropes", "Unload Crew / Ropes");
         add(prefix + "search_light", "Searchlights / Headlights");
+        add(prefix + "radar_switch", "Radar Switch");
+        add(prefix + "open_gps_panel", "Open GPS Panel");
         add(prefix + "scoreboard", "[MP] Scoreboard");
         add(prefix + "multiplay_manager", "[MP][OP] Multiplay Manager");
         add(prefix + "camera_mode", "Camera Mode (Night Vision)");

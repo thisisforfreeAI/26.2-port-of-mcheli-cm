@@ -26,7 +26,6 @@ broader gameplay and hardware checks remain pending.
 | Area | Planned milestone |
 |---|---|
 | Remaining plane/ground equipment and UAV station preview camera | M6 |
-| BVR and passive radar, the GPS panel, mortar radar and RWR overlays | M6 (with the vehicles that use them) |
 | Wingman (AI wingmen, marker block screens and types, missions, `/wingman`) | M6b |
 | Remaining `/mcheli` commands (including reloading content with `reconfig`), advancement triggers, long-distance tracking and rendering, thermal vision (the third camera mode), GPU-buffer model rendering, projectile chunk loading (`ProjectileChunkLoad`), HBM:NTM stubs, performance work | M7 |
 
@@ -413,11 +412,34 @@ These follow from how Minecraft 26.2 works or from decisions approved in PORTING
     the anti-radiation missile tuning (`ARM*`; anti-radiation missiles only fall to a type 2 ECM
     jammer, as upstream), `PassiveRadarLockOutCount`, `SemiActiveRadar`,
     `PDHDNMaxDegreeLockOutCount`, the aircraft-level `PassiveRadar` and `EnableBVR`, and the
-    weapon's `HasMortarRadar`. GPS missiles do not steer to the GPS point, as upstream.
+    weapon's `HasMortarRadar`. GPS missiles do not steer to the GPS point, as upstream. A
+    `PassiveRadar` missile fires without a lock and flies at the BVR target, if any, as upstream;
+    upstream's in-flight retargeting from the shooter's lock (`lock`/`onUnlock` with
+    `PacketLockTarget`) had no callers and is not ported.
 89. Lock boxes (upstream's `renderEntityMarker`) are drawn on the HUD by projecting upstream's
     in-world billboard onto the screen, so they keep upstream's size, place and colours but sit
     under the vehicle HUD instead of in the world. As upstream, only targets with no block in
     the way get one.
+90. The radar warning receiver shows its scope on vehicles with an `RWR` section, as upstream, and
+    the scope stays empty, as upstream: upstream's threat manager, which would have listed radars
+    scanning or locking the vehicle and missiles homing on it, was never run, and its warning
+    sounds never played. The radar switch (Radar Switch, `` ` ``) turns a vehicle's `Radar` on
+    and off as upstream, which shows or hides the mortar radar scope. Upstream's
+    `radar_on`/`radar_off` switch sounds were never in its assets and are left out.
+91. The BVR scope and the mortar radar follow upstream, with these differences. Upstream looked
+    for planes under their class name from before CE renamed it, so it never showed planes on the
+    BVR scope and named them "?" on the mortar radar; planes are shown and named here, like
+    helicopters (chosen by the project owner). Upstream's feed sent every dimension's entities to
+    every player; each player gets their own dimension's here. Upstream's BVR marker textures
+    (`bvr_lock_box.png`, `msl.png`) were not in its assets, so it drew the missing-texture square;
+    a vehicle gets a square outline and a missile a diamond here, in upstream's colours. The
+    client forgets the feed when it leaves a world instead of letting it expire.
+92. The GPS panel opens with N (Open GPS Panel); upstream's K is the port's ropes key (item 72).
+    Upstream drew the GPS marker with world transforms inside its 2D overlay pass, which put it at
+    a screen position equal to the point's offset in blocks, and with a texture
+    (`gps_position.png`) missing from its assets; the marker is projected onto the point here and
+    drawn as a square outline. As upstream, the server keeps each player's point but nothing reads
+    it (GPS missiles do not steer, item 88), and the point goes inactive off a vehicle.
 
 ## Upstream content issues kept as they are
 

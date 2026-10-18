@@ -103,6 +103,14 @@ public final class ModNetwork {
                         p.size(), p.inWater(), p.affectedBlocks(), p.blastStyle()));
         registrar.playToClient(ServerSettingsPayload.TYPE, ServerSettingsPayload.CODEC,
                 (payload, context) -> ServerSettings.setClient(payload.toValues()));
+        registrar.playToClient(EntityInfoSyncPayload.TYPE, EntityInfoSyncPayload.CODEC,
+                (p, context) -> io.github.mcheliceport.radar.EntityInfoClientTracker.update(p.entities(),
+                        p.snapshotSeq()));
+        registrar.playToServer(GpsSetPayload.TYPE, GpsSetPayload.CODEC,
+                (p, context) -> io.github.mcheliceport.weapon.GpsPosition.setServer(context.player(),
+                        new io.github.mcheliceport.weapon.GpsPosition.Point(p.x(), p.y(), p.z(), p.active())));
+        registrar.playToServer(BvrLockPayload.TYPE, BvrLockPayload.CODEC,
+                (p, context) -> applyBvrLock(context.player(), p.targetId()));
         registrar.playToServer(WeaponControlPayload.TYPE, WeaponControlPayload.CODEC, ModNetwork::handleWeaponControl);
         registrar.playToServer(AmmoRequestPayload.TYPE, AmmoRequestPayload.CODEC, ModNetwork::handleAmmoRequest);
         registrar.playToServer(ResupplyPayload.TYPE, ResupplyPayload.CODEC, ModNetwork::handleResupply);
@@ -254,6 +262,25 @@ public final class ModNetwork {
     }
 
     /** The vehicle a player rides, in seat 0 or a crew seat (upstream's lookup in {@code onReceive}). */
+    /** Upstream {@code PacketLockTargetBVR.onReceive}: the rider's current seeker takes the BVR target. */
+    public static void applyBvrLock(Player player, int targetId) {
+        AircraftEntity ac = riddenAircraft(player);
+        io.github.mcheliceport.weapon.WeaponSet ws = ac != null ? ac.getCurrentWeapon(player) : null;
+        io.github.mcheliceport.weapon.guidance.WeaponGuidanceSystem gs =
+                ws != null && ws.getCurrentWeapon() != null ? ws.getCurrentWeapon().getGuidanceSystem() : null;
+        if (gs == null) {
+            return;
+        }
+        if (targetId <= 0) {
+            gs.setTarget(null);
+        } else {
+            net.minecraft.world.entity.Entity target = player.level().getEntity(targetId);
+            if (target != null) {
+                gs.setTarget(target);
+            }
+        }
+    }
+
     public static @Nullable AircraftEntity riddenAircraft(Player player) {
         Entity vehicle = player.getVehicle();
         if (vehicle instanceof AircraftEntity aircraft) {
@@ -368,6 +395,9 @@ public final class ModNetwork {
         }
         if (p.switches().switchGunnerStatus()) {
             aircraft.setGunnerStatus(!aircraft.getGunnerStatus());
+        }
+        if (p.switches().get(PlayerControlSwitches.RADAR_ON) || p.switches().get(PlayerControlSwitches.RADAR_OFF)) {
+            aircraft.setRadarEnabledRuntime(p.switches().get(PlayerControlSwitches.RADAR_ON), false);
         }
         if (p.switchCameraMode() > 0 && aircraft.canSwitchCameraMode(aircraft.getSeatIdByEntity(player))) {
             aircraft.switchCameraMode(player, p.switchCameraMode() - 1);
