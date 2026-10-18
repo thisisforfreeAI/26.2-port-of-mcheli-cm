@@ -12,6 +12,13 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 
 ### Changed
 
+- The Stinger's and Javelin's lock now holds once complete, until the shot, until the target
+  leaves the sight or until the launcher is lowered. Upstream's lock lasted a single tick and
+  started again, so the attack key had to be held at the right moment.
+- The Stinger, Javelin, laser designator, wrench and rangefinder are drawn with upstream's 3D
+  models in the hand (and the designator and rangefinder on the ground), with upstream's
+  in-use poses and the wrench's repair swing. The inventory keeps the flat icons.
+
 - Remove the scheduled post-port Vulkan visual-effects update and McHeli team automatic-turret
   extension from the active roadmap. The user plans to port another mod after completing this
   port, before revisiting those extensions. Existing Vulkan compatibility remains required.
@@ -24,7 +31,7 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 
 - The hand-held FIM-92 Stinger and FGM-148 Javelin work: hold use to raise the sight, which
   zooms and locks on to an aircraft or flying mob (Stinger) or a ground target (Javelin) in view;
-  hold the attack key and the missile leaves once the lock is complete. A shot empties the
+  press the attack key and the missile leaves once the lock is complete. A shot empties the
   launcher, and a missile item in the inventory reloads it two seconds after the sight comes
   down. **Z** cycles the zoom, **C** switches night vision after three seconds of aiming, and
   **X** switches the Javelin between direct and top attack (top attack needs a target 40 m

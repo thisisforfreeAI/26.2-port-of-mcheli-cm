@@ -1152,6 +1152,31 @@ and the narrow field of view ([night and top](screens/m6-lweapon-javelin-night-t
 lowering the sight ended night vision. Not run: Vulkan, a second player watching, and firing
 from a passenger seat.
 
+## Hand tool item models increment
+
+- `ToolItemModel` (item model type `mcheli_ce_port:tool`) ports upstream's
+  `BuiltInLightWeaponItemRenderer`, `BuiltInGLTDItemRenderer`, `BuiltInWrenchItemRenderer` and
+  `BuiltInRangeFinderItemRenderer`: the Stinger, Javelin, GLTD, wrench and rangefinder draw their
+  MQO/OBJ models in either hand, and the GLTD and rangefinder on the ground too; everywhere else
+  the flat item model is the fallback. Upstream's display transforms are reused unchanged
+  (`models/item/<tool>_hand.json`), since 26.2's item transform ends in the same half-block
+  shift as 1.12's built-in renderer. In first person, a launcher aimed by the local player and a
+  rangefinder looking through its scope are hidden; held up in use, the launchers and the
+  rangefinder take upstream's offsets and the wrench turns 65 degrees and swings 20 to 28 degrees
+  while repairing (`WrenchSwing`, upstream `MCH_ItemWrench#getUseAnimSmooth`).
+- The launchers' lock holds once complete until the shot, the target leaving the sight or the
+  launcher coming down (KNOWN_ISSUES 78).
+
+Validation: `build` passed with a new unit test for the hand-written item model definitions, and
+the GameTest server passed all 194 required tests. On a dedicated server with an OpenGL client
+the five tools drew their 3D models in first person
+([first person](screens/m6-item-models-first-person.png)), third person
+([third person](screens/m6-item-models-third-person.png)) and, for the GLTD and rangefinder, on
+the ground ([ground](screens/m6-item-models-ground.png)); the Stinger's lock on a bee stayed
+complete for eight seconds with no attack key ([held lock](screens/m6-lweapon-lock-held.png)) and
+a single click then fired and destroyed it. Not run: Vulkan, the wrench's repair swing on an
+aircraft, and a second player watching.
+
 ## Ground laser target designator increment
 
 - `GltdItem` ports `MCH_ItemGLTD`: used on a block within five blocks it sets a `GltdEntity` on

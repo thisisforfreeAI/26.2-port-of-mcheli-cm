@@ -1,0 +1,11 @@
+{
+  "model": {
+    "type": "mcheli_ce_port:tool",
+    "tool": "gltd",
+    "base": "mcheli_ce_port:item/gltd_hand",
+    "fallback": {
+      "type": "minecraft:model",
+      "model": "mcheli_ce_port:item/gltd"
+    }
+  }
+}

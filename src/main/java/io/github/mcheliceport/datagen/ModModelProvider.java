@@ -46,6 +46,9 @@ public class ModModelProvider extends ModelProvider {
 
     /** The board of the placeholder drafting table: the blueprint area of upstream's texture. */
     private static final TextureSlot BOARD = TextureSlot.create("board");
+    /** Items whose item model is hand-written (assets/mcheli_ce_port/items). */
+    private static final List<DeferredItem<? extends Item>> TOOLS = List.of(ModItems.RANGEFINDER, ModItems.WRENCH,
+            ModItems.GLTD, ModItems.FIM92, ModItems.FGM148);
 
     public ModModelProvider(PackOutput output) {
         super(output, McheliCePort.MOD_ID);
@@ -53,10 +56,17 @@ public class ModModelProvider extends ModelProvider {
 
     @Override
     protected void registerModels(BlockModelGenerators blockModels, ItemModelGenerators itemModels) {
-        for (DeferredItem<? extends Item> item : List.of(ModItems.RANGEFINDER, ModItems.WRENCH, ModItems.FUEL, ModItems.GLTD,
-                ModItems.CHAIN, ModItems.PARACHUTE, ModItems.CONTAINER, ModItems.UAV_STATION, ModItems.UAV_STATION2,
-                ModItems.INTERNAL, ModItems.FIM92_BULLET, ModItems.FGM148_BULLET, ModItems.FIM92, ModItems.FGM148)) {
+        for (DeferredItem<? extends Item> item : List.of(ModItems.FUEL, ModItems.CHAIN, ModItems.PARACHUTE,
+                ModItems.CONTAINER, ModItems.UAV_STATION, ModItems.UAV_STATION2, ModItems.INTERNAL,
+                ModItems.FIM92_BULLET, ModItems.FGM148_BULLET)) {
             flatItem(itemModels, item.get(), mcheli("items/" + item.getId().getPath()));
+        }
+        // The hand tools: the flat model is the fallback of a hand-written mcheli_ce_port:tool item model
+        // (ToolItemModel), which draws upstream's 3D model in the hand.
+        for (DeferredItem<? extends Item> item : TOOLS) {
+            ModelTemplates.FLAT_ITEM.create(ModelLocationUtils.getModelLocation(item.get()),
+                    TextureMapping.layer0(new Material(mcheli("items/" + item.getId().getPath()))),
+                    itemModels.modelOutput);
         }
         // Upstream has no textures for these three; the port draws simple placeholders.
         for (DeferredItem<? extends Item> item : List.of(ModItems.UAV_PAIRING_DEVICE, ModItems.UAV_TABLET,
@@ -91,7 +101,8 @@ public class ModModelProvider extends ModelProvider {
     @Override
     protected Stream<? extends Holder<Item>> getKnownItems() {
         return ModRegistries.ITEMS.getEntries().stream()
-                .filter(holder -> !(holder.get() instanceof AircraftItem) && !(holder.get() instanceof ThrowableItem));
+                .filter(holder -> !(holder.get() instanceof AircraftItem) && !(holder.get() instanceof ThrowableItem))
+                .filter(holder -> TOOLS.stream().noneMatch(tool -> tool.get() == holder.get()));
     }
 
     private static Identifier mcheli(String path) {

@@ -57,6 +57,7 @@ public final class AircraftClientEvents {
             WeaponClient.tick();
             RangeFinderClient.tick();
             io.github.mcheliceport.client.tool.LightWeaponClient.tick();
+            io.github.mcheliceport.client.render.ToolItemModel.WrenchSwing.tick();
             TargetMarkers.INSTANCE.tick();
         });
         NeoForge.EVENT_BUS.addListener(WeaponEffects::onSubmitGeometry);
