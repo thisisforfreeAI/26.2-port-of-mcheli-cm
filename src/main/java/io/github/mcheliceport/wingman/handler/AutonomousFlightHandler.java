@@ -6,6 +6,7 @@ import io.github.mcheliceport.entity.heli.HeliEntity;
 import io.github.mcheliceport.entity.plane.PlaneEntity;
 import io.github.mcheliceport.wingman.block.MarkerType;
 import io.github.mcheliceport.wingman.mission.AutonomousState;
+import io.github.mcheliceport.wingman.mission.MissionNode;
 import io.github.mcheliceport.wingman.mission.MissionOrder;
 import io.github.mcheliceport.wingman.mission.MissionType;
 import io.github.mcheliceport.wingman.mission.TaxiRoute;
@@ -30,19 +31,27 @@ import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Upstream's {@code AutonomousFlightHandler}, its mission-order half: the state machine that flies
- * an order from the base screen's Mission tab. It decides what the aircraft does next and sets the
+ * Upstream's {@code AutonomousFlightHandler}: the state machines that fly an order from the base
+ * screen's Mission tab, and a route from the mission planner. It decides what the aircraft does next and sets the
  * entry's target, throttle and attack mode; {@link WingmanTickHandler} turns that into yaw, pitch
  * and roll each tick. A plane taxis out along its route, lines up, rolls and climbs; a helicopter
  * or VTOL plane on a helipad climbs straight up. It flies to the area, circles and attacks (or
  * flies strike passes, or counts the mobs), returns when the time is up or the fuel is low, flies
  * the landing circuit or lands on a helipad, and taxis back to a parking spot.
  *
- * <p>The route-node missions of upstream's planner and {@code /wingman} come with that increment.
+ * <p>A planner route is a list of {@link MissionNode}s flown one after the other: fly to a point,
+ * take off from or land on a runway, attack the mobs around, circle for a while, or taxi to a
+ * parking spot.
  */
 public final class AutonomousFlightHandler {
 
     private static final double ARRIVE_DIST = 30.0;
+    /** A route node's taxi to the runway ends this close to end A. */
+    private static final double TAXI_DIST = 30.0;
+    /** A route node's taxi to a parking spot ends this close to it. */
+    private static final double PARK_DIST = 8.0;
+    /** A route node's cruising height, and the lowest it flies to a point at. */
+    private static final double CRUISE_ALT = 80.0;
     private static final double ALIGN_TOLERANCE = 5.0;
     /** How far ahead along the runway centreline the aircraft steers. */
     private static final double LOOKAHEAD_DIST = 40.0;
@@ -77,13 +86,21 @@ public final class AutonomousFlightHandler {
                 cancelOrder(entry);
                 continue;
             }
-            tickOrder(level, wingman, entry);
+            if (entry.hasOrder()) {
+                tickOrder(level, wingman, entry);
+            } else {
+                tickMission(level, wingman, entry);
+            }
         }
     }
 
-    /** Ends the entry's order where it is; without a leader the entry then leaves the registry. */
+    /**
+     * Ends the entry's order or planner mission where it is; without a leader the entry then leaves
+     * the registry.
+     */
     public static void cancelOrder(WingmanEntry entry) {
         entry.order = null;
+        entry.mission = null;
         entry.autoState = AutonomousState.NONE;
         entry.attackMode = WingmanEntry.ATK_NONE;
         entry.vtolHoverMode = false;
@@ -109,11 +126,11 @@ public final class AutonomousFlightHandler {
 
     private static void tickEndOne(ServerLevel level, AircraftEntity wingman, WingmanEntry entry) {
         MissionOrder order = entry.order;
-        if (order == null) {
+        if (order == null && entry.mission == null) {
             return;
         }
-        boolean vtolPadCorrect = entry.autoState == AutonomousState.VTOL_TAKEOFF && entry.missionNodeTimer < 180
-                || entry.autoState == AutonomousState.VTOL_LAND && entry.vtolHoverMode;
+        boolean vtolPadCorrect = order != null && (entry.autoState == AutonomousState.VTOL_TAKEOFF && entry.missionNodeTimer < 180
+                || entry.autoState == AutonomousState.VTOL_LAND && entry.vtolHoverMode);
         if (vtolPadCorrect) {
             MarkerRegistry.MarkerInfo pad = findMarkerInfoById(level, entry.assignedParkingId, order.baseId);
             Vec3 m = wingman.getDeltaMovement();
@@ -173,7 +190,7 @@ public final class AutonomousFlightHandler {
             return;
         }
         if (entry.autoState == AutonomousState.CIRCUIT_FINAL) {
-            MarkerRegistry.MarkerInfo[] rwy = getOrderRunway(level, entry, order);
+            MarkerRegistry.MarkerInfo[] rwy = runwayOf(level, entry);
             if (rwy != null) {
                 holdGlideSlope(wingman, rwy[0], rwy[1]);
             }
@@ -189,7 +206,7 @@ public final class AutonomousFlightHandler {
         if (entry.autoState != AutonomousState.TAKEOFF_ROLL) {
             return;
         }
-        MarkerRegistry.MarkerInfo[] rwy = getOrderRunway(level, entry, order);
+        MarkerRegistry.MarkerInfo[] rwy = runwayOf(level, entry);
         if (rwy == null) {
             return;
         }
@@ -826,6 +843,182 @@ public final class AutonomousFlightHandler {
         }
         park(level, wingman, entry);
         McheliCePort.LOGGER.info("[Order] {} VTOL landing complete (no taxi route). pad='{}'", shortId(wingman), padId);
+    }
+
+    // ---- the planner route's nodes ----
+
+    /** Upstream {@code tickMission}'s route-node half: one step of the current node. */
+    private static void tickMission(ServerLevel level, AircraftEntity wingman, WingmanEntry entry) {
+        MissionNode node = entry.currentNode();
+        if (node == null) {
+            entry.autoState = AutonomousState.PARKED;
+            entry.mission = null;
+            entry.attackMode = WingmanEntry.ATK_NONE;
+            McheliCePort.LOGGER.info("[Auto] {} mission complete", shortId(wingman));
+            return;
+        }
+        switch (node.type()) {
+            case FLY_TO -> tickFlyTo(wingman, entry, node);
+            case TAKEOFF -> tickTakeoff(level, wingman, entry, node);
+            case LAND -> tickLand(level, wingman, entry, node);
+            case ATTACK -> tickAttack(level, wingman, entry, node);
+            case LOITER -> tickLoiter(wingman, entry, node);
+            case PARK -> tickPark(level, wingman, entry, node);
+        }
+    }
+
+    /** Upstream {@code tickFlyTo}: to the point at full throttle, at least at the cruising height. */
+    private static void tickFlyTo(AircraftEntity wingman, WingmanEntry entry, MissionNode node) {
+        entry.autoState = AutonomousState.ENROUTE;
+        cruiseThrottle(wingman, 1.0);
+        setTarget(entry, node.x(), Math.max(node.y(), CRUISE_ALT), node.z());
+        // Arrival counts the horizontal distance only, so a point below the cruising height is reached.
+        if (hdist(wingman, node.x(), node.z()) < ARRIVE_DIST) {
+            McheliCePort.LOGGER.info("[Auto] {} FLY_TO reached ({},{},{})", shortId(wingman), (int) node.x(),
+                    (int) node.y(), (int) node.z());
+            entry.advanceMission();
+        }
+    }
+
+    /**
+     * Upstream {@code tickTakeoff}: taxis straight to runway end A, then lines up, rolls and climbs
+     * to the cruising height as an order does. A runway it cannot find is skipped.
+     */
+    private static void tickTakeoff(ServerLevel level, AircraftEntity wingman, WingmanEntry entry, MissionNode node) {
+        MarkerRegistry.MarkerInfo[] rwy = resolveNodeRunway(level, node.runwayId());
+        if (rwy == null) {
+            McheliCePort.LOGGER.warn("[Auto] {} TAKEOFF: runway '{}' A or B not found, skipping", shortId(wingman),
+                    node.runwayId());
+            entry.advanceMission();
+            return;
+        }
+        double ax = rwy[0].pos().getX() + 0.5;
+        double ay = rwy[0].pos().getY();
+        double az = rwy[0].pos().getZ() + 0.5;
+        switch (entry.autoState) {
+            case TAXI_OUT -> {
+                setTarget(entry, ax, ay, az);
+                setThrottle(wingman, 0.0);
+                if (entry.missionNodeTimer++ % 40 == 0) {
+                    McheliCePort.LOGGER.info("[Auto] {} TAXI_OUT dist={}", shortId(wingman), (int) hdist(wingman, ax, az));
+                }
+                if (hdist(wingman, ax, az) < TAXI_DIST) {
+                    entry.autoState = AutonomousState.ALIGN;
+                    entry.missionNodeTimer = 0;
+                }
+            }
+            case ALIGN, TAKEOFF_ROLL, CLIMB -> {
+                if (tickAlignToClimb(wingman, entry, rwy[0], rwy[1], CRUISE_ALT)) {
+                    McheliCePort.LOGGER.info("[Auto] {} reached cruise alt", shortId(wingman));
+                    entry.advanceMission();
+                }
+            }
+            default -> {
+                entry.autoState = AutonomousState.TAXI_OUT;
+                entry.missionNodeTimer = 0;
+                McheliCePort.LOGGER.info("[Auto] {} TAKEOFF start, runway='{}' A={} B={}", shortId(wingman),
+                        node.runwayId(), rwy[0].pos().toShortString(), rwy[1].pos().toShortString());
+            }
+        }
+    }
+
+    /** Upstream {@code tickLand}: the landing circuit an order flies, then on to the next node. */
+    private static void tickLand(ServerLevel level, AircraftEntity wingman, WingmanEntry entry, MissionNode node) {
+        MarkerRegistry.MarkerInfo[] rwy = resolveNodeRunway(level, node.runwayId());
+        if (rwy == null) {
+            McheliCePort.LOGGER.warn("[Auto] {} LAND: runway '{}' A or B not found, skipping", shortId(wingman),
+                    node.runwayId());
+            entry.advanceMission();
+            return;
+        }
+        if (tickLandingCircuit(wingman, entry, rwy[0], rwy[1])) {
+            McheliCePort.LOGGER.info("[Auto] {} stopped", shortId(wingman));
+            entry.advanceMission();
+        }
+    }
+
+    /** Upstream {@code tickAttack}: attacks while a hostile mob is within the radius, then moves on. */
+    private static void tickAttack(ServerLevel level, AircraftEntity wingman, WingmanEntry entry, MissionNode node) {
+        entry.autoState = AutonomousState.ATTACK;
+        double r = node.attackRadius();
+        boolean hasTarget = !level.getEntitiesOfClass(LivingEntity.class, wingman.getBoundingBox().inflate(r),
+                e -> e instanceof Enemy && e.isAlive() && wingman.distanceToSqr(e) < r * r).isEmpty();
+        entry.attackMode = hasTarget ? WingmanEntry.ATK_AUTO : WingmanEntry.ATK_NONE;
+        if (!hasTarget) {
+            McheliCePort.LOGGER.info("[Auto] {} ATTACK node complete (no targets in radius)", shortId(wingman));
+            entry.advanceMission();
+        }
+    }
+
+    /** Upstream {@code tickLoiter}: circles 20 blocks around where it is, a turn every 200 ticks. */
+    private static void tickLoiter(AircraftEntity wingman, WingmanEntry entry, MissionNode node) {
+        entry.autoState = AutonomousState.LOITER;
+        entry.missionNodeTimer++;
+        double angle = entry.missionNodeTimer * 2.0 * Math.PI / 200.0;
+        setTarget(entry, wingman.getX() + Math.cos(angle) * 20, wingman.getY(), wingman.getZ() + Math.sin(angle) * 20);
+        if (entry.missionNodeTimer >= node.durationTicks()) {
+            McheliCePort.LOGGER.info("[Auto] {} LOITER complete", shortId(wingman));
+            entry.advanceMission();
+        }
+    }
+
+    /**
+     * Upstream {@code tickPark}: taxis straight to the parking spot and stops within 8 blocks of it.
+     * The port also turns it to the spot's heading, as an order's parking does.
+     */
+    private static void tickPark(ServerLevel level, AircraftEntity wingman, WingmanEntry entry, MissionNode node) {
+        MarkerRegistry.MarkerInfo parking = MarkerRegistry.resolveMarker(level, node.parkingId(), MarkerType.PARKING);
+        if (parking == null) {
+            entry.advanceMission();
+            return;
+        }
+        entry.autoState = AutonomousState.TAXI_IN;
+        double tx = parking.pos().getX() + 0.5;
+        double tz = parking.pos().getZ() + 0.5;
+        setTarget(entry, tx, wingman.getY(), tz);
+        setThrottle(wingman, 0.0);
+        if (hdist(wingman, tx, tz) < PARK_DIST) {
+            entry.autoState = AutonomousState.PARKED;
+            entry.attackMode = WingmanEntry.ATK_NONE;
+            entry.assignedParkingId = parking.id();
+            applyParkingHeading(level, wingman, entry);
+            wingman.setDeltaMovement(Vec3.ZERO);
+            McheliCePort.LOGGER.info("[Auto] {} PARKED at {}", shortId(wingman), node.parkingId());
+            entry.advanceMission();
+        }
+    }
+
+    /**
+     * Upstream's runway of a take-off or landing node: ends A and B of the base with that ID, else
+     * the ends with that ID. Upstream needed both ends to have the ID, so the runway-end IDs its
+     * planner offered skipped the node; the port also finds the other end through the end's base.
+     */
+    static MarkerRegistry.MarkerInfo @Nullable [] resolveNodeRunway(ServerLevel level, String runwayId) {
+        MarkerRegistry.MarkerInfo rwyA = MarkerRegistry.resolveMarker(level, runwayId, MarkerType.RUNWAY_A);
+        MarkerRegistry.MarkerInfo rwyB = MarkerRegistry.resolveMarker(level, runwayId, MarkerType.RUNWAY_B);
+        if (rwyA == null && rwyB != null && !rwyB.baseId().isEmpty()) {
+            rwyA = MarkerRegistry.findByBase(level, rwyB.baseId(), MarkerType.RUNWAY_A);
+        }
+        if (rwyB == null && rwyA != null && !rwyA.baseId().isEmpty()) {
+            rwyB = MarkerRegistry.findByBase(level, rwyA.baseId(), MarkerType.RUNWAY_B);
+        }
+        if (rwyA == null || rwyB == null) {
+            return null;
+        }
+        return new MarkerRegistry.MarkerInfo[] {rwyA, rwyB};
+    }
+
+    /** The runway an order flies, or the one of the take-off or landing node being flown. */
+    private static MarkerRegistry.MarkerInfo @Nullable [] runwayOf(ServerLevel level, WingmanEntry entry) {
+        MissionOrder order = entry.order;
+        if (order != null) {
+            return getOrderRunway(level, entry, order);
+        }
+        MissionNode node = entry.currentNode();
+        if (node != null && (node.type() == MissionNode.Type.TAKEOFF || node.type() == MissionNode.Type.LAND)) {
+            return resolveNodeRunway(level, node.runwayId());
+        }
+        return null;
     }
 
     // ---- helpers ----

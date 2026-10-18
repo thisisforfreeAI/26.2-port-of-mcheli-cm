@@ -429,7 +429,7 @@ public final class WingmanTickHandler {
         if (entry.attackMode != WingmanEntry.ATK_NONE) {
             Entity target = resolveTarget(level, wingman, entry);
             if (target != null && !target.isRemoved()) {
-                if (isOrbitFireWeapon(entry.weaponType)) {
+                if (isOrbitFireWeapon(entry.weaponType, entry.order != null && entry.order.orbitAttack)) {
                     return computeOrbitTarget(target, entry);
                 } else if (isBombWeapon(entry.weaponType)) {
                     return computeOverflyTarget(wingman, target, entry);
@@ -502,9 +502,13 @@ public final class WingmanTickHandler {
         return y;
     }
 
-    /** Upstream {@code computeOrbitTarget}: circles the target at the weapon's standoff, 2 degrees a tick. */
+    /**
+     * Upstream {@code computeOrbitTarget}: circles the target 2 degrees a tick, at an order's orbit
+     * radius, else at the weapon's standoff.
+     */
     private static Vec3 computeOrbitTarget(Entity target, WingmanEntry entry) {
-        double orbitRadius = standoffForWeapon(entry.weaponType);
+        double orbitRadius = entry.order != null && entry.order.orbitRadius > 0 ? entry.order.orbitRadius
+                : standoffForWeapon(entry.weaponType);
         double idealY = clampAttackAltitude(target.getY() + altOffsetForWeapon(entry.weaponType));
         entry.orbitAngle = (entry.orbitAngle + 2.0) % 360.0;
         double rad = Math.toRadians(entry.orbitAngle);
@@ -538,7 +542,14 @@ public final class WingmanTickHandler {
                 target.getZ() + Math.cos(facing) * 80.0), entry.leader);
     }
 
-    private static boolean isOrbitFireWeapon(@Nullable String type) {
+    /**
+     * Upstream: guided missiles orbit the target, as does every weapon of an order with Orbit Atk set
+     * (its AC-130 mode).
+     */
+    private static boolean isOrbitFireWeapon(@Nullable String type, boolean orbitAttack) {
+        if (orbitAttack) {
+            return true;
+        }
         if (type == null) {
             return false;
         }

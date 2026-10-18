@@ -121,6 +121,12 @@ public final class ModNetwork {
                 (p, context) -> applyTaxiRouteAction(context.player(), p));
         registrar.playToServer(DispatchOrderPayload.TYPE, DispatchOrderPayload.CODEC,
                 (p, context) -> applyDispatchOrder(context.player(), p));
+        registrar.playToClient(PlannerDataPayload.TYPE, PlannerDataPayload.CODEC,
+                (p, context) -> io.github.mcheliceport.wingman.WingmanClientHooks.openPlanner(p));
+        registrar.playToServer(MissionActionPayload.TYPE, MissionActionPayload.CODEC,
+                (p, context) -> io.github.mcheliceport.wingman.MissionPlanner.apply(context.player(), p));
+        registrar.playToServer(MissionRouteActionPayload.TYPE, MissionRouteActionPayload.CODEC,
+                (p, context) -> io.github.mcheliceport.wingman.MissionPlanner.apply(context.player(), p));
         registrar.playToServer(WingmanPanelOpenPayload.TYPE, WingmanPanelOpenPayload.CODEC,
                 (p, context) -> {
                     if (context.player() instanceof ServerPlayer sp) {
