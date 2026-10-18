@@ -42,6 +42,10 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
   supported (see Added); JEI shows the drafting table as a crafting station for them.
 
 ### Added
+- Upstream's `mch_fuel` fluid and its fuel bucket. Buckets and other fluid containers in a
+  vehicle's fuel slot refuel it, with the emptied container going to the output slot, and pipes
+  and tanks from other mods can fill and drain fuelled vehicles through NeoForge's fluid
+  capability. Fuels are not mixed, and water or other fluids a vehicle does not burn are refused.
 - The aircraft menu has upstream's command field and Options button. A command set there by an
   operator runs on the server when the vehicle is destroyed by anything but a player; Enter runs
   it at once. Options opens the mod's settings. Only game masters can set the command, unlike

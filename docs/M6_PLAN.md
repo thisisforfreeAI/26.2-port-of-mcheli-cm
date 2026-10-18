@@ -1326,3 +1326,29 @@ with Escape and found it there on reopening ([command](screens/m6-aircraft-comma
 ran it as `[Dev] destroyed`; Options opened the config screen
 ([options](screens/m6-aircraft-options.png)); and `/damage` of 1000 printed `[Server] destroyed`.
 Not run: Vulkan, a non-operator client.
+
+## Fuel fluid increment
+
+- `ModFluids` ports `MCH_Fluids`: the `mcheli_ce_port:mch_fuel` fluid type with source and
+  flowing fluids and no block, drawn with water's textures tinted `0xCC8A5A2B` as upstream, and
+  `FuelBucketItem` for Forge's universal bucket (NeoForge's fluid container item model, its bucket
+  fluid capability registered by hand since it subclasses `BucketItem`).
+- `FuelFluids` maps 1.12 fuel type names to fluids and back through a definition's `FuelType`
+  names (KNOWN_ISSUES difference 68), and tests the fuel slot's fluid containers.
+- `AircraftEntity.updateFuel` refuels from a fluid container in the fuel slot in a transaction:
+  the first fuel the vehicle accepts (`canAcceptFuel`), up to the free space, committed only when
+  the output slot takes what is left of the container (difference 82). The fuel slot takes fluid
+  containers, as upstream's `isFuelSlotItem`.
+- `AircraftFluidHandler` ports the aircraft's `IFluidHandler` (`fill`, both `drain`s) as
+  `Capabilities.Fluid.ENTITY` on every vehicle type, for fuelled vehicles with a tank.
+
+Validation: `build` passed and the GameTest server passed all 204 required tests, including three
+new ones: a fuel bucket refuels an AH-64 by 1000 and leaves an empty bucket in the output slot; a
+full output slot holds the bucket back and a water bucket gives nothing; and the tank handler
+refuses water, rolls back an aborted fill, refuses mixed fuels, does not overfill, drains only
+its own fuel and takes another accepted fuel once empty, while electric vehicles have none. On a
+dedicated server with an OpenGL client, the fuel bucket drew brown fuel in the inventory
+([bucket](screens/m6-fuel-bucket.png)); shift-clicking one into an empty AH-64 filled it to 83%
+with an empty bucket in the output slot ([refuel](screens/m6-fuel-bucket-refuel.png)), and a
+water bucket stayed in the slot. Not run: Vulkan, another mod's pipes or tanks.
+

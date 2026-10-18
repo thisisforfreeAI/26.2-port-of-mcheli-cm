@@ -77,6 +77,12 @@ class ContentAssetsTest {
             for (Path file : files.sorted().toList()) {
                 JsonObject model = json(Files.readAllBytes(file)).getAsJsonObject().getAsJsonObject("model");
                 String name = file.getFileName().toString().replace(".json", "");
+                if (name.equals("fuel_bucket")) {
+                    // NeoForge's bucket with the fuel drawn in it, not a hand tool.
+                    assertEquals("neoforge:fluid_container", model.get("type").getAsString());
+                    assertEquals("mcheli_ce_port:mch_fuel", model.get("fluid").getAsString());
+                    continue;
+                }
                 tools.add(name);
                 assertEquals("mcheli_ce_port:tool", model.get("type").getAsString(), name);
                 assertEquals(name, model.get("tool").getAsString());
@@ -113,7 +119,7 @@ class ContentAssetsTest {
             String key = (item instanceof BlockItem ? "block." : "item.") + id.toLanguageKey();
             assertTrue(english.has(key), "English name of " + id);
         }
-        assertEquals(22, fixed.size());
+        assertEquals(23, fixed.size());
         try (Stream<Path> models = Files.walk(GENERATED.resolve("assets/mcheli_ce_port/models"))) {
             for (Path file : models.filter(Files::isRegularFile).toList()) {
                 JsonObject model = json(Files.readAllBytes(file)).getAsJsonObject();

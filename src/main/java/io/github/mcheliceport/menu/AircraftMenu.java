@@ -1,6 +1,7 @@
 package io.github.mcheliceport.menu;
 
 import io.github.mcheliceport.compat.energy.EnergyCompat;
+import io.github.mcheliceport.compat.fluid.FuelFluids;
 import io.github.mcheliceport.entity.aircraft.AircraftEntity;
 import io.github.mcheliceport.registry.ModItems;
 import io.github.mcheliceport.registry.ModMenuTypes;
@@ -119,18 +120,18 @@ public class AircraftMenu extends AbstractContainerMenu {
     }
 
     /**
+     * Upstream {@code isFuelSlotItem}: a fuel can, any fluid container, or a battery for an
+     * electric vehicle that takes one.
+     */
+    private boolean isFuelSlotItem(ItemStack stack) {
+        return isFuelCan(stack) || FuelFluids.isFluidContainer(stack)
+                || this.aircraft != null && this.aircraft.allowBattery() && EnergyCompat.isBattery(stack);
+    }
+
+    /**
      * A fuel can with fuel left. Upstream's slot also took empty cans, which then sat there doing
      * nothing and looked like a full can that would not refuel.
      */
-    /**
-     * Upstream {@code isFuelSlotItem}: a fuel can, or a battery for an electric vehicle that takes
-     * one. Fluid containers wait for the fuel fluid (KNOWN_ISSUES).
-     */
-    private boolean isFuelSlotItem(ItemStack stack) {
-        return isFuelCan(stack) || this.aircraft != null && this.aircraft.allowBattery()
-                && EnergyCompat.isBattery(stack);
-    }
-
     public static boolean isFuelCan(ItemStack stack) {
         return stack.is(ModItems.FUEL.get()) && stack.getDamageValue() < stack.getMaxDamage();
     }

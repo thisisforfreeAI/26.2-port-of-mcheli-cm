@@ -56,8 +56,8 @@ Until then:
 - The aircraft menu has the fuel slots, the trunk, the weapon list with its reload buttons and the
   command field with an Options button, on a plain container background rather than upstream's
   `gui.png`. Supported planes also expose parachute reserves.
-- Fuel comes from fuel cans or nearby supply vehicles. Refuelling from fluid containers and
-  external fluid capabilities still needs a registered fuel fluid (M6). Electric vehicles take
+- Fuel comes from fuel cans, fluid containers in the fuel slot (such as the fuel bucket), pipes
+  and tanks through the vehicle's fluid capability, or nearby supply vehicles. Electric vehicles take
   energy from the charger and from batteries (any item with NeoForge's item energy capability) in
   the fuel slot. Upstream's GregTech EU and HBM HE energy systems are dropped, so the
   `EnergySystem` and ratio settings are gone; the port registers no battery item, as upstream.
@@ -235,9 +235,11 @@ These follow from how Minecraft 26.2 works or from decisions approved in PORTING
     entries. Scans use current build limits and floored negative coordinates. Multipart parents
     receive one ramming hit per region query, rather than one for every modern part returned.
 
-68. Vehicle-to-vehicle fuel transfer matches named fuel types against the content whitelist.
-    The port still has no registered McHeli fuel fluid, so these names are compatibility tokens;
-    this does not add fluid-container handling, Forge fluid identity or fluid capabilities.
+68. Fuel types keep 1.12's Forge fluid names (`FuelType`, `AcFuelType`). `mch_fuel` is the
+    port's `mcheli_ce_port:mch_fuel`; another unprefixed name means the source fluid with that
+    path in any namespace (`lava` is `minecraft:lava`), and a name with a namespace means exactly
+    that fluid. A name no installed mod registers still works between vehicles and supply
+    vehicles, but no container or pipe can carry it.
 
 69. Cargo-container interaction opens a standard six-row menu; the pinned upstream wrapper's
     `displayInventory` body is empty. Menu validity uses current entity interaction distance
@@ -369,6 +371,13 @@ These follow from how Minecraft 26.2 works or from decisions approved in PORTING
     nothing. The menu's "MOD Options" button (Options) closes the menu and opens NeoForge's
     config screen for the mod. Upstream's Close and Inventory buttons are left out: Escape
     closes the menu and the trunk is already part of it.
+
+82. The fuel bucket (upstream's Forge universal bucket of `mch_fuel`) is in the mod's items tab;
+    as upstream the fluid has no block, so the bucket cannot be emptied into the world. A fluid
+    container in the fuel slot gives up to the tank's free space each time, so a bucket waits
+    until 1000 fits. Upstream drained the container before checking the output slot, so a full
+    output slot could empty a tank item without fuelling the vehicle; here nothing moves until
+    the output slot can take what is left of the container.
 
 ## Upstream content issues kept as they are
 

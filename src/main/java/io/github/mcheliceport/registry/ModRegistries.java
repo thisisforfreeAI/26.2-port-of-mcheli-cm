@@ -39,7 +39,7 @@ public final class ModRegistries {
             DeferredRegister.create(Registries.CREATIVE_MODE_TAB, McheliCePort.MOD_ID);
 
     private static final List<DeferredRegister<?>> ALL = List.of(
-            ITEMS, BLOCKS, BLOCK_ENTITY_TYPES, ENTITY_TYPES, MENU_TYPES,
+            ITEMS, BLOCKS, ModFluids.FLUID_TYPES, ModFluids.FLUIDS, BLOCK_ENTITY_TYPES, ENTITY_TYPES, MENU_TYPES,
             DATA_COMPONENT_TYPES, SOUND_EVENTS, PARTICLE_TYPES, RECIPE_SERIALIZERS, CREATIVE_MODE_TABS);
 
     private ModRegistries() {}
@@ -48,6 +48,7 @@ public final class ModRegistries {
     public static void register(IEventBus modBus, ContentRegistries.Snapshot content) {
         ModBlocks.init();
         ModItems.init();
+        ModFluids.init();
         ModItems.registerContentItems(content);
         ModEntityTypes.init();
         ModDataComponents.init();
