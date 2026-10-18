@@ -50,6 +50,7 @@ public final class AircraftClientEvents {
             AircraftCameraClient.handleKeys();
             io.github.mcheliceport.client.hud.TeamListOverlay.handleKeys();
             WeaponClientControl.onClientTick();
+            io.github.mcheliceport.client.hud.WingmanKeyHintLayer.handleKey();
             AircraftClientControl.onClientTick();
             AircraftCameraClient.tick();
             io.github.mcheliceport.client.camera.GltdCameraClient.tick();
@@ -107,6 +108,8 @@ public final class AircraftClientEvents {
         SpotClientHooks.set(TargetMarkers.INSTANCE);
         io.github.mcheliceport.wingman.WingmanClientHooks.setMarkerScreen(
                 p -> Minecraft.getInstance().gui.setScreen(new io.github.mcheliceport.client.gui.MarkerConfigScreen(p)));
+        io.github.mcheliceport.wingman.WingmanClientHooks.setWingmanPanel(
+                p -> Minecraft.getInstance().gui.setScreen(new io.github.mcheliceport.client.gui.WingmanPanelScreen(p)));
         io.github.mcheliceport.wingman.WingmanClientHooks.setBaseScreen(
                 p -> Minecraft.getInstance().gui.setScreen(new io.github.mcheliceport.client.gui.BaseConfigScreen(p)));
     }

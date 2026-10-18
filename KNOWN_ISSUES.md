@@ -26,7 +26,7 @@ broader gameplay and hardware checks remain pending.
 | Area | Planned milestone |
 |---|---|
 | Remaining plane/ground equipment | M6 |
-| Wingman (AI wingmen, the base screen's Mission tab and the mission planner, missions, `/wingman`) | M6b |
+| Wingman (the base screen's Mission tab and the mission planner, missions, `/wingman`, the wingman config file) | M6b |
 | Remaining `/mcheli` commands (including reloading content with `reconfig`), advancement triggers, long-distance tracking and rendering, thermal vision (the third camera mode), GPU-buffer model rendering, projectile chunk loading (`ProjectileChunkLoad`), HBM:NTM stubs, performance work | M7 |
 
 Until then:
@@ -60,8 +60,10 @@ Until then:
   energy from the charger and from batteries (any item with NeoForge's item energy capability) in
   the fuel slot. Upstream's GregTech EU and HBM HE energy systems are dropped, so the
   `EnergySystem` and ratio settings are gone; the port registers no battery item, as upstream.
-- Wingman markers and a base's taxi routes are kept, but no wingman uses them until the wingman
-  AI is ported (M6b). The base screen's Mission tab cannot be selected until then.
+- Wingmen fly in formation and attack, but wingman markers and a base's taxi routes are kept
+  without a mission using them until missions are ported (M6b). The base screen's Mission tab
+  cannot be selected until then. The formation values start at upstream's defaults on each
+  server start and have no config file entries until `/wingman` is ported.
 - Turret ballistics lines (upstream `drawTurretBallistics`) are not drawn yet (M7).
 
 This config entry already exists but has no effect yet:
@@ -455,6 +457,32 @@ These follow from how Minecraft 26.2 works or from decisions approved in PORTING
     by ID. Route IDs still share one list per dimension, as upstream, so saving an ID another base
     uses moves that route to this base. Upstream drew every helipad button on one row, so a fifth
     helipad covered the first; the port starts a second row, as its layout already allowed for.
+95. The wingman panel only offers and takes aircraft within its 512 blocks that no player flies
+    and that are not destroyed, nearest first, and only the pilot of the leader can order its
+    wingmen; upstream listed every aircraft in that range, including other players', and acted
+    on any aircraft UUID a client sent. A new wingman takes the lowest free formation slot, where
+    upstream took the number of wingmen, so after a Stop two wingmen could share a slot. The
+    Formation tab still changes the values for the whole server, as upstream, but values that are
+    not numbers are ignored and the distances stay within upstream's config ranges; on a screen too
+    short for upstream's layout, its Apply button moves between Refresh and Close instead of
+    falling off the bottom. Wingmen are forgotten when the server stops, as upstream forgot them
+    on restart.
+96. Upstream's wingmen fired as their leader and along the leader's heading, so their shots left
+    wherever the leader pointed, and seeking missiles fired at nothing; the port fires as the
+    wingman, along its own heading, and gives seeking weapons the target, as the port's gunners
+    do. Upstream's auto-attack also took any entity its team check passed, which an aircraft's
+    check always did (items, animals, parked aircraft); the port takes what upstream's comments
+    describe: hostile mobs, target drones and McHeli gunners of a team the leader's pilot is not on.
+97. Upstream flew helicopter wingmen as planes: the formation throttle (full throttle while far
+    from the slot, the leader's near it) and full throttle to attack made them climb without end,
+    0.35 throttle beside a stopped leader was too little for a stock helicopter to hover, and they
+    pitched the nose up to climb, which flies a helicopter backwards, away from a climbing leader.
+    The port sets a helicopter wingman's throttle to what holds it level against its gravity, plus
+    0.03 for each block it is below its slot (or attack height), and pitches the nose down half a
+    degree for each block it is from its slot, less 25 degrees for each block a tick it already
+    closes (from 15 degrees up to 20 down), to fly there without overshooting, levelling it again
+    while it waits beside a stopped leader. A helicopter
+    attacking with a fixed gun still aims with its nose, and planes keep upstream's flying.
 
 ## Upstream content issues kept as they are
 

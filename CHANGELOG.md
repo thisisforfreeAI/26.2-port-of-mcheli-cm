@@ -70,6 +70,11 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 - The base screen's Taxi Routes tab, as upstream: right-clicking a base marker lists the base's
   taxi routes and builds one from its parking spot, runway ends or helipad and ordered departure
   and arrival waypoints, picked from the base's markers. Routes are saved with the dimension.
+- AI wingmen and the wingman panel, as upstream: while piloting, the Wingman Panel key (numpad 0,
+  hinted on the HUD) lists the unflown aircraft within 512 blocks to take as wingmen. Wingmen fly
+  in a V (or a column) behind the leader, match its roll and landing gear, and on Auto attack the
+  nearest hostile mob, target drone or enemy-team gunner with the chosen weapon type. The Formation tab
+  sets the spacing, the number of wingmen and the attack altitude limits while the server runs.
 - The GPS panel, as upstream: Open GPS Panel (N) in a vehicle takes X, Y and Z (or the player's
   position) for a GPS point, marked on the HUD with its distance until the player gets off.
 - The BVR scope and the mortar radar, as upstream: a weapon with `EnableBVR` marks vehicles, chaff

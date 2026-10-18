@@ -67,3 +67,39 @@ waypoints showed them all; a route from `p_a1` through `wp_1` and `wp_2` to `ra_
 
 ![Base screen](screens/m6b-base-routes.png)
 ![Waypoint editor](screens/m6b-base-waypoints.png)
+
+## Wingmen and wingman panel increment
+
+- `WingmanEntry` and `WingmanRegistry` keep upstream's per-wingman state (leader, formation slot,
+  attack mode, manual target, weapon type and seat) in memory; the registry is cleared when the
+  server stops, as upstream's static maps were.
+- `WingmanTickHandler` ports upstream's formation and attack flight: V and column slots from
+  `WingmanConfig`'s side, rear and altitude distances, rate-limited yaw and pitch, sibling
+  repulsion, the slot boost that catches a wingman up with a fast leader, the hold when the leader
+  stops, automatic targeting of hostile mobs, target drones and enemy-team gunners, orbit,
+  approach and overfly attack paths, weapon choice by type and the post-fire escape. A wingman
+  whose leader has no player pilot holds fire, and one whose leader is gone leaves the registry.
+- Helicopter wingmen fly by a hover-relative throttle and nose-down pitch with braking, where
+  upstream flew them like planes and they climbed away or flew backwards (KNOWN_ISSUES 97).
+  Wingmen fire as themselves, with the target passed to seekers (KNOWN_ISSUES 96).
+- The wingman panel (upstream `GuiWingmanPanel`) opens from the numpad 0 key while piloting, with
+  a key hint on the HUD. Its Wingmen tab lists up to 8 unassigned aircraft nearby with Follow, and
+  the leader's wingmen with Auto, Hold, Stop and a weapon type picker; its Formation tab sets the
+  formation and attack altitude limits. `WingmanPanelOpenPayload`, `WingmanPanelDataPayload` and
+  `WingmanPanelActionPayload` replace upstream's packets; the server checks every order
+  (KNOWN_ISSUES 95).
+- Missions, autonomous flight, the base screen's Mission tab, `/wingman` and the config file come
+  with increments 4 and 5.
+- Network protocol 23.
+
+Validation: two GameTests cover the panel's candidate list, Follow and its limits, the free slot,
+leader-only orders, formation clamps and the codecs, and the flight: formation slots, the
+helicopter throttle and pitch, the hold, the slot boost, the enemy set, attack throttle, the
+auto-hold without a pilot and unregistering after the leader goes; all 231 required GameTests
+pass. In the client, an AH-64's panel listed two nearby AH-64s, Follow made them wingmen #0 and #1
+following, and they climbed and descended with the leader and settled in their slots; a wingman
+moved 44 blocks off its slot flew back and stopped there. Changing the side distance on the
+Formation tab and pressing Apply kept the new value when the panel reopened.
+
+![Wingman panel](screens/m6b-wingman-panel.png)
+![Formation tab](screens/m6b-wingman-formation.png)

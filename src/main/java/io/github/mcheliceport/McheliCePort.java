@@ -64,6 +64,7 @@ public final class McheliCePort {
         ModGameTests.register(modBus);
         io.github.mcheliceport.item.ChainItem.register();
         io.github.mcheliceport.radar.EntityInfoFeed.register();
+        io.github.mcheliceport.wingman.handler.WingmanTickHandler.register();
     }
 
     private void commonSetup(FMLCommonSetupEvent event) {

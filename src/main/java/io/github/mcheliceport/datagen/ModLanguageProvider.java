@@ -83,6 +83,7 @@ public class ModLanguageProvider extends LanguageProvider {
     /** The vehicle key mappings (upstream's key names in its config GUI). */
     private void keys() {
         add("key.category.mcheli_ce_port.vehicles", "McHeli CE (26.2 Port)");
+        add("key.category.mcheli_ce_port.wingman", "Wingman");
         String prefix = "key." + McheliCePort.MOD_ID + ".";
         add(prefix + "up", "Throttle Up / Forward");
         add(prefix + "down", "Throttle Down / Back");
@@ -102,6 +103,7 @@ public class ModLanguageProvider extends LanguageProvider {
         add(prefix + "search_light", "Searchlights / Headlights");
         add(prefix + "radar_switch", "Radar Switch");
         add(prefix + "open_gps_panel", "Open GPS Panel");
+        add(prefix + "wingman_panel", "Wingman Panel");
         add(prefix + "scoreboard", "[MP] Scoreboard");
         add(prefix + "multiplay_manager", "[MP][OP] Multiplay Manager");
         add(prefix + "camera_mode", "Camera Mode (Night Vision)");

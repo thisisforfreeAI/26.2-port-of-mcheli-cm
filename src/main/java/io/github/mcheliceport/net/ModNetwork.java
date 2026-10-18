@@ -47,7 +47,7 @@ public final class ModNetwork {
     private static final Logger LOGGER = LogUtils.getLogger();
     /** Bump when payload encoding, menu layout or synchronized entity data changes. */
     // Wingman markers: the marker screen's payloads.
-    public static final String VERSION = "22";
+    public static final String VERSION = "23";
 
     private ModNetwork() {
     }
@@ -119,6 +119,16 @@ public final class ModNetwork {
                 (p, context) -> io.github.mcheliceport.wingman.WingmanClientHooks.openBaseScreen(p));
         registrar.playToServer(TaxiRouteActionPayload.TYPE, TaxiRouteActionPayload.CODEC,
                 (p, context) -> applyTaxiRouteAction(context.player(), p));
+        registrar.playToServer(WingmanPanelOpenPayload.TYPE, WingmanPanelOpenPayload.CODEC,
+                (p, context) -> {
+                    if (context.player() instanceof ServerPlayer sp) {
+                        sendToPlayer(sp, io.github.mcheliceport.wingman.WingmanPanel.buildData(sp));
+                    }
+                });
+        registrar.playToClient(WingmanPanelDataPayload.TYPE, WingmanPanelDataPayload.CODEC,
+                (p, context) -> io.github.mcheliceport.wingman.WingmanClientHooks.openWingmanPanel(p));
+        registrar.playToServer(WingmanPanelActionPayload.TYPE, WingmanPanelActionPayload.CODEC,
+                (p, context) -> io.github.mcheliceport.wingman.WingmanPanel.apply(context.player(), p));
         registrar.playToServer(WeaponControlPayload.TYPE, WeaponControlPayload.CODEC, ModNetwork::handleWeaponControl);
         registrar.playToServer(AmmoRequestPayload.TYPE, AmmoRequestPayload.CODEC, ModNetwork::handleAmmoRequest);
         registrar.playToServer(ResupplyPayload.TYPE, ResupplyPayload.CODEC, ModNetwork::handleResupply);
