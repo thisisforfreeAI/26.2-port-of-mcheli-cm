@@ -25,7 +25,7 @@ broader gameplay and hardware checks remain pending.
 
 | Area | Planned milestone |
 |---|---|
-| Remaining plane/ground equipment and UAV station preview camera, gunner NPCs (and their weapon use) | M6 |
+| Remaining plane/ground equipment and UAV station preview camera | M6 |
 | BVR and passive radar, GPS panel and GPS missiles, mortar radar and RWR overlays, ECM jammer, the pulse-Doppler notch, the APS "iron curtain", data link, anti-radiation missiles, `Destruct` bombs (UAVs) | M6 (with the vehicles that use them) |
 | Wingman (AI wingmen, marker block screens and types, missions, `/wingman`) | M6b |
 | Remaining `/mcheli` commands (including reloading content with `reconfig`), advancement triggers, long-distance tracking and rendering, thermal vision (the third camera mode), GPU-buffer model rendering, projectile chunk loading (`ProjectileChunkLoad`), HBM:NTM stubs, performance work | M7 |
@@ -64,9 +64,8 @@ Until then:
 - Every placed wingman marker is a waypoint until the marker screen is ported (M6b).
 - An APS with upstream's "iron curtain" range (100) only plays its sounds (M6).
 - Turret ballistics lines (upstream `drawTurretBallistics`) are not drawn yet (M7).
-- Ctrl+C changes the NPC gunner enabled status only. NPC gunners are not implemented yet, so
-  this does not automate weapons. Use Ctrl+I/F to enter crew seats and H for supported camera
-  switches. Left Ctrl toggles pilot freelook, including independent aiming of pilot-usable turrets.
+- Gunner NPCs fire no ECM jammer, which is not ported yet (M6); they still use flares, chaff
+  and the APS.
 
 This config entry already exists but has no effect yet:
 
@@ -397,6 +396,13 @@ These follow from how Minecraft 26.2 works or from decisions approved in PORTING
     parachute from the third seat on, while a mob in the second seat just gets out, as upstream's
     loop did; with rope hooks it lowers the ropes instead. The common config `dismountAll`
     (upstream `DismountAll`, off) unloads the mobs when the pilot gets out.
+85. Gunner NPCs follow upstream's `MCH_EntityGunner` and `MCH_ItemSpawnGunner`. A gunner
+    placed in creative cannot be hurt, gives its vehicle infinite ammunition and leaves no item
+    behind; one placed in survival uses the vehicle's loaded ammunition (a new vehicle has none)
+    and drops its spawn item when it is killed or leaves its vehicle. The spawn item's five-block
+    search uses the player's body rotation, as upstream, so it can differ slightly from the
+    crosshair while the head turns ahead of the body. The ECM jammer is the one countermeasure a
+    gunner does not use yet, because it is not ported (M6).
 
 ## Upstream content issues kept as they are
 

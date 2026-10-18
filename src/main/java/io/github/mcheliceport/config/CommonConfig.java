@@ -42,6 +42,11 @@ public final class CommonConfig {
     public static final ModConfigSpec.BooleanValue INFINITY_AMMO;
     public static final ModConfigSpec.IntValue TV_MISSILE_MAX_RANGE;
     public static final ModConfigSpec.DoubleValue HURT_RESISTANT_TIME;
+    public static final ModConfigSpec.IntValue HIT_BOX_DELAY_TICK;
+    public static final ModConfigSpec.IntValue GUNNER_VS_MONSTER_HORIZONTAL;
+    public static final ModConfigSpec.IntValue GUNNER_VS_MONSTER_VERTICAL;
+    public static final ModConfigSpec.IntValue GUNNER_VS_PLAYER_HORIZONTAL;
+    public static final ModConfigSpec.IntValue GUNNER_VS_PLAYER_VERTICAL;
     public static final ModConfigSpec.ConfigValue<List<? extends String>> BULLET_BREAKABLE_BLOCKS;
     public static final ModConfigSpec.ConfigValue<List<? extends String>> DAMAGE_VS_ENTITY;
     public static final ModConfigSpec.ConfigValue<List<? extends String>> DAMAGE_VS_LIVING;
@@ -168,6 +173,25 @@ public final class CommonConfig {
                 .comment("Multiplies the invulnerability time a mob gets after each bullet or explosion hit;",
                         "0 lets every bullet of a burst hurt. Upstream: HurtResistantTime.")
                 .defineInRange("hurtResistantTime", 0.0, 0.0, 10000.0);
+        HIT_BOX_DELAY_TICK = builder
+                .comment("Ticks gunners lead less when their target rides a vehicle. Upstream: HitBoxDelayTick.")
+                .defineInRange("hitBoxDelayTick", 0, -1000, 1000);
+        GUNNER_VS_MONSTER_HORIZONTAL = builder
+                .comment("How far sideways a gunner (vs monster) looks for monsters.",
+                        "Upstream: RangeOfGunner_VsMonster_Horizontal.")
+                .defineInRange("rangeOfGunnerVsMonsterHorizontal", 80, 0, 10000);
+        GUNNER_VS_MONSTER_VERTICAL = builder
+                .comment("How far up and down a gunner (vs monster) looks for monsters.",
+                        "Upstream: RangeOfGunner_VsMonster_Vertical.")
+                .defineInRange("rangeOfGunnerVsMonsterVertical", 160, 0, 10000);
+        GUNNER_VS_PLAYER_HORIZONTAL = builder
+                .comment("How far sideways a gunner (vs player) looks for players of other teams.",
+                        "Upstream: RangeOfGunner_VsPlayer_Horizontal.")
+                .defineInRange("rangeOfGunnerVsPlayerHorizontal", 200, 0, 10000);
+        GUNNER_VS_PLAYER_VERTICAL = builder
+                .comment("How far up and down a gunner (vs player) looks for players of other teams.",
+                        "Upstream: RangeOfGunner_VsPlayer_Vertical.")
+                .defineInRange("rangeOfGunnerVsPlayerVertical", 300, 0, 10000);
         BULLET_BREAKABLE_BLOCKS = builder
                 .comment("Blocks bullets break and fly through: block IDs, or block tags with a leading '#'.",
                         "Upstream: BulletBreakableBlocks (1.12 block names).")

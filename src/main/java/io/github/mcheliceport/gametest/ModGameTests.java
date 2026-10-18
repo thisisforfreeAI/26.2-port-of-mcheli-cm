@@ -77,6 +77,7 @@ public final class ModGameTests {
         FuelFluidGameTests.register();
         MultiplayGameTests.register();
         MobSeatGameTests.register();
+        GunnerGameTests.register();
         if (System.getProperty("neoforge.enabledGameTestNamespaces") != null) {
             ChargerGameTests.registerTestBattery(modBus);
         }

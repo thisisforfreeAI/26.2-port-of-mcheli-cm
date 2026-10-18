@@ -427,6 +427,10 @@ public class WeaponSet {
             }
             this.reload();
             prm.reload = true;
+            // Upstream: a gunner also waits out the reload before its next shot.
+            if (prm.user instanceof io.github.mcheliceport.entity.gunner.GunnerEntity) {
+                this.cooldown += (this.cooldown >= 0 ? 1 : -1) * current.getReloadCount();
+            }
         }
         prm.result = true;
     }

@@ -66,7 +66,7 @@ public final class AircraftRopes {
             for (int seat = 1; seat < this.ac.getSeats().length; seat++) {
                 Entity rider = this.ac.getEntityBySeatId(seat + 1);
                 if (rider instanceof LivingEntity && !(rider instanceof Player)
-                        && rider.getType() != io.github.mcheliceport.registry.ModEntityTypes.GUNNER.get()
+                        && !(rider instanceof io.github.mcheliceport.entity.gunner.GunnerEntity)
                         && !(this.ac.getSeatInfo(seat + 1) instanceof SeatRackInfo)) {
                     if (this.begin(rider, index, false)) { this.lastHook = index; }
                     break;

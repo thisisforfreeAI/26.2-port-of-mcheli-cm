@@ -1,7 +1,6 @@
 package io.github.mcheliceport.item;
 
 import io.github.mcheliceport.config.CommonConfig;
-import io.github.mcheliceport.entity.PlaceholderEntity;
 import io.github.mcheliceport.entity.aircraft.AircraftEntity;
 import io.github.mcheliceport.entity.chain.ChainEntity;
 import io.github.mcheliceport.entity.parachute.ParachuteEntity;
@@ -42,7 +41,7 @@ public class ChainItem extends Item {
         return !entity.isRemoved() && entity.isAlive() && !entity.isPassenger()
                 && !(entity instanceof LivingEntity || entity instanceof ItemEntity || entity instanceof ExperienceOrb
                 || entity instanceof Projectile || entity instanceof ChainEntity || entity instanceof SeatEntity
-                || entity instanceof ParachuteEntity || entity instanceof PlaceholderEntity
+                || entity instanceof ParachuteEntity
                 || entity instanceof io.github.mcheliceport.entity.rappel.RappellingEntity
                 || entity instanceof net.neoforged.neoforge.entity.PartEntity<?>)
                 && !(entity instanceof AircraftEntity aircraft && aircraft.isDestroyed())

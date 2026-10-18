@@ -63,6 +63,12 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
   supported (see Added); JEI shows the drafting table as a crafting station for them.
 
 ### Added
+- Gunner NPCs, as upstream: the Gunner (vs Monster) and Gunner (vs Player) items seat a gunner
+  on a free seat within five blocks (a square at the crosshair shows the seat), and using one on
+  a gunner takes it off. A gunner turns its seat's weapon towards the nearest monster, or the
+  nearest player of another team, leads it and fires, and launches flares, chaff or the APS
+  against an incoming guided missile. Ctrl+C switches a vehicle's gunners on and off, and the
+  gunner search ranges are common config settings.
 - Mobs in seats, as upstream: animals and other mobs next to a vehicle board its free seats when
   a player takes the pilot seat, and the pilot's unload key (K) puts them out on the ground or,
   from vehicles that drop by parachute, sends them down one by one under parachutes. The

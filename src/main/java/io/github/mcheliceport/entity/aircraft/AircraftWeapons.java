@@ -162,9 +162,9 @@ public final class AircraftWeapons {
         return entity == null && weapon.canUsePilot ? this.ac.getPilot() : entity;
     }
 
-    /** Upstream {@code getCurrentWeaponID}: the weapon a player's seat has selected, or -1. */
+    /** Upstream {@code getCurrentWeaponID}: the weapon a player's or gunner's seat has selected, or -1. */
     public int getCurrentWeaponID(@Nullable Entity entity) {
-        if (!(entity instanceof Player)) {
+        if (!AircraftEntity.isWeaponUser(entity)) {
             return -1;
         }
         int id = this.ac.getSeatIdByEntity(entity);
@@ -216,7 +216,7 @@ public final class AircraftWeapons {
             if (w != null) {
                 int wpsid = this.getWeaponSeatID(this.getWeaponInfoById(id), w);
                 if (wpsid < this.ac.getSeatNum() + 1 + 1 && (wpsid == sid
-                        || sid == 0 && w.canUsePilot && !(this.ac.getEntityBySeatId(wpsid) instanceof Player))) {
+                        || sid == 0 && w.canUsePilot && !AircraftEntity.isWeaponUser(this.ac.getEntityBySeatId(wpsid)))) {
                     break;
                 }
             }
@@ -262,14 +262,14 @@ public final class AircraftWeapons {
         this.currentWeaponID[sid] = id;
     }
 
-    /** Upstream {@code initCurrentWeapon}: a player who just took a seat gets its first weapon. */
+    /** Upstream {@code initCurrentWeapon}: a player or gunner who just took a seat gets its first weapon. */
     public void initCurrentWeapon(Entity entity) {
         int sid = this.ac.getSeatIdByEntity(entity);
         if (sid < 0 || sid >= this.currentWeaponID.length) {
             return;
         }
         this.currentWeaponID[sid] = -1;
-        if (entity instanceof Player) {
+        if (AircraftEntity.isWeaponUser(entity)) {
             this.currentWeaponID[sid] = this.getNextWeaponID(entity, 1);
             this.switchWeapon(entity, this.getCurrentWeaponID(entity));
             if (this.ac.level().isClientSide()) {
@@ -610,7 +610,7 @@ public final class AircraftWeapons {
     /** The rider aiming weapon {@code wid}: its seat's player, or the pilot for a pilot-usable weapon. */
     private @Nullable Entity weaponUser(int wid, AircraftInfo.Weapon wi) {
         Entity entity = this.ac.getEntityBySeatId(this.getWeaponSeatID(this.getWeaponInfoById(wid), wi));
-        if (wi.canUsePilot && !(entity instanceof Player)) {
+        if (wi.canUsePilot && !AircraftEntity.isWeaponUser(entity)) {
             entity = this.ac.getEntityBySeatId(0);
         }
         return entity;
@@ -619,7 +619,7 @@ public final class AircraftWeapons {
     /** Turns one weapon set towards its user's aim (shared by the tick and the shot's re-aim). */
     private void aimWeapon(AircraftInfo info, WeaponSet w, AircraftInfo.Weapon wi, @Nullable Entity entity, float yaw,
             float pitch) {
-        if (!(entity instanceof Player)) {
+        if (!AircraftEntity.isWeaponUser(entity)) {
             w.setTurretYaw(this.ac.lastRiderYaw - this.ac.getYaw());
             if (this.ac.isTowed() || this.ac.isPassenger()) { w.setYaw(0); }
             return;
