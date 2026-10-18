@@ -71,7 +71,7 @@ public final class EngineExhaustEmitter {
             if (outlet.jet() && strength > 0.75F && EffectPerformance.optionalGlows() && emitted < cap
                     && EffectAdmission.admit(level, position.x, position.y, position.z, false, radius)) {
                 Minecraft.getInstance().particleEngine.add(new EngineGlowParticle(level, position,
-                        velocity, radius * 0.7F, 0.3F * strength * distanceFade));
+                        velocity, radius * 0.9F, 0.9F * strength * distanceFade));
                 emitted++;
             }
         }

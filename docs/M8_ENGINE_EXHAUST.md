@@ -76,6 +76,7 @@ checks fallback selection; its held fixtures do not run the old plane physics/pa
 Run with Java 25, `-I scripts/visual-probe.init.gradle`, and `-Dmcheli.probeEngineExhaust=true`.
 `-Dmcheli.probeBackend=OPENGL` selects OpenGL, otherwise Vulkan is used.
 `-Dmcheli.probeExhaustPerfOnly=true` runs just the four frame-sampling scenes.
+`-Dmcheli.probeExhaustJetOnly=true` repeats the isolated jet day/night visual check.
 The development driver is excluded from the production jar.
 
 The environment's optional JEI Maven host is blocked, so local builds use an external init
@@ -94,6 +95,9 @@ Frame intervals below use software Mesa at 1920×1080, four render chunks, VSync
 runtime cap of 120 FPS. Models/fixed/adaptive scenes contain the same four helicopters and four
 jets. No other native scenes, builds or tests ran during these final frame samples. Earlier
 Vulkan samples overlapping unrelated tests were discarded.
+These distributions preceded the final jet-brightness and within-budget size adjustment; final
+jet day/night captures were checked again on both backends. Counts, charged radius and lifetimes
+are unchanged, but the table is not a fresh measurement of that final visual adjustment.
 
 | Software renderer | Scene | Frames | Median ms | p95 ms |
 |---|---|---:|---:|---:|

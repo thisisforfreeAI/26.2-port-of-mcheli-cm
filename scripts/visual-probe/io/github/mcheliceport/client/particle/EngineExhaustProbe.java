@@ -24,6 +24,7 @@ public final class EngineExhaustProbe {
     private static final String[] NAMES = {"off", "apache", "blackhawk", "jet", "vtol", "classic", "water", "empty", "models", "fixed", "adaptive"};
     private static final int LENGTH = 320;
     private static final boolean PERF_ONLY = Boolean.getBoolean("mcheli.probeExhaustPerfOnly");
+    private static final boolean JET_ONLY = Boolean.getBoolean("mcheli.probeExhaustJetOnly");
     private static final List<AircraftEntity> vehicles = new ArrayList<>();
     private static final List<Double> frames = new ArrayList<>();
     private static int tick, peak;
@@ -65,8 +66,8 @@ public final class EngineExhaustProbe {
             mc.options.enableVsync().set(false); mc.options.framerateLimit().set(120);
         }
         if (tick < 160) return;
-        int phase = (tick - 160) / LENGTH + (PERF_ONLY ? 7 : 0), age = (tick - 160) % LENGTH;
-        if (phase >= NAMES.length) { mc.stop(); return; }
+        int phase = (tick - 160) / LENGTH + (PERF_ONLY ? 7 : JET_ONLY ? 3 : 0), age = (tick - 160) % LENGTH;
+        if (phase >= (JET_ONLY ? 4 : NAMES.length)) { mc.stop(); return; }
         if (age == 0) {
             for (var v : vehicles) v.discard(); vehicles.clear();
             mc.particleEngine.clearParticles(); EngineExhaustEmitter.clear();
@@ -137,7 +138,7 @@ public final class EngineExhaustProbe {
     private static void commands(Minecraft mc, String... cmds) { for (String cmd : cmds) mc.player.connection.sendCommand(cmd); }
     @SubscribeEvent public static void frame(RenderFrameEvent.Post event) {
         if (!Boolean.getBoolean("mcheli.probeEngineExhaust") || tick < 160) return;
-        int phase = (tick - 160) / LENGTH + (PERF_ONLY ? 7 : 0), age = (tick - 160) % LENGTH;
+        int phase = (tick - 160) / LENGTH + (PERF_ONLY ? 7 : JET_ONLY ? 3 : 0), age = (tick - 160) % LENGTH;
         long now = System.nanoTime();
         if (phase >= 7 && age >= 100 && age < 290 && last != 0) frames.add((now - last) / 1_000_000.0);
         last = now;
