@@ -73,6 +73,7 @@ public final class ModGameTests {
         LightWeaponGameTests.register();
         DraftingTableGameTests.register();
         ChargerGameTests.register();
+        AircraftMenuGameTests.register();
         if (System.getProperty("neoforge.enabledGameTestNamespaces") != null) {
             ChargerGameTests.registerTestBattery(modBus);
         }

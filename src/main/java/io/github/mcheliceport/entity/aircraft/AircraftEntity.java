@@ -35,6 +35,7 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerEntity;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.permissions.Permissions;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.util.Mth;
@@ -771,6 +772,20 @@ public abstract class AircraftEntity extends Entity
 
     public String getCommand() {
         return this.entityData.get(DATA_COMMAND);
+    }
+
+    /**
+     * Upstream {@code setCommand}: the command runs with full permissions when the vehicle is
+     * destroyed, so only players who may use game-master commands can set it (upstream let anyone).
+     */
+    public void setCommand(String command, Player player) {
+        if (canSetCommand(player)) {
+            this.setCommandForce(command);
+        }
+    }
+
+    public static boolean canSetCommand(Player player) {
+        return player.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER);
     }
 
     public void setCommandForce(String command) {

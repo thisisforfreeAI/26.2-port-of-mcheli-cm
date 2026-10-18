@@ -1306,3 +1306,23 @@ dedicated server with an OpenGL client, a charger set with `/setblock` drew its 
 `/data merge` gave it 12,345 energy, using it showed `Charger: 12,345 / 100,000`
 ([use](screens/m6-charger-use.png)). No stock vehicle is electric, so none was charged in the
 client. Not run: Vulkan, an energy mod's cables.
+
+## Aircraft menu command increment
+
+- `AircraftScreen` adds a strip under the player inventory with upstream `MCH_AircraftGui`'s
+  command field (512 characters) and its "MOD Options" button, shown as Options. The field holds
+  the vehicle's synced command and is sent with `AircraftCommandPayload` (upstream
+  `PacketCommandSave`) when the menu closes, before the menu's close packet. The server takes it
+  only from an open aircraft menu of that vehicle and only from a game master
+  (`AircraftEntity.setCommand`, KNOWN_ISSUES difference 81). Enter runs the field as the player's
+  own command. Options closes the menu and opens NeoForge's config screen.
+- The network version is 19.
+
+Validation: `build` passed and the GameTest server passed all 201 required tests, including the
+new `aircraft_command_needs_operator`: a player and a moderator cannot set the command, a game
+master can, and destroying the vehicle with non-player damage runs it. On a dedicated server with
+an OpenGL client, an operator riding an AH-64 typed `say destroyed` in the field, closed the menu
+with Escape and found it there on reopening ([command](screens/m6-aircraft-command.png)); Enter
+ran it as `[Dev] destroyed`; Options opened the config screen
+([options](screens/m6-aircraft-options.png)); and `/damage` of 1000 printed `[Server] destroyed`.
+Not run: Vulkan, a non-operator client.

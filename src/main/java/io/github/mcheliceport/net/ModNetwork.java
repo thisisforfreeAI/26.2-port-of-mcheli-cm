@@ -47,7 +47,7 @@ public final class ModNetwork {
     private static final Logger LOGGER = LogUtils.getLogger();
     /** Bump when payload encoding, menu layout or synchronized entity data changes. */
     // Long-range UAV chunk and entity streaming requires matching camera/terrain behavior.
-    public static final String VERSION = "18";
+    public static final String VERSION = "19";
 
     private ModNetwork() {
     }
@@ -106,6 +106,8 @@ public final class ModNetwork {
         registrar.playToServer(WeaponControlPayload.TYPE, WeaponControlPayload.CODEC, ModNetwork::handleWeaponControl);
         registrar.playToServer(AmmoRequestPayload.TYPE, AmmoRequestPayload.CODEC, ModNetwork::handleAmmoRequest);
         registrar.playToServer(ResupplyPayload.TYPE, ResupplyPayload.CODEC, ModNetwork::handleResupply);
+        registrar.playToServer(AircraftCommandPayload.TYPE, AircraftCommandPayload.CODEC,
+                ModNetwork::handleAircraftCommand);
         registrar.playToServer(AirburstDistPayload.TYPE, AirburstDistPayload.CODEC, ModNetwork::handleAirburstDist);
         registrar.playToClient(WeaponSyncPayload.TYPE, WeaponSyncPayload.CODEC, ModNetwork::handleWeaponSync);
         registrar.playToClient(NotifyAmmoPayload.TYPE, NotifyAmmoPayload.CODEC, (p, context) -> {
@@ -561,6 +563,15 @@ public final class ModNetwork {
                 && menu.getAircraft() != null && menu.getAircraft().getId() == p.aircraftId()
                 && p.weaponId() >= 0 && p.weaponId() < menu.getAircraft().getWeaponNum()) {
             menu.getAircraft().weapons().supplyAmmo(p.weaponId(), player);
+        }
+    }
+
+    /** Upstream {@code PacketCommandSave}, from the menu of that vehicle only. */
+    static void handleAircraftCommand(AircraftCommandPayload p, IPayloadContext context) {
+        if (context.player() instanceof ServerPlayer player
+                && player.containerMenu instanceof io.github.mcheliceport.menu.AircraftMenu menu
+                && menu.getAircraft() != null && menu.getAircraft().getId() == p.aircraftId()) {
+            menu.getAircraft().setCommand(p.command(), player);
         }
     }
 
