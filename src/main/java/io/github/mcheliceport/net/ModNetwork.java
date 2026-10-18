@@ -47,7 +47,7 @@ public final class ModNetwork {
     private static final Logger LOGGER = LogUtils.getLogger();
     /** Bump when payload encoding, menu layout or synchronized entity data changes. */
     // Long-range UAV chunk and entity streaming requires matching camera/terrain behavior.
-    public static final String VERSION = "14";
+    public static final String VERSION = "15";
 
     private ModNetwork() {
     }
@@ -130,6 +130,15 @@ public final class ModNetwork {
                 (p, context) -> WeaponClientHooks.laserShot(p));
         registrar.playToClient(ClientSoundPayload.TYPE, ClientSoundPayload.CODEC,
                 (p, context) -> WeaponClientHooks.clientSound(p));
+        registrar.playToServer(RangeFinderSpotPayload.TYPE, RangeFinderSpotPayload.CODEC, (p, context) -> {
+            if (context.player() instanceof ServerPlayer player) {
+                io.github.mcheliceport.item.RangeFinderItem.handleSpotRequest(player, p.targetFilter());
+            }
+        });
+        registrar.playToClient(SpotEnemyPayload.TYPE, SpotEnemyPayload.CODEC,
+                (p, context) -> io.github.mcheliceport.multiplay.SpotClientHooks.spotted(p.count(), p.entityIds()));
+        registrar.playToClient(MarkPosPayload.TYPE, MarkPosPayload.CODEC,
+                (p, context) -> io.github.mcheliceport.multiplay.SpotClientHooks.markPoint(p.x(), p.y(), p.z()));
     }
 
     // ---- server settings ----

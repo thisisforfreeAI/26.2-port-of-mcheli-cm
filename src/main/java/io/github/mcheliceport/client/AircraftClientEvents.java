@@ -7,6 +7,9 @@ import io.github.mcheliceport.client.input.MouseFlight;
 import io.github.mcheliceport.client.input.WeaponClientControl;
 import io.github.mcheliceport.client.model.AircraftModels;
 import io.github.mcheliceport.client.sound.AircraftEngineSound;
+import io.github.mcheliceport.client.tool.RangeFinderClient;
+import io.github.mcheliceport.client.tool.TargetMarkers;
+import io.github.mcheliceport.multiplay.SpotClientHooks;
 import io.github.mcheliceport.client.weapon.WeaponClient;
 import io.github.mcheliceport.client.weapon.WeaponEffects;
 import io.github.mcheliceport.config.ServerSettings;
@@ -51,6 +54,8 @@ public final class AircraftClientEvents {
             AircraftModels.tick();
             AircraftEngineSound.tickAll();
             WeaponClient.tick();
+            RangeFinderClient.tick();
+            TargetMarkers.INSTANCE.tick();
         });
         NeoForge.EVENT_BUS.addListener(WeaponEffects::onSubmitGeometry);
         NeoForge.EVENT_BUS.addListener((RenderFrameEvent.Pre event) -> {
@@ -61,6 +66,8 @@ public final class AircraftClientEvents {
         NeoForge.EVENT_BUS.addListener(AircraftCameraClient::onCameraAngles);
         NeoForge.EVENT_BUS.addListener(AircraftClientEvents::onCameraAngles);
         NeoForge.EVENT_BUS.addListener(AircraftCameraClient::onComputeFov);
+        NeoForge.EVENT_BUS.addListener(RangeFinderClient::onComputeFov);
+        NeoForge.EVENT_BUS.addListener(io.github.mcheliceport.client.hud.ToolHudLayer::onRenderHand);
         NeoForge.EVENT_BUS.addListener(AircraftCameraClient::onDetachedDistance);
         NeoForge.EVENT_BUS.addListener(AircraftCameraClient::onNameTag);
         NeoForge.EVENT_BUS.addListener(AircraftClientEvents::onRenderHand);
@@ -73,7 +80,13 @@ public final class AircraftClientEvents {
             MouseFlight.reset();
             AircraftCameraClient.reset();
             WeaponClient.reset();
+            TargetMarkers.INSTANCE.reset();
         });
+        NeoForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.LoggingIn event) -> {
+            RangeFinderClient.onLogin();
+            TargetMarkers.INSTANCE.reset();
+        });
+        SpotClientHooks.set(TargetMarkers.INSTANCE);
     }
 
     public static @Nullable AircraftEntity riddenAircraft(@Nullable LocalPlayer player) {

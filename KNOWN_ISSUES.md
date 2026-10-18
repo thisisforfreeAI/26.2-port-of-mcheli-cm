@@ -25,8 +25,8 @@ broader gameplay and hardware checks remain pending.
 
 | Area | Planned milestone |
 |---|---|
-| Remaining plane/ground equipment and UAV station preview camera, gunner NPCs and mobs in seats (and their weapon use), GLTD, hand-held weapons (Stinger, Javelin), the rest of the aircraft GUI, drafting table screen, charger, tools, multiplayer teams and team spotting markers (`MCH_GuiTargetMarker`) | M6 |
-| BVR and passive radar, GPS panel and GPS missiles, mortar radar and RWR overlays, ECM jammer, the pulse-Doppler notch, the APS "iron curtain", data link, anti-radiation missiles, `Destruct` bombs (UAVs), the targeting pod's spotting | M6 (with the vehicles that use them) |
+| Remaining plane/ground equipment and UAV station preview camera, gunner NPCs and mobs in seats (and their weapon use), GLTD, hand-held weapons (Stinger, Javelin), the rest of the aircraft GUI, drafting table screen, charger, mine defuser, the team scoreboard screens | M6 |
+| BVR and passive radar, GPS panel and GPS missiles, mortar radar and RWR overlays, ECM jammer, the pulse-Doppler notch, the APS "iron curtain", data link, anti-radiation missiles, `Destruct` bombs (UAVs) | M6 (with the vehicles that use them) |
 | Wingman (AI wingmen, marker block screens and types, missions, `/wingman`) | M6b |
 | Remaining `/mcheli` commands (including reloading content with `reconfig`), advancement triggers, long-distance tracking and rendering, thermal vision (the third camera mode), GPU-buffer model rendering, projectile chunk loading (`ProjectileChunkLoad`), HBM:NTM stubs, performance work | M7 |
 
@@ -63,7 +63,6 @@ Until then:
   entity renderer (M6). The rangefinder, wrench, GLTD and hand-held launchers show as flat items in
   the hand; upstream drew 3D models (M6).
 - Every placed wingman marker is a waypoint until the marker screen is ported (M6b).
-- The targeting pod only plays its refusal sound when fired, until team spotting comes (M6).
 - An APS with upstream's "iron curtain" range (100) only plays its sounds (M6).
 - Turret ballistics lines (upstream `drawTurretBallistics`) are not drawn yet (M7).
 - Ctrl+C changes the NPC gunner enabled status only. NPC gunners are not implemented yet, so
@@ -311,6 +310,22 @@ These follow from how Minecraft 26.2 works or from decisions approved in PORTING
     does not ray trace intervening blocks. Stock alpha values are restored from legacy TXT, and
     content revision 1 refreshes the extracted default pack on existing 0.5.1 installs. Keep
     customizations in separate addon packs. Protocol 11 covers retained-aim entity data.
+
+74. Team spotting (rangefinder, targeting pods) sends a mark point to the whole team; upstream's
+    `sendMarkPointToSameTeam` sent it to the spotter once per teammate, so teammates never got it.
+    A mark point also shows to a spotter on no team; upstream's mark point vanished at once for a
+    player without a team. Markers are projected onto the HUD with the frame's camera instead of
+    while each entity rendered, so they also show for entities hidden by other mods' renderers.
+75. The rangefinder's scope narrows the field of view (as aircraft cameras do) instead of
+    upstream's camera-zoom reflection, and hides the hand like the spyglass. Its keys are the
+    vehicle zoom, weapon-mode and flare keys (Z, X, V by default) and the attack key, read while
+    the player is on foot. The server refuses a spot within 50 ticks of the last (the client
+    waits 60, as upstream); upstream trusted the client's cooldown. The last charge leaves an
+    empty rangefinder rather than breaking it, as 1.12 items did at their maximum damage.
+76. The wrench mines blocks tagged `mcheli_ce_port:wrench_metal` (1.12's iron material) at 20.5
+    and harvests them, and `mcheli_ce_port:wrench_logic` (circuits, plants, vines, snow layers and
+    carpets) at 5.5; 26.2 has no block materials. Upstream's creative dig-delay reset and the
+    held-wrench swing animation (`MCH_WrenchAnim`) are not ported.
 
 ## Upstream content issues kept as they are
 

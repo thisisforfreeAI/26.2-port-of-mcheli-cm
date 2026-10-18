@@ -22,6 +22,20 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 
 ### Added
 
+- The wrench repairs vehicles: hold use while looking at a vehicle within four blocks to restore
+  10 HP a second, one durability each, with the vehicle's health shown under the crosshair. As a
+  tool it mines metal blocks fast, hits like an iron tool (6 damage) and sometimes knocks iron or
+  gunpowder out of what it hits; shift-use still changes a vehicle's skin.
+- The laser rangefinder works: hold use for the scope (range to the block in view, charge,
+  x1.2 to x10 zoom with Z and X), and the attack key spots for the player's team. V cycles the
+  modes: players and vehicles, monsters and mobs, or a mark point on the block in view. Spots use
+  one of ten charges; marks are free.
+- Team spotting markers: teammates and spotted entities get coloured markers over them, and the
+  team's mark point shows its distance and coordinates, with arrows at the screen edge when it is
+  out of view. Targeting pods now spot or mark as upstream instead of only playing "ng". New
+  server settings `spotting.enableEntityMarker`, `rangeFinderSpotDist` (400), `rangeFinderSpotTime`
+  (15 s) and `rangeFinderConsume`, and client settings `hud.displayEntityMarker`,
+  `entityMarkerSize` and `blockMarkerSize`. Network protocol is now 15.
 - Used fuel cans refill by crafting them with coal or charcoal, and used rangefinders recharge
   with redstone, as upstream's `charge_fuel` and `charge_power_range_finder` recipes did. Each
   coal slot restores 100 fuel and each charcoal slot 75, up to a full can of 600; one item is used

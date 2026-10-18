@@ -94,6 +94,10 @@ Fuel cans and the rangefinder are refilled by crafting, as upstream: a used fuel
 [Just Enough Items](https://www.curseforge.com/minecraft/mc-mods/jei) installed, its recipe and
 usage lookup lists the mod's crafting recipes, including these two. JEI is optional.
 
+The wrench repairs a vehicle while you hold right-click looking at it, 10 HP a second. The
+rangefinder's scope comes up when you hold right-click: left-click spots for your team, **Z**/**X**
+zoom and **V** switches between players and vehicles, mobs and a mark point.
+
 Parachutes: right-click the item while airborne and unmounted. On an ejection-capable plane,
 load parachutes into the **Chutes** slots with **I**, then press **Space** from the pilot or first
 crew seat. Space still toggles hovering in helicopters. **Y** dismounts; eligible transport

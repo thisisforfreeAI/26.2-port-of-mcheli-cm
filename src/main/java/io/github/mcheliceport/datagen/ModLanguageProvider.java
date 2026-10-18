@@ -44,6 +44,7 @@ public class ModLanguageProvider extends LanguageProvider {
         addItem(ModItems.SPAWN_GUNNER_VS_PLAYER, "Gunner (vs Player of other team)");
         addItem(ModItems.RANGEFINDER, "Laser Rangefinder");
         addItem(ModItems.WRENCH, "Wrench");
+        add("item.mcheli_ce_port.wrench.tooltip", "Shift+Right click to change vehicle skin!");
         addItem(ModItems.FUEL, "Fuel");
         add("jei.mcheli_ce_port.info.charge_fuel", "Refill a used fuel can by crafting it with coal or charcoal. "
                 + "Each slot of coal adds %s fuel and each slot of charcoal %s, up to a full can of %s. "
@@ -183,6 +184,14 @@ public class ModLanguageProvider extends LanguageProvider {
         add(prefix + "testMode", "Test Mode");
         add(prefix + "camera", "Camera");
         add(prefix + "enableCamDistChange", "Allow Camera Distance Change");
+        add(prefix + "spotting", "Spotting");
+        add(prefix + "enableEntityMarker", "Allow Entity Markers");
+        add(prefix + "rangeFinderSpotDist", "Rangefinder Spot Distance");
+        add(prefix + "rangeFinderSpotTime", "Rangefinder Spot Time");
+        add(prefix + "rangeFinderConsume", "Rangefinder Uses Charge");
+        add(prefix + "displayEntityMarker", "Show Entity Markers");
+        add(prefix + "entityMarkerSize", "Entity Marker Size");
+        add(prefix + "blockMarkerSize", "Mark Point Size");
         add(prefix + "creativeTabIcons", "Creative Tab Icons");
         for (ModTab tab : ModTab.values()) {
             if (!tab.defaultIcon.isEmpty()) {

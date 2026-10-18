@@ -23,6 +23,10 @@ public final class ServerConfig {
     public static final ModConfigSpec.BooleanValue TABLET_NORMAL_UAVS;
     public static final ModConfigSpec.IntValue UAV_CONTROL_RANGE;
     public static final ModConfigSpec.IntValue UAV_REMOTE_VIEW_DISTANCE;
+    public static final ModConfigSpec.BooleanValue ENABLE_ENTITY_MARKER;
+    public static final ModConfigSpec.IntValue RANGE_FINDER_SPOT_DIST;
+    public static final ModConfigSpec.IntValue RANGE_FINDER_SPOT_TIME;
+    public static final ModConfigSpec.BooleanValue RANGE_FINDER_CONSUME;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -67,6 +71,23 @@ public final class ServerConfig {
                 .defineInRange("maxPairedUavs", 5, 0, 64);
         TABLET_NORMAL_UAVS = builder.comment("Allow tablets to bind/control full-size UAVs. Default: small UAVs only.")
                 .define("tabletControlNormalUav", false);
+        builder.pop();
+
+        builder.comment("Spotting with the rangefinder and targeting pods (upstream's lines of the same names in mcheli.cfg).")
+                .push("spotting");
+        ENABLE_ENTITY_MARKER = builder
+                .comment("Let clients draw markers over spotted entities and teammates. Clients can still turn",
+                        "their own markers off. Upstream: the server's DisplayEntityMarker.")
+                .define("enableEntityMarker", true);
+        RANGE_FINDER_SPOT_DIST = builder
+                .comment("How far the rangefinder spots, in blocks. Upstream: RangeFinderSpotDist.")
+                .defineInRange("rangeFinderSpotDist", 400, 1, 10000);
+        RANGE_FINDER_SPOT_TIME = builder
+                .comment("Seconds a player or vehicle the rangefinder spotted stays marked (mobs stay 60). Upstream: RangeFinderSpotTime.")
+                .defineInRange("rangeFinderSpotTime", 15, 1, 3600);
+        RANGE_FINDER_CONSUME = builder
+                .comment("Each spot uses one charge of the rangefinder. Upstream: RangeFinderConsume.")
+                .define("rangeFinderConsume", true);
         builder.pop();
         SPEC = builder.build();
     }

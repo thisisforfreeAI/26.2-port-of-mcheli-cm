@@ -47,9 +47,22 @@ public final class ModItems {
 
     public static final DeferredItem<Item> SPAWN_GUNNER_VS_MONSTER = item("spawn_gunner_vs_monster", p -> p.stacksTo(1));
     public static final DeferredItem<Item> SPAWN_GUNNER_VS_PLAYER = item("spawn_gunner_vs_player", p -> p.stacksTo(1));
-    public static final DeferredItem<Item> RANGEFINDER = item("rangefinder", p -> p.durability(10));
-    /** Upstream's wrench took its durability from 1.12's iron tool material. */
-    public static final DeferredItem<Item> WRENCH = item("wrench", p -> p.durability(250));
+    public static final DeferredItem<Item> RANGEFINDER = register("rangefinder",
+            io.github.mcheliceport.item.RangeFinderItem::new, p -> p.durability(10), ModTab.ITEMS);
+    /**
+     * Upstream's wrench took its durability (250), enchantability (14), repair item and attack
+     * damage (4 + 2) from 1.12's iron tool material.
+     */
+    public static final DeferredItem<Item> WRENCH = register("wrench", io.github.mcheliceport.item.WrenchItem::new,
+            p -> p.durability(250).enchantable(14).repairable(net.minecraft.world.item.Items.IRON_INGOT)
+                    .attributes(net.minecraft.world.item.component.ItemAttributeModifiers.builder()
+                            .add(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE,
+                                    new net.minecraft.world.entity.ai.attributes.AttributeModifier(
+                                            Item.BASE_ATTACK_DAMAGE_ID, 6.0,
+                                            net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADD_VALUE),
+                                    net.minecraft.world.entity.EquipmentSlotGroup.MAINHAND)
+                            .build()),
+            ModTab.ITEMS);
     public static final DeferredItem<Item> FUEL = item("fuel", p -> p.durability(600).setNoCombineRepair());
     public static final DeferredItem<Item> GLTD = item("gltd", p -> p.stacksTo(1));
     public static final DeferredItem<Item> CHAIN = register("chain", io.github.mcheliceport.item.ChainItem::new,

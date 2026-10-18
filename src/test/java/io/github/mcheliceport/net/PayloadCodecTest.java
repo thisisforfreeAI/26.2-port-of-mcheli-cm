@@ -147,12 +147,24 @@ class PayloadCodecTest {
     @Test
     void serverSettingsRoundTrip() {
         ServerSettings.Values values = new ServerSettings.Values(true,
-                new HeliFlightModel.RotationLimits(true, 25.0F, -15.0F, 40.0F), false);
+                new HeliFlightModel.RotationLimits(true, 25.0F, -15.0F, 40.0F), false, false);
         ServerSettingsPayload p = ServerSettingsPayload.of(values);
         ServerSettingsPayload read = roundTrip(ServerSettingsPayload.CODEC, p);
         assertEquals(p, read);
         assertEquals(values, read.toValues());
         assertEquals(ServerSettings.Values.DEFAULT, ServerSettingsPayload.of(ServerSettings.Values.DEFAULT).toValues());
+    }
+
+    @Test
+    void spottingRoundTrips() {
+        SpotEnemyPayload spot = new SpotEnemyPayload(15, new int[] {3, 700000, 42});
+        assertEquals(spot, roundTrip(SpotEnemyPayload.CODEC, spot));
+        assertEquals(new SpotEnemyPayload(60, new int[0]),
+                roundTrip(SpotEnemyPayload.CODEC, new SpotEnemyPayload(60, new int[0])));
+        MarkPosPayload mark = new MarkPosPayload(-30000, 1000, 12);
+        assertEquals(mark, roundTrip(MarkPosPayload.CODEC, mark));
+        RangeFinderSpotPayload request = new RangeFinderSpotPayload(60);
+        assertEquals(request, roundTrip(RangeFinderSpotPayload.CODEC, request));
     }
 
     @Test
