@@ -18,7 +18,8 @@ import net.neoforged.neoforge.client.event.RenderFrameEvent;
 @EventBusSubscriber(modid = "mcheli_ce_port", value = Dist.CLIENT)
 public final class ExplosionStructureProbe {
     private static final String[] NAMES = {"classic-large", "large", "small", "missile", "incendiary", "empty", "fixed", "adaptive"};
-    private static final int DURATION = 200;
+    private static final boolean QUICK = Boolean.getBoolean("mcheli.probeStructureQuick");
+    private static final int DURATION = QUICK ? 140 : 200;
     private static final List<Double> frames = new ArrayList<>();
     private static int tick;
     private static long last;
@@ -41,20 +42,24 @@ public final class ExplosionStructureProbe {
             ClientConfig.EFFECT_QUALITY.set(EffectQuality.ENHANCED);
         }
         if (tick < 160) return;
-        int phase = (tick - 160) / DURATION, age = (tick - 160) % DURATION;
-        if (phase >= NAMES.length) { mc.stop(); return; }
+        int phase = (tick - 160) / DURATION + (QUICK ? 1 : 0), age = (tick - 160) % DURATION;
+        if (phase >= (QUICK ? 2 : NAMES.length)) { mc.stop(); return; }
         if (age == 0) {
             mc.particleEngine.clearParticles(); BlastMarks.clear(); frames.clear(); last = 0;
             ClientConfig.EFFECT_STYLE.set(phase == 0 ? ClientConfig.EffectStyle.CLASSIC : ClientConfig.EffectStyle.POLISHED);
             ClientConfig.EFFECT_BUDGET.set(ClientConfig.EffectBudget.BALANCED);
             ClientConfig.ADAPTIVE_EFFECTS.set(phase == 7);
             commands(mc, phase == 4 ? "time set midnight" : "time set noon");
+            commands(mc, phase == 2 || phase == 3 ? "tp @s 0 -56 9 0 10" : "tp @s 0 -51 -5 0 12");
             if (mc.getWindow().getWidth() != 1920 || mc.getWindow().getHeight() != 1080) throw new IllegalStateException("Requires 1080p");
             System.out.println("M8_STRUCTURE phase=" + NAMES[phase]);
             if (phase == 1) {
                 BlastCloudParticle p = new BlastCloudParticle(mc.level, 0, -58, 20, 0, 0, 0, 3, 60, 12, 1);
                 if (!p.getParticleLimit().equals(EffectAdmission.limit(false))) throw new IllegalStateException("Cloud escaped smoke limit");
-                for (int i = 0; i < 60; i++) p.tick();
+                BlastCloudParticle smoke = new BlastCloudParticle(mc.level, 0, -58, 20, 0, 0, 0, 3, 60, 0, 1);
+                for (int i = 0; i < 8; i++) { p.tick(); smoke.tick(); }
+                if (p.getQuadSize(0) < smoke.getQuadSize(0) * 1.15F || smoke.heat != 0) throw new IllegalStateException("Missing fast fire/slow unlit smoke separation");
+                for (int i = 8; i < 60; i++) p.tick();
                 if (p.isAlive()) throw new IllegalStateException("Cloud outlived lifetime");
             }
         }
@@ -66,7 +71,7 @@ public final class ExplosionStructureProbe {
         if (phase >= 6 && age >= 40 && age % 25 == 0) {
             blast(mc, -6, 12, BlastStyle.HEAVY); blast(mc, 0, 4, BlastStyle.BLAST); blast(mc, 6, 8, BlastStyle.HEAVY);
         }
-        if (phase < 5 && (age == 42 || age == 50 || age == 70 || age == 100)) capture = NAMES[phase] + "-age" + (age - 40);
+        if (phase < 5 && (age == 41 || age == 44 || age == 50 || age == 60 || age == 80 || age == 100)) capture = NAMES[phase] + "-age" + (age - 40);
         if (age == 190) {
             System.out.println("M8_STRUCTURE result=" + NAMES[phase] + " pressure=" + EffectPerformance.pressure()
                     + " particles=" + mc.particleEngine.countParticles());
@@ -74,7 +79,7 @@ public final class ExplosionStructureProbe {
                 if (frames.size() < 30) throw new IllegalStateException("Insufficient samples");
                 StringBuilder csv = new StringBuilder("frame,interval_ms\n");
                 for (int i = 0; i < frames.size(); i++) csv.append(i).append(',').append(frames.get(i)).append('\n');
-                try { java.nio.file.Files.writeString(mc.gameDirectory.toPath().resolve("m8-structure-" + NAMES[phase] + ".csv"), csv); }
+                try { java.nio.file.Files.writeString(mc.gameDirectory.toPath().resolve("m8-energy-" + NAMES[phase] + ".csv"), csv); }
                 catch (java.io.IOException e) { throw new java.io.UncheckedIOException(e); }
             }
         }
@@ -87,13 +92,13 @@ public final class ExplosionStructureProbe {
     }
     @SubscribeEvent public static void frame(RenderFrameEvent.Post event) {
         if (!Boolean.getBoolean("mcheli.probeExplosionStructure") || tick < 160) return;
-        int phase = (tick - 160) / DURATION, age = (tick - 160) % DURATION;
+        int phase = (tick - 160) / DURATION + (QUICK ? 1 : 0), age = (tick - 160) % DURATION;
         long now = System.nanoTime();
         if (phase >= 5 && age >= 60 && age < 185 && last != 0) frames.add((now - last) / 1_000_000.0);
         last = now;
         if (capture == null) return;
         Minecraft mc = Minecraft.getInstance(); String name = capture; capture = null;
-        Screenshot.grab(mc.gameDirectory, "m8-structure-" + name + ".png", mc.gameRenderer.mainRenderTarget(), 1,
+        Screenshot.grab(mc.gameDirectory, "m8-energy-" + name + ".png", mc.gameRenderer.mainRenderTarget(), 1,
                 message -> System.out.println("M8_STRUCTURE " + message.getString()));
     }
 }

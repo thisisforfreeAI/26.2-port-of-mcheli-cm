@@ -5,8 +5,13 @@ import net.minecraft.util.LightCoordsUtil;
 
 /** A short, tiny ember using one cell of the existing flash sheet and the existing additive layer. */
 final class SparkParticle extends McheliParticle {
+    private final float radius;
     SparkParticle(ClientLevel level, double x, double y, double z, double mx, double my, double mz, int life) {
+        this(level, x, y, z, mx, my, mz, life, 0.08F);
+    }
+    SparkParticle(ClientLevel level, double x, double y, double z, double mx, double my, double mz, int life, float radius) {
         super(level, x, y, z, mx, my, mz, FlashParticle.POLISHED_TEXTURE);
+        this.radius = radius;
         this.hasPhysics = false;
         this.lifetime = life;
         this.setColor(1, 0.65F, 0.22F);
@@ -28,7 +33,7 @@ final class SparkParticle extends McheliParticle {
         this.alpha = EffectLook.glowAlpha(this.age, this.lifetime);
     }
 
-    @Override public float getQuadSize(float partialTick) { return 0.08F; }
+    @Override public float getQuadSize(float partialTick) { return this.radius; }
     @Override protected float getU0() { return this.frameU(0, 4, false); }
     @Override protected float getU1() { return this.frameU(0, 4, true); }
     @Override protected float getV1() { return this.sprite.getV(0.5F); }

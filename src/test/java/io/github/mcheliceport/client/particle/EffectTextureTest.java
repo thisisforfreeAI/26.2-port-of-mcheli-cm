@@ -24,8 +24,9 @@ class EffectTextureTest {
             try (var stream = getClass().getResourceAsStream(path)) {
                 assertNotNull(stream, path);
                 var image = ImageIO.read(stream);
-                assertEquals(128, image.getWidth());
-                assertEquals(64, image.getHeight());
+                int cell = effect.equals("blast_cloud") ? 64 : 32;
+                assertEquals(cell * 4, image.getWidth());
+                assertEquals(cell * 2, image.getHeight());
                 sprites.add(new Sprite(image.getWidth(), image.getHeight(),
                         Identifier.fromNamespaceAndPath("mcheli_ce_port", "m8_" + effect)));
             }

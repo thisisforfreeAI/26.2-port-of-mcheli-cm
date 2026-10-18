@@ -151,6 +151,8 @@ pass on both Vulkan and OpenGL, including thin snow/powder snow. Hardware FPS re
   that develops upward over time. Smaller impacts get a quicker, compact sequence. Improve
   connected cloud shading while retaining pixel silhouettes and bounded overdraw/admission.
   See [M8_EXPLOSION_STRUCTURE.md](M8_EXPLOSION_STRUCTURE.md) for the bounded primary emitter.
+  [M8_EXPLOSION_BLEND.md](M8_EXPLOSION_BLEND.md) updates this with earlier smoke-led small
+  impacts, familiar puffs mixed into large bombs, faster fire expansion and a connected dark column.
 - [ ] **Engine exhaust plumes:** faint short wisps at helicopter turbine outlets; brighter jet
   plumes only where nozzle/afterburner definitions support them. Intensity follows throttle;
   heavy smoke remains a damage cue. Use content-defined outlets, existing pipelines and
