@@ -1182,6 +1182,30 @@ the chain was selected and created from 20 iron ingots, leaving 13
 vehicles have no recipes, so their lists were inactive and the specification page was not seen.
 Not run: Vulkan, JEI in the client, an addon with vehicle recipes.
 
+## Drafting table vehicle model page increment
+
+- `DraftingModelRenderer` ports `MCH_DraftingTableGui#drawModel` as a picture-in-picture
+  renderer over the whole screen, with upstream's transforms in GUI units (scale `162 / size`,
+  centring on X and Z for planes and ships, else Z and Y, then `guiLeft + 300`, `guiTop + 110`,
+  the two angles and the zoom). Faces from `drawFace - faces` to `drawFace` are drawn as dark
+  one-pixel lines with vanilla's lines render type, and faces up to `drawFace - faces` with the
+  texture through a pipeline of vanilla's entity shader without lighting or overlay; `drawFace`
+  grows by 20 a frame and starts again for a different item (KNOWN_ISSUES 79).
+- `DraftingTableScreen` adds the page before the specifications when the vehicle has a model
+  file, the help icon and its tooltip (lines turn aqua while their button is held), and
+  upstream's mouse handling: on the main page a drag in the right half of the window turns
+  (left), zooms between 0.1 and 10 (right) or moves (middle) the model, in upstream's window
+  pixels. The view is static as upstream's, reset by `init` and the vehicle list buttons to their
+  angles, and a new recipe recentres it.
+
+Validation: `build` passed and the GameTest server passed all 198 required tests. On a dedicated
+server with an OpenGL client and a test data pack giving the AH-64 and the A-10 recipes, the
+AH-64's page built up its lines ([lines](screens/m6-drafting-model-wireframe.png)) and then its
+texture ([textured](screens/m6-drafting-model-textured.png)); dragging turned and zoomed it and
+the help tooltip showed ([help](screens/m6-drafting-model-help.png)); the A-10 opened from the top
+as upstream's plane angles give, and a middle drag moved it
+([plane](screens/m6-drafting-model-plane.png)). Not run: Vulkan, a tank or ship.
+
 ## Drafting table model increment
 
 - `DraftingTableBlockEntity` ports `MCH_DraftingTableTileEntity` (no data) on both tables, and the

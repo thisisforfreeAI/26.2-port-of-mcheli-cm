@@ -39,8 +39,9 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 - Using a drafting table opens upstream's recipe browser: lists of helicopters, planes,
   vehicles, tanks, items and ships, a search box, a recipe page with its description pictures
   and a vehicle's specifications, and Create, which makes the recipe from the inventory into the
-  output slot (dropped if the screen closes with it there). Creative players need no items. The
-  vehicle's 3D preview page is not ported yet.
+  output slot (dropped if the screen closes with it there). Creative players need no items. A
+  vehicle's page shows its model, drawn first as lines and then filled in, which a drag in the
+  right half of the window turns (left button), zooms (right) or moves (middle).
 
 - The hand-held FIM-92 Stinger and FGM-148 Javelin work: hold use to raise the sight, which
   zooms and locks on to an aircraft or flying mob (Stinger) or a ground target (Javelin) in view;

@@ -1,5 +1,7 @@
 package io.github.mcheliceport.client.gui;
 
+import io.github.mcheliceport.client.model.AircraftModels;
+import io.github.mcheliceport.client.render.DraftingModelRenderer;
 import io.github.mcheliceport.content.ContentRegistries;
 import io.github.mcheliceport.content.aircraft.AircraftInfo;
 import io.github.mcheliceport.content.aircraft.PlaneInfo;
@@ -25,6 +27,7 @@ import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
@@ -39,10 +42,11 @@ import org.lwjgl.glfw.GLFW;
 /**
  * The drafting table's recipe browser (upstream {@code MCH_DraftingTableGui} and
  * {@code MCH_CurrentRecipe}). The main page shows one recipe, its description pages and, for a
- * vehicle, its specifications; the list page shows six recipes at a time. Create asks the server
- * to make the recipe into the output slot.
+ * vehicle, its 3D model and its specifications; the list page shows six recipes at a time. Create
+ * asks the server to make the recipe into the output slot.
  *
- * <p>Not ported yet: the vehicle's 3D model page (its wireframe build-up and the mouse controls).
+ * <p>On the main page, dragging in the right half of the window turns (left button), zooms (right
+ * button) or moves (middle button) the model, as upstream.
  */
 public class DraftingTableScreen extends AbstractContainerScreen<DraftingTableMenu> {
 
@@ -53,6 +57,15 @@ public class DraftingTableScreen extends AbstractContainerScreen<DraftingTableMe
     private static final int INFO_COLOR = -9491968;
     /** Upstream: description pages {@code drafting_table_desc/<item>#<n>.png}, at most 20. */
     private static final int MAX_DESC_PAGES = 20;
+    /** Upstream: the model grows by 20 faces a frame. */
+    private static final int FACES_PER_FRAME = 20;
+
+    /** Upstream keeps the model's view in static fields, so it lasts while the game runs. */
+    private static float modelZoom = 1.0F;
+    private static float modelRotX;
+    private static float modelRotY;
+    private static float modelPosX;
+    private static float modelPosY;
 
     private final List<List<AbstractWidget>> screenWidgets = new ArrayList<>();
     private final List<Button> listButtons = new ArrayList<>();
@@ -69,6 +82,9 @@ public class DraftingTableScreen extends AbstractContainerScreen<DraftingTableMe
     private Button buttonPrev;
     private Button buttonNextPage;
     private Button buttonPrevPage;
+    private int drawFace;
+    /** The mouse buttons held down, for the model help's highlights. */
+    private int heldButtons;
 
     public DraftingTableScreen(DraftingTableMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title, 400, 240);
@@ -88,6 +104,10 @@ public class DraftingTableScreen extends AbstractContainerScreen<DraftingTableMe
         for (int i = 0; i < names.length; i++) {
             int list = lists[i];
             Button b = this.button(names[i], 20, 20 + i * 20, 90, () -> {
+                if (list != DraftingTableRecipes.ITEM) {
+                    boolean side = list == DraftingTableRecipes.PLANE || list == DraftingTableRecipes.SHIP;
+                    initModelTransform(side ? 90.0F : 180.0F, side ? 180.0F : 90.0F);
+                }
                 this.switchRecipeList(this.list(list));
                 this.switchScreen(SCREEN_LIST);
             });
@@ -133,8 +153,19 @@ public class DraftingTableScreen extends AbstractContainerScreen<DraftingTableMe
         this.currentList = List.of();
         this.current = null;
         this.listRecipeCount = -1;
-        this.refreshRecipes();
+        this.drawFace = 0;
         this.switchScreen(SCREEN_MAIN);
+        initModelTransform(180.0F, 90.0F);
+        this.refreshRecipes();
+    }
+
+    /** Upstream {@code initModelTransform} and the angles each list sets after it. */
+    private static void initModelTransform(float rotX, float rotY) {
+        modelRotX = rotX;
+        modelRotY = rotY;
+        modelPosX = 0.0F;
+        modelPosY = 0.0F;
+        modelZoom = 1.0F;
     }
 
     private Button button(String text, int x, int y, int width, Runnable action) {
@@ -239,7 +270,14 @@ public class DraftingTableScreen extends AbstractContainerScreen<DraftingTableMe
         }
     }
 
+    /** Upstream: a new recipe recentres the model, and a different item draws it again from the start. */
     private void setCurrentRecipe(Current recipe) {
+        modelPosX = 0.0F;
+        modelPosY = 0.0F;
+        if (this.current == null || this.current.entry == null || recipe.entry == null
+                || !ItemStack.isSameItemSameComponents(this.current.entry.result(), recipe.entry.result())) {
+            this.drawFace = 0;
+        }
         this.current = recipe;
         this.updateVisibility();
         this.updateEnableCreateButton();
@@ -343,10 +381,71 @@ public class DraftingTableScreen extends AbstractContainerScreen<DraftingTableMe
 
     @Override
     public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+        this.heldButtons |= 1 << event.button();
         if (!this.searchField.isMouseOver(event.x(), event.y())) {
             this.searchField.setFocused(false);
         }
         return super.mouseClicked(event, doubleClick);
+    }
+
+    @Override
+    public boolean mouseReleased(MouseButtonEvent event) {
+        this.heldButtons &= ~(1 << event.button());
+        return super.mouseReleased(event);
+    }
+
+    /**
+     * Upstream {@code handleMouseInput}: on the main page, a drag in the right half of the window
+     * turns, moves or zooms the model, whichever page shows. Upstream counted the drag in window
+     * pixels with Y up, so the GUI's distance is scaled back to that.
+     */
+    @Override
+    public boolean mouseDragged(MouseButtonEvent event, double dx, double dy) {
+        if (this.screenId == SCREEN_MAIN && event.x() > this.width / 2.0) {
+            double scale = this.minecraft.getWindow().getGuiScale();
+            double rawX = dx * scale;
+            double rawY = -dy * scale;
+            if (event.button() == GLFW.GLFW_MOUSE_BUTTON_LEFT && (rawX != 0.0 || rawY != 0.0)) {
+                modelRotX = wrap((float) (modelRotX - rawY / 2.0));
+                modelRotY = wrap((float) (modelRotY - rawX / 2.0));
+            }
+            if (event.button() == GLFW.GLFW_MOUSE_BUTTON_MIDDLE && (rawX != 0.0 || rawY != 0.0)) {
+                // Upstream clamped the angles to +-1000 here rather than the position, a no-op.
+                modelPosX = (float) (modelPosX + rawX / 2.0);
+                modelPosY = (float) (modelPosY - rawY / 2.0);
+            }
+            if (event.button() == GLFW.GLFW_MOUSE_BUTTON_RIGHT && rawY != 0.0) {
+                modelZoom = Mth.clamp((float) (modelZoom + rawY / 100.0), 0.1F, 10.0F);
+            }
+        }
+        return super.mouseDragged(event, dx, dy);
+    }
+
+    /** Upstream: past +-360 degrees the angle comes back by one turn. */
+    private static float wrap(float angle) {
+        if (angle > 360.0F) {
+            return angle - 360.0F;
+        }
+        return angle < -360.0F ? angle + 360.0F : angle;
+    }
+
+    /** Upstream {@code drawScreen}: the model goes over the rest of the screen. */
+    @Override
+    public void extractContents(GuiGraphicsExtractor g, int mouseX, int mouseY, float partialTick) {
+        super.extractContents(g, mouseX, mouseY, partialTick);
+        if (this.screenId == SCREEN_MAIN && this.current != null && this.current.isCurrentPageModel()) {
+            AircraftInfo info = this.current.acInfo;
+            AircraftModels.VehicleModels models = AircraftModels.get(info.getDirectoryName(), info);
+            if (models != null) {
+                g.submitPictureInPictureRenderState(new DraftingModelRenderer.State(models.body(),
+                        this.current.modelTexture, this.current.centreXZ, modelRotX, modelRotY, modelPosX, modelPosY,
+                        modelZoom, this.drawFace, this.leftPos + 300, this.topPos + 110, 0, 0, this.width,
+                        this.height, g.peekScissorStack()));
+                if (this.drawFace < 10000000) {
+                    this.drawFace += FACES_PER_FRAME;
+                }
+            }
+        }
     }
 
     @Override
@@ -373,6 +472,15 @@ public class DraftingTableScreen extends AbstractContainerScreen<DraftingTableMe
                         g.text(this.font, data, 280, 40 + 10 * i, INFO_COLOR, false);
                     }
                 }
+            } else {
+                g.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, 340, 215, 400.0F, 60.0F, 45, 15, 90, 30, 512, 512);
+                if (mx >= 350 && mx <= 400 && my >= 214 && my <= 230) {
+                    g.setComponentTooltipForNextFrame(this.font, List.of(
+                            this.helpLine(GLFW.GLFW_MOUSE_BUTTON_LEFT, "Mouse left button drag : Rotation model"),
+                            this.helpLine(GLFW.GLFW_MOUSE_BUTTON_RIGHT, "Mouse right button drag : Zoom model"),
+                            this.helpLine(GLFW.GLFW_MOUSE_BUTTON_MIDDLE, "Mouse middle button drag : Move model")),
+                            mouseX - 30, mouseY);
+                }
             }
             g.text(this.font, c.displayName, 120, 20, -1, true);
             this.drawItemRecipe(g, c.entry, 121, 34, mx, my);
@@ -392,6 +500,12 @@ public class DraftingTableScreen extends AbstractContainerScreen<DraftingTableMe
                 }
             }
         }
+    }
+
+    /** A line of the model help, aqua while its button is held. */
+    private Component helpLine(int button, String text) {
+        Component line = Component.literal(text);
+        return (this.heldButtons & 1 << button) != 0 ? line.copy().withStyle(ChatFormatting.AQUA) : line;
     }
 
     /** Upstream {@code drawItemRecipe}: the grid, then the result beside it; hovering shows the item. */
@@ -438,6 +552,11 @@ public class DraftingTableScreen extends AbstractContainerScreen<DraftingTableMe
         final List<String> infoItem = new ArrayList<>();
         final List<String> infoData = new ArrayList<>();
         final @Nullable AircraftInfo acInfo;
+        /** Whether the vehicle has a model file, so a model page (upstream: the model had loaded). */
+        final boolean hasModel;
+        /** Upstream {@code modelRot == 0}: planes and ships centre on X and Z. */
+        final boolean centreXZ;
+        final @Nullable Identifier modelTexture;
         int descMaxPage;
         int descPage;
 
@@ -449,11 +568,32 @@ public class DraftingTableScreen extends AbstractContainerScreen<DraftingTableMe
             this.descMaxPage = this.descTexture.size();
             this.acInfo = this.entry != null && this.entry.result().getItem() instanceof AircraftItem aircraft
                     ? aircraft.getAircraftInfo() : null;
+            boolean model = false;
             if (this.acInfo != null) {
-                // Upstream also had a page for the 3D model here, not ported yet.
                 this.descMaxPage++;
+                model = hasModelFile(this.acInfo);
+                if (model) {
+                    this.descMaxPage++;
+                }
                 this.addInfoText(this.acInfo);
             }
+            this.hasModel = model;
+            this.centreXZ = this.acInfo instanceof PlaneInfo || this.acInfo instanceof ShipInfo;
+            this.modelTexture = model ? Identifier.fromNamespaceAndPath("mcheli",
+                    "textures/" + this.acInfo.getDirectoryName() + "/" + this.acInfo.name + ".png") : null;
+        }
+
+        /** The body model {@link AircraftModels#loadModel} would read: an .obj, else an .mqo. */
+        private static boolean hasModelFile(AircraftInfo info) {
+            var resources = net.minecraft.client.Minecraft.getInstance().getResourceManager();
+            String path = "models/" + (info.getDirectoryName() + "/" + info.name).toLowerCase(Locale.ROOT);
+            for (String ext : new String[] {".obj", ".mqo"}) {
+                Identifier id = Identifier.tryBuild("mcheli", path + ext);
+                if (id != null && resources.getResource(id).isPresent()) {
+                    return true;
+                }
+            }
+            return false;
         }
 
         private void addInfoText(AircraftInfo info) {
@@ -515,6 +655,10 @@ public class DraftingTableScreen extends AbstractContainerScreen<DraftingTableMe
 
         boolean isCurrentPageTexture() {
             return this.getCurrentPageTexture() != null;
+        }
+
+        boolean isCurrentPageModel() {
+            return this.acInfo != null && this.hasModel && this.descPage == this.descTexture.size();
         }
 
         boolean isCurrentPageAcInfo() {
