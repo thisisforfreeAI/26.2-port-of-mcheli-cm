@@ -12,6 +12,11 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 
 ### Changed
 
+- M8 bomb smoke volume: denser overlapping ground and upper billows, staggered development,
+  compact fire pockets that cool into lasting smoke, a faster expanding flash and wider ground
+  dust fans. Retain the familiar small-weapon puffs and existing primary request caps, with
+  primary clouds thinned once by adaptive pressure while retaining the shared coverage limits.
+
 - M8 explosion blend: restore earlier smoke-led missile/rocket and small-bomb effects with brief
   hot flash/sparks; mix familiar puffs into large bombs with faster irregular fire, dark developing
   smoke and outward dust fans. Preserve bounded requests and shared coverage/live limits.

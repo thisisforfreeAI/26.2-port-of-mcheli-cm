@@ -14,39 +14,59 @@ final class BlastCloudParticle extends SmokeParticle {
     private final org.joml.Quaternionf rotation = new org.joml.Quaternionf();
     private final float angle;
     private final float smokeShade;
+    private final int delay;
+    private final boolean base;
+    private final double turnSin, turnCos;
 
     BlastCloudParticle(ClientLevel level, double x, double y, double z, double mx, double my, double mz,
             float radius, int life, int fireTicks, float opacity) {
+        this(level, x, y, z, mx, my, mz, radius, life, fireTicks, opacity, 0, false);
+    }
+
+    BlastCloudParticle(ClientLevel level, double x, double y, double z, double mx, double my, double mz,
+            float radius, int life, int fireTicks, float opacity, int delay, boolean base) {
         super(level, x, y, z, mx, my, mz);
         this.setSprite(sprite(TEXTURE));
         this.radius = radius;
-        this.lifetime = life;
+        this.delay = Math.clamp(delay, 0, 12);
+        this.base = base;
+        this.lifetime = Math.min(128, life + this.delay);
         this.fireTicks = fireTicks;
         this.opacity = opacity;
         this.hasPhysics = false;
         this.angle = this.random.nextInt(4) * (float) (Math.PI / 2);
         this.smokeShade = 0.78F + this.random.nextFloat() * 0.22F;
-        this.heat = fireTicks > 0 ? 1 : 0;
-        this.coolingShare = fireTicks / (float) life;
+        // The dedicated heat curve below controls fire lighting; inherited sampling stays ambient.
+        this.heat = 0;
+        double turn = (this.random.nextBoolean() ? 1 : -1) * (0.018 + this.random.nextDouble() * 0.025);
+        this.turnSin = Math.sin(turn);
+        this.turnCos = Math.cos(turn);
     }
 
     @Override public void tick() {
         this.xo = this.x; this.yo = this.y; this.zo = this.z;
         if (++this.age >= this.lifetime) { this.remove(); return; }
+        if (this.age <= this.delay) return;
         this.move(this.xd, this.yd, this.zd);
-        double drag = this.fireTicks > 0 && this.age < 8 ? 0.84 : 0.95;
-        this.xd *= drag; this.zd *= drag;
-        this.yd = this.yd * (this.fireTicks > 0 ? 0.9 : 0.97) + 0.005;
+        // A fast impulse settles into a slow curl. Base smoke stays at the impact instead of
+        // joining every other puff in a detached rising ball.
+        double drag = this.fireTicks > 0 ? 0.82 : this.base ? 0.91 : 0.95;
+        double dx = this.xd * this.turnCos - this.zd * this.turnSin;
+        this.zd = (this.xd * this.turnSin + this.zd * this.turnCos) * drag;
+        this.xd = dx * drag;
+        this.yd = this.yd * (this.base ? 0.90 : 0.97) + (this.base ? 0.001 : 0.002);
     }
 
     @Override public void extract(QuadParticleRenderState state, Camera camera, float partialTick) {
         float age = this.age + partialTick;
+        // This render state accumulates quads for the whole group; hidden billows add none.
+        if (age <= this.delay) return;
+        float localAge = Math.max(0, age - this.delay);
         // Advance through fire promptly, then spend most of the lifetime as non-emissive smoke.
-        this.frame = age < this.fireTicks ? Math.min(2, (int) (age * 3 / this.fireTicks))
-                : 3 + Math.min(4, (int) ((age - this.fireTicks) * 5 / Math.max(1, this.lifetime - this.fireTicks)));
-        float entrance = this.fireTicks > 0 ? 1 : Math.clamp((age - 3) / 5, 0, 1);
-        this.alpha = this.opacity * entrance * Math.min(1, (this.lifetime - age) / 18);
-        float shade = age >= this.fireTicks ? this.smokeShade : 1;
+        this.frame = localAge < this.fireTicks ? Math.min(2, (int) (localAge * 3 / this.fireTicks))
+                : 3 + Math.min(4, (int) ((localAge - this.fireTicks) * 5 / Math.max(1, this.lifetime - this.delay - this.fireTicks)));
+        this.alpha = this.opacity * ExplosionSequence.cloudAlpha(age, this.lifetime, this.delay, this.fireTicks > 0);
+        float shade = localAge >= this.fireTicks ? this.smokeShade : 1;
         this.setColor(shade, shade, shade);
         // Skip SmokeParticle's fire tint/fade; the dedicated sheet contains that transition.
         this.getFacingCameraMode().setRotation(this.rotation, camera, partialTick);
@@ -55,8 +75,12 @@ final class BlastCloudParticle extends SmokeParticle {
     }
 
     @Override public float getQuadSize(float partialTick) {
-        return this.radius * ExplosionSequence.growth(this.age + partialTick,
-                this.fireTicks > 0 ? Math.min(this.lifetime, 24) : this.lifetime);
+        return this.radius * ExplosionSequence.cloudGrowth(this.age + partialTick, this.delay, this.fireTicks > 0, this.base);
+    }
+
+    @Override protected int getLightCoords(float partialTick) {
+        return EffectLook.smokeLight(super.getLightCoords(partialTick),
+                ExplosionSequence.fireHeat(this.age + partialTick - this.delay, this.fireTicks));
     }
 
 }

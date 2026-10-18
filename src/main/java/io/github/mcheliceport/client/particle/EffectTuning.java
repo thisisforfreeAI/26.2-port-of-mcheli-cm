@@ -32,6 +32,13 @@ public final class EffectTuning {
         return distanceStride * (1 << Math.clamp(particleSetting, 0, 2));
     }
 
+    /** Primary blast quotas already shrink with pressure; keep distance and vanilla thinning. */
+    public static int admissionStride(double distanceSquared, int particleSetting, boolean flash,
+            int pressure, boolean blastLobe) {
+        return stride(distanceSquared, particleSetting, flash)
+                * (flash || blastLobe ? 1 : 1 + Math.clamp(pressure, 0, 3));
+    }
+
     /** Small secondary burst, shed before primary smoke and weapon cues under load. */
     public static int sparkCount(float size, EffectBudget quality, int pressure) {
         if (!Float.isFinite(size) || size < 2 || quality == EffectBudget.LOW || pressure >= 2) return 0;

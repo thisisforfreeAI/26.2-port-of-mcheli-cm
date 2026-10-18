@@ -31,29 +31,43 @@ final class ExplosionCloudEmitter {
             ClientEffects.spawnExplosionSparks(level, x, y, z, power, style);
             return;
         }
-        for (int i = 0; i < count; i++) {
-            double angle = (i * 2.3999632297) + random.nextDouble() * 0.35;
-            // Dark smoke develops behind a much faster, uneven shell of fire.
-            boolean crown = i > 0 && i % 3 == 0;
-            int smokeTier = crown ? i / 3 - 1 : -1;
-            double spread = i == 0 ? 0 : radius * (crown ? 0.2 : 0.3);
+        int smokeCount = ExplosionSequence.smokeLobes(count);
+        int baseCount = (smokeCount + 1) / 2;
+        // Admit the supporting cloud first. Even a thinned blast keeps smoke at the impact.
+        for (int i = 0; i < smokeCount; i++) {
+            boolean base = i < baseCount;
+            int tier = i - baseCount;
+            double angle = i * 2.3999632297 + random.nextDouble() * 0.6;
             double dx = Math.cos(angle), dz = Math.sin(angle);
+            double spread = radius * (base ? 0.28 : 0.12 + random.nextDouble() * 0.18);
             double px = x + dx * spread, pz = z + dz * spread;
-            double py = y + 0.3 + (crown ? radius * Math.min(0.6, smokeTier * 0.3) : random.nextDouble() * radius * 0.3);
-            if (i % 6 == 2) {
-                oldSmoke(level, px, py, pz, power, style, random);
-                continue;
-            }
-            float r = radius * (i == 0 ? 1.2F : crown ? Math.min(1.1F, 0.65F + smokeTier * 0.23F) : 0.45F + random.nextFloat() * 0.35F);
-            // Charge the final size, so large growing clouds cannot evade screen-coverage limits.
-            if (!EffectAdmission.admit(level, px, py, pz, false, r)) continue;
-            double speed = Math.min(1.15, radius * (crown ? 0.004 : 0.14)) * (0.75 + random.nextDouble() * 0.4);
-            int fireTicks = crown ? 0 : i == 0 ? 5 : ExplosionSequence.fireTicks(power, style) * (65 + random.nextInt(45)) / 100;
-            int life = crown ? ExplosionSequence.life(power, style) + random.nextInt(12)
-                    : Math.max(18, fireTicks + 12 + random.nextInt(10));
+            double py = y + radius * (base ? 0.12 : 0.28 + tier * 0.20);
+            float r = radius * (base ? 0.78F + random.nextFloat() * 0.18F : 0.85F + random.nextFloat() * 0.25F);
+            if (!EffectAdmission.admitBlastLobe(level, px, py, pz, r)) continue;
+            double speed = radius * (base ? 0.035 : 0.009) * (0.8 + random.nextDouble() * 0.4);
+            int delay = base ? i % 3 : 3 + Math.min(7, tier * 2);
+            int life = Math.min(116, ExplosionSequence.life(power, style) + (base ? 12 : 20) + random.nextInt(8));
             Minecraft.getInstance().particleEngine.add(new BlastCloudParticle(level, px, py, pz,
-                    i == 0 ? 0 : dx * speed, crown ? 0.025 + Math.min(3, smokeTier) * 0.06 : speed * (0.12 + random.nextDouble() * 0.35),
-                    i == 0 ? 0 : dz * speed, r, life, fireTicks, crown ? 0.9F : 0.95F));
+                    dx * speed, base ? 0.01 : 0.045 + Math.min(3, tier) * 0.018, dz * speed,
+                    r, life, 0, base ? 0.94F : 0.9F, delay, base));
+        }
+        int fireCount = count - smokeCount;
+        for (int i = 0; i < fireCount; i++) {
+            double angle = i * 2.3999632297 + random.nextDouble() * 0.6;
+            double dx = Math.cos(angle), dz = Math.sin(angle);
+            // Overlapping pockets punch through the developing smoke, rather than flying away
+            // as a ring of identical fireballs. Each one leaves its own cooling smoke behind.
+            double spread = i == 0 ? 0 : radius * (0.12 + random.nextDouble() * 0.12);
+            double px = x + dx * spread, pz = z + dz * spread;
+            double py = y + radius * (0.13 + random.nextDouble() * 0.20);
+            float r = radius * (i == 0 ? 1.05F : 0.60F + random.nextFloat() * 0.25F);
+            if (!EffectAdmission.admitBlastLobe(level, px, py, pz, r)) continue;
+            double speed = i == 0 ? 0 : Math.min(0.7, radius * 0.07) * (0.7 + random.nextDouble() * 0.3);
+            int fireTicks = ExplosionSequence.fireTicks(power, style) * (55 + random.nextInt(40)) / 100;
+            int life = Math.min(100, ExplosionSequence.life(power, style) + random.nextInt(8));
+            Minecraft.getInstance().particleEngine.add(new BlastCloudParticle(level, px, py, pz,
+                    dx * speed, 0.04 + random.nextDouble() * 0.08, dz * speed, r, life,
+                    fireTicks, 0.95F, i == 0 ? 0 : 1 + i % 4, false));
         }
         ClientEffects.spawnExplosionAccents(level, x, y, z, power, style);
         ClientEffects.spawnExplosionSparks(level, x, y, z, power, style);
@@ -64,7 +78,7 @@ final class ExplosionCloudEmitter {
         float nominal = power < 8 ? power * 2 : 16;
         var quality = ClientConfig.get(ClientConfig.EFFECT_BUDGET);
         nominal = ExplosionLook.puffSize(nominal, power, style, quality);
-        if (!EffectAdmission.admit(level, x, y, z, false, nominal * 0.2F)) return;
+        if (!EffectAdmission.admitBlastLobe(level, x, y, z, nominal * 0.2F)) return;
         double angle = random.nextDouble() * Math.PI * 2;
         double speed = Math.min(0.7, power * 0.09) * (0.5 + random.nextDouble() * 0.5);
         boolean upward = random.nextBoolean();

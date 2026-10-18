@@ -40,8 +40,33 @@ public final class ExplosionSequence {
         return radius(power, style) * 1.5F;
     }
 
-    public static float growth(float age, int life) {
-        float t = Math.clamp(age / Math.max(1, life) * 3, 0, 1);
-        return 0.5F + 0.5F * (1 - (1 - t) * (1 - t));
+    /** Spend most large-blast requests on smoke, retaining at least one pocket of fire. */
+    public static int smokeLobes(int lobes) {
+        return Math.max(0, Math.min(lobes - 1, (lobes * 2 + 2) / 3));
     }
+
+    /** Delayed particles are admitted at birth; there is no deferred emitter or spawn queue. */
+    public static float cloudGrowth(float age, int delay, boolean fire, boolean base) {
+        float t = Math.clamp((age - delay) / (fire ? 6 : base ? 18 : 26), 0, 1);
+        float start = fire ? 0.16F : 0.26F;
+        return start + (1 - start) * (1 - (1 - t) * (1 - t));
+    }
+
+    public static float cloudAlpha(float age, int life, int delay, boolean fire) {
+        float entrance = Math.clamp((age - delay) / (fire ? 1.5F : 5), 0, 1);
+        return entrance * EffectLook.smoothstep(Math.clamp((life - age) / 28, 0, 1));
+    }
+
+    public static float flashGrowth(float age, int life) {
+        float t = Math.clamp(age / Math.max(1, life), 0, 1);
+        return 0.25F + 0.75F * (1 - (1 - t) * (1 - t));
+    }
+
+    /** A flame stays bright while hot; the smoke it leaves receives only ambient lighting. */
+    public static float fireHeat(float age, int fireTicks) {
+        if (fireTicks <= 0) return 0;
+        float cooling = Math.clamp((age / fireTicks - 0.45F) / 0.55F, 0, 1);
+        return 1 - EffectLook.smoothstep(cooling);
+    }
+
 }

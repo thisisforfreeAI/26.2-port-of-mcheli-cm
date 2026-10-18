@@ -36,10 +36,53 @@ class ExplosionSequenceTest {
             assertTrue(ExplosionSequence.fireTicks(12, style) < ExplosionSequence.life(12, style));
             float previous = 0;
             for (int age = 0; age <= 100; age++) {
-                float scale = ExplosionSequence.growth(age, 100);
+                float scale = ExplosionSequence.cloudGrowth(age, 0, false, false);
                 assertTrue(scale >= previous && scale <= 1);
                 previous = scale;
             }
+        }
+    }
+
+    @Test void smokeGetsMostRequestsWithoutRaisingThePrimaryCap() {
+        for (var quality : EffectBudget.values()) for (int pressure = 0; pressure <= 3; pressure++) {
+            int total = ExplosionSequence.lobes(12, BlastStyle.HEAVY, quality, pressure);
+            int smoke = ExplosionSequence.smokeLobes(total);
+            assertTrue(smoke >= total / 2);
+            assertTrue(smoke < total, "Keep at least one pocket of fire even when thinned");
+        }
+        assertEquals(8, ExplosionSequence.smokeLobes(12));
+        assertEquals(0, ExplosionSequence.smokeLobes(0));
+    }
+
+    @Test void stagedSmokeIsInvisibleBeforeItsStartAndFadesBeforeExpiry() {
+        for (int delay = 0; delay <= 12; delay++) {
+            for (boolean fire : new boolean[] {false, true}) {
+                assertEquals(0, ExplosionSequence.cloudAlpha(delay, 100, delay, fire));
+                assertEquals(0, ExplosionSequence.cloudAlpha(100, 100, delay, fire));
+                assertEquals(1, ExplosionSequence.cloudAlpha(delay + 8, 100, delay, fire));
+                assertTrue(ExplosionSequence.cloudAlpha(90, 100, delay, fire) < 0.5F);
+                float previous = 0;
+                for (int age = 0; age <= 140; age++) {
+                    float size = ExplosionSequence.cloudGrowth(age, delay, fire, false);
+                    assertTrue(size >= previous && size <= 1, "Final size must stay inside admission charge");
+                    previous = size;
+                }
+            }
+        }
+        assertTrue(ExplosionSequence.cloudGrowth(6, 0, true, false) > ExplosionSequence.cloudGrowth(6, 0, false, false));
+        assertTrue(ExplosionSequence.cloudGrowth(12, 0, false, true) > ExplosionSequence.cloudGrowth(12, 0, false, false));
+        assertEquals(0.25F, ExplosionSequence.flashGrowth(0, 6));
+        assertEquals(1, ExplosionSequence.flashGrowth(6, 6));
+    }
+
+    @Test void fireStaysBrightUntilCoolingAndNeverLightsTheSmokeAfterward() {
+        assertEquals(0, ExplosionSequence.fireHeat(0, 0));
+        for (int duration = 4; duration <= 36; duration++) {
+            assertEquals(1, ExplosionSequence.fireHeat(duration * 0.4F, duration));
+            float cooling = ExplosionSequence.fireHeat(duration * 0.75F, duration);
+            assertTrue(cooling > 0 && cooling < 0.5F);
+            assertEquals(0, ExplosionSequence.fireHeat(duration, duration));
+            assertEquals(0, ExplosionSequence.fireHeat(duration + 20, duration));
         }
     }
 }

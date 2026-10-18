@@ -61,6 +61,14 @@ public final class ExplosionStructureProbe {
                 if (p.getQuadSize(0) < smoke.getQuadSize(0) * 1.15F || smoke.heat != 0) throw new IllegalStateException("Missing fast fire/slow unlit smoke separation");
                 for (int i = 8; i < 60; i++) p.tick();
                 if (p.isAlive()) throw new IllegalStateException("Cloud outlived lifetime");
+                BlastCloudParticle delayed = new BlastCloudParticle(mc.level, 0, -58, 20, 0.5, 0.01, 0,
+                        3, 1000, 0, 1, 12, true);
+                var initialBounds = delayed.getBoundingBox();
+                for (int i = 0; i < 12; i++) delayed.tick();
+                if (!delayed.getBoundingBox().equals(initialBounds)) throw new IllegalStateException("Delayed smoke moved before start");
+                for (int i = 12; i < 128; i++) delayed.tick();
+                if (delayed.isAlive() || delayed.getBoundingBox().minY > initialBounds.minY + 2)
+                    throw new IllegalStateException("Base smoke detached or outlived cap");
             }
         }
         if (age == 40 && phase < 5) {
@@ -71,7 +79,7 @@ public final class ExplosionStructureProbe {
         if (phase >= 6 && age >= 40 && age % 25 == 0) {
             blast(mc, -6, 12, BlastStyle.HEAVY); blast(mc, 0, 4, BlastStyle.BLAST); blast(mc, 6, 8, BlastStyle.HEAVY);
         }
-        if (phase < 5 && (age == 41 || age == 44 || age == 50 || age == 60 || age == 80 || age == 100)) capture = NAMES[phase] + "-age" + (age - 40);
+        if (phase < 5 && (age == 41 || age == 44 || age == 50 || age == 60 || age == 80 || age == 100 || age == 130)) capture = NAMES[phase] + "-age" + (age - 40);
         if (age == 190) {
             System.out.println("M8_STRUCTURE result=" + NAMES[phase] + " pressure=" + EffectPerformance.pressure()
                     + " particles=" + mc.particleEngine.countParticles());
@@ -79,7 +87,7 @@ public final class ExplosionStructureProbe {
                 if (frames.size() < 30) throw new IllegalStateException("Insufficient samples");
                 StringBuilder csv = new StringBuilder("frame,interval_ms\n");
                 for (int i = 0; i < frames.size(); i++) csv.append(i).append(',').append(frames.get(i)).append('\n');
-                try { java.nio.file.Files.writeString(mc.gameDirectory.toPath().resolve("m8-energy-" + NAMES[phase] + ".csv"), csv); }
+                try { java.nio.file.Files.writeString(mc.gameDirectory.toPath().resolve("m8-billows-" + NAMES[phase] + ".csv"), csv); }
                 catch (java.io.IOException e) { throw new java.io.UncheckedIOException(e); }
             }
         }
@@ -98,7 +106,7 @@ public final class ExplosionStructureProbe {
         last = now;
         if (capture == null) return;
         Minecraft mc = Minecraft.getInstance(); String name = capture; capture = null;
-        Screenshot.grab(mc.gameDirectory, "m8-energy-" + name + ".png", mc.gameRenderer.mainRenderTarget(), 1,
+        Screenshot.grab(mc.gameDirectory, "m8-billows-" + name + ".png", mc.gameRenderer.mainRenderTarget(), 1,
                 message -> System.out.println("M8_STRUCTURE " + message.getString()));
     }
 }
