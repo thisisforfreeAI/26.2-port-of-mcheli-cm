@@ -26,7 +26,7 @@ broader gameplay and hardware checks remain pending.
 | Area | Planned milestone |
 |---|---|
 | Remaining plane/ground equipment and UAV station preview camera | M6 |
-| Passive radar and the GPS panel | M6 (with the vehicles that use them) |
+| Passive radar | M6 (with the vehicles that use them) |
 | Wingman (AI wingmen, marker block screens and types, missions, `/wingman`) | M6b |
 | Remaining `/mcheli` commands (including reloading content with `reconfig`), advancement triggers, long-distance tracking and rendering, thermal vision (the third camera mode), GPU-buffer model rendering, projectile chunk loading (`ProjectileChunkLoad`), HBM:NTM stubs, performance work | M7 |
 
@@ -432,6 +432,12 @@ These follow from how Minecraft 26.2 works or from decisions approved in PORTING
     (`bvr_lock_box.png`, `msl.png`) were not in its assets, so it drew the missing-texture square;
     a vehicle gets a square outline and a missile a diamond here, in upstream's colours. The
     client forgets the feed when it leaves a world instead of letting it expire.
+92. The GPS panel opens with N (Open GPS Panel); upstream's K is the port's ropes key (item 72).
+    Upstream drew the GPS marker with world transforms inside its 2D overlay pass, which put it at
+    a screen position equal to the point's offset in blocks, and with a texture
+    (`gps_position.png`) missing from its assets; the marker is projected onto the point here and
+    drawn as a square outline. As upstream, the server keeps each player's point but nothing reads
+    it (GPS missiles do not steer, item 88), and the point goes inactive off a vehicle.
 
 ## Upstream content issues kept as they are
 

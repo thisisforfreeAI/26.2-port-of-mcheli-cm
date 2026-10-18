@@ -1555,3 +1555,20 @@ an AH-64 seeker's target. In the client, an AH-64 given a `Radar` section and a 
 124 m, red once centred, and the mortar radar listed the A-10 and a Merkava with their distances
 ([BVR and mortar radar](screens/m6-bvr-mortar-radar.png), [locked](screens/m6-bvr-locked.png)).
 No stock weapon has `EnableBVR`.
+
+## GPS panel increment
+
+- `GpsInputScreen` ports `MCH_GuiGPSInput`: three coordinate fields, Fill with player position,
+  Done or Enter (an unreadable entry says "Invalid coordinates"), Cancel or Escape. It opens from
+  any seat with `ModKeyMappings.OPEN_GPS_PANEL` (upstream `KeyOpenGPSPanel`), N because the
+  port's ropes key holds upstream's K.
+- `GpsPosition` ports `GPSPosition`: the client's point for the HUD, cleared when the player is
+  off a vehicle (upstream `handleGps`), and `GpsSetPayload` (upstream `PacketResetGPS`) keeps each
+  player's point on the server, which nothing reads, as upstream.
+- `GpsHudLayer` ports `HudGPS`'s marker and `[GPS distance]` label with its alpha steps and red
+  within 1.5°, projected onto the point (KNOWN_ISSUES 92).
+
+Validation: `build` passed, the GameTest server passed all 225 required tests and the payload
+unit test covers the GPS and BVR payloads. In the client, N in an AH-64 opened the panel
+([panel](screens/m6-gps-panel.png)); 48, 150, 140 marked the point 59.8 m ahead
+([marker](screens/m6-gps-marker.png)), and the marker was gone after getting off and back on.

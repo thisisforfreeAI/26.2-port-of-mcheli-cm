@@ -33,6 +33,14 @@ class PayloadCodecTest {
     }
 
     @Test
+    void radarPayloadsRoundTrip() {
+        GpsSetPayload gps = new GpsSetPayload(-1024.5, 63.25, 77.0, true);
+        assertEquals(gps, roundTrip(GpsSetPayload.CODEC, gps));
+        BvrLockPayload bvr = new BvrLockPayload(4242);
+        assertEquals(bvr, roundTrip(BvrLockPayload.CODEC, bvr));
+    }
+
+    @Test
     void heliControlRoundTrips() {
         PlayerControlSwitches switches = PlayerControlSwitches.NONE
                 .with(PlayerControlSwitches.THROTTLE_UP, true)

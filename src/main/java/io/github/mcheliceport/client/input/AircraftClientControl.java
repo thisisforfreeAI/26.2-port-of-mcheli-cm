@@ -138,6 +138,11 @@ public final class AircraftClientControl {
             } else { playSoundNg(); }
         }
 
+        // Upstream's GPS panel key, from any seat.
+        if (ModKeyMappings.OPEN_GPS_PANEL.consumeClick() && Minecraft.getInstance().gui.screen() == null) {
+            Minecraft.getInstance().gui.setScreen(new io.github.mcheliceport.client.gui.GpsInputScreen(player));
+        }
+
         // Upstream handleCameraAndModes: the radar switch comes first and takes the tick.
         boolean radarHandled = false;
         if (ModKeyMappings.RADAR_SWITCH.consumeClick()) {

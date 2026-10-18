@@ -106,6 +106,9 @@ public final class ModNetwork {
         registrar.playToClient(EntityInfoSyncPayload.TYPE, EntityInfoSyncPayload.CODEC,
                 (p, context) -> io.github.mcheliceport.radar.EntityInfoClientTracker.update(p.entities(),
                         p.snapshotSeq()));
+        registrar.playToServer(GpsSetPayload.TYPE, GpsSetPayload.CODEC,
+                (p, context) -> io.github.mcheliceport.weapon.GpsPosition.setServer(context.player(),
+                        new io.github.mcheliceport.weapon.GpsPosition.Point(p.x(), p.y(), p.z(), p.active())));
         registrar.playToServer(BvrLockPayload.TYPE, BvrLockPayload.CODEC,
                 (p, context) -> applyBvrLock(context.player(), p.targetId()));
         registrar.playToServer(WeaponControlPayload.TYPE, WeaponControlPayload.CODEC, ModNetwork::handleWeaponControl);

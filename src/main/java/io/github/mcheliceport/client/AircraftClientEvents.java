@@ -58,6 +58,7 @@ public final class AircraftClientEvents {
             WeaponClient.tick();
             RangeFinderClient.tick();
             io.github.mcheliceport.client.tool.LightWeaponClient.tick();
+            io.github.mcheliceport.weapon.GpsPosition.clientTick(Minecraft.getInstance().player);
             io.github.mcheliceport.client.render.ToolItemModel.WrenchSwing.tick();
             TargetMarkers.INSTANCE.tick();
         });
@@ -97,6 +98,7 @@ public final class AircraftClientEvents {
             io.github.mcheliceport.client.camera.GltdCameraClient.reset();
             io.github.mcheliceport.client.tool.LightWeaponClient.reset();
             io.github.mcheliceport.radar.EntityInfoClientTracker.clear();
+            io.github.mcheliceport.weapon.GpsPosition.setClient(null);
         });
         NeoForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.LoggingIn event) -> {
             RangeFinderClient.onLogin();

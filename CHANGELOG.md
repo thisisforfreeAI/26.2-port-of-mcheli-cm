@@ -63,6 +63,8 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
   supported (see Added); JEI shows the drafting table as a crafting station for them.
 
 ### Added
+- The GPS panel, as upstream: Open GPS Panel (N) in a vehicle takes X, Y and Z (or the player's
+  position) for a GPS point, marked on the HUD with its distance until the player gets off.
 - The BVR scope and the mortar radar, as upstream: a weapon with `EnableBVR` marks vehicles, chaff
   and incoming missiles reported by the server out to 2000 blocks, and the one held at the centre
   becomes its target; a vehicle with its radar switched on shows a top-down scope with the
