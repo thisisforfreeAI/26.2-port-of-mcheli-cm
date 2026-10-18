@@ -32,6 +32,9 @@ public final class ClientConfig {
     public static final ModConfigSpec.BooleanValue DEFAULT_EXPLOSION_PARTICLE;
     public static final ModConfigSpec.IntValue ALIVE_TIME_OF_CARTRIDGE;
     public static final ModConfigSpec.BooleanValue SWITCH_WEAPON_WITH_MOUSE_WHEEL;
+    public static final ModConfigSpec.BooleanValue DISPLAY_ENTITY_MARKER;
+    public static final ModConfigSpec.DoubleValue ENTITY_MARKER_SIZE;
+    public static final ModConfigSpec.DoubleValue BLOCK_MARKER_SIZE;
     private static final Map<ModTab, ModConfigSpec.ConfigValue<String>> TAB_ICONS = new EnumMap<>(ModTab.class);
     public static final ModConfigSpec SPEC;
 
@@ -99,6 +102,15 @@ public final class ClientConfig {
         HIT_MARK_COLOR = builder
                 .comment("Colour of the hit marker as 'alpha, red, green, blue' (0 to 255 each). Upstream: HitMarkColor.")
                 .define("hitMarkColor", "255, 255, 0, 0");
+        DISPLAY_ENTITY_MARKER = builder
+                .comment("Draw markers over teammates and spotted entities. Upstream: DisplayEntityMarker.")
+                .define("displayEntityMarker", true);
+        ENTITY_MARKER_SIZE = builder
+                .comment("Size of the entity markers; 0 hides them. Upstream: EntityMarkerSize.")
+                .defineInRange("entityMarkerSize", 10.0, 0.0, 100.0);
+        BLOCK_MARKER_SIZE = builder
+                .comment("Size of the mark point marker. Upstream: BlockMarkerSize.")
+                .defineInRange("blockMarkerSize", 10.0, 0.0, 100.0);
         builder.pop();
 
         builder.comment("Weapon effects (upstream's lines of the same names in mcheli.cfg).").push("effects");

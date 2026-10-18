@@ -1,0 +1,22 @@
+{
+  "values": [
+    "minecraft:iron_block",
+    "minecraft:gold_block",
+    "minecraft:diamond_block",
+    "minecraft:emerald_block",
+    "minecraft:redstone_block",
+    "minecraft:iron_door",
+    "minecraft:iron_trapdoor",
+    "minecraft:iron_bars",
+    "minecraft:hopper",
+    "minecraft:cauldron",
+    "minecraft:water_cauldron",
+    "minecraft:lava_cauldron",
+    "minecraft:powder_snow_cauldron",
+    "minecraft:brewing_stand",
+    "minecraft:light_weighted_pressure_plate",
+    "minecraft:heavy_weighted_pressure_plate",
+    "mcheli_ce_port:charger",
+    "mcheli_ce_port:wingman_marker"
+  ]
+}

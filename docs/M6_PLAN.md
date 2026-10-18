@@ -1065,3 +1065,42 @@ client without JEI also started and joined; refilling an empty can in the invent
 with coal and charcoal gave 175/600 and used one of each
 ([screen](screens/m6-fuel-refill-2x2.png)). Not run: Vulkan, `/reload` with JEI open, and addon
 content recipes in JEI (stock content has none; they use the same crafting JSON path).
+
+## Wrench, rangefinder and team spotting increment
+
+- `WrenchItem` ports `MCH_ItemWrench`: while used (72,000 ticks, block animation), every 20th
+  tick the server repairs the vehicle the user looks at within four blocks (upstream's
+  `getMouseOverAircraft`, a block in between stops it) by 10 and costs one durability, playing
+  "wrench". It keeps upstream's iron-material numbers (250 uses, enchantability 14, iron ingot
+  repair, 6 attack damage), mines `wrench_metal` blocks at 20.5 and `wrench_logic` blocks at 5.5
+  (2 otherwise), costs 2 per mined block or hit and drops an iron ingot (1 in 40) or gunpowder
+  (1 in 20) from what it hits. `ToolHudLayer` draws `MCH_GuiWrench`'s health bar.
+- `RangeFinderItem` and `RangeFinderClient` port `MCH_ItemRangeFinder`,
+  `MCH_ClientToolTickHandler` and `MCH_GuiRangeFinder`: scope after eight ticks of use, x2 to x10
+  zoom, three modes (players/vehicles by default on servers, mobs in single player, which skips the
+  first mode), a 60-tick spot cooldown, charge display and range to the block in view.
+  `RangeFinderSpotPayload` carries `PacketRequestSpotEnemy`: filter 0 marks a point, otherwise a
+  charge is used (unless `rangeFinderConsume` is off or the player is creative) and entities are
+  spotted for `rangeFinderSpotTime` seconds (players and vehicles) or 60 (mobs).
+- `Spotting` ports `MCH_Multiplay`'s `spotEntity`, `markPoint`, `canSpotEntity` and the filter
+  bits; spotted entity IDs and the mark point go to the spotter and the spotter's team
+  (`SpotEnemyPayload`, `MarkPosPayload`). `TargetingPodWeapon` now uses it. `TargetMarkers` keeps
+  the client's spotted entities (counted down each second) and mark point, and `ToolHudLayer`
+  draws `MCH_GuiTargetMarker`'s triangles and mark point, gated by the client's
+  `displayEntityMarker` and the server's `enableEntityMarker` (sent with the server settings).
+
+Validation: `build` passed and the GameTest server passed all 183 required tests, including six
+new tool tests: wrench repair cadence, durability, undamaged vehicles, looking away, a block in
+between and reach; wrench mining speeds, harvesting, hit and block durability and attack damage;
+rangefinder spotting by mode, charge use, the server cooldown, empty and last-charge behaviour,
+`rangeFinderConsume`, creative, nothing in view and no rangefinder in hand; mark points without a
+charge; `canUse` on foot and as a pilot; and the filters, team rows, crew-based vehicle rows,
+teammate exclusion and walls for spotting. On a dedicated server with an OpenGL client: the scope,
+zoom to x10, mode switching, charge use (100 to 70 over three spots) and marking without charge
+worked; a husk showed a red marker and a cow a grey one after a mobs-mode spot, the mark point
+showed its rhombus and distance ([scope](screens/m6-rangefinder-scope.png),
+[markers](screens/m6-spotting-markers.png)); and holding the wrench on an AH-64 at 120 damage
+repaired it to 80 in about four seconds with the health bar shown
+([wrench](screens/m6-wrench-repair.png)). Not run: Vulkan, two players on one team (the GameTests
+cover the team rules, not delivery to a second client or its teammate markers), and targeting
+pods in flight (stock content has none with spotting settings; see the parity list).

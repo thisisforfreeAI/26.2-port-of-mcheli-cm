@@ -114,6 +114,23 @@ public final class GuiHudCanvas implements HudCanvas {
         this.submit(RenderPipelines.GUI, TextureSetup.noTexture(), quads, color);
     }
 
+    /** A filled triangle (upstream's {@code GL_TRIANGLES} target markers). */
+    public void triangle(double x0, double y0, double x1, double y1, double x2, double y2, int color) {
+        QuadBuilder quads = new QuadBuilder(false);
+        quads.add(new float[] {(float) x0, (float) y0, (float) x1, (float) y1, (float) x2, (float) y2,
+                (float) x2, (float) y2});
+        this.submit(RenderPipelines.GUI, TextureSetup.noTexture(), quads, color);
+    }
+
+    /** A textured rectangle of a {@code mcheli:textures/gui} texture, tinted by {@code color}, UVs 0..1. */
+    public void tintedTexture(String name, double left, double top, double width, double height, double u0,
+            double v0, double u1, double v1, int color) {
+        Identifier id = Identifier.fromNamespaceAndPath("mcheli", "textures/gui/" + name + ".png");
+        AbstractTexture texture = Minecraft.getInstance().getTextureManager().getTexture(id);
+        texturedQuad(this, texture, RenderPipelines.GUI_TEXTURED, color, left, top, width, height, u0, v0, u1, v1,
+                0.0F);
+    }
+
     @Override
     public void points(double[] xy, int color) {
         QuadBuilder quads = new QuadBuilder(false);
