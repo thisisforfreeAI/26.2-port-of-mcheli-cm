@@ -14,6 +14,7 @@ import net.minecraft.resources.Identifier;
 public class FlashParticle extends McheliParticle {
 
     static final Identifier TEXTURE = Identifier.fromNamespaceAndPath("mcheli", "flash");
+    static final Identifier POLISHED_TEXTURE = Identifier.fromNamespaceAndPath("mcheli_ce_port", "m8_flash");
     private static final int FULL_BRIGHT = 0xF000F0;
 
     private int nowCount;
@@ -23,8 +24,14 @@ public class FlashParticle extends McheliParticle {
 
     public FlashParticle(ClientLevel level, double x, double y, double z, float size, double age) {
         super(level, x, y, z, 0.0, 0.0, 0.0, TEXTURE);
+        if (this.polished) {
+            this.setSprite(sprite(POLISHED_TEXTURE));
+        }
         this.endCount = (1 + (int) age) % 7;
         this.roll = -45.0F + this.random.nextFloat() * 90.0F;
+        if (this.polished) {
+            this.roll *= (float) (Math.PI / 180.0);
+        }
         this.oRoll = this.roll;
         this.size = size + this.random.nextFloat() * 0.2F;
         this.hasPhysics = false;
@@ -52,12 +59,21 @@ public class FlashParticle extends McheliParticle {
         if (this.currentFrame > 7) {
             return;
         }
+        float alpha = this.alpha;
+        if (this.polished) {
+            this.alpha *= 1.0F - this.progress(partialTick) * this.progress(partialTick);
+        }
         super.extract(state, camera, partialTick);
+        this.alpha = alpha;
+    }
+
+    private float progress(float partialTick) {
+        return Math.clamp((this.nowCount + partialTick) / Math.max(1, this.endCount), 0.0F, 1.0F);
     }
 
     @Override
     public float getQuadSize(float partialTick) {
-        return this.size * 1.2F;
+        return this.size * 1.2F * (this.polished ? 0.8F + 0.25F * this.progress(partialTick) : 1.0F);
     }
 
     @Override

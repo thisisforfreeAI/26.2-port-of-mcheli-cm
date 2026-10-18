@@ -13,13 +13,21 @@ import net.minecraft.util.Mth;
 public class SmokeParticle extends McheliParticle {
 
     static final Identifier TEXTURE = Identifier.fromNamespaceAndPath("mcheli", "particles/smoke");
+    static final Identifier POLISHED_TEXTURE = Identifier.fromNamespaceAndPath("mcheli_ce_port", "m8_smoke");
     /** Upstream's brightness: sky light at full, block light none (it sampled 3000 blocks up). */
     static final int SKY_LIGHT = net.minecraft.util.LightCoordsUtil.FULL_SKY;
 
     protected int frame;
+    public boolean warmStart;
+    private float previousScale = Float.NaN;
+    private final boolean mirror;
 
     public SmokeParticle(ClientLevel level, double x, double y, double z, double mx, double my, double mz) {
         super(level, x, y, z, mx, my, mz, TEXTURE);
+        if (this.polished) {
+            this.setSprite(sprite(POLISHED_TEXTURE));
+        }
+        this.mirror = this.polished && this.random.nextBoolean();
         float c = this.random.nextFloat() * 0.3F + 0.7F;
         this.setColor(c, c, c);
         this.particleScale = this.random.nextFloat() * 0.5F + 5.0F;
@@ -28,6 +36,7 @@ public class SmokeParticle extends McheliParticle {
 
     @Override
     public void tick() {
+        this.previousScale = this.particleScale;
         this.xo = this.x;
         this.yo = this.y;
         this.zo = this.z;
@@ -35,7 +44,8 @@ public class SmokeParticle extends McheliParticle {
             this.frame = (int) (8.0 * this.age / this.lifetime);
             this.age++;
             if (this.diffusible && this.particleScale < this.particleMaxScale) {
-                this.particleScale += 0.8F;
+                this.particleScale = this.polished ? Math.min(this.particleScale + 0.8F, this.particleMaxScale)
+                        : this.particleScale + 0.8F;
             }
             if (this.toWhite) {
                 float mn = Math.min(Math.min(this.bCol, this.gCol), this.rCol);
@@ -89,21 +99,56 @@ public class SmokeParticle extends McheliParticle {
 
     @Override
     public float getQuadSize(float partialTick) {
-        return 0.1F * this.particleScale;
+        return 0.1F * (this.polished && !Float.isNaN(this.previousScale)
+                ? Mth.lerp(partialTick, this.previousScale, this.particleScale) : this.particleScale);
+    }
+
+    @Override
+    public void extract(net.minecraft.client.renderer.state.level.QuadParticleRenderState state,
+            net.minecraft.client.Camera camera, float partialTick) {
+        if (!this.polished) {
+            super.extract(state, camera, partialTick);
+            return;
+        }
+        float a = this.alpha;
+        float r = this.rCol;
+        float g = this.gCol;
+        float b = this.bCol;
+        float age = Math.max(0.0F, this.age - 1 + partialTick);
+        this.alpha *= EffectTuning.fade(age, this.lifetime);
+        float heat = this.warmStart ? Math.max(0.0F, 1.0F - age / 6.0F) : 0.0F;
+        this.rCol = Mth.lerp(heat, r, 1.0F);
+        this.gCol = Mth.lerp(heat, g, 0.58F);
+        this.bCol = Mth.lerp(heat, b, 0.22F);
+        super.extract(state, camera, partialTick);
+        this.alpha = a;
+        this.setColor(r, g, b);
     }
 
     @Override
     protected float getU0() {
-        return this.frameU(this.frame, 8, false);
+        return this.frameU(this.polished ? this.frame % 4 : this.frame, this.polished ? 4 : 8, this.mirror);
     }
 
     @Override
     protected float getU1() {
-        return this.frameU(this.frame, 8, true);
+        return this.frameU(this.polished ? this.frame % 4 : this.frame, this.polished ? 4 : 8, !this.mirror);
+    }
+
+    @Override
+    protected float getV0() {
+        return this.polished ? this.sprite.getV(this.frame / 4 * 0.5F) : super.getV0();
+    }
+
+    @Override
+    protected float getV1() {
+        return this.polished ? this.sprite.getV((this.frame / 4 + 1) * 0.5F) : super.getV1();
     }
 
     @Override
     protected int getLightCoords(float partialTick) {
-        return SKY_LIGHT;
+        int heat = this.polished && this.warmStart
+                ? (int) (12.0F * Math.max(0.0F, 1.0F - (this.age + partialTick) / 6.0F)) : 0;
+        return SKY_LIGHT | heat << 4;
     }
 }

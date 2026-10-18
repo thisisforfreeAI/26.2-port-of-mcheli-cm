@@ -14,6 +14,10 @@ public class SplashParticle extends SmokeParticle {
 
     public SplashParticle(ClientLevel level, double x, double y, double z, double mx, double my, double mz) {
         super(level, x, y, z, mx, my, mz);
+        if (this.polished) {
+            this.setSprite(sprite(net.minecraft.resources.Identifier.fromNamespaceAndPath(
+                    "mcheli_ce_port", "m8_splash")));
+        }
         float c = this.random.nextFloat() * 0.3F + 0.7F;
         this.setColor(c, c, c);
         this.particleScale = this.random.nextFloat() * 0.5F + 5.0F;

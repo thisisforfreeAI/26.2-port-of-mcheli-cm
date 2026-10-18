@@ -38,6 +38,9 @@ public final class ClientEffects implements McheliEffects.Sink {
         if (!(level instanceof ClientLevel clientLevel)) {
             return;
         }
+        if (!EffectAdmission.admit(clientLevel, p.posX, p.posY, p.posZ, false)) {
+            return;
+        }
         SmokeParticle fx = p.name.equalsIgnoreCase("Splash")
                 ? new SplashParticle(clientLevel, p.posX, p.posY, p.posZ, p.motionX, p.motionY, p.motionZ)
                 : new SmokeParticle(clientLevel, p.posX, p.posY, p.posZ, p.motionX, p.motionY, p.motionZ);
@@ -51,6 +54,7 @@ public final class ClientEffects implements McheliEffects.Sink {
         fx.isEffectedWind = p.isEffectWind;
         fx.diffusible = p.diffusible;
         fx.toWhite = p.toWhite;
+        fx.warmStart = p.name.equalsIgnoreCase("explode");
         if (p.diffusible) {
             fx.particleScale = p.size * 0.2F;
             fx.particleMaxScale = p.size * 2.0F;
@@ -64,6 +68,9 @@ public final class ClientEffects implements McheliEffects.Sink {
     public void spawnMuzzleFlash(Level level, double x, double y, double z, float size, float r, float g, float b,
             float a, int age) {
         if (!(level instanceof ClientLevel clientLevel)) {
+            return;
+        }
+        if (!EffectAdmission.admit(clientLevel, x, y, z, true)) {
             return;
         }
         FlashParticle fx = new FlashParticle(clientLevel, x, y, z, size, age);

@@ -31,6 +31,10 @@ public final class ClientConfig {
     public static final ModConfigSpec.BooleanValue HUD_AUTO_SCALE;
     public static final ModConfigSpec.ConfigValue<String> HIT_MARK_COLOR;
     public static final ModConfigSpec.BooleanValue DEFAULT_EXPLOSION_PARTICLE;
+    public enum EffectStyle { CLASSIC, POLISHED }
+    public enum EffectQuality { LOW, BALANCED, HIGH }
+    public static final ModConfigSpec.EnumValue<EffectStyle> EFFECT_STYLE;
+    public static final ModConfigSpec.EnumValue<EffectQuality> EFFECT_QUALITY;
     public static final ModConfigSpec.IntValue ALIVE_TIME_OF_CARTRIDGE;
     public static final ModConfigSpec.BooleanValue SWITCH_WEAPON_WITH_MOUSE_WHEEL;
     public static final ModConfigSpec.BooleanValue DISPLAY_ENTITY_MARKER;
@@ -121,6 +125,15 @@ public final class ClientConfig {
         DEFAULT_EXPLOSION_PARTICLE = builder
                 .comment("Draw McHeli's explosions with vanilla's explosion particles. Upstream: DefaultExplosionParticle.")
                 .define("defaultExplosionParticle", false);
+        EFFECT_STYLE = builder
+                .comment("POLISHED adds shaded pixel smoke, warm flashes and flare glow. CLASSIC uses upstream sprites.",
+                        "Both styles use Minecraft's supported Vulkan/OpenGL rendering pipelines.")
+                .defineEnum("style", EffectStyle.POLISHED);
+        EFFECT_QUALITY = builder
+                .comment("Custom smoke/flash budget: LOW (96 blocks, 384 smoke), BALANCED (192 blocks, 768 smoke),",
+                        "HIGH (256 blocks, 1536 smoke). Also respects Minecraft's particle setting.",
+                        "LOW disables flare halos. Does not change gameplay or vanilla/block particles.")
+                .defineEnum("quality", EffectQuality.BALANCED);
         ALIVE_TIME_OF_CARTRIDGE = builder
                 .comment("Ticks an ejected cartridge stays on the ground. Upstream: AliveTimeOfCartridge.")
                 .defineInRange("aliveTimeOfCartridge", 200, 0, 1000);
