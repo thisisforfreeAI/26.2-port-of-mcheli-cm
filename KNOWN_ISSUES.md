@@ -26,7 +26,7 @@ broader gameplay and hardware checks remain pending.
 | Area | Planned milestone |
 |---|---|
 | Remaining plane/ground equipment | M6 |
-| Wingman (AI wingmen, the base screen with taxi routes and the mission planner, missions, `/wingman`) | M6b |
+| Wingman (AI wingmen, the base screen's Mission tab and the mission planner, missions, `/wingman`) | M6b |
 | Remaining `/mcheli` commands (including reloading content with `reconfig`), advancement triggers, long-distance tracking and rendering, thermal vision (the third camera mode), GPU-buffer model rendering, projectile chunk loading (`ProjectileChunkLoad`), HBM:NTM stubs, performance work | M7 |
 
 Until then:
@@ -60,9 +60,8 @@ Until then:
   energy from the charger and from batteries (any item with NeoForge's item energy capability) in
   the fuel slot. Upstream's GregTech EU and HBM HE energy systems are dropped, so the
   `EnergySystem` and ratio settings are gone; the port registers no battery item, as upstream.
-- Wingman markers keep their type, ID, parent base and parking heading, but no wingman uses them
-  until the wingman AI is ported (M6b). A base marker opens the marker screen until the base
-  screen is ported.
+- Wingman markers and a base's taxi routes are kept, but no wingman uses them until the wingman
+  AI is ported (M6b). The base screen's Mission tab cannot be selected until then.
 - Turret ballistics lines (upstream `drawTurretBallistics`) are not drawn yet (M7).
 
 This config entry already exists but has no effect yet:
@@ -450,6 +449,12 @@ These follow from how Minecraft 26.2 works or from decisions approved in PORTING
     the save from any player for any marker. Changing the type keeps what was typed into the
     fields, where upstream reset them to the saved values. The placement message leaves out
     upstream's pointer to `/wingman marker type` until that command is ported.
+94. The base screen saves and deletes taxi routes only for a player who can reach and edit the
+    base marker, saves them under that marker's base rather than the base the client names, and
+    deletes only that base's routes; upstream took the base from the client and deleted any route
+    by ID. Route IDs still share one list per dimension, as upstream, so saving an ID another base
+    uses moves that route to this base. Upstream drew every helipad button on one row, so a fifth
+    helipad covered the first; the port starts a second row, as its layout already allowed for.
 
 ## Upstream content issues kept as they are
 

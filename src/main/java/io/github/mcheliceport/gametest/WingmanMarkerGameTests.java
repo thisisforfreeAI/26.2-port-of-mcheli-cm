@@ -5,11 +5,15 @@ import static io.github.mcheliceport.gametest.GameTestSupport.check;
 import com.mojang.serialization.JsonOps;
 import io.github.mcheliceport.net.MarkerUpdatePayload;
 import io.github.mcheliceport.net.ModNetwork;
+import io.github.mcheliceport.net.OpenBaseScreenPayload;
+import io.github.mcheliceport.net.TaxiRouteActionPayload;
 import io.github.mcheliceport.registry.ModBlocks;
 import io.github.mcheliceport.wingman.block.MarkerType;
 import io.github.mcheliceport.wingman.block.WingmanMarkerBlock;
 import io.github.mcheliceport.wingman.block.WingmanMarkerBlockEntity;
+import io.github.mcheliceport.wingman.mission.TaxiRoute;
 import io.github.mcheliceport.wingman.registry.MarkerRegistry;
+import io.github.mcheliceport.wingman.registry.TaxiRouteRegistry;
 import io.netty.buffer.Unpooled;
 import java.util.List;
 import net.minecraft.core.BlockPos;
@@ -33,6 +37,7 @@ final class WingmanMarkerGameTests {
         ModGameTests.test("wingman_marker_takes_an_id_and_registers", 20, WingmanMarkerGameTests::placement);
         ModGameTests.test("wingman_marker_update_applies_within_reach", 20, WingmanMarkerGameTests::update);
         ModGameTests.test("wingman_marker_registry_resolves_bases", 20, WingmanMarkerGameTests::resolve);
+        ModGameTests.test("wingman_base_screen_saves_taxi_routes", 20, WingmanMarkerGameTests::taxiRoutes);
     }
 
     private static MarkerRegistry.@Nullable MarkerInfo recorded(ServerLevel level, BlockPos pos) {
@@ -135,5 +140,76 @@ final class WingmanMarkerGameTests {
             MarkerRegistry.unregister(level, pos);
         }
         h.succeed();
+    }
+
+    private static WingmanMarkerBlockEntity marker(GameTestHelper h, BlockPos rel) {
+        h.setBlock(rel, ModBlocks.WINGMAN_MARKER.get().defaultBlockState());
+        return h.getBlockEntity(rel, WingmanMarkerBlockEntity.class);
+    }
+
+    /**
+     * Upstream {@code openBaseGui} and {@code PacketBaseAction}'s route actions: the base screen lists
+     * the base's markers, a saved route goes under the marker's base whatever the client sent, a
+     * route needs its parking spot and runway end, and a delete only reaches the base's own routes.
+     */
+    private static void taxiRoutes(GameTestHelper h) {
+        ServerLevel level = h.getLevel();
+        BlockPos baseRel = new BlockPos(1, 1, 1);
+        WingmanMarkerBlockEntity base = marker(h, baseRel);
+        WingmanMarkerBlockEntity parking = marker(h, new BlockPos(1, 1, 3));
+        WingmanMarkerBlockEntity runway = marker(h, new BlockPos(1, 1, 5));
+        WingmanMarkerBlockEntity waypoint = marker(h, new BlockPos(3, 1, 5));
+        Player near = GameTestSupport.player(h, GameType.SURVIVAL, new Vec3(2.5, 1, 2.5));
+        Player far = GameTestSupport.player(h, GameType.SURVIVAL, new Vec3(2.5, 1, 40.5));
+        BlockPos pos = h.absolutePos(baseRel);
+        h.runAfterDelay(2, () -> {
+            base.apply(MarkerType.BASE, "taxi_base", "", -1);
+            parking.apply(MarkerType.PARKING, "taxi_p", "taxi_base", 1);
+            runway.apply(MarkerType.RUNWAY_A, "taxi_ra", "taxi_base", -1);
+            // A waypoint without its base still shows within 500 blocks.
+            waypoint.apply(MarkerType.WAYPOINT, "taxi_wp", "", -1);
+            var screen = WingmanMarkerBlock.baseScreen(level, pos, "taxi_base");
+            check(h, screen.parking().size() == 1 && screen.parking().get(0).id().equals("taxi_p")
+                    && screen.runwayA().size() == 1
+                    && screen.waypoints().stream().anyMatch(m -> m.id().equals("taxi_wp")),
+                    "the base screen lists the wrong markers");
+
+            var route = new TaxiRoute("taxi_route", "spoofed", "taxi_p", "taxi_ra", "", List.of("taxi_wp"), List.of(),
+                    -1, "");
+            ModNetwork.applyTaxiRouteAction(far, new TaxiRouteActionPayload(pos, false, route));
+            check(h, TaxiRouteRegistry.findById(level, "taxi_route") == null, "a route saved out of reach");
+            ModNetwork.applyTaxiRouteAction(near, new TaxiRouteActionPayload(pos, false, route));
+            TaxiRoute saved = TaxiRouteRegistry.findById(level, "taxi_route");
+            check(h, saved != null && saved.baseId().equals("taxi_base") && saved.waypointIds().equals(List.of("taxi_wp")),
+                    "the route was not saved under the marker's base");
+            check(h, saved.fullDeparture().equals(List.of("taxi_p", "taxi_wp", "taxi_ra"))
+                    && saved.fullArrival().equals(List.of("taxi_ra", "taxi_wp", "taxi_p")), "the route's legs are wrong");
+            check(h, WingmanMarkerBlock.baseScreen(level, pos, "taxi_base").routes().equals(List.of(saved)),
+                    "the base screen does not list the route");
+
+            var noParking = new TaxiRoute("taxi_bad", "", "", "taxi_ra", "", List.of(), List.of(), -1, "");
+            ModNetwork.applyTaxiRouteAction(near, new TaxiRouteActionPayload(pos, false, noParking));
+            check(h, TaxiRouteRegistry.findById(level, "taxi_bad") == null, "a route without parking was saved");
+
+            var other = new TaxiRoute("taxi_other", "taxi_elsewhere", "p", "r", "", List.of(), List.of(), -1, "");
+            TaxiRouteRegistry.save(level, other);
+            ModNetwork.applyTaxiRouteAction(near, new TaxiRouteActionPayload(pos, true, other));
+            check(h, TaxiRouteRegistry.findById(level, "taxi_other") != null, "another base's route was deleted");
+            ModNetwork.applyTaxiRouteAction(near, new TaxiRouteActionPayload(pos, true, saved));
+            check(h, TaxiRouteRegistry.findById(level, "taxi_route") == null, "the route was not deleted");
+            TaxiRouteRegistry.delete(level, "taxi_other");
+
+            var json = TaxiRoute.CODEC.encodeStart(JsonOps.INSTANCE, saved).getOrThrow();
+            check(h, TaxiRoute.CODEC.parse(JsonOps.INSTANCE, json).getOrThrow().equals(saved), "the saved route changed");
+            var buf = new FriendlyByteBuf(Unpooled.buffer());
+            OpenBaseScreenPayload.CODEC.encode(buf, screen);
+            check(h, OpenBaseScreenPayload.CODEC.decode(buf).equals(screen), "the base screen changed in its codec");
+            for (int x : new int[] {1, 3}) {
+                for (int z : new int[] {1, 3, 5}) {
+                    h.setBlock(new BlockPos(x, 1, z), Blocks.AIR);
+                }
+            }
+            h.succeed();
+        });
     }
 }
