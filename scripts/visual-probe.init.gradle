@@ -6,6 +6,8 @@ gradle.projectsEvaluated {
     project.neoForge.runs.client.systemProperty('mcheli.probeBenchmark', System.getProperty('mcheli.probeBenchmark', 'false'))
     project.neoForge.runs.client.systemProperty('mcheli.probeWidth', System.getProperty('mcheli.probeWidth', '1920'))
     project.neoForge.runs.client.systemProperty('mcheli.probeHeight', System.getProperty('mcheli.probeHeight', '1080'))
+    project.neoForge.runs.client.systemProperty('mcheli.probeLook', System.getProperty('mcheli.probeLook', 'false'))
+    project.neoForge.runs.client.systemProperty('mcheli.probeGround', System.getProperty('mcheli.probeGround', 'false'))
     project.neoForge.runs.client.gameDirectory = project.file('.run/m8-preview')
     project.neoForge.runs.client.programArguments.addAll('--quickPlaySingleplayer', 'M6Smoke',
             '--graphicsBackend', System.getProperty('mcheli.probeBackend', 'VULKAN'), '--width', System.getProperty('mcheli.probeWidth', '1920'),

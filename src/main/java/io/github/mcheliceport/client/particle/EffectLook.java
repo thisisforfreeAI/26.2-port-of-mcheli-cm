@@ -70,6 +70,17 @@ public final class EffectLook {
         return left * left;
     }
 
+    /** Preserve sampled sky and torch light while the puff itself glows hot. No world light is emitted. */
+    public static int smokeLight(int ambient, float heat) {
+        int block = Math.max((ambient >> 4) & 15, heatBlockLight(heat));
+        return (ambient & 0xF00000) | (block << 4);
+    }
+
+    /** Sample once per tick at most; refresh a moving puff or stationary light every four ticks. */
+    public static boolean refreshLight(int age, int previousAge, boolean movedBlock) {
+        return age != previousAge && (movedBlock || age - previousAge >= 4);
+    }
+
     /** Linear interpolation of a value between ticks. */
     public static float lerp(float partial, float from, float to) {
         return from + (to - from) * partial;

@@ -51,6 +51,7 @@ public final class ExplosionEffects {
         boolean vanilla = ClientConfig.get(ClientConfig.DEFAULT_EXPLOSION_PARTICLE);
         if (!vanilla && size >= 1.0F && EffectQuality.enhanced()) {
             ClientEffects.spawnExplosionGlow(level, x, y, z, size);
+            ClientEffects.spawnExplosionSparks(level, x, y, z, size);
         }
         int cnt = 0;
         int flareCnt = (int) size;

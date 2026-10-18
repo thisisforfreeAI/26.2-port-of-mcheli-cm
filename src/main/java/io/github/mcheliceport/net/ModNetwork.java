@@ -46,8 +46,8 @@ public final class ModNetwork {
 
     private static final Logger LOGGER = LogUtils.getLogger();
     /** Bump when payload encoding, menu layout or synchronized entity data changes. */
-    // Long-range UAV chunk and entity streaming requires matching camera/terrain behavior.
-    public static final String VERSION = "20";
+    // Explosion effects now carry the cosmetic weapon family for terrain marks.
+    public static final String VERSION = "21";
 
     private ModNetwork() {
     }
@@ -100,7 +100,7 @@ public final class ModNetwork {
                 ModNetwork::handleStatusResponse);
         registrar.playToClient(ExplosionEffectPayload.TYPE, ExplosionEffectPayload.CODEC,
                 (p, context) -> McheliEffects.explosionEffects(context.player().level(), p.x(), p.y(), p.z(),
-                        p.size(), p.inWater(), p.affectedBlocks()));
+                        p.size(), p.inWater(), p.affectedBlocks(), p.blastStyle()));
         registrar.playToClient(ServerSettingsPayload.TYPE, ServerSettingsPayload.CODEC,
                 (payload, context) -> ServerSettings.setClient(payload.toValues()));
         registrar.playToServer(WeaponControlPayload.TYPE, WeaponControlPayload.CODEC, ModNetwork::handleWeaponControl);

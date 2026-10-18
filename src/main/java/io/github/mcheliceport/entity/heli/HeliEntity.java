@@ -442,6 +442,7 @@ public class HeliEntity extends AircraftEntity implements HeliFlightModel.Body {
                     prm.motionZ = (this.random.nextDouble() - 0.5) * 0.3;
                     prm.size = this.random.nextInt(5) + 5.0F;
                     prm.setColor(0.7F + this.random.nextFloat() * 0.1F, c, c, c);
+                    prm.setDamageHeat(this.getHP(), this.getMaxHP());
                     McheliEffects.spawnParticle(this.level(), prm);
                     int ebi = this.random.nextInt(1 + boxes.length);
                     if (p < 0.3 && ebi > 0) {

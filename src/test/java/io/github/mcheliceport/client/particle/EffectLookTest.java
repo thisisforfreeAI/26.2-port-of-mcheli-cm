@@ -1,6 +1,7 @@
 package io.github.mcheliceport.client.particle;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
@@ -41,6 +42,28 @@ class EffectLookTest {
         assertEquals(15, EffectLook.heatBlockLight(1.0F));
         assertEquals(0, EffectLook.heatBlockLight(0.0F));
         assertEquals(15, EffectLook.heatBlockLight(2.0F), "clamped");
+    }
+
+    @Test
+    void smokeUsesAmbientLightAndHeatOnlyRaisesItsBlockLight() {
+        int cave = 0;
+        int torch = (12 << 4) | (3 << 20);
+        int sky = 15 << 20;
+        assertEquals(cave, EffectLook.smokeLight(cave, 0));
+        assertEquals(torch, EffectLook.smokeLight(torch, 0));
+        assertEquals(sky, EffectLook.smokeLight(sky, 0));
+        assertEquals(15 << 4, EffectLook.smokeLight(cave, 1));
+        assertEquals(torch, EffectLook.smokeLight(torch, 0.3F));
+        assertEquals((15 << 4) | (3 << 20), EffectLook.smokeLight(torch, 1));
+    }
+
+    @Test
+    void lightingCacheRespondsToMotionAndStationaryLightChangesWithoutPerFrameSampling() {
+        assertTrue(EffectLook.refreshLight(0, -4, true));
+        assertFalse(EffectLook.refreshLight(0, 0, true));
+        assertFalse(EffectLook.refreshLight(3, 0, false));
+        assertTrue(EffectLook.refreshLight(4, 0, false));
+        assertTrue(EffectLook.refreshLight(1, 0, true));
     }
 
     @Test

@@ -85,14 +85,14 @@ public final class PlaneParticles {
         for (int i = 0; i < rotors; i++) {
             consumeSmokeGate(f, random);
             Vec3 position = McheliMath.rotVec3(info.rotorList.get(i).pos, -f.yaw, -f.pitch, -f.roll).add(f.position);
-            this.damageTrail(i, position, 1.0F, random, sink);
+            this.damageTrail(i, position, 1.0F, f.hp, f.maxHp, random, sink);
         }
         consumeSmokeGate(f, random);
         Vec3 position = f.position;
         if (f.pilotSeat != null) {
             position = position.add(McheliMath.rotVec3(0.0, f.pilotSeat.y, -2.0, -f.yaw, -f.pitch, -f.roll));
         }
-        this.damageTrail(rotors, position, rotors == 0 ? 2.0F : 1.0F, random, sink);
+        this.damageTrail(rotors, position, rotors == 0 ? 2.0F : 1.0F, f.hp, f.maxHp, random, sink);
         this.firstSmoke = false;
     }
 
@@ -107,7 +107,7 @@ public final class PlaneParticles {
         }
     }
 
-    private void damageTrail(int index, Vec3 position, float size, RandomSource random, Consumer<ParticleParam> sink) {
+    private void damageTrail(int index, Vec3 position, float size, int hp, int maxHp, RandomSource random, Consumer<ParticleParam> sink) {
         if (this.firstSmoke || this.previousSmoke[index] == null) {
             this.previousSmoke[index] = position;
         }
@@ -127,6 +127,7 @@ public final class PlaneParticles {
             p.motionZ = size * (random.nextDouble() - 0.5) * 0.3;
             p.size = size * (random.nextInt(5) + 5.0F);
             p.setColor(0.7F + random.nextFloat() * 0.1F, color, color, color);
+            p.setDamageHeat(hp, maxHp);
             sink.accept(p);
         }
         this.previousSmoke[index] = position;
