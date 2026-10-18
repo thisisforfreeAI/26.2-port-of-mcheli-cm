@@ -107,11 +107,18 @@ public final class ModKeyMappings {
     /** Upstream {@code KeyAirburstDistReset} (-99, the right mouse button). */
     public static final KeyMapping AIRBURST_RESET = mouse("airburst_reset", GLFW.GLFW_MOUSE_BUTTON_RIGHT);
 
+    /** Upstream's wingman category, with its one key. */
+    public static final KeyMapping.Category WINGMAN_CATEGORY =
+            new KeyMapping.Category(Identifier.fromNamespaceAndPath(McheliCePort.MOD_ID, "wingman"));
+    /** Upstream {@code WingmanKeyHandler.KEY_PANEL}: opens the wingman panel while piloting. */
+    public static final KeyMapping WINGMAN_PANEL = new KeyMapping("key." + McheliCePort.MOD_ID + ".wingman_panel",
+            RIDING, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_KP_0, WINGMAN_CATEGORY);
+
     public static final List<KeyMapping> ALL = List.of(UP, DOWN, RIGHT, LEFT, SWITCH_GUNNER, SWITCH_HOVERING, ZOOM,
             UNMOUNT, EXTRA, FREE_LOOK, GUI, GEAR_UP_DOWN, CAMERA_MODE, CAMERA_DISTANCE_UP, CAMERA_DISTANCE_DOWN,
             USE_WEAPON, SWITCH_WEAPON_1, SWITCH_WEAPON_2, SWITCH_WEAPON_MODE, RELOAD_WEAPON, FLARE, CHAFF, APS, ECM_JAMMER,
             AIRBURST_RESET, PUT_TO_RACK, DOWN_FROM_RACK, ROPES, SEARCH_LIGHT, RADAR_SWITCH, OPEN_GPS_PANEL, SCOREBOARD,
-            MULTIPLAY_MANAGER);
+            MULTIPLAY_MANAGER, WINGMAN_PANEL);
 
     private ModKeyMappings() {
     }
@@ -133,6 +140,7 @@ public final class ModKeyMappings {
 
     public static void register(RegisterKeyMappingsEvent event) {
         event.registerCategory(CATEGORY);
+        event.registerCategory(WINGMAN_CATEGORY);
         ALL.forEach(event::register);
     }
 

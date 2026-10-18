@@ -1,0 +1,110 @@
+package io.github.mcheliceport.wingman.wingman;
+
+import io.github.mcheliceport.wingman.mission.AutonomousState;
+import io.github.mcheliceport.wingman.mission.MissionOrder;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+import net.minecraft.world.entity.Entity;
+import org.jspecify.annotations.Nullable;
+
+/**
+ * Upstream's {@code WingmanEntry}: one wingman's leader, formation slot and attack orders, and the
+ * state of a mission it flies on its own. The route-node missions of upstream's planner and
+ * {@code /wingman} come with that increment.
+ */
+public class WingmanEntry {
+
+    public static final int ATK_NONE = 0;
+    public static final int ATK_MANUAL = 1;
+    public static final int ATK_AUTO = 2;
+
+    public WingmanState state;
+    public @Nullable Entity leader;
+    public int formationSlot;
+
+    public int attackMode = ATK_NONE;
+    public @Nullable UUID manualTargetId;
+    public @Nullable UUID currentAutoTarget;
+    public int weaponSeat;
+    /** The weapon type to fire ({@code gun}, {@code aamissile}...), or null to try every type. */
+    public @Nullable String weaponType;
+
+    /** The orbit angle around a missile target, in degrees. */
+    public double orbitAngle;
+
+    /** A tick counter for the periodic log lines. */
+    public int diagTick;
+
+    // ---- autonomous flight ----
+
+    public AutonomousState autoState = AutonomousState.NONE;
+    /** The ticks spent in the current step; negative while waiting after a vertical landing. */
+    public int missionNodeTimer;
+    /** Where the mission steers the aircraft. */
+    public double autoTargetX;
+    public double autoTargetY;
+    public double autoTargetZ;
+
+    /** The mission order, or null when not flying one. */
+    public @Nullable MissionOrder order;
+    /** Ticks on station. */
+    public int orderTimer;
+    /**
+     * The angle of the mission orbit, in radians. Upstream shared {@link #orbitAngle} with the attack
+     * orbit, which turns it in degrees, so an attack on station threw the mission orbit around.
+     */
+    public double missionOrbitAngle;
+    public int strikePassesRemaining;
+    /** The parking spot or helipad the aircraft left from or is taxiing to. */
+    public String assignedParkingId = "";
+    /** The taxi route the order named for departure. */
+    public String departureRouteId = "";
+    /** The marker IDs of the taxi in progress, and the next one's index. */
+    public List<String> taxiWpQueue = new ArrayList<>();
+    public int taxiWpIndex;
+    /** The hostile mobs a reconnaissance counted in the area. */
+    public int reconMobCount;
+    /** Why it is returning, for the log. */
+    public String rtbReason = "";
+
+    /** Whether a VTOL plane should be in hover mode (nozzles down); set by the mission. */
+    public boolean vtolHoverMode;
+    /** The plane's nozzle state: 0 forward, 1 turning, 2 down. */
+    public int vtolNozzleMode;
+    /** Whether the hover switch was sent for the current {@link #vtolHoverMode}. */
+    public boolean vtolOnSent;
+    /** The position before the aircraft moved this tick, which the taxi push starts from. */
+    public double taxiPreX;
+    public double taxiPreZ;
+    /** The roll-out speed after touchdown, decaying to the taxi speed; 0 before touchdown. */
+    public double landingRollSpeed;
+    /** The heading held while parked, or NaN for none. */
+    public float parkingHeadingYaw = Float.NaN;
+    /** The height the take-off roll is held down to, or 0. */
+    public double groundRollY;
+    /** Whether a helicopter returning below a raised helipad climbs over the spot it holds. */
+    public boolean climbHold;
+    public double climbHoldX;
+    public double climbHoldZ;
+
+    public WingmanEntry(@Nullable Entity leader, int slot) {
+        this.state = WingmanState.FOLLOWING;
+        this.leader = leader;
+        this.formationSlot = slot;
+    }
+
+    /** An entry for an aircraft that flies a mission without a leader. */
+    public WingmanEntry() {
+        this(null, 0);
+    }
+
+    /** Upstream {@code isAutonomous}: flying a mission rather than following. */
+    public boolean isAutonomous() {
+        return this.order != null;
+    }
+
+    public boolean hasOrder() {
+        return this.order != null;
+    }
+}

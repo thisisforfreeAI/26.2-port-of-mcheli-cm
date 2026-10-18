@@ -67,6 +67,27 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
   supported (see Added); JEI shows the drafting table as a crafting station for them.
 
 ### Added
+- The wingman marker screen, as upstream: right-clicking a marker sets its type (base, runway ends,
+  parking, waypoint, helipad and helipad heading), its ID, its parent base and, for a parking spot,
+  the heading to park in. A new marker is a parking spot with its own ID, and every marker is kept
+  in a per-dimension registry for the wingman missions to come.
+- The base screen's Taxi Routes tab, as upstream: right-clicking a base marker lists the base's
+  taxi routes and builds one from its parking spot, runway ends or helipad and ordered departure
+  and arrival waypoints, picked from the base's markers. Routes are saved with the dimension.
+- AI wingmen and the wingman panel, as upstream: while piloting, the Wingman Panel key (numpad 0,
+  hinted on the HUD) lists the unflown aircraft within 512 blocks to take as wingmen. Wingmen fly
+  in a V (or a column) behind the leader, match its roll and landing gear, and on Auto attack the
+  nearest hostile mob, target drone or enemy-team gunner with the chosen weapon type. The Formation tab
+  sets the spacing, the number of wingmen and the attack altitude limits while the server runs.
+- Wingman missions from the base screen's Mission tab, as upstream: pick CAP, CAS, escort and
+  reconnaissance (or a strike or a ferry flight alone), the weapons, the target area, orbit,
+  cruise height, strike passes and time limit, then one of the eight aircraft nearest the base and
+  optionally its departure and arrival taxi routes. A plane taxis out, takes off along the runway,
+  flies to the area and orbits it attacking (a strike makes passes, a reconnaissance counts the
+  hostile mobs), returns at the time limit or on low fuel, flies the landing circuit, lands and
+  taxis back to a free parking spot. A helicopter, or a VTOL plane returning to a helipad, takes
+  off and lands vertically. The chunks around an aircraft on a mission stay loaded (KNOWN_ISSUES
+  98, 99).
 - M8 aircraft engine exhaust: short throttle-responsive turbine wisps at defined outlets and
   restrained hot jet accents, with shared smoke admission and global quality/load caps. Stock
   Apache and two Black Hawk variants include outlets; Classic nozzle smoke remains available.

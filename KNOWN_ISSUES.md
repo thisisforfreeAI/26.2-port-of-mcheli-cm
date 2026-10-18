@@ -25,8 +25,8 @@ broader gameplay and hardware checks remain pending.
 
 | Area | Planned milestone |
 |---|---|
-| Remaining plane/ground equipment and UAV station preview camera | M6 |
-| Wingman (AI wingmen, marker block screens and types, missions, `/wingman`) | M6b |
+| Remaining plane/ground equipment | M6 |
+| Wingman (the mission planner and its route-node missions, `/wingman`, the wingman config file) | M6b |
 | Remaining `/mcheli` commands (including reloading content with `reconfig`), advancement triggers, long-distance tracking and rendering, thermal vision (the third camera mode), GPU-buffer model rendering, projectile chunk loading (`ProjectileChunkLoad`), HBM:NTM stubs, performance work | M7 |
 
 Until then:
@@ -60,7 +60,11 @@ Until then:
   energy from the charger and from batteries (any item with NeoForge's item energy capability) in
   the fuel slot. Upstream's GregTech EU and HBM HE energy systems are dropped, so the
   `EnergySystem` and ratio settings are gone; the port registers no battery item, as upstream.
-- Every placed wingman marker is a waypoint until the marker screen is ported (M6b).
+- Wingmen fly in formation and attack, and the base screen's Mission tab sends aircraft on
+  missions from the base's taxi routes, runways and helipads. Upstream's mission planner, its
+  route-node missions and `/wingman` are not ported yet (M6b). The formation values start at
+  upstream's defaults on each server start and have no config file entries until `/wingman` is
+  ported.
 - Turret ballistics lines (upstream `drawTurretBallistics`) are not drawn yet (M7).
 
 This config entry already exists but has no effect yet:
@@ -73,8 +77,11 @@ These follow from how Minecraft 26.2 works or from decisions approved in PORTING
 (sections 8 and 10). They apply as each feature is ported.
 
 1. 1.12.2 worlds and items are not migrated (different mod ID, item flattening, new save format).
-2. The UAV station's small preview shows telemetry only: 26.2 has no supported way to
-   render the world a second time from another viewpoint. Remote flight uses the supported main
+2. The UAV station's small preview shows telemetry only. Upstream rendered the whole world a
+   second time from the UAV into its own framebuffer. In 26.2 the level renderer always draws into
+   the game's main render target and keeps one section-occlusion graph and one extracted level
+   state per frame, all built for the main camera, so a second view would mean replacing vanilla's
+   frame pipeline and rebuilding visibility every frame. Remote flight uses the supported main
    camera at the UAV instead.
    The handheld tablet controls UAVs deployed from placed stations; it has no deployment inventory.
    Its temporary seat is invisible and is never saved. Pairings update the item immediately, and
@@ -112,8 +119,8 @@ These follow from how Minecraft 26.2 works or from decisions approved in PORTING
 17. Content item names come from the content files only. Upstream's static lang files also named
     content items, but its generated names took precedence, except for six Chinese names (the M18
     smoke grenades, the fuel truck and the ammo box), which the port's `zh_cn` file keeps.
-18. The wingman marker block stores its marker type in its block state; upstream kept it in a block
-    entity.
+18. The wingman marker block stores its marker type in its block state and its ID, parent base and
+    parking heading in a block entity; upstream kept all four in its block entity.
 19. Sound files that only a resource pack (not the mod or an addon pack) adds do not count when the
     port decides between `<name>.ogg` and `<name>_snd.ogg` for a content sound event. A resource
     pack can still define such events in its own `sounds.json`.
@@ -440,6 +447,68 @@ These follow from how Minecraft 26.2 works or from decisions approved in PORTING
     (`gps_position.png`) missing from its assets; the marker is projected onto the point here and
     drawn as a square outline. As upstream, the server keeps each player's point but nothing reads
     it (GPS missiles do not steer, item 88), and the point goes inactive off a vehicle.
+93. The wingman marker screen saves only for a player who can reach and edit the marker (within
+    block reach plus four blocks, not a spectator, outside spawn protection); upstream accepted
+    the save from any player for any marker. Changing the type keeps what was typed into the
+    fields, where upstream reset them to the saved values. The placement message leaves out
+    upstream's pointer to `/wingman marker type` until that command is ported.
+94. The base screen saves and deletes taxi routes only for a player who can reach and edit the
+    base marker, saves them under that marker's base rather than the base the client names, and
+    deletes only that base's routes; upstream took the base from the client and deleted any route
+    by ID. Route IDs still share one list per dimension, as upstream, so saving an ID another base
+    uses moves that route to this base. Upstream drew every helipad button on one row, so a fifth
+    helipad covered the first; the port starts a second row, as its layout already allowed for.
+95. The wingman panel only offers and takes aircraft within its 512 blocks that no player flies
+    and that are not destroyed, nearest first, and only the pilot of the leader can order its
+    wingmen; upstream listed every aircraft in that range, including other players', and acted
+    on any aircraft UUID a client sent. A new wingman takes the lowest free formation slot, where
+    upstream took the number of wingmen, so after a Stop two wingmen could share a slot. The
+    Formation tab still changes the values for the whole server, as upstream, but values that are
+    not numbers are ignored and the distances stay within upstream's config ranges; on a screen too
+    short for upstream's layout, its Apply button moves between Refresh and Close instead of
+    falling off the bottom. Wingmen are forgotten when the server stops, as upstream forgot them
+    on restart.
+96. Upstream's wingmen fired as their leader and along the leader's heading, so their shots left
+    wherever the leader pointed, and seeking missiles fired at nothing; the port fires as the
+    wingman, along its own heading, and gives seeking weapons the target, as the port's gunners
+    do. Upstream's auto-attack also took any entity its team check passed, which an aircraft's
+    check always did (items, animals, parked aircraft); the port takes what upstream's comments
+    describe: hostile mobs, target drones and McHeli gunners of a team the leader's pilot is not on.
+    An aircraft on a mission has no leader, so to it every McHeli gunner on a team is an enemy.
+97. Upstream flew helicopter wingmen as planes: the formation throttle (full throttle while far
+    from the slot, the leader's near it) and full throttle to attack made them climb without end,
+    0.35 throttle beside a stopped leader was too little for a stock helicopter to hover, and they
+    pitched the nose up to climb, which flies a helicopter backwards, away from a climbing leader.
+    The port sets a helicopter wingman's throttle to what holds it level against its gravity, plus
+    0.03 for each block it is below its slot (or attack height), and pitches the nose down half a
+    degree for each block it is from its slot, less 25 degrees for each block a tick it already
+    closes (from 15 degrees up to 20 down), to fly there without overshooting, levelling it again
+    while it waits beside a stopped leader. A helicopter
+    attacking with a fixed gun still aims with its nose, and planes keep upstream's flying.
+    On a mission a helicopter holds its target height the same way while it flies to the area,
+    orbits and returns, where upstream gave it a plane's full throttle; it hovers over the helipad
+    on that throttle, and descends onto it as far below its hover throttle as upstream's planes
+    flew below 0.57, plus 0.03 so that it settles on the pad. Returning below a raised helipad (a
+    roof or a deck), it climbs where it is before flying in, so it does not end up under the pad,
+    where upstream took any height below the pad as landed and cut the engine.
+98. Upstream kept chunks loaded around every aircraft only with its `forceChunkload` option, off
+    by default. The port always keeps the 5 by 5 chunks around an aircraft on a mission loaded,
+    and no others, so a mission flies on away from players; they are released when the order
+    ends. Orders are not saved, so a mission ends when the server stops, as upstream.
+99. The base screen's Mission tab orders an aircraft only for a player who can reach and edit the
+    base marker, takes the base from that marker, and orders only an aircraft within 512 blocks
+    of it that no player flies and that is not destroyed; upstream took the base from the client
+    and ordered any aircraft by UUID. The tab lists the eight such aircraft nearest the base,
+    where upstream showed the first eight it found. The order's numbers are kept within limits
+    (target within the world border's range, orbit up to 10,000 blocks, cruise height within the
+    world plus 256, up to 100 strike passes and a day's time limit); a number that is not one
+    takes upstream's default. A player taking the controls, or the aircraft being destroyed,
+    ends its order; upstream flew on under a player. Upstream turned the mission orbit with the
+    attack orbit's angle, in degrees, so attacking on station threw the orbit around; the port
+    keeps them apart. Upstream never turned a parked aircraft to its spot's heading, since the
+    order had ended by then; the port turns it as it parks. The tab's VTOL landing note is drawn
+    at the bottom left, where upstream's clipping hid it, and a button scrolled partly off the top
+    of either tab is hidden rather than drawn over the tab buttons.
 
 ## Upstream content issues kept as they are
 

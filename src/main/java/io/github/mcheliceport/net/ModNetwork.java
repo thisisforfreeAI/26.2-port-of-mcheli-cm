@@ -46,8 +46,8 @@ public final class ModNetwork {
 
     private static final Logger LOGGER = LogUtils.getLogger();
     /** Bump when payload encoding, menu layout or synchronized entity data changes. */
-    // Explosion effects now carry the cosmetic weapon family for terrain marks.
-    public static final String VERSION = "21";
+    // Wingman markers: the marker screen's payloads.
+    public static final String VERSION = "24";
 
     private ModNetwork() {
     }
@@ -111,6 +111,26 @@ public final class ModNetwork {
                         new io.github.mcheliceport.weapon.GpsPosition.Point(p.x(), p.y(), p.z(), p.active())));
         registrar.playToServer(BvrLockPayload.TYPE, BvrLockPayload.CODEC,
                 (p, context) -> applyBvrLock(context.player(), p.targetId()));
+        registrar.playToClient(OpenMarkerScreenPayload.TYPE, OpenMarkerScreenPayload.CODEC,
+                (p, context) -> io.github.mcheliceport.wingman.WingmanClientHooks.openMarkerScreen(p));
+        registrar.playToServer(MarkerUpdatePayload.TYPE, MarkerUpdatePayload.CODEC,
+                (p, context) -> applyMarkerUpdate(context.player(), p));
+        registrar.playToClient(OpenBaseScreenPayload.TYPE, OpenBaseScreenPayload.CODEC,
+                (p, context) -> io.github.mcheliceport.wingman.WingmanClientHooks.openBaseScreen(p));
+        registrar.playToServer(TaxiRouteActionPayload.TYPE, TaxiRouteActionPayload.CODEC,
+                (p, context) -> applyTaxiRouteAction(context.player(), p));
+        registrar.playToServer(DispatchOrderPayload.TYPE, DispatchOrderPayload.CODEC,
+                (p, context) -> applyDispatchOrder(context.player(), p));
+        registrar.playToServer(WingmanPanelOpenPayload.TYPE, WingmanPanelOpenPayload.CODEC,
+                (p, context) -> {
+                    if (context.player() instanceof ServerPlayer sp) {
+                        sendToPlayer(sp, io.github.mcheliceport.wingman.WingmanPanel.buildData(sp));
+                    }
+                });
+        registrar.playToClient(WingmanPanelDataPayload.TYPE, WingmanPanelDataPayload.CODEC,
+                (p, context) -> io.github.mcheliceport.wingman.WingmanClientHooks.openWingmanPanel(p));
+        registrar.playToServer(WingmanPanelActionPayload.TYPE, WingmanPanelActionPayload.CODEC,
+                (p, context) -> io.github.mcheliceport.wingman.WingmanPanel.apply(context.player(), p));
         registrar.playToServer(WeaponControlPayload.TYPE, WeaponControlPayload.CODEC, ModNetwork::handleWeaponControl);
         registrar.playToServer(AmmoRequestPayload.TYPE, AmmoRequestPayload.CODEC, ModNetwork::handleAmmoRequest);
         registrar.playToServer(ResupplyPayload.TYPE, ResupplyPayload.CODEC, ModNetwork::handleResupply);
@@ -263,6 +283,65 @@ public final class ModNetwork {
 
     /** The vehicle a player rides, in seat 0 or a crew seat (upstream's lookup in {@code onReceive}). */
     /** Upstream {@code PacketLockTargetBVR.onReceive}: the rider's current seeker takes the BVR target. */
+    /**
+     * Upstream {@code PacketMarkerUpdate}. Upstream accepted it from anyone for any marker; the
+     * port requires the player to be able to reach and edit the block, as vanilla's sign editing does.
+     */
+    public static void applyMarkerUpdate(Player player, MarkerUpdatePayload p) {
+        var marker = editableMarker(player, p.pos());
+        if (marker != null) {
+            marker.apply(p.markerType(), p.id().trim(), p.baseId().trim(), Mth.clamp(p.parkingHeading(), -1, 3));
+        }
+    }
+
+    /** The marker at the position, when the player can reach and edit it, as vanilla's sign editing. */
+    private static io.github.mcheliceport.wingman.block.@Nullable WingmanMarkerBlockEntity editableMarker(
+            Player player, net.minecraft.core.BlockPos pos) {
+        if (player.isSpectator() || !player.isWithinBlockInteractionRange(pos, 4.0)
+                || !player.level().mayInteract(player, pos)
+                || !(player.level().getBlockEntity(pos)
+                        instanceof io.github.mcheliceport.wingman.block.WingmanMarkerBlockEntity marker)) {
+            return null;
+        }
+        return marker;
+    }
+
+    /** Upstream {@code PacketBaseAction}'s {@code DISPATCH_ORDER}, from the base marker the player can edit. */
+    public static void applyDispatchOrder(Player player, DispatchOrderPayload p) {
+        io.github.mcheliceport.wingman.MissionDispatch.apply(player, p, editableMarker(player, p.pos()));
+    }
+
+    /**
+     * Upstream {@code PacketBaseAction}'s route actions, from the base screen of the base marker
+     * at the position. The base is the marker's, and a delete only removes that base's route;
+     * upstream took both from the client.
+     */
+    public static void applyTaxiRouteAction(Player player, TaxiRouteActionPayload p) {
+        var marker = editableMarker(player, p.pos());
+        if (marker == null || marker.getMarkerType() != io.github.mcheliceport.wingman.block.MarkerType.BASE
+                || marker.getMarkerId().isEmpty() || !(player.level() instanceof ServerLevel level)) {
+            return;
+        }
+        var route = p.route().withBase(marker.getMarkerId());
+        if (p.delete()) {
+            var saved = io.github.mcheliceport.wingman.registry.TaxiRouteRegistry.findById(level, route.routeId());
+            if (saved != null && saved.baseId().equals(route.baseId())) {
+                io.github.mcheliceport.wingman.registry.TaxiRouteRegistry.delete(level, route.routeId());
+            }
+            player.sendSystemMessage(net.minecraft.network.chat.Component.literal(
+                    "\u00a7aRoute \u00a7e" + route.routeId() + "\u00a7a deleted."));
+            return;
+        }
+        if (route.routeId().isEmpty() || route.parkingId().isEmpty() || route.runwayId().isEmpty()) {
+            player.sendSystemMessage(net.minecraft.network.chat.Component.literal(
+                    "\u00a7cRoute requires routeId, baseId, parkingId, runwayId."));
+            return;
+        }
+        io.github.mcheliceport.wingman.registry.TaxiRouteRegistry.save(level, route);
+        player.sendSystemMessage(net.minecraft.network.chat.Component.literal(
+                "\u00a7aRoute \u00a7e" + route.routeId() + "\u00a7a saved."));
+    }
+
     public static void applyBvrLock(Player player, int targetId) {
         AircraftEntity ac = riddenAircraft(player);
         io.github.mcheliceport.weapon.WeaponSet ws = ac != null ? ac.getCurrentWeapon(player) : null;

@@ -60,6 +60,7 @@ public final class McheliCePortClient {
         modBus.addListener(io.github.mcheliceport.client.hud.BvrHudLayer::register);
         modBus.addListener(io.github.mcheliceport.client.hud.MortarRadarHudLayer::register);
         modBus.addListener(io.github.mcheliceport.client.hud.GpsHudLayer::register);
+        modBus.addListener(io.github.mcheliceport.client.hud.WingmanKeyHintLayer::register);
         modBus.addListener(io.github.mcheliceport.client.render.GunnerRenderer::registerLayer);
         modBus.addListener(io.github.mcheliceport.client.hud.TeamListOverlay::register);
         modBus.addListener(io.github.mcheliceport.client.hud.GltdHudLayer::register);

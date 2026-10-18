@@ -61,9 +61,11 @@ public final class McheliCePort {
         });
         ModNetwork.register(modBus);
         io.github.mcheliceport.entity.uav.UavRemoteSession.register(modBus);
+        io.github.mcheliceport.wingman.handler.MissionChunkLoader.register(modBus);
         ModGameTests.register(modBus);
         io.github.mcheliceport.item.ChainItem.register();
         io.github.mcheliceport.radar.EntityInfoFeed.register();
+        io.github.mcheliceport.wingman.handler.WingmanTickHandler.register();
     }
 
     private void commonSetup(FMLCommonSetupEvent event) {
