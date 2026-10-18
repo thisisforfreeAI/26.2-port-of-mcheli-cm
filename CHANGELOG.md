@@ -63,6 +63,10 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
   supported (see Added); JEI shows the drafting table as a crafting station for them.
 
 ### Added
+- The ECM jammer, as upstream: an addon vehicle with an `ECM` section switches it on with the ECM
+  Jammer key (V). While a lock-breaking jammer (`Type: 2`) runs, radar and anti-radiation
+  missiles homing on the vehicle lose it and radar seekers cannot lock it. Gunner NPCs switch it
+  on against incoming missiles.
 - Gunner NPCs, as upstream: the Gunner (vs Monster) and Gunner (vs Player) items seat a gunner
   on a free seat within five blocks (a square at the crosshair shows the seat), and using one on
   a gunner takes it off. A gunner turns its seat's weapon towards the nearest monster, or the

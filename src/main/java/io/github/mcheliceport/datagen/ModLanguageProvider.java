@@ -113,6 +113,7 @@ public class ModLanguageProvider extends LanguageProvider {
         add(prefix + "flare", "Flare");
         add(prefix + "chaff", "Chaff");
         add(prefix + "aps", "Active Protection (APS)");
+        add(prefix + "ecm_jammer", "ECM Jammer");
         add(prefix + "airburst_reset", "Reset Airburst Distance");
     }
 

@@ -324,6 +324,10 @@ public class WeaponGuidanceSystem extends EntityGuidanceSystem {
         } else if (entity instanceof AircraftEntity ac) {
             if (this.isRadarMissile && ac.getChaffUseTime() > 0) {
                 specialized = Boolean.FALSE;
+            } else if (this.isRadarMissile && ac.getAcInfo() != null && ac.getAcInfo().ecmJammerType == 2
+                    && ac.isECMJammerUsing()) {
+                // A lock-breaking jammer denies radar-missile locks.
+                specialized = Boolean.FALSE;
             } else if (ac.isFlareUsing()) {
                 specialized = Boolean.FALSE;
             }

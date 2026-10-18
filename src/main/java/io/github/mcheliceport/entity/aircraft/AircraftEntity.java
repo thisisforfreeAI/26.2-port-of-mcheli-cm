@@ -114,6 +114,8 @@ public abstract class AircraftEntity extends Entity
     public static final int STATUS_THROTTLE_UP = 9;
     public static final int STATUS_THROTTLE_DOWN = 10;
     public static final int STATUS_GUNNER = 12;
+    /** Upstream status bit 15: the ECM jammer is running (set by the server). */
+    public static final int STATUS_ECM_JAMMER = 15;
 
     /** Fuel can slots of the aircraft inventory; the trunk follows them. */
     public static final int SLOT_FUEL_IN = 0;
@@ -241,6 +243,8 @@ public abstract class AircraftEntity extends Entity
     private final AircraftChaff chaff;
     private final AircraftAps aps;
     private final AircraftMissileDetector missileDetector;
+    private int ecmJammerRunningTick;
+    private int ecmJammerWaitTick;
     private int currentFlareIndex;
 
     /**
@@ -3209,6 +3213,15 @@ public abstract class AircraftEntity extends Entity
         if (!this.level().isClientSide() && this.flares.tick == 0 && ft != 0) {
             this.setCommonStatus(STATUS_FLARE, false);
         }
+        if (this.ecmJammerRunningTick > 0) {
+            this.ecmJammerRunningTick--;
+            if (this.ecmJammerRunningTick <= 0 && !this.level().isClientSide()) {
+                this.setECMJammerUsing(false);
+            }
+        }
+        if (this.ecmJammerWaitTick > 0) {
+            this.ecmJammerWaitTick--;
+        }
     }
 
     public AircraftFlares flares() {
@@ -3309,6 +3322,43 @@ public abstract class AircraftEntity extends Entity
 
     public int getApsTick() {
         return this.aps.tick;
+    }
+
+    public boolean haveECMJammer() {
+        return this.info != null && this.info.enableECMJammer;
+    }
+
+    /** Upstream {@code isECMJammerUsing}: the server's jammer status, seen on both sides. */
+    public boolean isECMJammerUsing() {
+        return this.getCommonStatus(STATUS_ECM_JAMMER);
+    }
+
+    public void setECMJammerUsing(boolean enabled) {
+        this.setCommonStatus(STATUS_ECM_JAMMER, enabled, true);
+    }
+
+    public boolean canUseECMJammer() {
+        return this.haveECMJammer() && this.ecmJammerWaitTick <= 0;
+    }
+
+    /**
+     * Upstream {@code useECMJammer}: runs the jammer for {@code UseTime} ticks, then it waits
+     * {@code WaitTime} ticks from the start before it can run again.
+     */
+    public boolean useECMJammer() {
+        if (!this.canUseECMJammer()) {
+            return false;
+        }
+        this.ecmJammerRunningTick = this.info.ecmJammerUseTime;
+        this.ecmJammerWaitTick = this.info.ecmJammerWaitTime;
+        if (!this.level().isClientSide()) {
+            this.setECMJammerUsing(true);
+        }
+        return true;
+    }
+
+    public int getECMJammerWaitTick() {
+        return this.ecmJammerWaitTick;
     }
 
     // ---- searchlights ----

@@ -1449,3 +1449,19 @@ killed a husk twenty blocks away within a second of it appearing
 ([firing](screens/m6-gunner-firing.png)). A gunner placed in survival on a new AH-64 aimed but
 did not fire, because the vehicle had no ammunition loaded, as upstream. Not run: vs-player
 gunners and countermeasures in the client, Vulkan.
+
+## ECM jammer increment
+
+- `AircraftEntity` ports upstream's jammer: `useECMJammer` runs it for `ECM.UseTime` ticks
+  (status bit 15, as upstream, so riders see it) and blocks it for `ECM.WaitTime` ticks from the
+  start. The ECM Jammer key (V) sends it with the other countermeasures from the pilot or seat 1.
+- `AircraftMissileDetector.destroyMissileECM` ports the soft kill: while a `Type: 2` jammer runs,
+  radar and anti-radiation missiles within 80 blocks that home on the vehicle or a rider lose their
+  target. `WeaponGuidanceSystem.canLockEntity` refuses radar locks on such a vehicle.
+- Gunner NPCs switch the jammer on against incoming missiles, as upstream's gunner did.
+
+Validation: `build` passed and the GameTest server passed all 219 required tests, including four
+new ones: the jammer runs for its use time and waits out its wait time; a type 2 jammer strips a
+radar missile but not a heat seeker, and a type 1 jammer strips nothing; a radar seeker cannot
+lock a jamming vehicle while a heat seeker can; and a gunner switches the jammer on against an
+incoming missile. No stock vehicle has a jammer, so it was not tried in the client.

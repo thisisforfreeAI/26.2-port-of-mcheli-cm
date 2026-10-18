@@ -248,6 +248,9 @@ public class GunnerEntity extends LivingEntity {
         if (ac.canUseChaff() && ac.useChaff()) {
             used = true;
         }
+        if (ac.haveECMJammer() && ac.useECMJammer()) {
+            used = true;
+        }
         if (ac.canUseAPS() && ac.useAPS()) {
             used = true;
         }

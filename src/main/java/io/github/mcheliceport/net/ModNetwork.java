@@ -560,6 +560,9 @@ public final class ModNetwork {
             if (p.useAps()) {
                 aircraft.useAPS();
             }
+            if (p.useEcm()) {
+                aircraft.useECMJammer();
+            }
         }
     }
 
