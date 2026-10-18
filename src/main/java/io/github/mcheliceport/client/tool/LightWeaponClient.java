@@ -194,7 +194,12 @@ public final class LightWeaponClient {
             }
         }
         prevItem = is.getItem();
-        gs.update();
+        // A complete lock no longer advances, so update() would drop it the next tick (upstream's
+        // lock lasted a tick and the attack key had to be held). Here it holds until the shot, until
+        // the target leaves the sight or the launcher is lowered.
+        if (!gs.isLockComplete()) {
+            gs.update();
+        }
     }
 
     /** Upstream {@code playerControl}. */

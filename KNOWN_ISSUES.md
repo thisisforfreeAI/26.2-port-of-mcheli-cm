@@ -60,8 +60,7 @@ Until then:
   external fluid capabilities still needs a registered fuel fluid (M6). Electric batteries and
   charger energy remain pending; named vehicle-to-vehicle fuel transfer is not an energy capability.
 - The drafting table is drawn with a simple block model; upstream drew a 3D model with a block
-  entity renderer (M6). The rangefinder, wrench, GLTD and hand-held launchers show as flat items in
-  the hand; upstream drew 3D models (M6).
+  entity renderer (M6).
 - Every placed wingman marker is a waypoint until the marker screen is ported (M6b).
 - An APS with upstream's "iron curtain" range (100) only plays its sounds (M6).
 - Turret ballistics lines (upstream `drawTurretBallistics`) are not drawn yet (M7).
@@ -324,8 +323,9 @@ These follow from how Minecraft 26.2 works or from decisions approved in PORTING
     empty rangefinder rather than breaking it, as 1.12 items did at their maximum damage.
 76. The wrench mines blocks tagged `mcheli_ce_port:wrench_metal` (1.12's iron material) at 20.5
     and harvests them, and `mcheli_ce_port:wrench_logic` (circuits, plants, vines, snow layers and
-    carpets) at 5.5; 26.2 has no block materials. Upstream's creative dig-delay reset and the
-    held-wrench swing animation (`MCH_WrenchAnim`) are not ported.
+    carpets) at 5.5; 26.2 has no block materials. Upstream's creative dig-delay reset is not
+    ported. The held wrench's repair swing is kept by the client rather than in the item, as
+    upstream did.
 77. The GLTD cools down for 450 ticks (460 on the client) after a strike, the value upstream's
     original source gave it (the A-10 strike's -300, lengthened by 150). McHeli CE's decompiled
     source turned that into 65,386 ticks, about 54 minutes. The designator's camera view is drawn
@@ -339,10 +339,9 @@ These follow from how Minecraft 26.2 works or from decisions approved in PORTING
     and the target to be alive and within 1.5 times `stingerLockRange`, where upstream took the
     client's target on trust, and a refused shot leaves the launcher loaded. Their keys are the
     vehicle keys (attack, Z, C and X), read while the player is on foot. The zoom is applied
-    through the field of view rather than upstream's camera-zoom reflection. The launchers keep
-    upstream's lock cycle: a complete lock lasts one tick before it starts again, so the attack
-    key is held, not clicked. They still show as flat items in the hand until the item models
-    are ported.
+    through the field of view rather than upstream's camera-zoom reflection. Upstream's complete
+    lock lasted one tick before it started again, so the attack key had to be held; here it holds
+    until the shot, until the target leaves the sight or until the launcher is lowered.
 
 ## Upstream content issues kept as they are
 

@@ -38,6 +38,7 @@ class ContentAssetsTest {
 
     private static final Path RESOURCES = ContentTestSupport.projectDir().resolve("src/main/resources");
     private static final Path GENERATED = ContentTestSupport.projectDir().resolve("src/generated/resources");
+    private static final Path MAIN = ContentTestSupport.projectDir().resolve("src/main/resources");
 
     private static Map<Identifier, byte[]> stockAssets() {
         ContentRegistries.Snapshot stock = ContentTestSupport.load(ContentTestSupport.stockPack());
@@ -69,6 +70,29 @@ class ContentAssetsTest {
     }
 
     @Test
+    void handToolsDrawTheir3dModelWithAFlatFallback() throws IOException {
+        Path items = MAIN.resolve("assets/mcheli_ce_port/items");
+        List<String> tools = new ArrayList<>();
+        try (Stream<Path> files = Files.list(items)) {
+            for (Path file : files.sorted().toList()) {
+                JsonObject model = json(Files.readAllBytes(file)).getAsJsonObject().getAsJsonObject("model");
+                String name = file.getFileName().toString().replace(".json", "");
+                tools.add(name);
+                assertEquals("mcheli_ce_port:tool", model.get("type").getAsString(), name);
+                assertEquals(name, model.get("tool").getAsString());
+                assertEquals("mcheli_ce_port:item/" + name + "_hand", model.get("base").getAsString());
+                assertTrue(Files.isRegularFile(MAIN.resolve("assets/mcheli_ce_port/models/item/" + name + "_hand.json")),
+                        "display transforms of " + name);
+                assertEquals("mcheli_ce_port:item/" + name,
+                        model.getAsJsonObject("fallback").get("model").getAsString());
+                assertTrue(Files.isRegularFile(GENERATED.resolve("assets/mcheli_ce_port/models/item/" + name + ".json")),
+                        "flat model of " + name);
+            }
+        }
+        assertEquals(List.of("fgm148", "fim92", "gltd", "rangefinder", "wrench"), tools);
+    }
+
+    @Test
     void everyFixedItemHasAModelTextureAndName() throws IOException {
         JsonObject english = json(Files.readAllBytes(GENERATED.resolve("assets/mcheli_ce_port/lang/en_us.json")))
                 .getAsJsonObject();
@@ -80,8 +104,10 @@ class ContentAssetsTest {
             }
             Identifier id = holder.getId();
             fixed.add(id);
-            Path definition = GENERATED.resolve("assets/mcheli_ce_port/items/" + id.getPath() + ".json");
-            assertTrue(Files.isRegularFile(definition), "item model definition of " + id);
+            // The hand tools' definitions are hand-written (ToolItemModel), the rest generated.
+            String definition = "assets/mcheli_ce_port/items/" + id.getPath() + ".json";
+            assertTrue(Files.isRegularFile(GENERATED.resolve(definition)) || Files.isRegularFile(MAIN.resolve(definition)),
+                    "item model definition of " + id);
             String key = (item instanceof BlockItem ? "block." : "item.") + id.toLanguageKey();
             assertTrue(english.has(key), "English name of " + id);
         }

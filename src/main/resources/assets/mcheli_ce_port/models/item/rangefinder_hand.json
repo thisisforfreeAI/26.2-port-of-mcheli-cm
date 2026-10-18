@@ -1,0 +1,58 @@
+{
+  "textures": {
+    "particle": "mcheli:items/rangefinder"
+  },
+  "display": {
+    "ground": {
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "translation": [
+        8,
+        6,
+        8
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    "thirdperson_righthand": {
+      "rotation": [
+        0,
+        180,
+        0
+      ],
+      "translation": [
+        -12.5,
+        9.5,
+        -8
+      ],
+      "scale": [
+        1.1,
+        1.1,
+        1.1
+      ]
+    },
+    "firstperson_righthand": {
+      "rotation": [
+        20,
+        -170,
+        0
+      ],
+      "translation": [
+        -6,
+        15.2,
+        -15
+      ],
+      "scale": [
+        1.7,
+        1.7,
+        1.7
+      ]
+    }
+  }
+}

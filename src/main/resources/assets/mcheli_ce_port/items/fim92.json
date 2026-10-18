@@ -1,0 +1,11 @@
+{
+  "model": {
+    "type": "mcheli_ce_port:tool",
+    "tool": "fim92",
+    "base": "mcheli_ce_port:item/fim92_hand",
+    "fallback": {
+      "type": "minecraft:model",
+      "model": "mcheli_ce_port:item/fim92"
+    }
+  }
+}
