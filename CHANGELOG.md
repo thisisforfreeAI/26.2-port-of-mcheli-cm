@@ -63,6 +63,9 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
   supported (see Added); JEI shows the drafting table as a crafting station for them.
 
 ### Added
+- M8 aircraft engine exhaust: short throttle-responsive turbine wisps at defined outlets and
+  restrained hot jet accents, with shared smoke admission and global quality/load caps. Stock
+  Apache and two Black Hawk variants include outlets; Classic nozzle smoke remains available.
 - The GPS panel, as upstream: Open GPS Panel (N) in a vehicle takes X, Y and Z (or the player's
   position) for a GPS point, marked on the HUD with its distance until the player gets off.
 - The BVR scope and the mortar radar, as upstream: a weapon with `EnableBVR` marks vehicles, chaff

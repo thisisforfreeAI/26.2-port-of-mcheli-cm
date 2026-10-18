@@ -370,6 +370,7 @@ public abstract class WingedAircraftEntity extends AircraftEntity implements Pla
     }
 
     private void updatePlaneParticles() {
+        boolean enhancedExhaust = McheliEffects.engineExhaust(this);
         var seat = this.getSeatInfo(0);
         PlaneParticles.Frame frame = new PlaneParticles.Frame(this.position(), new Vec3(this.xo, this.yo, this.zo),
                 this.getDeltaMovement(), this.getYaw(), this.getPitch(), this.getRoll(), this.getNozzleRotation(),
@@ -394,7 +395,7 @@ public abstract class WingedAircraftEntity extends AircraftEntity implements Pla
                     double mx, double my, double mz) {
                 McheliEffects.spawnTileCrack(level(), bx, by, bz, x, y, z, mx, my, mz);
             }
-        });
+        }, !enhancedExhaust);
     }
 
     @Override

@@ -395,6 +395,7 @@ public class HeliEntity extends AircraftEntity implements HeliFlightModel.Body {
             }
         }
         this.onUpdateParticleSandCloud(false);
+        McheliEffects.engineExhaust(this);
         this.onUpdateDamageSmoke();
     }
 
