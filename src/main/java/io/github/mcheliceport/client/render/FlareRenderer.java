@@ -3,6 +3,7 @@ package io.github.mcheliceport.client.render;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
+import io.github.mcheliceport.config.EffectQuality;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
@@ -11,6 +12,8 @@ import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
+import net.minecraft.util.LightCoordsUtil;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 
 /**
@@ -25,23 +28,28 @@ public class FlareRenderer<T extends Entity> extends EntityRenderer<T, FlareRend
     public static class State extends EntityRenderState {
         public float yaw;
         public float pitch;
+        /** M8: drawn full bright with a flickering glow. */
+        public boolean enhanced;
     }
 
     private final float scale;
     private final int color;
+    /** Flares burn; chaff (metal strips) does not. */
+    private final boolean glows;
 
-    private FlareRenderer(EntityRendererProvider.Context context, float scale, int color) {
+    private FlareRenderer(EntityRendererProvider.Context context, float scale, int color, boolean glows) {
         super(context);
         this.scale = scale;
         this.color = color;
+        this.glows = glows;
     }
 
     public static <T extends Entity> FlareRenderer<T> flare(EntityRendererProvider.Context context) {
-        return new FlareRenderer<>(context, 1.0F, 0xFFFFFF80);
+        return new FlareRenderer<>(context, 1.0F, 0xFFFFFF80, true);
     }
 
     public static <T extends Entity> FlareRenderer<T> chaff(EntityRendererProvider.Context context) {
-        return new FlareRenderer<>(context, 0.5F, 0xFFFFFFFF);
+        return new FlareRenderer<>(context, 0.5F, 0xFFFFFFFF, false);
     }
 
     @Override
@@ -54,11 +62,14 @@ public class FlareRenderer<T extends Entity> extends EntityRenderer<T, FlareRend
         super.extractRenderState(entity, state, partialTicks);
         state.yaw = entity.getYRot();
         state.pitch = entity.getXRot();
+        state.enhanced = EffectQuality.enhanced();
     }
 
     @Override
     public void submit(State state, PoseStack poseStack, SubmitNodeCollector collector, CameraRenderState camera) {
-        int light = state.lightCoords;
+        boolean glow = state.enhanced && this.glows;
+        // Upstream lit flares by the world, so they went dark at night; the M8 look burns at full brightness.
+        int light = glow ? LightCoordsUtil.FULL_BRIGHT : state.lightCoords;
         int color = this.color;
         poseStack.pushPose();
         poseStack.mulPose(Axis.YP.rotationDegrees(-state.yaw));
@@ -68,6 +79,11 @@ public class FlareRenderer<T extends Entity> extends EntityRenderer<T, FlareRend
         collector.submitCustomGeometry(poseStack, RenderTypes.entityTranslucent(TEXTURE),
                 (pose, buffer) -> cube(buffer, pose, 0.125F, color, light));
         poseStack.popPose();
+        if (glow) {
+            float flicker = 0.85F + 0.15F * Mth.sin(state.ageInTicks * 1.7F);
+            GlowGeometry.disc(poseStack, collector, camera, 1.4F * this.scale, 0xFFD890, 0.8F * flicker);
+            GlowGeometry.disc(poseStack, collector, camera, 0.45F * this.scale, 0xFFFFF0, flicker);
+        }
         super.submit(state, poseStack, collector, camera);
     }
 

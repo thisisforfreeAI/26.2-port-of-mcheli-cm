@@ -32,6 +32,7 @@ public final class ClientConfig {
     public static final ModConfigSpec.ConfigValue<String> HIT_MARK_COLOR;
     public static final ModConfigSpec.BooleanValue DEFAULT_EXPLOSION_PARTICLE;
     public static final ModConfigSpec.IntValue ALIVE_TIME_OF_CARTRIDGE;
+    public static final ModConfigSpec.EnumValue<EffectQuality> EFFECT_QUALITY;
     public static final ModConfigSpec.BooleanValue SWITCH_WEAPON_WITH_MOUSE_WHEEL;
     public static final ModConfigSpec.BooleanValue DISPLAY_ENTITY_MARKER;
     public static final ModConfigSpec.DoubleValue ENTITY_MARKER_SIZE;
@@ -124,6 +125,10 @@ public final class ClientConfig {
         ALIVE_TIME_OF_CARTRIDGE = builder
                 .comment("Ticks an ejected cartridge stays on the ground. Upstream: AliveTimeOfCartridge.")
                 .defineInRange("aliveTimeOfCartridge", 200, 0, 1000);
+        EFFECT_QUALITY = builder
+                .comment("How explosions, smoke, flashes, flares, tracers, splashes and downwash look. CLASSIC is",
+                        "upstream's look; ENHANCED adds smooth fading, fireballs and glows. Not in upstream.")
+                .defineEnum("effectQuality", EffectQuality.ENHANCED);
         builder.pop();
 
         builder.push("debug");

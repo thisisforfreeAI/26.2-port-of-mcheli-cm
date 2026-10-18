@@ -2591,6 +2591,7 @@ public abstract class AircraftEntity extends Entity
         }
         double particlePosY = (int) this.getY();
         boolean found = false;
+        net.minecraft.world.level.block.state.BlockState ground = null;
         float scale = this.info.particlesScale * 3.0F;
         if (seaOnly) {
             scale *= 2.0F;
@@ -2610,6 +2611,7 @@ public abstract class AircraftEntity extends Entity
                         }
                         if (count <= 0) {
                             particlePosY = this.getY() + 1.0 + scale / 5.0F - y;
+                            ground = state;
                             found = true;
                             x += 100;
                             break;
@@ -2631,6 +2633,7 @@ public abstract class AircraftEntity extends Entity
                 prm.setColor(prm.a * 0.6F, prm.r, prm.g, prm.b);
                 prm.age = (int) (10.0F * scale);
                 prm.motionYUpAge = seaOnly ? 0.2F : 0.1F;
+                prm.groundState = ground;
                 io.github.mcheliceport.effect.McheliEffects.spawnParticle(this.level(), prm);
             }
         }

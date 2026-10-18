@@ -1,5 +1,6 @@
 package io.github.mcheliceport.client.particle;
 
+import io.github.mcheliceport.config.EffectQuality;
 import io.github.mcheliceport.effect.McheliEffects;
 import io.github.mcheliceport.effect.ParticleParam;
 import java.util.List;
@@ -41,7 +42,19 @@ public final class ClientEffects implements McheliEffects.Sink {
         SmokeParticle fx = p.name.equalsIgnoreCase("Splash")
                 ? new SplashParticle(clientLevel, p.posX, p.posY, p.posZ, p.motionX, p.motionY, p.motionZ)
                 : new SmokeParticle(clientLevel, p.posX, p.posY, p.posZ, p.motionX, p.motionY, p.motionZ);
-        fx.setColor(p.r, p.g, p.b);
+        boolean enhanced = EffectQuality.enhanced();
+        fx.enhanced = enhanced;
+        if (enhanced && p.groundState != null) {
+            float[] tint = groundTint(clientLevel, BlockPos.containing(p.posX, p.posY, p.posZ), p.groundState, p.r,
+                    p.g, p.b);
+            fx.setColor(tint[0], tint[1], tint[2]);
+        } else {
+            fx.setColor(p.r, p.g, p.b);
+        }
+        if (enhanced && p.name.equalsIgnoreCase("explode")) {
+            // M8 fireballs: explosion puffs are born as fire and cool to their own smoke colour.
+            fx.heat = 0.6F + clientLevel.getRandom().nextFloat() * 0.4F;
+        }
         fx.setAlphaF(p.a);
         if (p.age > 0) {
             fx.setParticleMaxAge(p.age);
@@ -70,7 +83,38 @@ public final class ClientEffects implements McheliEffects.Sink {
         fx.setParticleMaxAge(age);
         fx.setColor(r, g, b);
         fx.setAlphaF(a);
+        boolean enhanced = EffectQuality.enhanced();
+        fx.enhanced = enhanced;
         Minecraft.getInstance().particleEngine.add(fx);
+        if (enhanced) {
+            // M8: a short warm glow around the flash.
+            Minecraft.getInstance().particleEngine.add(new GlowParticle(clientLevel, x, y, z, size * 1.6F, 0.3F,
+                    3, Math.min(1.0F, r * 1.1F), g * 0.85F, b * 0.6F, a * 0.55F));
+        }
+    }
+
+    /** M8 glow under an explosion's fireball (not in water). */
+    static void spawnExplosionGlow(ClientLevel level, double x, double y, double z, float size) {
+        float radius = Math.min(size * 1.2F, 12.0F);
+        int life = (int) Math.min(6.0F + size, 14.0F);
+        Minecraft.getInstance().particleEngine.add(new GlowParticle(level, x, y, z, radius, 0.5F, life,
+                1.0F, 0.6F, 0.25F, 0.9F));
+    }
+
+    /**
+     * M8 downwash colour: the particle's grey drawn toward the colour of the ground below (white
+     * spray over water). Returns {@code r, g, b}.
+     */
+    static float[] groundTint(ClientLevel level, BlockPos pos, BlockState ground, float r, float g, float b) {
+        if (ground.getFluidState().is(net.minecraft.tags.FluidTags.WATER)) {
+            return new float[] {0.9F, 0.94F, 1.0F};
+        }
+        int col = ground.getMapColor(level, pos).col;
+        float k = 0.6F;
+        return new float[] {
+                r + (((col >> 16) & 0xFF) / 255.0F - r) * k,
+                g + (((col >> 8) & 0xFF) / 255.0F - g) * k,
+                b + ((col & 0xFF) / 255.0F - b) * k};
     }
 
     @Override

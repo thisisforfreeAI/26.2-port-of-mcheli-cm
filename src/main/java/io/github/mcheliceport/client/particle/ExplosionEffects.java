@@ -1,6 +1,7 @@
 package io.github.mcheliceport.client.particle;
 
 import io.github.mcheliceport.config.ClientConfig;
+import io.github.mcheliceport.config.EffectQuality;
 import io.github.mcheliceport.effect.ParticleParam;
 import io.github.mcheliceport.weapon.explosion.McheliExplosion;
 import java.util.ArrayList;
@@ -47,6 +48,9 @@ public final class ExplosionEffects {
         List<BlockPos> blocks = new ArrayList<>(affected);
         blocks.addAll(McheliExplosion.rayMarchBlocks(level, null, x, y, z, size, 1.0F, false, level.getRandom()));
         boolean vanilla = ClientConfig.get(ClientConfig.DEFAULT_EXPLOSION_PARTICLE);
+        if (!vanilla && size >= 1.0F && EffectQuality.enhanced()) {
+            ClientEffects.spawnExplosionGlow(level, x, y, z, size);
+        }
         int cnt = 0;
         int flareCnt = (int) size;
         for (BlockPos pos : blocks) {

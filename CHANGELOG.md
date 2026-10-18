@@ -36,6 +36,13 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 
 ### Added
 
+- M8 effects polish, first slice, for the vehicles already ported (see docs/M8_PLAN.md): smoke
+  fades in and out and grows smoothly; explosion puffs start as fire and cool to smoke over a
+  soft additive fireball glow; muzzle flashes glow additively; machine-gun tracers burn at full
+  brightness with a soft streak; flares burn at full brightness with a flickering glow; missile
+  flames glow; downwash dust takes the ground's colour, with white spray over water. The client
+  config's `effects.effectQuality` switches back to upstream's look (`CLASSIC`). Only vanilla
+  pipeline state is used, so it draws the same on OpenGL and Vulkan.
 - The hand-held FIM-92 Stinger and FGM-148 Javelin work: hold use to raise the sight, which
   zooms and locks on to an aircraft or flying mob (Stinger) or a ground target (Javelin) in view;
   press the attack key and the missile leaves once the lock is complete. A shot empties the

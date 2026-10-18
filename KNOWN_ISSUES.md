@@ -341,6 +341,14 @@ These follow from how Minecraft 26.2 works or from decisions approved in PORTING
     lock lasted one tick before it started again, so the attack key had to be held; here it holds
     until the shot, until the target leaves the sight or until the launcher is lowered.
 
+79. McHeli's effects are drawn with the M8 look by default (client config
+    `effects.effectQuality = ENHANCED`): smoke fades in and out and grows smoothly, explosion
+    puffs start as fire, muzzle flashes, fireballs, flares, tracers and missile flames glow
+    additively, flares and tracers burn at full brightness at night, and downwash takes the
+    ground's colour (white spray over water). `CLASSIC` draws exactly as upstream. The same
+    particles spawn at the same moments either way, so gameplay does not change
+    (docs/M8_PLAN.md).
+
 ## Upstream content issues kept as they are
 
 Except for restoring searchlight alpha, the port preserves what upstream's conversion of
