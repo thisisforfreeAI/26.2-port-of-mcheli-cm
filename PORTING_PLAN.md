@@ -259,7 +259,8 @@ Deps columns come from a per-package scan of 1.12.2 API usage (counts are matchi
   JEI registration/categories for special or drafting-table recipes where needed. Keep JEI
   optional and client-side. Verify a compatible Minecraft/NeoForge/JEI version, recipe reloads,
   ingredient tags, damaged-item inputs and displayed outputs; also verify client and dedicated
-  server startup without JEI. This integration is planned, not implemented.
+  server startup without JEI. Fixed, content and special crafting recipes are implemented
+  (`compat/jei`, see docs/M6_PLAN.md); drafting-table recipes and a `/reload` check remain.
 
 ---
 
