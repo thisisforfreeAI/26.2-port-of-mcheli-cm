@@ -32,7 +32,7 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 - Add optional Just Enough Items (JEI) recipe/usage compatibility to the remaining M6 crafting
   plan, covering fixed/content recipes, special fuel/rangefinder recipes and drafting-table
   recipes where applicable. Fixed/content recipes and the two special recipes are now
-  supported (see Added); drafting-table recipes remain pending.
+  supported (see Added); JEI shows the drafting table as a crafting station for them.
 
 ### Added
 
@@ -43,6 +43,14 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
   flames glow; downwash dust takes the ground's colour, with white spray over water. The client
   config's `effects.effectQuality` switches back to upstream's look (`CLASSIC`). Only vanilla
   pipeline state is used, so it draws the same on OpenGL and Vulkan.
+
+- Using a drafting table opens upstream's recipe browser: lists of helicopters, planes,
+  vehicles, tanks, items and ships, a search box, a recipe page with its description pictures
+  and a vehicle's specifications, and Create, which makes the recipe from the inventory into the
+  output slot (dropped if the screen closes with it there). Creative players need no items. A
+  vehicle's page shows its model, drawn first as lines and then filled in, which a drag in the
+  right half of the window turns (left button), zooms (right) or moves (middle).
+
 - The hand-held FIM-92 Stinger and FGM-148 Javelin work: hold use to raise the sight, which
   zooms and locks on to an aircraft or flying mob (Stinger) or a ground target (Javelin) in view;
   press the attack key and the missile leaves once the lock is complete. A shot empties the

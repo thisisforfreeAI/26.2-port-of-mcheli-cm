@@ -10,6 +10,7 @@ import java.util.List;
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
 import mezz.jei.api.constants.RecipeTypes;
+import mezz.jei.api.registration.IRecipeCatalystRegistration;
 import mezz.jei.api.registration.IRecipeRegistration;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.registries.Registries;
@@ -33,7 +34,7 @@ import net.neoforged.neoforge.common.crafting.DataComponentIngredient;
  * <p>The fixed recipes and the content recipes are ordinary shaped and shapeless crafting recipes,
  * which JEI lists by itself. It skips special recipes, so the fuel refill and rangefinder recharge
  * are shown as example crafting grids, each made by the real recipe, plus an information page
- * that explains the variable fuel refill.
+ * that explains the variable fuel refill. The drafting table is shown as a crafting station.
  */
 @JeiPlugin
 public final class McheliJeiPlugin implements IModPlugin {
@@ -57,6 +58,15 @@ public final class McheliJeiPlugin implements IModPlugin {
                         ModItems.FUEL.get().getDefaultInstance().getMaxDamage()));
         registration.addItemStackInfo(new ItemStack(ModItems.RANGEFINDER.get()),
                 Component.translatable("jei.mcheli_ce_port.info.charge_power_range_finder"));
+    }
+
+    /**
+     * The drafting table makes the port's crafting recipes (all of them ordinary crafting
+     * recipes), so JEI lists it beside the crafting table for them.
+     */
+    @Override
+    public void registerRecipeCatalysts(IRecipeCatalystRegistration registration) {
+        registration.addCraftingStation(RecipeTypes.CRAFTING, ModItems.DRAFTING_TABLE.get());
     }
 
     private static void addExamples(List<RecipeHolder<CraftingRecipe>> recipes, String name, List<Example> examples) {

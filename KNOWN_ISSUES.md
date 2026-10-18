@@ -25,7 +25,7 @@ broader gameplay and hardware checks remain pending.
 
 | Area | Planned milestone |
 |---|---|
-| Remaining plane/ground equipment and UAV station preview camera, gunner NPCs and mobs in seats (and their weapon use), the rest of the aircraft GUI, drafting table screen, charger, the team scoreboard screens | M6 |
+| Remaining plane/ground equipment and UAV station preview camera, gunner NPCs and mobs in seats (and their weapon use), the rest of the aircraft GUI, charger, the team scoreboard screens | M6 |
 | BVR and passive radar, GPS panel and GPS missiles, mortar radar and RWR overlays, ECM jammer, the pulse-Doppler notch, the APS "iron curtain", data link, anti-radiation missiles, `Destruct` bombs (UAVs) | M6 (with the vehicles that use them) |
 | Wingman (AI wingmen, marker block screens and types, missions, `/wingman`) | M6b |
 | Remaining `/mcheli` commands (including reloading content with `reconfig`), advancement triggers, long-distance tracking and rendering, thermal vision (the third camera mode), GPU-buffer model rendering, projectile chunk loading (`ProjectileChunkLoad`), HBM:NTM stubs, performance work | M7 |
@@ -340,8 +340,19 @@ These follow from how Minecraft 26.2 works or from decisions approved in PORTING
     through the field of view rather than upstream's camera-zoom reflection. Upstream's complete
     lock lasted one tick before it started again, so the attack key had to be held; here it holds
     until the shot, until the target leaves the sight or until the launcher is lowered.
-
-79. McHeli's effects are drawn with the M8 look by default (client config
+79. The drafting table lists every shaped or shapeless crafting recipe that makes one of the
+    port's items, fixed items first in upstream's order, and the server sends that list when the
+    screen opens (26.2 clients do not receive recipes). Upstream checked each ingredient against
+    the inventory on its own, so one item could stand for several and Create still gave the
+    result after taking fewer items; here every ingredient needs its own item and a short
+    inventory makes nothing. Description pages are `drafting_table_desc/<item>/<n>.png`, since
+    26.2 resource paths cannot hold upstream's `#`; addon pages named the old way are not shown.
+    The list scroll bar is drawn with plain fills. On the 3D vehicle page the port's models hold
+    triangles, so the build-up counts triangles rather than upstream's faces (a model of quads
+    takes twice as long) and the lines show each quad's diagonal. Crawler tracks are not drawn
+    there: upstream's call had no vehicle and threw for every tracked vehicle. The page is there
+    when the vehicle has a model file and stays empty while the model loads in the background.
+80. McHeli's effects are drawn with the M8 look by default (client config
     `effects.effectQuality = ENHANCED`): smoke fades in and out and grows smoothly, explosion
     puffs start as fire, muzzle flashes, fireballs, flares, tracers and missile flames glow
     additively, flares and tracers burn at full brightness at night, and downwash takes the
