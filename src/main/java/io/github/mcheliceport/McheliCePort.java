@@ -40,6 +40,8 @@ public final class McheliCePort {
         container.registerConfig(ModConfig.Type.SERVER, ServerConfig.SPEC);
 
         modBus.addListener(this::commonSetup);
+        modBus.addListener((net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent event) -> event.put(
+                ModEntityTypes.GUNNER.get(), net.minecraft.world.entity.LivingEntity.createLivingAttributes().build()));
         modBus.addListener((RegisterCapabilitiesEvent event) -> {
             event.registerEntity(Capabilities.Item.ENTITY,
                     ModEntityTypes.CONTAINER.get(),

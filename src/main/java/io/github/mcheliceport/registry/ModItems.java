@@ -45,8 +45,12 @@ public final class ModItems {
     private static final List<ContentItem> CONTENT_ITEMS = new ArrayList<>();
     private static final Set<String> USED_PATHS = new HashSet<>();
 
-    public static final DeferredItem<Item> SPAWN_GUNNER_VS_MONSTER = item("spawn_gunner_vs_monster", p -> p.stacksTo(1));
-    public static final DeferredItem<Item> SPAWN_GUNNER_VS_PLAYER = item("spawn_gunner_vs_player", p -> p.stacksTo(1));
+    public static final DeferredItem<io.github.mcheliceport.item.SpawnGunnerItem> SPAWN_GUNNER_VS_MONSTER = register(
+            "spawn_gunner_vs_monster", p -> new io.github.mcheliceport.item.SpawnGunnerItem(
+                    io.github.mcheliceport.entity.gunner.GunnerEntity.VS_MONSTER, p), p -> p.stacksTo(1), ModTab.ITEMS);
+    public static final DeferredItem<io.github.mcheliceport.item.SpawnGunnerItem> SPAWN_GUNNER_VS_PLAYER = register(
+            "spawn_gunner_vs_player", p -> new io.github.mcheliceport.item.SpawnGunnerItem(
+                    io.github.mcheliceport.entity.gunner.GunnerEntity.VS_PLAYER, p), p -> p.stacksTo(1), ModTab.ITEMS);
     public static final DeferredItem<Item> RANGEFINDER = register("rangefinder",
             io.github.mcheliceport.item.RangeFinderItem::new, p -> p.durability(10), ModTab.ITEMS);
     /**

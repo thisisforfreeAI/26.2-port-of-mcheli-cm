@@ -1,6 +1,6 @@
 package io.github.mcheliceport.registry;
 
-import io.github.mcheliceport.entity.PlaceholderEntity;
+import io.github.mcheliceport.entity.gunner.GunnerEntity;
 import io.github.mcheliceport.entity.flare.ChaffEntity;
 import io.github.mcheliceport.entity.throwable.ThrowableEntity;
 import io.github.mcheliceport.entity.flare.FlareEntity;
@@ -37,8 +37,7 @@ import io.github.mcheliceport.entity.chain.ChainEntity;
  * rounded up to whole chunks (the server's view distance still caps them, as it did upstream
  * without its tracking mixin).
  *
- * <p>Helicopters and seats are real since M3. The others use {@link PlaceholderEntity} until their
- * entity is ported: the weapon entities are real since M5, the other vehicles and the rest come in M6. Upstream's two hit box types ({@code MCH.E.HitBox} and
+ * <p>Upstream's two hit box types ({@code MCH.E.HitBox} and
  * {@code MCH.E.PSeat}) are not registered: hit boxes become parts of the vehicle entity
  * (PORTING_PLAN.md section 5.2).
  */
@@ -121,7 +120,11 @@ public final class ModEntityTypes {
             FlareEntity::new, 1.0f, 1.0f, 330, 10);
     public static final DeferredHolder<EntityType<?>, EntityType<ThrowableEntity>> THROWABLE = weapon("throwable",
             ThrowableEntity::new, 0.25f, 0.25f, 330, 10);
-    public static final DeferredHolder<EntityType<?>, EntityType<PlaceholderEntity>> GUNNER = placeholder("gunner", 0.6f, 1.8f, 530, 5);
+    /** Upstream's {@code MCH_EntityGunner}, the NPC gunner. */
+    public static final DeferredHolder<EntityType<?>, EntityType<GunnerEntity>> GUNNER = register("gunner",
+            ModRegistries.ENTITY_TYPES.registerEntityType("gunner", GunnerEntity::new, MobCategory.MISC,
+                    builder -> builder.sized(0.6F, 1.8F).clientTrackingRange(toChunks(530)).updateInterval(5)
+                            .setShouldReceiveVelocityUpdates(true)));
     public static final DeferredHolder<EntityType<?>, EntityType<ChaffEntity>> CHAFF = weapon("chaff",
             ChaffEntity::new, 1.0f, 1.0f, 330, 10);
 
@@ -157,19 +160,6 @@ public final class ModEntityTypes {
                         .clientTrackingRange(toChunks(trackingRangeBlocks))
                         .updateInterval(updateInterval)
                         .setShouldReceiveVelocityUpdates(true));
-        ALL.add(holder);
-        return holder;
-    }
-
-    private static DeferredHolder<EntityType<?>, EntityType<PlaceholderEntity>> placeholder(String name, float width,
-            float height, int trackingRangeBlocks, int updateInterval) {
-        DeferredHolder<EntityType<?>, EntityType<PlaceholderEntity>> holder = ModRegistries.ENTITY_TYPES
-                .registerEntityType(name, PlaceholderEntity::new, MobCategory.MISC, builder -> builder
-                        .sized(width, height)
-                        .clientTrackingRange(toChunks(trackingRangeBlocks))
-                        .updateInterval(updateInterval)
-                        .noSummon()
-                        .noSave());
         ALL.add(holder);
         return holder;
     }

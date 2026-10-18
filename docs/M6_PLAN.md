@@ -1414,3 +1414,38 @@ AN-2 as pilot brought the two cows beside it aboard
 ([unloaded](screens/m6-mobs-unloaded.png)). Clicking a passenger seat directly seated the
 player without bringing mobs. Not run: a parachute drop in flight in the client,
 Vulkan.
+
+## Gunner NPCs increment
+
+- `GunnerEntity` ports upstream's `MCH_EntityGunner`: a living entity that only exists in a
+  vehicle (it goes away a second after leaving one) and keeps its team, owner, target type and
+  creative flag. On a vehicle with gunners switched on (Ctrl+C, on for new vehicles as upstream)
+  it searches every second for the nearest monster, or player of another team, within the common
+  config ranges that its seat's weapon can reach, turns at upstream's rates, leads the target by
+  the weapon's speed and fires through `AircraftWeapons.useCurrentWeapon`, passing the target to
+  seeker weapons and waiting for an overheating gun to cool. Against an incoming guided missile it
+  uses flares (preferring pattern 10), chaff and the APS, as upstream's gunner did.
+- `SpawnGunnerItem` ports `MCH_ItemSpawnGunner` for the two Gunner items: a five-block search
+  finds a gunner, then a seat, then a vehicle that is not a UAV; it seats a gunner of the player's
+  team, or takes off a gunner the player may remove. `SpawnGunnerHudLayer` ports
+  `MCH_GuiSpawnGunner`'s square and label, and `GunnerRenderer` ports `MCH_RenderGunner` with
+  upstream's texture on the 64×32 biped.
+- The weapon code that asked "is this a player?" now accepts a gunner (`isWeaponUser`), a gunner's
+  reload adds the weapon's reload count to its wait as upstream, and a vehicle counts as creative
+  when a creative gunner rides it. The gunner registry name is now a real entity, so
+  `PlaceholderEntity` is gone.
+- New common config settings: the gunner search ranges against monsters and players (upstream's
+  `RangeOfGunner_*`) and `hitBoxDelayTick`, as upstream.
+
+Validation: `build` passed and the GameTest server passed all 215 required tests, including six
+new ones: a gunner on an AH-64 picks a husk and hits it; it holds fire with gunners switched off;
+against players it only targets other teams and never a creative player; it fires flares at an
+incoming anti-tank missile; the item seats a gunner of the player's team and a second use takes
+it off; and a gunner off a vehicle goes away, dropping its item only when placed in survival. On a
+dedicated server with an OpenGL client: the crosshair square named the free seat and then the
+seated gunner ([overlay](screens/m6-gunner-overlay.png)), the gunner sat in the AH-64's front
+seat with its team name ([seated](screens/m6-gunner-seated.png)), and a creative gunner shot and
+killed a husk twenty blocks away within a second of it appearing
+([firing](screens/m6-gunner-firing.png)). A gunner placed in survival on a new AH-64 aimed but
+did not fire, because the vehicle had no ammunition loaded, as upstream. Not run: vs-player
+gunners and countermeasures in the client, Vulkan.

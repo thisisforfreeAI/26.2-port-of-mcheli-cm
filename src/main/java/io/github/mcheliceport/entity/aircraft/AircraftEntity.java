@@ -11,6 +11,7 @@ import io.github.mcheliceport.content.aircraft.BoundingBoxInfo;
 import io.github.mcheliceport.content.aircraft.SeatInfo;
 import io.github.mcheliceport.content.aircraft.SeatRackInfo;
 import io.github.mcheliceport.entity.parachute.ParachuteEntity;
+import io.github.mcheliceport.entity.gunner.GunnerEntity;
 import io.github.mcheliceport.entity.seat.SeatEntity;
 import io.github.mcheliceport.entity.uav.UavStationEntity;
 import io.github.mcheliceport.entity.weapon.TvMissileEntity;
@@ -273,6 +274,8 @@ public abstract class AircraftEntity extends Entity
         this.chaff = new AircraftChaff(level, this);
         this.aps = new AircraftAps(level, this);
         this.missileDetector = new AircraftMissileDetector(this, level);
+        // Upstream entityInit: NPC gunners start switched on (a saved vehicle reads its own setting).
+        this.setGunnerStatus(true);
     }
 
     // ---- type and content ----
@@ -2455,8 +2458,15 @@ public abstract class AircraftEntity extends Entity
 
     // ---- fuel ----
 
+    /** Upstream {@code isCreative}: a creative player, or a gunner placed by one. */
     public boolean isCreative(@Nullable Entity entity) {
-        return entity instanceof Player player && player.isCreative();
+        return entity instanceof Player player && player.isCreative()
+                || entity instanceof GunnerEntity gunner && gunner.isCreative;
+    }
+
+    /** Riders that select and aim the seat's weapons: players and gunners (upstream's two checks). */
+    public static boolean isWeaponUser(@Nullable Entity entity) {
+        return entity instanceof Player || entity instanceof GunnerEntity;
     }
 
     /** Upstream {@code isInfinityFuel}. */

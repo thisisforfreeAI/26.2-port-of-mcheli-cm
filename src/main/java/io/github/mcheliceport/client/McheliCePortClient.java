@@ -54,6 +54,8 @@ public final class McheliCePortClient {
         modBus.addListener(io.github.mcheliceport.client.render.SearchLightRenderer::registerPipelines);
         modBus.addListener(AircraftHudLayer::register);
         modBus.addListener(io.github.mcheliceport.client.hud.ToolHudLayer::register);
+        modBus.addListener(io.github.mcheliceport.client.hud.SpawnGunnerHudLayer::register);
+        modBus.addListener(io.github.mcheliceport.client.render.GunnerRenderer::registerLayer);
         modBus.addListener(io.github.mcheliceport.client.hud.TeamListOverlay::register);
         modBus.addListener(io.github.mcheliceport.client.hud.GltdHudLayer::register);
         modBus.addListener(io.github.mcheliceport.client.hud.LightWeaponHudLayer::register);
@@ -106,6 +108,7 @@ public final class McheliCePortClient {
         event.registerEntityRenderer(ModEntityTypes.CONTAINER.get(), CargoContainerRenderer::new);
         event.registerEntityRenderer(ModEntityTypes.CHAIN.get(), io.github.mcheliceport.client.render.ChainRenderer::new);
         event.registerEntityRenderer(ModEntityTypes.GLTD.get(), io.github.mcheliceport.client.render.GltdRenderer::new);
+        event.registerEntityRenderer(ModEntityTypes.GUNNER.get(), io.github.mcheliceport.client.render.GunnerRenderer::new);
         event.registerBlockEntityRenderer(io.github.mcheliceport.registry.ModBlocks.DRAFTING_TABLE_ENTITY.get(),
                 io.github.mcheliceport.client.render.DraftingTableRenderer::new);
         // Remaining vehicles and support entities draw nothing until their M6 implementation.
@@ -116,7 +119,7 @@ public final class McheliCePortClient {
                 ModEntityTypes.BOMB.get(), ModEntityTypes.A10.get(), ModEntityTypes.FLARE.get(),
                 ModEntityTypes.CHAFF.get(), ModEntityTypes.THROWABLE.get(), ModEntityTypes.PARACHUTE.get(),
                 ModEntityTypes.TANK.get(), ModEntityTypes.VEHICLE.get(), ModEntityTypes.CONTAINER.get(), ModEntityTypes.CHAIN.get(), ModEntityTypes.UAV_STATION.get(),
-                ModEntityTypes.GLTD.get());
+                ModEntityTypes.GLTD.get(), ModEntityTypes.GUNNER.get());
         ModEntityTypes.all().stream()
                 .filter(type -> !drawn.contains(type.get()))
                 .forEach(type -> registerNoop(event, type.get()));
