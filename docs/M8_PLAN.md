@@ -8,16 +8,16 @@ or render path B wait for it. Preserve decisions D1 to D23.
 ## 1. Rules
 
 - **Gameplay is untouched.** Effects stay client-only. No change to damage, projectile flight,
-  targeting, timings, payloads or what the server sends. Every slice spawns the same particles at
-  the same moments as upstream; only how they are drawn changes.
+  targeting, timings, payloads or what the server sends. Emitters retain upstream timing and
+  motion; client quality budgets may suppress cosmetic particles during heavy combat.
 - **Both backends.** Only vanilla pipeline state (`RenderPipeline` snippets, blend functions,
   depth states) and vanilla shaders. No raw OpenGL and no shaders of our own. Every slice is
   checked on OpenGL and on Vulkan.
 - **Upstream's look stays one setting away.** `effects.effectQuality` in the client config:
   `CLASSIC` draws exactly as upstream (and as 0.5.1); `ENHANCED` (the default) draws the M8 look.
   Later slices may add levels if a battle needs cheaper effects.
-- **Recognisably McHeli.** The stock textures (`smoke.png`, `flash.png`, the flame textures) stay.
-  New art is limited to generated helper sprites (the soft glow disc).
+- **Recognisably McHeli.** The stock textures remain available in Classic mode. The pixel-art
+  follow-up adds compact shaded smoke, flash and splash sprites; see §6.
 
 ## 2. Map of the changes
 
@@ -35,7 +35,7 @@ or render path B wait for it. Preserve decisions D1 to D23.
 | Explosion shockwave and debris | Block dust | A brief ring on the ground for large blasts; sparks | 2 |
 | Smoke lighting | Always full sky light (upstream sampled 3000 blocks up) | Shade with the sky light and time of day at the puff's position | 2 |
 | Heat haze, exhaust | Addon exhaust flames only | Investigate a vanilla-pipeline distortion substitute; may stay out | 3 |
-| Quality levels and budgets | Vanilla particle setting only | Per-effect caps under heavy combat; a `LOW` level if frame-time checks need it | 3 |
+| Quality levels and budgets | Vanilla particle setting only | Low/Balanced/High particle budgets and distant thinning | Pixel follow-up (§6) |
 
 ## 3. Slice 1 as built
 
@@ -77,3 +77,12 @@ night; by day they barely lighten the sky behind them, as intended.
 
 Not captured: downwash over sand, snow and water, missile flames (the scene's AIM-9X needs a
 lock), and splashes. They use the same layers and pipelines as the captured effects.
+
+## 6. Pixel artwork and scalable budgets
+
+The follow-up in [M8_PIXEL_EFFECTS.md](M8_PIXEL_EFFECTS.md) adds shaded pixel artwork and
+Low/Balanced/High particle budgets on top of slice 1. It preserves the enhanced heat, additive
+flash/glow pipelines, tracer/missile effects and ground tint. Either `effectQuality = "CLASSIC"`
+or `style = "CLASSIC"` selects upstream presentation; budgets still apply. Polished flares use
+one small pixel halo instead of two glow discs, and Low disables optional particle glows/halos.
+The follow-up document records its earlier isolated captures separately from integration checks.

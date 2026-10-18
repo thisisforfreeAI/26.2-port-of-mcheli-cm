@@ -1,6 +1,7 @@
 package io.github.mcheliceport.client.particle;
 
 import io.github.mcheliceport.config.EffectQuality;
+import io.github.mcheliceport.config.ClientConfig;
 import io.github.mcheliceport.effect.McheliEffects;
 import io.github.mcheliceport.effect.ParticleParam;
 import java.util.List;
@@ -37,6 +38,9 @@ public final class ClientEffects implements McheliEffects.Sink {
     @Override
     public void spawnParticle(Level level, ParticleParam p) {
         if (!(level instanceof ClientLevel clientLevel)) {
+            return;
+        }
+        if (!EffectAdmission.admit(clientLevel, p.posX, p.posY, p.posZ, false)) {
             return;
         }
         SmokeParticle fx = p.name.equalsIgnoreCase("Splash")
@@ -79,6 +83,9 @@ public final class ClientEffects implements McheliEffects.Sink {
         if (!(level instanceof ClientLevel clientLevel)) {
             return;
         }
+        if (!EffectAdmission.admit(clientLevel, x, y, z, true)) {
+            return;
+        }
         FlashParticle fx = new FlashParticle(clientLevel, x, y, z, size, age);
         fx.setParticleMaxAge(age);
         fx.setColor(r, g, b);
@@ -86,7 +93,7 @@ public final class ClientEffects implements McheliEffects.Sink {
         boolean enhanced = EffectQuality.enhanced();
         fx.enhanced = enhanced;
         Minecraft.getInstance().particleEngine.add(fx);
-        if (enhanced) {
+        if (enhanced && optionalGlow(clientLevel, x, y, z)) {
             // M8: a short warm glow around the flash.
             Minecraft.getInstance().particleEngine.add(new GlowParticle(clientLevel, x, y, z, size * 1.6F, 0.3F,
                     3, Math.min(1.0F, r * 1.1F), g * 0.85F, b * 0.6F, a * 0.55F));
@@ -95,10 +102,19 @@ public final class ClientEffects implements McheliEffects.Sink {
 
     /** M8 glow under an explosion's fireball (not in water). */
     static void spawnExplosionGlow(ClientLevel level, double x, double y, double z, float size) {
+        if (!optionalGlow(level, x, y, z)) {
+            return;
+        }
         float radius = Math.min(size * 1.2F, 12.0F);
         int life = (int) Math.min(6.0F + size, 14.0F);
         Minecraft.getInstance().particleEngine.add(new GlowParticle(level, x, y, z, radius, 0.5F, life,
                 1.0F, 0.6F, 0.25F, 0.9F));
+    }
+
+    /** Optional glow shares the smoke budget, keeping the flash budget available for weapon cues. */
+    private static boolean optionalGlow(ClientLevel level, double x, double y, double z) {
+        return ClientConfig.get(ClientConfig.EFFECT_BUDGET) != ClientConfig.EffectBudget.LOW
+                && EffectAdmission.admit(level, x, y, z, false);
     }
 
     /**

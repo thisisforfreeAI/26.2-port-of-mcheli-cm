@@ -13,6 +13,7 @@ import net.minecraft.util.Mth;
 public class SmokeParticle extends McheliParticle {
 
     static final Identifier TEXTURE = Identifier.fromNamespaceAndPath("mcheli", "particles/smoke");
+    static final Identifier POLISHED_TEXTURE = Identifier.fromNamespaceAndPath("mcheli_ce_port", "m8_smoke");
     /** Upstream's brightness: sky light at full, block light none (it sampled 3000 blocks up). */
     static final int SKY_LIGHT = net.minecraft.util.LightCoordsUtil.FULL_SKY;
 
@@ -23,9 +24,15 @@ public class SmokeParticle extends McheliParticle {
     float heat;
     /** Scale at the previous tick, for smooth growth between ticks; 0 until the first growth. */
     private float prevScale;
+    private final boolean mirror;
 
     public SmokeParticle(ClientLevel level, double x, double y, double z, double mx, double my, double mz) {
         super(level, x, y, z, mx, my, mz, TEXTURE);
+        this.enhanced = this.polished;
+        if (this.polished) {
+            this.setSprite(sprite(POLISHED_TEXTURE));
+        }
+        this.mirror = this.polished && this.random.nextBoolean();
         float c = this.random.nextFloat() * 0.3F + 0.7F;
         this.setColor(c, c, c);
         this.particleScale = this.random.nextFloat() * 0.5F + 5.0F;
@@ -42,7 +49,8 @@ public class SmokeParticle extends McheliParticle {
             this.age++;
             this.prevScale = this.particleScale;
             if (this.diffusible && this.particleScale < this.particleMaxScale) {
-                this.particleScale += 0.8F;
+                this.particleScale = this.polished ? Math.min(this.particleScale + 0.8F, this.particleMaxScale)
+                        : this.particleScale + 0.8F;
             }
             if (this.toWhite) {
                 float mn = Math.min(Math.min(this.bCol, this.gCol), this.rCol);
@@ -129,12 +137,22 @@ public class SmokeParticle extends McheliParticle {
 
     @Override
     protected float getU0() {
-        return this.frameU(this.frame, 8, false);
+        return this.frameU(this.polished ? this.frame % 4 : this.frame, this.polished ? 4 : 8, this.mirror);
     }
 
     @Override
     protected float getU1() {
-        return this.frameU(this.frame, 8, true);
+        return this.frameU(this.polished ? this.frame % 4 : this.frame, this.polished ? 4 : 8, !this.mirror);
+    }
+
+    @Override
+    protected float getV0() {
+        return this.polished ? this.sprite.getV(this.frame / 4 * 0.5F) : super.getV0();
+    }
+
+    @Override
+    protected float getV1() {
+        return this.polished ? this.sprite.getV((this.frame / 4 + 1) * 0.5F) : super.getV1();
     }
 
     @Override

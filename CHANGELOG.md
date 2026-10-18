@@ -12,6 +12,10 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 
 ### Changed
 
+- M8 pixel-effects follow-up: shaded smoke, flash and water sprites, a small flare halo, and
+  Low/Balanced/High particle budgets. Preserves the existing enhanced heat, tracer, missile and
+  ground-tint effects. Classic presentation remains available; see `docs/M8_PIXEL_EFFECTS.md`.
+
 - Restore the post-port Vulkan visual-effects update to the roadmap as M8, after M7: explosions,
   smoke, fire, muzzle flashes, tracers, missile trails, flares, water splashes and rotor wash,
   refined for Vulkan with OpenGL kept working. Automatic vehicle turrets stay off the roadmap.

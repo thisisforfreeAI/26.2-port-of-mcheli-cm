@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import io.github.mcheliceport.config.EffectQuality;
+import io.github.mcheliceport.config.ClientConfig;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
@@ -24,12 +25,14 @@ import net.minecraft.world.entity.Entity;
 public class FlareRenderer<T extends Entity> extends EntityRenderer<T, FlareRenderer.State> {
 
     private static final Identifier TEXTURE = Identifier.fromNamespaceAndPath("mcheli", "textures/flare.png");
+    private static final Identifier HALO = Identifier.fromNamespaceAndPath("mcheli_ce_port", "textures/particle/m8_flare_halo.png");
 
     public static class State extends EntityRenderState {
         public float yaw;
         public float pitch;
         /** M8: drawn full bright with a flickering glow. */
         public boolean enhanced;
+        public boolean halo;
     }
 
     private final float scale;
@@ -63,6 +66,8 @@ public class FlareRenderer<T extends Entity> extends EntityRenderer<T, FlareRend
         state.yaw = entity.getYRot();
         state.pitch = entity.getXRot();
         state.enhanced = EffectQuality.enhanced();
+        state.halo = state.enhanced
+                && ClientConfig.get(ClientConfig.EFFECT_BUDGET) != ClientConfig.EffectBudget.LOW;
     }
 
     @Override
@@ -79,10 +84,10 @@ public class FlareRenderer<T extends Entity> extends EntityRenderer<T, FlareRend
         collector.submitCustomGeometry(poseStack, RenderTypes.entityTranslucent(TEXTURE),
                 (pose, buffer) -> cube(buffer, pose, 0.125F, color, light));
         poseStack.popPose();
-        if (glow) {
+        if (glow && state.halo) {
             float flicker = 0.85F + 0.15F * Mth.sin(state.ageInTicks * 1.7F);
-            GlowGeometry.disc(poseStack, collector, camera, 1.4F * this.scale, 0xFFD890, 0.8F * flicker);
-            GlowGeometry.disc(poseStack, collector, camera, 0.45F * this.scale, 0xFFFFF0, flicker);
+            BulletRenderer.submitFlame(poseStack, collector, camera, 0, 0, 0, HALO,
+                    0.65F * this.scale * flicker);
         }
         super.submit(state, poseStack, collector, camera);
     }

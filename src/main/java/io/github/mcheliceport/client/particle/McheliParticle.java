@@ -1,6 +1,9 @@
 package io.github.mcheliceport.client.particle;
 
 import java.util.List;
+import java.util.Optional;
+import io.github.mcheliceport.config.EffectQuality;
+import net.minecraft.core.particles.ParticleLimit;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.SingleQuadParticle;
@@ -14,10 +17,13 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 
 /**
  * Base of McHeli's own particles: upstream {@code MCH_EntityParticleBase} on 1.12's particle
- * behaviour. The texture is one sprite of the particle atlas holding a strip of frames; the
+ * behaviour. The texture is one sprite of the particle atlas holding a sheet of frames; the
  * subclass picks the frame's part of it.
  */
 abstract class McheliParticle extends SingleQuadParticle {
+
+    protected final boolean polished = EffectQuality.enhanced();
+    private final Optional<ParticleLimit> particleLimit = EffectAdmission.limit(this instanceof FlashParticle);
 
     public boolean isEffectedWind;
     public boolean diffusible;
@@ -49,6 +55,11 @@ abstract class McheliParticle extends SingleQuadParticle {
 
     public void setParticleMaxAge(int age) {
         this.lifetime = age;
+    }
+
+    @Override
+    public Optional<ParticleLimit> getParticleLimit() {
+        return this.particleLimit;
     }
 
     /**
