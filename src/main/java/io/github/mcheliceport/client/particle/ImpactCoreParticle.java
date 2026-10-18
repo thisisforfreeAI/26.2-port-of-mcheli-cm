@@ -33,7 +33,7 @@ final class ImpactCoreParticle extends McheliParticle {
     }
 
     @Override public float getQuadSize(float partialTick) {
-        return this.radius * (0.8F + 0.2F * Math.min(1, (this.age + partialTick) / this.lifetime));
+        return this.radius * ExplosionSequence.flashGrowth(this.age + partialTick, this.lifetime);
     }
     @Override protected float getU0() { return this.frameU(this.frame % 4, 4, false); }
     @Override protected float getU1() { return this.frameU(this.frame % 4, 4, true); }

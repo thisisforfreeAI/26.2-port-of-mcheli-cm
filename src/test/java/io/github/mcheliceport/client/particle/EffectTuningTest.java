@@ -6,6 +6,23 @@ import io.github.mcheliceport.config.ClientConfig.EffectBudget;
 import org.junit.jupiter.api.Test;
 
 class EffectTuningTest {
+    @Test void primaryBlastIsThinnedOnceButStillPaysCoverageAndDistanceCosts() {
+        for (int pressure = 0; pressure <= 3; pressure++) {
+            assertEquals(1, EffectTuning.admissionStride(100, 0, false, pressure, true));
+            assertEquals(1 + pressure, EffectTuning.admissionStride(100, 0, false, pressure, false));
+            assertEquals(16, EffectTuning.admissionStride(200 * 200, 2, false, pressure, true));
+            EffectTuning.Budget budget = new EffectTuning.Budget();
+            int cap = Math.max(16, EffectTuning.perTick(EffectBudget.BALANCED, false) / (1 + pressure));
+            int requested = ExplosionSequence.lobes(12, io.github.mcheliceport.effect.BlastStyle.HEAVY,
+                    EffectBudget.BALANCED, pressure);
+            int accepted = 0;
+            int cost = EffectTuning.coverageCost(8, 100);
+            for (int i = 0; i < requested; i++)
+                if (budget.admit(1, cap, EffectTuning.admissionStride(100, 0, false, pressure, true), cost)) accepted++;
+            assertTrue(accepted > 0 && accepted <= requested && accepted * cost <= cap);
+        }
+    }
+
     @Test
     void combatBurstCannotExceedBudgetAndNextTickRecovers() {
         for (EffectBudget quality : EffectBudget.values()) {

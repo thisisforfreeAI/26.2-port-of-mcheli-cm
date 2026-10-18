@@ -1,0 +1,39 @@
+{
+  "target_fps": 80,
+  "frame_budget_ms": 12.5,
+  "results": [
+    {
+      "scene": "billows-adaptive",
+      "frames": 76,
+      "mean_ms": 82.347,
+      "median_ms": 80.495,
+      "p95_ms": 105.449,
+      "p99_ms": 135.225,
+      "average_fps": 12.14,
+      "within_budget_percent": 0.0,
+      "p95_within_target": false
+    },
+    {
+      "scene": "billows-empty",
+      "frames": 88,
+      "mean_ms": 71.306,
+      "median_ms": 68.935,
+      "p95_ms": 93.728,
+      "p99_ms": 107.741,
+      "average_fps": 14.02,
+      "within_budget_percent": 0.0,
+      "p95_within_target": false
+    },
+    {
+      "scene": "billows-fixed",
+      "frames": 71,
+      "mean_ms": 88.121,
+      "median_ms": 90.044,
+      "p95_ms": 100.715,
+      "p99_ms": 109.745,
+      "average_fps": 11.35,
+      "within_budget_percent": 0.0,
+      "p95_within_target": false
+    }
+  ]
+}

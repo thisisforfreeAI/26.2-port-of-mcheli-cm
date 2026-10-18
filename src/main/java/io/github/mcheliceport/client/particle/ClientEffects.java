@@ -179,12 +179,12 @@ public final class ClientEffects implements McheliEffects.Sink {
             for (int i = 0; i < count; i++) {
                 double angle = (i + random.nextDouble()) * Math.PI * 2 / count;
                 double dx = Math.cos(angle), dz = Math.sin(angle);
-                float radius = Math.min(2.8F, 0.7F + size * 0.12F);
+                float radius = Math.min(3.4F, 0.9F + size * 0.16F);
                 if (!EffectAdmission.admit(level, x + dx * 0.6, surface + 0.35, z + dz * 0.6, false, radius)) continue;
-                double speed = Math.min(0.9, 0.2 + size * 0.05) * (0.7 + random.nextDouble() * 0.3);
-                Minecraft.getInstance().particleEngine.add(new RotorWashParticle(level,
+                double speed = Math.min(1.25, 0.3 + size * 0.07) * (0.7 + random.nextDouble() * 0.3);
+                Minecraft.getInstance().particleEngine.add(new BlastGroundDustParticle(level,
                         x + dx * 0.6, surface + 0.35, z + dz * 0.6, dx * speed, dz * speed,
-                        radius, 0.7F, tint[0], tint[1], tint[2], 20 + random.nextInt(8), 0.01));
+                        radius, tint[0], tint[1], tint[2], 26 + random.nextInt(8)));
             }
             return;
         }

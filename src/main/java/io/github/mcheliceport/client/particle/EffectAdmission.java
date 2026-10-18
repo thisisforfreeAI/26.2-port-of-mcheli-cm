@@ -46,6 +46,16 @@ final class EffectAdmission {
     }
 
     static boolean admit(ClientLevel level, double x, double y, double z, boolean isFlash, float radius) {
+        return admit(level, x, y, z, isFlash, radius, false);
+    }
+
+    /** Only the primary explosion emitter, whose request count is already pressure-scaled. */
+    static boolean admitBlastLobe(ClientLevel level, double x, double y, double z, float radius) {
+        return admit(level, x, y, z, false, radius, true);
+    }
+
+    private static boolean admit(ClientLevel level, double x, double y, double z, boolean isFlash,
+            float radius, boolean blastLobe) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.level != level || mc.getCameraEntity() == null) {
             return false;
@@ -62,7 +72,8 @@ final class EffectAdmission {
             return false;
         }
         int pressure = isFlash ? 0 : EffectPerformance.pressure();
-        int stride = EffectTuning.stride(distance, mc.options.particles().get().ordinal(), isFlash) * (1 + pressure);
+        int stride = EffectTuning.admissionStride(distance, mc.options.particles().get().ordinal(), isFlash,
+                pressure, blastLobe);
         int cap = Math.max(16, EffectTuning.perTick(quality, isFlash) / (1 + pressure));
         int cost = isFlash ? 1 : EffectTuning.coverageCost(radius, distance);
         return (isFlash ? flash : smoke).admit(level.getGameTime(), cap, stride, cost);
