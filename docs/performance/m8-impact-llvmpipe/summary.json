@@ -1,0 +1,39 @@
+{
+  "target_fps": 80,
+  "frame_budget_ms": 12.5,
+  "results": [
+    {
+      "scene": "impact-perf-adaptive",
+      "frames": 93,
+      "mean_ms": 102.151,
+      "median_ms": 97.902,
+      "p95_ms": 146.441,
+      "p99_ms": 227.066,
+      "average_fps": 9.79,
+      "within_budget_percent": 0.0,
+      "p95_within_target": false
+    },
+    {
+      "scene": "impact-perf-empty",
+      "frames": 124,
+      "mean_ms": 77.249,
+      "median_ms": 76.012,
+      "p95_ms": 108.112,
+      "p99_ms": 152.842,
+      "average_fps": 12.95,
+      "within_budget_percent": 0.0,
+      "p95_within_target": false
+    },
+    {
+      "scene": "impact-perf-fixed",
+      "frames": 83,
+      "mean_ms": 114.57,
+      "median_ms": 99.507,
+      "p95_ms": 199.989,
+      "p99_ms": 528.105,
+      "average_fps": 8.73,
+      "within_budget_percent": 0.0,
+      "p95_within_target": false
+    }
+  ]
+}

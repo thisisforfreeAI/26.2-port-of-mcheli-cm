@@ -91,8 +91,8 @@ remains twice nominal size. The warm initial glow can reach radius 12 / 16 / 18 
 The emitter adds no puffs or glow layers and retains its timing, lifetime, motion and random
 draws. Admission uses the enlarged expected puff/glow radius, so larger effects spend more of
 the existing coverage budget. Ordinary cannon/rocket/penetrator impacts, tiny bombs, Classic
-and vanilla-explosion selection retain their existing puff scale. This is a size correction;
-additional bomb accents, missile accents and stronger countermeasure flare glow remain planned.
+and vanilla-explosion selection retain their existing puff scale. The subsequent
+[impact/flare follow-up](M8_IMPACT_FLARE.md) adds the requested bomb/missile accents and stronger countermeasure flare glow within bounded allowances.
 
 The size-12 comparison passes on both Vulkan/lavapipe and OpenGL/llvmpipe at 1920×1080,
 with screenshots and the repeatable opt-in scene in [M8_GROUND_MARKS.md](M8_GROUND_MARKS.md#bomb-size-follow-up).

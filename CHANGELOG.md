@@ -12,6 +12,10 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 
 ### Changed
 
+- M8 impact/flare polish: bounded bomb hot cores and material-tinted outward dust, tighter
+  missile impact timing, and stronger warm flare halos with weighted distance/load admission.
+  Chaff and countermeasure physics are unchanged; hardware FPS validation remains open.
+
 - M8 bomb size correction: broader bomb/char ground footprints and power-scaled initial
   fire/smoke and glow, using the existing shared surface and particle budgets.
 

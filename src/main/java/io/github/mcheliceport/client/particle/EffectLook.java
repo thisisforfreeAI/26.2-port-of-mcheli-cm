@@ -41,10 +41,14 @@ public final class EffectLook {
      * {@link #COOL_SHARE} of its life.
      */
     public static float heat(float start, float age, int lifetime) {
+        return heat(start, age, lifetime, COOL_SHARE);
+    }
+
+    public static float heat(float start, float age, int lifetime, float coolingShare) {
         if (start <= 0.0F || lifetime <= 0) {
             return 0.0F;
         }
-        float t = clamp01(age / (lifetime * COOL_SHARE));
+        float t = clamp01(age / (lifetime * Math.clamp(coolingShare, 0.01F, 1.0F)));
         return start * (1.0F - smoothstep(t));
     }
 

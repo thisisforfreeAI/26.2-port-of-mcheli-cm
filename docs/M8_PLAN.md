@@ -109,27 +109,26 @@ disturbed-ground textures fitted to surviving block surfaces. Weapon definitions
 cosmetic family and explosion power scales its footprint. The cache, projection queue, draw
 range and lifetime are bounded; texture rendering uses the existing vanilla entity pipeline.
 
-## 10. Requested bomb/missile accents and stronger flare glow — planned
+## 10. Bomb/missile accents and stronger flare glow
 
-Requested by the user after the blast-mark concept preview. These are follow-up work; the
-current small flare halo and the existing explosion heat/glow are already implemented.
+[M8_IMPACT_FLARE.md](M8_IMPACT_FLARE.md) records the requested follow-up, its quality/load limits,
+native scene and measured software-renderer frame intervals.
 
 - [x] **Bomb size:** enlarge heavy-bomb/incendiary ground marks and power-scaled initial
   fire/smoke after playtest feedback. Shared quad, particle and coverage budgets still apply.
-- [ ] **Bomb accents:** add a more readable initial hot core, a brief outward dust/debris
-  accent and a fuller smoke silhouette scaled to the bomb's existing explosion power. Heavy
-  blasts should feel broader than cannon impacts without obscuring the whole scene.
-- [ ] **Missile explosions:** add a sharper, tighter impact flash and short spark/debris accents,
-  with a quick fire-to-smoke transition. Keep missile/rocket families distinct from large bombs
-  and keep their ground marks consistent with the weapon profile.
-- [ ] **Flare glow:** improve the existing small halo into a clearly visible warm glow around a
-  bright core, with restrained flicker. Check daylight, night and crowded countermeasure bursts;
-  chaff retains its own unlit appearance.
-- [ ] **Validation:** capture each change on Vulkan and OpenGL and compare frame times under
-  simultaneous bomb/missile explosions and multiple flares. Keep all accents inside the existing
-  per-tick/live/distance and adaptive budgets; Low or overload sheds secondary accents while
-  preserving the core cues. Target remains 80 FPS / 12.5 ms on RTX 3060 8 GB + 7800X3D at 1080p.
+- [x] **Bomb accents:** a short animated hot core and six/ten fast outward dust puffs on
+  Balanced/High, using sampled material tint. Existing block debris and the fuller smoke
+  silhouette remain; Low or overload sheds the secondary accents.
+- [x] **Missile explosions:** tighter general/penetrator cores, shorter sparks and glow, and
+  fire tint cooling over 18% of puff life. Broad bombs retain longer fire; ground profiles match.
+- [x] **Flare glow:** brighter warm-white physical core, larger textured halo and a soft additive
+  outer disc with restrained per-entity flicker. Weighted view/distance/load admission bounds
+  the halos. Chaff keeps its unlit appearance and existing physics.
+- [x] **Native validation:** Vulkan/OpenGL captures, 187 JUnit tests and overlapping-effects
+  frame samples pass their functional/budget checks; software timings remain above 12.5 ms.
+- [ ] **Hardware acceptance:** representative combat on RTX 3060 8 GB + 7800X3D at 1080p,
+  targeting 80 FPS / 12.5 ms. Software-renderer checks cannot certify this target.
 
-Use the existing vanilla shader/pipeline families and pixel artwork approach. Avoid extra scene
-copies or dynamic world lighting. Gameplay damage, trajectories, destruction and countermeasure
-behavior remain controlled by the port's existing systems.
+The implementation uses existing vanilla shader/pipeline families and pixel artwork. No extra
+scene copies or dynamic world lighting. Gameplay damage, trajectories, destruction and
+countermeasure behavior remain controlled by the port's existing systems.

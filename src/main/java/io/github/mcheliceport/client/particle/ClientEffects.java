@@ -61,6 +61,7 @@ public final class ClientEffects implements McheliEffects.Sink {
         if (enhanced && p.name.equalsIgnoreCase("explode")) {
             // M8 fireballs: explosion puffs are born as fire and cool to their own smoke colour.
             fx.heat = 0.6F + clientLevel.getRandom().nextFloat() * 0.4F;
+            fx.coolingShare = p.coolingShare;
         }
         if (enhanced && p.damageHeat > 0 && !(fx instanceof SplashParticle)
                 && !clientLevel.getFluidState(BlockPos.containing(p.posX, p.posY, p.posZ))
@@ -114,13 +115,18 @@ public final class ClientEffects implements McheliEffects.Sink {
         if (!optionalGlow(level, x, y, z, radius * 1.5F)) {
             return;
         }
-        int life = (int) Math.min(6.0F + size, 14.0F);
+        int life = ExplosionLook.broad(style) || style == BlastStyle.CANNON
+                ? (int) Math.min(6.0F + size, 14.0F) : 5;
         Minecraft.getInstance().particleEngine.add(new GlowParticle(level, x, y, z, radius, 0.5F, life,
                 1.0F, 0.6F, 0.25F, 0.9F));
     }
 
     /** Independent cosmetic seed preserves the existing emitters' world RNG sequence. */
     static void spawnExplosionSparks(ClientLevel level, double x, double y, double z, float size) {
+        spawnExplosionSparks(level, x, y, z, size, BlastStyle.HEAVY);
+    }
+
+    static void spawnExplosionSparks(ClientLevel level, double x, double y, double z, float size, BlastStyle style) {
         int count = EffectTuning.sparkCount(size, ClientConfig.get(ClientConfig.EFFECT_BUDGET), EffectPerformance.pressure());
         if (count == 0) return;
         java.util.Random random = new java.util.Random(Double.doubleToLongBits(x)
@@ -130,9 +136,48 @@ public final class ClientEffects implements McheliEffects.Sink {
             if (!EffectAdmission.admit(level, x, y, z, false, 0.08F)) continue;
             double angle = (i + random.nextDouble()) * Math.PI * 2 / count;
             double speed = 0.12 + random.nextDouble() * 0.16;
+            boolean tight = style == BlastStyle.BLAST || style == BlastStyle.PENETRATOR;
             Minecraft.getInstance().particleEngine.add(new SparkParticle(level, x, y, z,
-                    Math.cos(angle) * speed, 0.15 + random.nextDouble() * 0.25, Math.sin(angle) * speed,
-                    7 + random.nextInt(5)));
+                    Math.cos(angle) * speed, (tight ? 0.08 : 0.15) + random.nextDouble() * (tight ? 0.16 : 0.25),
+                    Math.sin(angle) * speed, tight ? 5 + random.nextInt(3) : 7 + random.nextInt(5)));
+        }
+    }
+
+    static void spawnExplosionAccents(ClientLevel level, double x, double y, double z, float size, BlastStyle style) {
+        var budget = ClientConfig.get(ClientConfig.EFFECT_BUDGET);
+        int pressure = EffectPerformance.pressure();
+        if (budget == ClientConfig.EffectBudget.LOW || pressure >= 2) return;
+        float core = ExplosionLook.coreRadius(size, style);
+        if (core > 0 && EffectAdmission.admit(level, x, y, z, false, core)) {
+            Minecraft.getInstance().particleEngine.add(new ImpactCoreParticle(level, x, y, z, core,
+                    ExplosionLook.coreLife(style)));
+        }
+        int count = ExplosionLook.dustCount(size, style, budget, pressure);
+        if (count == 0) return;
+        // One loaded column only, bounded search; no dust from high airbursts, water or leaf canopies.
+        BlockPos.MutableBlockPos pos = BlockPos.containing(x, y, z).mutable();
+        for (int depth = 0; depth <= Math.min(12, (int) (size * 1.5F)); depth++, pos.move(0, -1, 0)) {
+            if (pos.getY() < level.getMinY() || !level.hasChunkAt(pos)) return;
+            BlockState ground = level.getBlockState(pos);
+            if (!ground.getFluidState().isEmpty() || ground.is(net.minecraft.tags.BlockTags.LEAVES)) return;
+            var shape = ground.getCollisionShape(level, pos);
+            if (shape.isEmpty()) continue;
+            double surface = pos.getY() + shape.bounds().maxY;
+            if (surface > y + 0.25) return;
+            float[] tint = groundTint(level, pos, ground, 0.6F, 0.6F, 0.6F);
+            java.util.Random random = new java.util.Random(Double.doubleToLongBits(x)
+                    ^ Long.rotateLeft(Double.doubleToLongBits(z), 21) ^ level.getGameTime() ^ 0xD057L);
+            for (int i = 0; i < count; i++) {
+                double angle = (i + random.nextDouble()) * Math.PI * 2 / count;
+                double dx = Math.cos(angle), dz = Math.sin(angle);
+                if (!EffectAdmission.admit(level, x + dx * 0.6, surface + 0.2, z + dz * 0.6, false, 0.8F)) continue;
+                double speed = Math.min(0.4, 0.1 + size * 0.025) * (0.7 + random.nextDouble() * 0.3);
+                Minecraft.getInstance().particleEngine.add(new BlastDustParticle(level,
+                        x + dx * 0.6, surface + 0.2, z + dz * 0.6, dx * speed,
+                        0.04 + random.nextDouble() * 0.04, dz * speed,
+                        tint[0], tint[1], tint[2], 18 + random.nextInt(8)));
+            }
+            return;
         }
     }
 

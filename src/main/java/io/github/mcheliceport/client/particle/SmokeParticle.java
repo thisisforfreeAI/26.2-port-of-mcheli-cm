@@ -22,6 +22,7 @@ public class SmokeParticle extends McheliParticle {
     boolean enhanced;
     /** M8: heat at birth, 0 to 1; a hot puff starts as fire and cools to its own colour. */
     float heat;
+    float coolingShare = EffectLook.COOL_SHARE;
     /** Scale at the previous tick, for smooth growth between ticks; 0 until the first growth. */
     private float prevScale;
     private final boolean mirror;
@@ -127,7 +128,7 @@ public class SmokeParticle extends McheliParticle {
         float g = this.gCol;
         float b = this.bCol;
         float age = this.age - 1 + partialTick;
-        float h = EffectLook.heat(this.heat, age, this.lifetime);
+        float h = EffectLook.heat(this.heat, age, this.lifetime, this.coolingShare);
         this.alpha = a * EffectLook.smokeAlpha(age, this.lifetime);
         this.rCol = EffectLook.fireBlend(r, EffectLook.FIRE_R, h);
         this.gCol = EffectLook.fireBlend(g, EffectLook.FIRE_G, h);
@@ -170,7 +171,7 @@ public class SmokeParticle extends McheliParticle {
             this.ambientLight = this.level.hasChunkAt(this.lightPos)
                     ? net.minecraft.util.LightCoordsUtil.getLightCoords(this.level, this.lightPos) : 0;
         }
-        float h = EffectLook.heat(this.heat, this.age - 1 + partialTick, this.lifetime);
+        float h = EffectLook.heat(this.heat, this.age - 1 + partialTick, this.lifetime, this.coolingShare);
         return EffectLook.smokeLight(this.ambientLight, h);
     }
 }
