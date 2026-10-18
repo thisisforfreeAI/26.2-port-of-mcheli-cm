@@ -63,6 +63,7 @@ public final class McheliCePort {
         io.github.mcheliceport.entity.uav.UavRemoteSession.register(modBus);
         ModGameTests.register(modBus);
         io.github.mcheliceport.item.ChainItem.register();
+        io.github.mcheliceport.radar.EntityInfoFeed.register();
     }
 
     private void commonSetup(FMLCommonSetupEvent event) {

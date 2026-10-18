@@ -80,6 +80,7 @@ public final class ModGameTests {
         GunnerGameTests.register();
         EcmGameTests.register();
         RadarGameTests.register();
+        RadarFeedGameTests.register();
         CombatGameTests.register();
         if (System.getProperty("neoforge.enabledGameTestNamespaces") != null) {
             ChargerGameTests.registerTestBattery(modBus);

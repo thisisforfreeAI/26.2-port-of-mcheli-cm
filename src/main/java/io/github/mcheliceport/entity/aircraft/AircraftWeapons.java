@@ -70,6 +70,9 @@ public final class AircraftWeapons {
     private float packetWeaponUserYaw;
     private float packetWeaponUserPitch;
     private int lastCalcLandInDistanceCount = -1;
+    /** Upstream {@code impactPos}/{@code prevImpactPos}: where the current weapon lands, this and the last update. */
+    private @Nullable Vec3 impactPos;
+    private @Nullable Vec3 prevImpactPos;
     private double lastLandInDistance = -1.0;
     private int lastCalcPredictedImpactPointCount = -1;
     private @Nullable Vec3 lastPredictedImpactPoint;
@@ -857,9 +860,14 @@ public final class AircraftWeapons {
         int count = this.ac.getCountOnUpdate();
         if (this.lastCalcLandInDistanceCount != count && (this.ac.level().isClientSide() || count % 5 == 0)) {
             this.lastCalcLandInDistanceCount = count;
+            this.prevImpactPos = this.impactPos;
             WeaponParam prm = this.aimParam(user);
             if (prm != null) {
                 Vec3 impact = this.getCurrentWeapon(user).getCurrentWeapon().getImpactPos(prm);
+                this.impactPos = impact;
+                if (this.prevImpactPos == null) {
+                    this.prevImpactPos = impact;
+                }
                 if (impact != null) {
                     double dx = impact.x - this.ac.getX();
                     double dz = impact.z - this.ac.getZ();
@@ -870,6 +878,15 @@ public final class AircraftWeapons {
             }
         }
         return this.lastLandInDistance;
+    }
+
+    /** The impact point found by the last {@link #getLandInDistance}, or null. */
+    public @Nullable Vec3 impactPos() {
+        return this.impactPos;
+    }
+
+    public @Nullable Vec3 prevImpactPos() {
+        return this.prevImpactPos;
     }
 
     /** Upstream {@code getPredictedImpactPoint}: the CCIP point of a CCIP weapon, once per tick. */

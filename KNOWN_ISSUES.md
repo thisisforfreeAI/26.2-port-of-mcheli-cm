@@ -26,7 +26,7 @@ broader gameplay and hardware checks remain pending.
 | Area | Planned milestone |
 |---|---|
 | Remaining plane/ground equipment and UAV station preview camera | M6 |
-| BVR and passive radar, the GPS panel and mortar radar overlays | M6 (with the vehicles that use them) |
+| Passive radar and the GPS panel | M6 (with the vehicles that use them) |
 | Wingman (AI wingmen, marker block screens and types, missions, `/wingman`) | M6b |
 | Remaining `/mcheli` commands (including reloading content with `reconfig`), advancement triggers, long-distance tracking and rendering, thermal vision (the third camera mode), GPU-buffer model rendering, projectile chunk loading (`ProjectileChunkLoad`), HBM:NTM stubs, performance work | M7 |
 
@@ -422,9 +422,16 @@ These follow from how Minecraft 26.2 works or from decisions approved in PORTING
     the scope stays empty, as upstream: upstream's threat manager, which would have listed radars
     scanning or locking the vehicle and missiles homing on it, was never run, and its warning
     sounds never played. The radar switch (Radar Switch, `` ` ``) turns a vehicle's `Radar` on
-    and off as upstream; only those threat lists and the mortar radar would have read it, so it has
-    no visible effect yet. Upstream's `radar_on`/`radar_off` switch sounds were never in its assets
-    and are left out.
+    and off as upstream, which shows or hides the mortar radar scope. Upstream's
+    `radar_on`/`radar_off` switch sounds were never in its assets and are left out.
+91. The BVR scope and the mortar radar follow upstream, with these differences. Upstream looked
+    for planes under their class name from before CE renamed it, so it never showed planes on the
+    BVR scope and named them "?" on the mortar radar; planes are shown and named here, like
+    helicopters (chosen by the project owner). Upstream's feed sent every dimension's entities to
+    every player; each player gets their own dimension's here. Upstream's BVR marker textures
+    (`bvr_lock_box.png`, `msl.png`) were not in its assets, so it drew the missing-texture square;
+    a vehicle gets a square outline and a missile a diamond here, in upstream's colours. The
+    client forgets the feed when it leaves a world instead of letting it expire.
 
 ## Upstream content issues kept as they are
 

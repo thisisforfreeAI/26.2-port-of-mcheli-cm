@@ -96,6 +96,7 @@ public final class AircraftClientEvents {
             TargetMarkers.INSTANCE.reset();
             io.github.mcheliceport.client.camera.GltdCameraClient.reset();
             io.github.mcheliceport.client.tool.LightWeaponClient.reset();
+            io.github.mcheliceport.radar.EntityInfoClientTracker.clear();
         });
         NeoForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.LoggingIn event) -> {
             RangeFinderClient.onLogin();

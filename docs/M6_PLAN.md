@@ -1530,3 +1530,28 @@ one that sends the switch through the control payload's codec and turns an AH-64
 off; the payload unit test covers the two new bits. In the client, an AH-64 given `Radar` and
 `RWR` sections in the extracted stock pack showed the helicopter scope on the left of its HUD
 ([scope](screens/m6-rwr-scope.png)). No stock vehicle has either section.
+
+## Entity-info feed, BVR scope and mortar radar increment
+
+- E1, the entity-info feed: `EntityInfoFeed` ports `EntityInfoManagerAsync`. Every ten server
+  ticks each player is sent (`EntityInfoSyncPayload`) the players, vehicles, flares, chaff and
+  air-to-air missiles of their dimension within 2000 blocks horizontally; planes, helicopters and
+  chaff count only 30 blocks above the ground and at 0.5 blocks a tick or more. `EntityInfo`
+  carries a kind instead of upstream's class name. `EntityInfoClientTracker` ports the client
+  tracker, forgetting an entity after five seconds or 100 snapshots without it.
+- `BvrHudLayer` ports `HudBVRLock` with its own look-and-FOV projection, alpha rings, edge ring
+  and missile markers; the target held at the centre goes to the server every ten ticks
+  (`BvrLockPayload`, upstream `PacketLockTargetBVR`), which sets the rider's seeker target, the
+  target an active or passive radar missile then flies at.
+- `MortarRadarHudLayer` ports `HudMortarRadar`: shown while `isRadarEnabledRuntime`, turned with
+  the weapon set's yaw, with `AircraftWeapons` now keeping upstream's `impactPos`/`prevImpactPos`
+  from `getLandInDistance`, and the cross red when a tracked entity is within six blocks of it.
+- Planes are found by kind, so they show on both scopes (KNOWN_ISSUES 91, the owner's choice).
+
+Validation: `build` passed and the GameTest server passed all 225 required tests, including two
+new ones: the feed's tracking rules and its payload's codec, and the BVR lock setting and clearing
+an AH-64 seeker's target. In the client, an AH-64 given a `Radar` section and a Stinger given
+`EnableBVR` (`MinRangeBVR: 50`) in the extracted stock pack showed a green BVR box on an A-10 at
+124 m, red once centred, and the mortar radar listed the A-10 and a Merkava with their distances
+([BVR and mortar radar](screens/m6-bvr-mortar-radar.png), [locked](screens/m6-bvr-locked.png)).
+No stock weapon has `EnableBVR`.

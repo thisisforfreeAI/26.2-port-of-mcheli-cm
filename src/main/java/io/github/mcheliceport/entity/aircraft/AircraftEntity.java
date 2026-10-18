@@ -3401,6 +3401,12 @@ public abstract class AircraftEntity extends Entity
     }
 
     /** Upstream {@code getNameOnOtherRadar}: what {@code other}'s radar calls this vehicle. */
+    /** Upstream {@code getNameOnMyRadar(EntityInfo)}: a tracked vehicle this client has loaded, else "?". */
+    public String getNameOnMyRadar(io.github.mcheliceport.radar.EntityInfo other) {
+        return this.level().getEntity(other.entityId()) instanceof AircraftEntity aircraft
+                ? this.getNameOnMyRadar(aircraft) : "?";
+    }
+
     public String getNameOnOtherRadar(AircraftEntity other) {
         if (other.getAcInfo() == null || this.info == null || other.getAcInfo().radarType == null) {
             return "?";
