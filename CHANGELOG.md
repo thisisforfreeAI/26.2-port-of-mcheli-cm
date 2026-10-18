@@ -12,6 +12,10 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 
 ### Changed
 
+- M8 ground-response polish: material-specific dust and a few short-lived tumbling surface
+  fragments for enhanced bomb/missile impacts, with global geometry/sampling limits. Large
+  bomb smoke now breaks up with varied fading and subtle late drift. Classic effects remain.
+
 - M8 bomb smoke volume: denser overlapping ground and upper billows, staggered development,
   compact fire pockets that cool into lasting smoke, a faster expanding flash and wider ground
   dust fans. Retain the familiar small-weapon puffs and existing primary request caps, with

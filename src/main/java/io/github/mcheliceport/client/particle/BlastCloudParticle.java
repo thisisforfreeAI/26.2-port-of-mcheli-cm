@@ -17,6 +17,8 @@ final class BlastCloudParticle extends SmokeParticle {
     private final int delay;
     private final boolean base;
     private final double turnSin, turnCos;
+    private final int fadeTicks;
+    private final double driftX, driftZ;
 
     BlastCloudParticle(ClientLevel level, double x, double y, double z, double mx, double my, double mz,
             float radius, int life, int fireTicks, float opacity) {
@@ -41,6 +43,10 @@ final class BlastCloudParticle extends SmokeParticle {
         double turn = (this.random.nextBoolean() ? 1 : -1) * (0.018 + this.random.nextDouble() * 0.025);
         this.turnSin = Math.sin(turn);
         this.turnCos = Math.cos(turn);
+        this.fadeTicks = 24 + this.random.nextInt(24);
+        double drift = radius * (base ? 0.0002 : 0.0008);
+        this.driftX = (this.random.nextDouble() * 2 - 1) * drift;
+        this.driftZ = (this.random.nextDouble() * 2 - 1) * drift;
     }
 
     @Override public void tick() {
@@ -55,6 +61,9 @@ final class BlastCloudParticle extends SmokeParticle {
         this.zd = (this.xd * this.turnSin + this.zd * this.turnCos) * drag;
         this.xd = dx * drag;
         this.yd = this.yd * (this.base ? 0.90 : 0.97) + (this.base ? 0.001 : 0.002);
+        double breakup = Math.clamp((this.age / (double) this.lifetime - 0.6) / 0.4, 0, 1);
+        this.xd += this.driftX * breakup;
+        this.zd += this.driftZ * breakup;
     }
 
     @Override public void extract(QuadParticleRenderState state, Camera camera, float partialTick) {
@@ -65,7 +74,7 @@ final class BlastCloudParticle extends SmokeParticle {
         // Advance through fire promptly, then spend most of the lifetime as non-emissive smoke.
         this.frame = localAge < this.fireTicks ? Math.min(2, (int) (localAge * 3 / this.fireTicks))
                 : 3 + Math.min(4, (int) ((localAge - this.fireTicks) * 5 / Math.max(1, this.lifetime - this.delay - this.fireTicks)));
-        this.alpha = this.opacity * ExplosionSequence.cloudAlpha(age, this.lifetime, this.delay, this.fireTicks > 0);
+        this.alpha = this.opacity * ExplosionSequence.cloudAlpha(age, this.lifetime, this.delay, this.fireTicks > 0, this.fadeTicks);
         float shade = localAge >= this.fireTicks ? this.smokeShade : 1;
         this.setColor(shade, shade, shade);
         // Skip SmokeParticle's fire tint/fade; the dedicated sheet contains that transition.

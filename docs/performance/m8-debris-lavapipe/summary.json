@@ -1,0 +1,50 @@
+{
+  "target_fps": 80,
+  "frame_budget_ms": 12.5,
+  "results": [
+    {
+      "scene": "ground-adaptive",
+      "frames": 67,
+      "mean_ms": 97.211,
+      "median_ms": 94.254,
+      "p95_ms": 113.976,
+      "p99_ms": 205.507,
+      "average_fps": 10.29,
+      "within_budget_percent": 0.0,
+      "p95_within_target": false
+    },
+    {
+      "scene": "ground-empty",
+      "frames": 72,
+      "mean_ms": 90.072,
+      "median_ms": 79.072,
+      "p95_ms": 136.061,
+      "p99_ms": 222.252,
+      "average_fps": 11.1,
+      "within_budget_percent": 0.0,
+      "p95_within_target": false
+    },
+    {
+      "scene": "ground-fixed",
+      "frames": 63,
+      "mean_ms": 101.723,
+      "median_ms": 99.691,
+      "p95_ms": 115.968,
+      "p99_ms": 151.093,
+      "average_fps": 9.83,
+      "within_budget_percent": 0.0,
+      "p95_within_target": false
+    },
+    {
+      "scene": "ground-models",
+      "frames": 77,
+      "mean_ms": 85.233,
+      "median_ms": 81.689,
+      "p95_ms": 111.655,
+      "p99_ms": 146.19,
+      "average_fps": 11.73,
+      "within_budget_percent": 0.0,
+      "p95_within_target": false
+    }
+  ]
+}

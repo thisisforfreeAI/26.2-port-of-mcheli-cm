@@ -35,7 +35,7 @@ or render path B wait for it. Preserve decisions D1 to D23.
 | Water splashes | Puffs that pop out | Fade as smoke does | 1 (done) |
 | Rotor wash / downwash | Grey puffs whatever the ground | Puffs tinted by the ground's map colour (sand, dirt, snow); white spray over water | 1 (done) |
 | Burning vehicles | Dark damage smoke | Hot damage puffs below 30% health, cooling into smoke; existing helicopter, plane/ship and tank emitters | 2 (done) |
-| Explosion shockwave and debris | Block dust | Bounded sparks and existing block dust; ground ring deferred pending hardware profiling | 2 (sparks done) |
+| Explosion shockwave and debris | Block dust | Bounded sparks, material dust fans and tumbling surface chips/clods; [ground response and limits](M8_BLAST_DEBRIS.md); ground ring deferred pending hardware profiling | Follow-up (done) |
 | Smoke lighting | Always full sky light (upstream sampled 3000 blocks up) | Cached local sky/block light; time of day handled by the existing light map | 2 (done) |
 | Engine exhaust | Addon exhaust flames and plane nozzle smoke | Short bounded turbine wisps and restrained jet accents at supported outlets; distortion deferred | 3 (plumes done) |
 | Quality levels and budgets | Vanilla particle setting only | Low/Balanced/High particle budgets and distant thinning | Pixel follow-up (§6) |
