@@ -73,8 +73,27 @@ cleanly. Its closer camera captures the indoor comparison directly:
 [Classic room](screens/m8-lighting-opengl-room-classic.png),
 [daylight](screens/m8-lighting-opengl-day.png).
 
-The combined `build runGameTestServer` passes: **180 JUnit tests and 209 required GameTests**,
+The initial PR #44 combined `build runGameTestServer` passed: **180 JUnit tests and 209 required GameTests**,
 with zero failures. The normal jar contains the new effects and excludes development probes.
 Local builds use the documented external JEI exclusion because the optional API Maven host is
 blocked here. Full JEI-enabled
 release validation and the target PC's combat frame times remain open.
+
+## Bomb-size follow-up
+
+Enhanced heavy-bomb and incendiary puffs scale smoothly from power 3 to power 12. At power 12,
+Balanced increases nominal puff size by 50% (up to 24 instead of 16) and the initial scale from
+0.2 to 0.6 times nominal size. That is a 4.5-times wider initial quad and a 50% wider eventual
+smoke quad for the same large-bomb puff. Low caps the size multiplier at 1.15 and High at 1.75.
+Initial scale caps are 0.4 / 0.6 / 0.7 on Low / Balanced / High; the existing diffusion ceiling
+remains twice nominal size. The warm initial glow can reach radius 12 / 16 / 18 respectively.
+
+The emitter adds no puffs or glow layers and retains its timing, lifetime, motion and random
+draws. Admission uses the enlarged expected puff/glow radius, so larger effects spend more of
+the existing coverage budget. Ordinary cannon/rocket/penetrator impacts, tiny bombs, Classic
+and vanilla-explosion selection retain their existing puff scale. This is a size correction;
+additional bomb accents, missile accents and stronger countermeasure flare glow remain planned.
+
+The size-12 comparison passes on both Vulkan/lavapipe and OpenGL/llvmpipe at 1920×1080,
+with screenshots and the repeatable opt-in scene in [M8_GROUND_MARKS.md](M8_GROUND_MARKS.md#bomb-size-follow-up).
+The follow-up build passes 183 JUnit tests using the external optional-JEI exclusion.

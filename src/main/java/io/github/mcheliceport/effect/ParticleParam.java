@@ -28,6 +28,8 @@ public class ParticleParam {
     public float motionYUpAge = 2.0F;
     /** Client appearance hint only: existing damage smoke starts hot, then cools. */
     public float damageHeat;
+    /** Initial scale of a diffusible puff relative to its nominal size; upstream uses 0.2. */
+    public float diffusionStart = 0.2F;
 
     public void setDamageHeat(int hp, int maxHp) {
         this.damageHeat = maxHp <= 0 ? 0 : Math.clamp((0.3F - (float) hp / maxHp) / 0.2F, 0, 1);

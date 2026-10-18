@@ -12,6 +12,9 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 
 ### Changed
 
+- M8 bomb size correction: broader bomb/char ground footprints and power-scaled initial
+  fire/smoke and glow, using the existing shared surface and particle budgets.
+
 - M8 ground blast marks: weapon-scaled soot and disturbed-soil textures on surviving terrain,
   material tints, stepped-surface fitting, occlusion/water rejection and bounded temporary storage.
   Explosions carry a cosmetic weapon family; network version 21 requires matching client/server builds.
