@@ -26,7 +26,6 @@ broader gameplay and hardware checks remain pending.
 | Area | Planned milestone |
 |---|---|
 | Remaining plane/ground equipment and UAV station preview camera | M6 |
-| Passive radar | M6 (with the vehicles that use them) |
 | Wingman (AI wingmen, marker block screens and types, missions, `/wingman`) | M6b |
 | Remaining `/mcheli` commands (including reloading content with `reconfig`), advancement triggers, long-distance tracking and rendering, thermal vision (the third camera mode), GPU-buffer model rendering, projectile chunk loading (`ProjectileChunkLoad`), HBM:NTM stubs, performance work | M7 |
 
@@ -413,7 +412,10 @@ These follow from how Minecraft 26.2 works or from decisions approved in PORTING
     the anti-radiation missile tuning (`ARM*`; anti-radiation missiles only fall to a type 2 ECM
     jammer, as upstream), `PassiveRadarLockOutCount`, `SemiActiveRadar`,
     `PDHDNMaxDegreeLockOutCount`, the aircraft-level `PassiveRadar` and `EnableBVR`, and the
-    weapon's `HasMortarRadar`. GPS missiles do not steer to the GPS point, as upstream.
+    weapon's `HasMortarRadar`. GPS missiles do not steer to the GPS point, as upstream. A
+    `PassiveRadar` missile fires without a lock and flies at the BVR target, if any, as upstream;
+    upstream's in-flight retargeting from the shooter's lock (`lock`/`onUnlock` with
+    `PacketLockTarget`) had no callers and is not ported.
 89. Lock boxes (upstream's `renderEntityMarker`) are drawn on the HUD by projecting upstream's
     in-world billboard onto the screen, so they keep upstream's size, place and colours but sit
     under the vehicle HUD instead of in the world. As upstream, only targets with no block in

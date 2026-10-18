@@ -1572,3 +1572,12 @@ Validation: `build` passed, the GameTest server passed all 225 required tests an
 unit test covers the GPS and BVR payloads. In the client, N in an AH-64 opened the panel
 ([panel](screens/m6-gps-panel.png)); 48, 150, 140 marked the point 59.8 m ahead
 ([marker](screens/m6-gps-marker.png)), and the marker was gone after getting off and back on.
+
+## Passive radar survey
+
+The last radar row in KNOWN_ISSUES was passive radar. Upstream's `MCH_WeaponAAMissile.lock` and
+`onUnlock`, which would hand a passive-radar missile in flight the shooter's current lock through
+`clientSetTargetEntity` and `PacketLockTarget`, have no callers, and the guidance system's
+`passiveRadar` fields are never read. What runs is already ported: passive and active radar
+missiles fire without a client lock and take the seeker's server target, which the BVR scope
+sets. The row is closed and the dead path recorded in KNOWN_ISSUES 88.
