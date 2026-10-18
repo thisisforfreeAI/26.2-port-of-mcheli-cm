@@ -25,8 +25,8 @@ broader gameplay and hardware checks remain pending.
 
 | Area | Planned milestone |
 |---|---|
-| Remaining plane/ground equipment and UAV station preview camera | M6 |
-| Wingman (AI wingmen, marker block screens and types, missions, `/wingman`) | M6b |
+| Remaining plane/ground equipment | M6 |
+| Wingman (AI wingmen, the base screen with taxi routes and the mission planner, missions, `/wingman`) | M6b |
 | Remaining `/mcheli` commands (including reloading content with `reconfig`), advancement triggers, long-distance tracking and rendering, thermal vision (the third camera mode), GPU-buffer model rendering, projectile chunk loading (`ProjectileChunkLoad`), HBM:NTM stubs, performance work | M7 |
 
 Until then:
@@ -60,7 +60,9 @@ Until then:
   energy from the charger and from batteries (any item with NeoForge's item energy capability) in
   the fuel slot. Upstream's GregTech EU and HBM HE energy systems are dropped, so the
   `EnergySystem` and ratio settings are gone; the port registers no battery item, as upstream.
-- Every placed wingman marker is a waypoint until the marker screen is ported (M6b).
+- Wingman markers keep their type, ID, parent base and parking heading, but no wingman uses them
+  until the wingman AI is ported (M6b). A base marker opens the marker screen until the base
+  screen is ported.
 - Turret ballistics lines (upstream `drawTurretBallistics`) are not drawn yet (M7).
 
 This config entry already exists but has no effect yet:
@@ -73,8 +75,11 @@ These follow from how Minecraft 26.2 works or from decisions approved in PORTING
 (sections 8 and 10). They apply as each feature is ported.
 
 1. 1.12.2 worlds and items are not migrated (different mod ID, item flattening, new save format).
-2. The UAV station's small preview shows telemetry only: 26.2 has no supported way to
-   render the world a second time from another viewpoint. Remote flight uses the supported main
+2. The UAV station's small preview shows telemetry only. Upstream rendered the whole world a
+   second time from the UAV into its own framebuffer. In 26.2 the level renderer always draws into
+   the game's main render target and keeps one section-occlusion graph and one extracted level
+   state per frame, all built for the main camera, so a second view would mean replacing vanilla's
+   frame pipeline and rebuilding visibility every frame. Remote flight uses the supported main
    camera at the UAV instead.
    The handheld tablet controls UAVs deployed from placed stations; it has no deployment inventory.
    Its temporary seat is invisible and is never saved. Pairings update the item immediately, and
@@ -112,8 +117,8 @@ These follow from how Minecraft 26.2 works or from decisions approved in PORTING
 17. Content item names come from the content files only. Upstream's static lang files also named
     content items, but its generated names took precedence, except for six Chinese names (the M18
     smoke grenades, the fuel truck and the ammo box), which the port's `zh_cn` file keeps.
-18. The wingman marker block stores its marker type in its block state; upstream kept it in a block
-    entity.
+18. The wingman marker block stores its marker type in its block state and its ID, parent base and
+    parking heading in a block entity; upstream kept all four in its block entity.
 19. Sound files that only a resource pack (not the mod or an addon pack) adds do not count when the
     port decides between `<name>.ogg` and `<name>_snd.ogg` for a content sound event. A resource
     pack can still define such events in its own `sounds.json`.
@@ -440,6 +445,11 @@ These follow from how Minecraft 26.2 works or from decisions approved in PORTING
     (`gps_position.png`) missing from its assets; the marker is projected onto the point here and
     drawn as a square outline. As upstream, the server keeps each player's point but nothing reads
     it (GPS missiles do not steer, item 88), and the point goes inactive off a vehicle.
+93. The wingman marker screen saves only for a player who can reach and edit the marker (within
+    block reach plus four blocks, not a spectator, outside spawn protection); upstream accepted
+    the save from any player for any marker. Changing the type keeps what was typed into the
+    fields, where upstream reset them to the saved values. The placement message leaves out
+    upstream's pointer to `/wingman marker type` until that command is ported.
 
 ## Upstream content issues kept as they are
 

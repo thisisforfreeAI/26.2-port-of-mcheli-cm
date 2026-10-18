@@ -105,6 +105,8 @@ public final class AircraftClientEvents {
             TargetMarkers.INSTANCE.reset();
         });
         SpotClientHooks.set(TargetMarkers.INSTANCE);
+        io.github.mcheliceport.wingman.WingmanClientHooks.setMarkerScreen(
+                p -> Minecraft.getInstance().gui.setScreen(new io.github.mcheliceport.client.gui.MarkerConfigScreen(p)));
     }
 
     public static @Nullable AircraftEntity riddenAircraft(@Nullable LocalPlayer player) {

@@ -46,8 +46,8 @@ public final class ModNetwork {
 
     private static final Logger LOGGER = LogUtils.getLogger();
     /** Bump when payload encoding, menu layout or synchronized entity data changes. */
-    // Explosion effects now carry the cosmetic weapon family for terrain marks.
-    public static final String VERSION = "21";
+    // Wingman markers: the marker screen's payloads.
+    public static final String VERSION = "22";
 
     private ModNetwork() {
     }
@@ -111,6 +111,10 @@ public final class ModNetwork {
                         new io.github.mcheliceport.weapon.GpsPosition.Point(p.x(), p.y(), p.z(), p.active())));
         registrar.playToServer(BvrLockPayload.TYPE, BvrLockPayload.CODEC,
                 (p, context) -> applyBvrLock(context.player(), p.targetId()));
+        registrar.playToClient(OpenMarkerScreenPayload.TYPE, OpenMarkerScreenPayload.CODEC,
+                (p, context) -> io.github.mcheliceport.wingman.WingmanClientHooks.openMarkerScreen(p));
+        registrar.playToServer(MarkerUpdatePayload.TYPE, MarkerUpdatePayload.CODEC,
+                (p, context) -> applyMarkerUpdate(context.player(), p));
         registrar.playToServer(WeaponControlPayload.TYPE, WeaponControlPayload.CODEC, ModNetwork::handleWeaponControl);
         registrar.playToServer(AmmoRequestPayload.TYPE, AmmoRequestPayload.CODEC, ModNetwork::handleAmmoRequest);
         registrar.playToServer(ResupplyPayload.TYPE, ResupplyPayload.CODEC, ModNetwork::handleResupply);
@@ -263,6 +267,20 @@ public final class ModNetwork {
 
     /** The vehicle a player rides, in seat 0 or a crew seat (upstream's lookup in {@code onReceive}). */
     /** Upstream {@code PacketLockTargetBVR.onReceive}: the rider's current seeker takes the BVR target. */
+    /**
+     * Upstream {@code PacketMarkerUpdate}. Upstream accepted it from anyone for any marker; the
+     * port requires the player to be able to reach and edit the block, as vanilla's sign editing does.
+     */
+    public static void applyMarkerUpdate(Player player, MarkerUpdatePayload p) {
+        if (player.isSpectator() || !player.isWithinBlockInteractionRange(p.pos(), 4.0)
+                || !player.level().mayInteract(player, p.pos())
+                || !(player.level().getBlockEntity(p.pos())
+                        instanceof io.github.mcheliceport.wingman.block.WingmanMarkerBlockEntity marker)) {
+            return;
+        }
+        marker.apply(p.markerType(), p.id().trim(), p.baseId().trim(), Mth.clamp(p.parkingHeading(), -1, 3));
+    }
+
     public static void applyBvrLock(Player player, int targetId) {
         AircraftEntity ac = riddenAircraft(player);
         io.github.mcheliceport.weapon.WeaponSet ws = ac != null ? ac.getCurrentWeapon(player) : null;

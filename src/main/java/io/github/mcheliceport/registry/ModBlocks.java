@@ -6,6 +6,7 @@ import io.github.mcheliceport.block.DraftingTableBlock;
 import io.github.mcheliceport.block.DraftingTableBlockEntity;
 import java.util.function.Supplier;
 import io.github.mcheliceport.wingman.block.WingmanMarkerBlock;
+import io.github.mcheliceport.wingman.block.WingmanMarkerBlockEntity;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -40,6 +41,10 @@ public final class ModBlocks {
     public static final DeferredBlock<WingmanMarkerBlock> WINGMAN_MARKER = ModRegistries.BLOCKS.registerBlock(
             "wingman_marker", WingmanMarkerBlock::new,
             p -> p.mapColor(MapColor.METAL).strength(2.0f, 6.0f).requiresCorrectToolForDrops());
+    /** Upstream {@code WingmanMarkerTileEntity}: the marker's ID, base and parking heading. */
+    public static final Supplier<BlockEntityType<WingmanMarkerBlockEntity>> WINGMAN_MARKER_ENTITY =
+            ModRegistries.BLOCK_ENTITY_TYPES.register("wingman_marker", () -> new BlockEntityType<>(
+                    WingmanMarkerBlockEntity::new, WINGMAN_MARKER.get()));
 
     private ModBlocks() {
     }

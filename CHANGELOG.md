@@ -63,6 +63,10 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
   supported (see Added); JEI shows the drafting table as a crafting station for them.
 
 ### Added
+- The wingman marker screen, as upstream: right-clicking a marker sets its type (base, runway ends,
+  parking, waypoint, helipad and helipad heading), its ID, its parent base and, for a parking spot,
+  the heading to park in. A new marker is a parking spot with its own ID, and every marker is kept
+  in a per-dimension registry for the wingman missions to come.
 - The GPS panel, as upstream: Open GPS Panel (N) in a vehicle takes X, Y and Z (or the player's
   position) for a GPS point, marked on the HUD with its distance until the player gets off.
 - The BVR scope and the mortar radar, as upstream: a weapon with `EnableBVR` marks vehicles, chaff

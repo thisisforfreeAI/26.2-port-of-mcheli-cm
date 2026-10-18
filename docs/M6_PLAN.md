@@ -1581,3 +1581,14 @@ The last radar row in KNOWN_ISSUES was passive radar. Upstream's `MCH_WeaponAAMi
 `passiveRadar` fields are never read. What runs is already ported: passive and active radar
 missiles fire without a client lock and take the seeker's server target, which the BVR scope
 sets. The row is closed and the dead path recorded in KNOWN_ISSUES 88.
+
+## UAV station preview camera survey
+
+Upstream's `WidgetUavCameraFeed` rendered the whole world a second time from the selected UAV
+(`renderWorld` with a swapped view entity) into its own framebuffer and drew it in the station
+panel. 26.2's `LevelRenderer.render` always targets `GameRenderer.mainRenderTarget()`, keeps one
+section-occlusion graph and one extracted `LevelRenderState` per frame, all built from the main
+camera, and runs from `GameRenderer.renderLevel` before the screen is drawn. A second view would
+mean replacing that frame pipeline and rebuilding section visibility every frame, so the preview
+stays the NO SIGNAL and telemetry panel; the reason is now in KNOWN_ISSUES item 2 and the table
+row is closed.
