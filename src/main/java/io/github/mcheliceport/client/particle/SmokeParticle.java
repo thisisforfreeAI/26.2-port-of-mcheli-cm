@@ -86,6 +86,9 @@ public class SmokeParticle extends McheliParticle {
         }
     }
 
+    /** Cinematic blast puffs use depth-tested rendering without block collision queries. */
+    void disableCollision() { this.hasPhysics = false; }
+
     /** Upstream {@code effectWind}: rotors of nearby aircraft above 0.1 throttle push the smoke away. */
     private void effectWind() {
         if (!this.isEffectedWind) {

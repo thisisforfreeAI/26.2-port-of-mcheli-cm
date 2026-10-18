@@ -27,7 +27,7 @@ or render path B wait for it. Preserve decisions D1 to D23.
 | Effect | Today (upstream look) | M8 look | Slice |
 |---|---|---|---|
 | Smoke (explosions, trails, damage, downwash, flares, grenades) | 8-frame puff that pops in and out at full opacity; size jumps once per tick | Fades in over 2 ticks and out over the last 30 % of its life; size grows smoothly between ticks | 1 (done) |
-| Explosions / fire | Grey-brown smoke puffs, block dust, flares from large blasts | Explosion puffs are born as fire (hot orange, glowing at block light 15) and cool to their own smoke colour over the first 35 % of their life; a soft additive fireball glow under the blast | 1 (done) |
+| Explosions / fire | Grey-brown smoke puffs, block dust, flares from large blasts | Earlier growing puffs for small hits; mixed fast fire, familiar puffs and dark smoke for large bombs; [combined presentation](M8_EXPLOSION_BLEND.md) | Follow-up (done) |
 | Muzzle flashes | 8-frame starburst, alpha blended | Same starburst drawn additively, plus a short warm glow | 1 (done) |
 | Tracers (machine-gun rounds) | Bullet model lit by the world, dark at night | Full-bright model with a soft streak one tick's travel long (at most 8 blocks) in the round's colour | 1 (done) |
 | Missile trails | Flame quad, smoke trail | Smoke as above, plus an additive glow at the flame | 1 (done) |

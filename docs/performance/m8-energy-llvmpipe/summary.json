@@ -1,0 +1,39 @@
+{
+  "target_fps": 80,
+  "frame_budget_ms": 12.5,
+  "results": [
+    {
+      "scene": "energy-adaptive",
+      "frames": 87,
+      "mean_ms": 71.162,
+      "median_ms": 71.998,
+      "p95_ms": 87.941,
+      "p99_ms": 122.526,
+      "average_fps": 14.05,
+      "within_budget_percent": 0.0,
+      "p95_within_target": false
+    },
+    {
+      "scene": "energy-empty",
+      "frames": 93,
+      "mean_ms": 67.294,
+      "median_ms": 68.181,
+      "p95_ms": 89.506,
+      "p99_ms": 94.005,
+      "average_fps": 14.86,
+      "within_budget_percent": 0.0,
+      "p95_within_target": false
+    },
+    {
+      "scene": "energy-fixed",
+      "frames": 74,
+      "mean_ms": 84.367,
+      "median_ms": 84.511,
+      "p95_ms": 106.516,
+      "p99_ms": 140.555,
+      "average_fps": 11.85,
+      "within_budget_percent": 0.0,
+      "p95_within_target": false
+    }
+  ]
+}

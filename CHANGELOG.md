@@ -12,6 +12,10 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 
 ### Changed
 
+- M8 explosion blend: restore earlier smoke-led missile/rocket and small-bomb effects with brief
+  hot flash/sparks; mix familiar puffs into large bombs with faster irregular fire, dark developing
+  smoke and outward dust fans. Preserve bounded requests and shared coverage/live limits.
+
 - M8 enhanced explosions: irregular short hot flashes, bounded overlapping fire/cloud lobes,
   outward expansion and a rising smoke crown. Large bombs fill out with power; small impacts
   cool faster. Airburst visibility no longer depends on affected terrain blocks.

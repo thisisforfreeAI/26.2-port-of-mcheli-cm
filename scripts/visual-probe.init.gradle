@@ -17,6 +17,7 @@ gradle.projectsEvaluated {
     project.neoForge.runs.client.systemProperty('mcheli.probeImpactFlare', System.getProperty('mcheli.probeImpactFlare', 'false'))
     project.neoForge.runs.client.systemProperty('mcheli.probeRotorWash', System.getProperty('mcheli.probeRotorWash', 'false'))
     project.neoForge.runs.client.systemProperty('mcheli.probeExplosionStructure', System.getProperty('mcheli.probeExplosionStructure', 'false'))
+    project.neoForge.runs.client.systemProperty('mcheli.probeStructureQuick', System.getProperty('mcheli.probeStructureQuick', 'false'))
     project.neoForge.runs.client.systemProperty('mcheli.probeWashSnowCheck', System.getProperty('mcheli.probeWashSnowCheck', 'false'))
     project.neoForge.runs.client.gameDirectory = project.file('.run/m8-preview')
     project.neoForge.runs.client.programArguments.addAll('--quickPlaySingleplayer', 'M6Smoke',
