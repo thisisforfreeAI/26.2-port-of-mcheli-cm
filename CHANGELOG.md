@@ -12,6 +12,10 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 
 ### Changed
 
+- M8 enhanced explosions: irregular short hot flashes, bounded overlapping fire/cloud lobes,
+  outward expansion and a rising smoke crown. Large bombs fill out with power; small impacts
+  cool faster. Airburst visibility no longer depends on affected terrain blocks.
+
 - M8 helicopter rotor wash: low, outward-moving animated dust/spray, material-specific density,
   rotor-height/throttle/speed fading and faint water ripples. Terrain sampling and emission are
   bounded across helicopters; Classic and other vehicles' sea-only wake emitters remain available.

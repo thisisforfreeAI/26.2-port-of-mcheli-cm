@@ -8,8 +8,9 @@ or render path B wait for it. Preserve decisions D1 to D23.
 ## 1. Rules
 
 - **Gameplay is untouched.** Effects stay client-only. No change to damage, projectile flight,
-  targeting or timings. Emitters retain upstream timing and motion; client quality budgets may
-  suppress cosmetic particles during heavy combat. The weapon-specific ground follow-up adds
+  targeting or timings. Classic emitters retain upstream timing and motion; enhanced wash and
+  explosion presentation use bounded cosmetic emitters. Client quality budgets may suppress
+  cosmetic particles during heavy combat. The weapon-specific ground follow-up adds
   one cosmetic family enum to the explosion effect payload and bumps the network version; it
   does not change damage or terrain destruction.
 - **Both backends.** Only vanilla pipeline state (`RenderPipeline` snippets, blend functions,
@@ -143,16 +144,17 @@ Bound terrain sampling and particle admission; preserve Classic and other vehicl
 Native material, moving-hover, high-altitude, repeated-tick and overlapping-helicopter checks
 pass on both Vulkan and OpenGL, including thin snow/powder snow. Hardware FPS remains open.
 
-## 12. Explosion structure and engine exhaust — planned
+## 12. Explosion structure and engine exhaust
 
-- [ ] **Explosion structure:** give large blasts a short white-hot centre inside a softer,
+- [x] **Explosion structure:** give large blasts a short white-hot centre inside a softer,
   irregular orange flash, varied overlapping fire lobes, fast outward dust and heavier smoke
   that develops upward over time. Smaller impacts get a quicker, compact sequence. Improve
   connected cloud shading while retaining pixel silhouettes and bounded overdraw/admission.
+  See [M8_EXPLOSION_STRUCTURE.md](M8_EXPLOSION_STRUCTURE.md) for the bounded primary emitter.
 - [ ] **Engine exhaust plumes:** faint short wisps at helicopter turbine outlets; brighter jet
   plumes only where nozzle/afterburner definitions support them. Intensity follows throttle;
   heavy smoke remains a damage cue. Use content-defined outlets, existing pipelines and
   distance/adaptive caps. Heat-distortion rendering remains deferred.
 
-These requests follow the current rotor-wash work. The 80 FPS target on the specified PC
+These requests follow the rotor-wash work. The 80 FPS target on the specified PC
 remains the acceptance goal; each added layer needs native captures and measured cost.

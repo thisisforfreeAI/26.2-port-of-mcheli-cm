@@ -126,6 +126,45 @@ def ripple(x, y):
     return (225, 241, 248, 88 if abs(radius - edge) < .025 else 42)
 
 
+def blast_cloud(x, y):
+    frame = x // SIZE + y // SIZE * 4
+    px, py = (x % SIZE - 15.5) / 15, (y % SIZE - 15.5) / 15
+    angle = math.atan2(py, px)
+    # One connected, irregular silhouette. Broad lighting avoids concentric lobe outlines.
+    edge = .77 + .065 * math.sin(angle * 3 + .6) + .035 * math.cos(angle * 7 - frame * .12)
+    depth = 1 - math.hypot(px, py) / edge
+    if depth <= 0:
+        return (0, 0, 0, 0)
+    noise = (math.sin(px * 11 + py * 5 + frame * .4) + math.cos(py * 13 - px * 4)) * .12
+    shade = max(0, min(1, .6 - py * .22 - px * .1 + noise))
+    alpha = 80 if depth < .08 else 160 if depth < .2 else 238
+    if frame < 3:
+        fire = max(0, min(1, depth * .8 + noise + .22 - frame * .08))
+        if fire > .65:
+            return (255, 243, 175, alpha)
+        if fire > .4:
+            return (255, 192, 65, alpha)
+        if fire > .2:
+            return (243, 104, 25, alpha)
+        return (176, 74, 27, alpha)
+    value = round((.25 + shade * .50 + (frame - 3) * .035) * 8) * 28
+    value = min(245, value)
+    return (value, value, value, alpha)
+
+
+def blast_flash(x, y):
+    frame = x // SIZE + y // SIZE * 4
+    px, py = (x % SIZE - 15.5) / 15, (y % SIZE - 15.5) / 15
+    angle = math.atan2(py, px)
+    edge = .72 + .12 * math.sin(angle * 5 + .7) + .06 * math.sin(angle * 11 + frame * .1)
+    depth = 1 - math.hypot(px, py) / edge
+    if depth <= 0:
+        return (0, 0, 0, 0)
+    # Uneven soft orange edge and a compact white-hot core, not a circular halo.
+    return (255, min(255, round(135 + depth * 150)), round(35 + depth * 190),
+            round(min(1, depth * 3) * (1 - frame / 10) * 235))
+
+
 if __name__ == '__main__':
     # Compact sheets avoid a dropped slot for wide strips in the pinned 26.2 stitcher.
     png('m8_smoke.png', SIZE * 4, SIZE * 2, smoke)
@@ -134,3 +173,5 @@ if __name__ == '__main__':
     png('m8_flare_halo.png', SIZE, SIZE, halo)
     png('m8_wash.png', SIZE * 2, SIZE * 2, wash)
     png('m8_wash_ripple.png', SIZE, SIZE, ripple)
+    png('m8_blast_cloud.png', SIZE * 4, SIZE * 2, blast_cloud)
+    png('m8_blast_flash.png', SIZE * 4, SIZE * 2, blast_flash)
