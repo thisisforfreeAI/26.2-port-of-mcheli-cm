@@ -25,7 +25,7 @@ broader gameplay and hardware checks remain pending.
 
 | Area | Planned milestone |
 |---|---|
-| Remaining plane/ground equipment and UAV station preview camera, gunner NPCs and mobs in seats (and their weapon use), GLTD, hand-held weapons (Stinger, Javelin), the rest of the aircraft GUI, drafting table screen, charger, mine defuser, the team scoreboard screens | M6 |
+| Remaining plane/ground equipment and UAV station preview camera, gunner NPCs and mobs in seats (and their weapon use), hand-held weapons (Stinger, Javelin), the rest of the aircraft GUI, drafting table screen, charger, the team scoreboard screens | M6 |
 | BVR and passive radar, GPS panel and GPS missiles, mortar radar and RWR overlays, ECM jammer, the pulse-Doppler notch, the APS "iron curtain", data link, anti-radiation missiles, `Destruct` bombs (UAVs) | M6 (with the vehicles that use them) |
 | Wingman (AI wingmen, marker block screens and types, missions, `/wingman`) | M6b |
 | Remaining `/mcheli` commands (including reloading content with `reconfig`), advancement triggers, long-distance tracking and rendering, thermal vision (the third camera mode), GPU-buffer model rendering, projectile chunk loading (`ProjectileChunkLoad`), HBM:NTM stubs, performance work | M7 |
@@ -326,6 +326,14 @@ These follow from how Minecraft 26.2 works or from decisions approved in PORTING
     and harvests them, and `mcheli_ce_port:wrench_logic` (circuits, plants, vines, snow layers and
     carpets) at 5.5; 26.2 has no block materials. Upstream's creative dig-delay reset and the
     held-wrench swing animation (`MCH_WrenchAnim`) are not ported.
+77. The GLTD cools down for 450 ticks (460 on the client) after a strike, the value upstream's
+    original source gave it (the A-10 strike's -300, lengthened by 150). McHeli CE's decompiled
+    source turned that into 65,386 ticks, about 54 minutes. The designator's camera view is drawn
+    from a view entity as vehicle cameras are; upstream swapped the render view entity. Its keys
+    are the vehicle keys (attack to call the strike, Z and X to zoom, C for night vision, the
+    unmount key or sneak to leave). The server also checks that the operator sending controls
+    sits at the designator. Its laser is two crossed strips that widen with distance, so it stays
+    about a pixel wide from the designator, instead of a GL line.
 
 ## Upstream content issues kept as they are
 

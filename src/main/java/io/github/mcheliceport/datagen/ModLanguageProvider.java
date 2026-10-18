@@ -39,6 +39,7 @@ public class ModLanguageProvider extends LanguageProvider {
         add("pack.source.mcheli_ce_port.addon", "McHeli addon");
         add("entity.mcheli_ce_port.helicopter", "Helicopter");
         add("entity.mcheli_ce_port.seat", "Seat");
+        add("entity.mcheli_ce_port.gltd", "GLTD");
         keys();
         addItem(ModItems.SPAWN_GUNNER_VS_MONSTER, "Gunner (vs Monster)");
         addItem(ModItems.SPAWN_GUNNER_VS_PLAYER, "Gunner (vs Player of other team)");
@@ -64,6 +65,7 @@ public class ModLanguageProvider extends LanguageProvider {
         addItem(ModItems.UAV_PAIRING_DEVICE, "UAV Pairing Device");
         addItem(ModItems.UAV_TABLET, "UAV Tablet");
         addItem(ModItems.MINE_DEFUSER, "Mine Defuser");
+        add("item.mcheli_ce_port.mine_defuser.tooltip", "Sneak up to a mine and right-click it to defuse");
         addItem(ModItems.INTERNAL, "Internal Item");
         addItem(ModItems.FIM92_BULLET, "FIM-92 Stinger missile");
         addItem(ModItems.FGM148_BULLET, "FGM-148 Javelin missile");

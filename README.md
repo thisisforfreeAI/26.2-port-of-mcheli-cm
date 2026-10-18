@@ -98,6 +98,11 @@ The wrench repairs a vehicle while you hold right-click looking at it, 10 HP a s
 rangefinder's scope comes up when you hold right-click: left-click spots for your team, **Z**/**X**
 zoom and **V** switches between players and vehicles, mobs and a mark point.
 
+The GLTD: right-click a block to set it up, then right-click it to sit behind it. Left-click calls
+in three A-10 strafing runs on the block you look at (at least 20 m away), then it cools down for
+22.5 seconds. **Z**/**X** zoom, **C** switches night vision, and **Y** or sneaking leaves. Sneak
+up to a mine and right-click it with the mine defuser to remove it.
+
 Parachutes: right-click the item while airborne and unmounted. On an ejection-capable plane,
 load parachutes into the **Chutes** slots with **I**, then press **Space** from the pilot or first
 crew seat. Space still toggles hovering in helicopters. **Y** dismounts; eligible transport

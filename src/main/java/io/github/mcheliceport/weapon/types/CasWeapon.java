@@ -20,6 +20,7 @@ import org.jspecify.annotations.Nullable;
  *
  * <p>Upstream never set the shooting vehicle ({@code this.shooter = shooter} assigned the field to
  * itself), so the A-10 belonged to no vehicle; here it belongs to the vehicle that called it (D20).
+ * The ground laser designator calls it with no vehicle, as upstream.
  */
 public class CasWeapon extends WeaponBase {
 
@@ -121,7 +122,7 @@ public class CasWeapon extends WeaponBase {
                 prm.entity.getZ());
     }
 
-    public boolean performStrikeInquiry(Entity user, Entity shooter, double px, double py, double pz) {
+    public boolean performStrikeInquiry(Entity user, @Nullable Entity shooter, double px, double py, double pz) {
         float yaw = user.getYRot();
         float pitch = user.getXRot();
         Vec3 lookVec = WeaponWorld.fromPitchYaw(pitch, yaw);
@@ -145,7 +146,9 @@ public class CasWeapon extends WeaponBase {
         }
         this.user = user;
         this.shooter = shooter;
-        this.playSoundClient(shooter, 1.0F, 1.0F);
+        if (shooter != null) {
+            this.playSoundClient(shooter, 1.0F, 1.0F);
+        }
         this.tick = 0;
         this.startTick = 50;
         this.attackCount = 0;

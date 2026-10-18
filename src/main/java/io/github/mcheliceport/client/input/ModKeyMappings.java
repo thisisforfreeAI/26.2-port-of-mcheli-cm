@@ -24,12 +24,13 @@ public final class ModKeyMappings {
     public static final KeyMapping.Category CATEGORY =
             new KeyMapping.Category(Identifier.fromNamespaceAndPath(McheliCePort.MOD_ID, "vehicles"));
 
-    /** Active while the player rides a McHeli vehicle, in any seat. */
+    /** Active while the player rides a McHeli vehicle, in any seat, or sits at a laser designator. */
     public static final IKeyConflictContext RIDING = new IKeyConflictContext() {
         @Override
         public boolean isActive() {
             Minecraft mc = Minecraft.getInstance();
-            return mc.gui.screen() == null && mc.player != null && isRidingAircraft(mc.player.getVehicle());
+            return mc.gui.screen() == null && mc.player != null && (isRidingAircraft(mc.player.getVehicle())
+                    || mc.player.getVehicle() instanceof io.github.mcheliceport.entity.gltd.GltdEntity);
         }
 
         @Override

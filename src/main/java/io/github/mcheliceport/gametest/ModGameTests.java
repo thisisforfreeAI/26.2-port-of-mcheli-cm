@@ -69,6 +69,7 @@ public final class ModGameTests {
         WeaponGameTests.register();
         CraftingGameTests.register();
         ToolGameTests.register();
+        GltdGameTests.register();
         FUNCTIONS.register(modBus);
         modBus.addListener(ModGameTests::onRegisterGameTests);
     }

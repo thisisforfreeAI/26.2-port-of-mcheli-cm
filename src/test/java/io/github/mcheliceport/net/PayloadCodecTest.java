@@ -165,6 +165,10 @@ class PayloadCodecTest {
         assertEquals(mark, roundTrip(MarkPosPayload.CODEC, mark));
         RangeFinderSpotPayload request = new RangeFinderSpotPayload(60);
         assertEquals(request, roundTrip(RangeFinderSpotPayload.CODEC, request));
+        GltdControlPayload gltd = new GltdControlPayload((byte) -1, true, false);
+        assertEquals(gltd, roundTrip(GltdControlPayload.CODEC, gltd));
+        GltdControlPayload leave = new GltdControlPayload((byte) 1, false, true);
+        assertEquals(leave, roundTrip(GltdControlPayload.CODEC, leave));
     }
 
     @Test

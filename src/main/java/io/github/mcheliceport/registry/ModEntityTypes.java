@@ -62,7 +62,10 @@ public final class ModEntityTypes {
                             .sized(2.0f, 0.7f)
                             .clientTrackingRange(toChunks(1200))
                             .updateInterval(2)));
-    public static final DeferredHolder<EntityType<?>, EntityType<PlaceholderEntity>> GLTD = placeholder("gltd", 0.5f, 0.5f, 1200, 10);
+    /** Upstream's {@code MCH_EntityGLTD}, the ground laser target designator. */
+    public static final DeferredHolder<EntityType<?>, EntityType<io.github.mcheliceport.entity.gltd.GltdEntity>> GLTD = register("gltd",
+            ModRegistries.ENTITY_TYPES.registerEntityType("gltd", io.github.mcheliceport.entity.gltd.GltdEntity::new,
+                    MobCategory.MISC, builder -> builder.sized(0.5F, 0.5F).clientTrackingRange(toChunks(1200)).updateInterval(10)));
     public static final DeferredHolder<EntityType<?>, EntityType<PlaneEntity>> PLANE = register("plane",
             ModRegistries.ENTITY_TYPES.registerEntityType("plane", PlaneEntity::new, MobCategory.MISC,
                     builder -> builder.sized(2.0F, 0.7F).clientTrackingRange(toChunks(1200)).updateInterval(2)));
