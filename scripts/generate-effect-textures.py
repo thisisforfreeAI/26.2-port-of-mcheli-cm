@@ -126,29 +126,42 @@ def ripple(x, y):
     return (225, 241, 248, 88 if abs(radius - edge) < .025 else 42)
 
 
+def noise2(x, y, seed=7):
+    ix, iy = math.floor(x), math.floor(y)
+    fx, fy = x - ix, y - iy
+    fx, fy = fx * fx * (3 - 2 * fx), fy * fy * (3 - 2 * fy)
+    def value(a, b):
+        v = ((a * 374761393 + b * 668265263 + seed * 1274126177) & 0xffffffff)
+        v = ((v ^ (v >> 13)) * 1274126177) & 0xffffffff
+        return ((v ^ (v >> 16)) & 65535) / 65535
+    a = value(ix, iy) * (1 - fx) + value(ix + 1, iy) * fx
+    b = value(ix, iy + 1) * (1 - fx) + value(ix + 1, iy + 1) * fx
+    return a * (1 - fy) + b * fy
+
+
 def blast_cloud(x, y):
-    frame = x // SIZE + y // SIZE * 4
-    px, py = (x % SIZE - 15.5) / 15, (y % SIZE - 15.5) / 15
-    angle = math.atan2(py, px)
-    # One connected, irregular silhouette. Broad lighting avoids concentric lobe outlines.
-    edge = .77 + .065 * math.sin(angle * 3 + .6) + .035 * math.cos(angle * 7 - frame * .12)
-    depth = 1 - math.hypot(px, py) / edge
+    # 64-pixel cells retain pixel edges while allowing broken fire and smoke inside each lobe.
+    cell = 64
+    frame = x // cell + y // cell * 4
+    px, py = (x % cell - 31.5) / 31, (y % cell - 31.5) / 31
+    coarse = noise2(px * 3.1 + 5, py * 3.1 + 7 - frame * .10)
+    detail = noise2(px * 8 + 7, py * 8 + 4 - frame * .18, 23)
+    grain = noise2(px * 17 + 2, py * 17 + 5 - frame * .12, 37)
+    depth = 1 - math.hypot(px * .97, py * 1.05) * 1.32 + (coarse - .5) * .65 + (detail - .5) * .20
     if depth <= 0:
         return (0, 0, 0, 0)
-    noise = (math.sin(px * 11 + py * 5 + frame * .4) + math.cos(py * 13 - px * 4)) * .12
-    shade = max(0, min(1, .6 - py * .22 - px * .1 + noise))
-    alpha = 80 if depth < .08 else 160 if depth < .2 else 238
+    alpha = round(min(1, depth * 8) * 15) * 16
+    alpha = min(240, alpha)
     if frame < 3:
-        fire = max(0, min(1, depth * .8 + noise + .22 - frame * .08))
-        if fire > .65:
-            return (255, 243, 175, alpha)
-        if fire > .4:
-            return (255, 192, 65, alpha)
-        if fire > .2:
-            return (243, 104, 25, alpha)
-        return (176, 74, 27, alpha)
-    value = round((.25 + shade * .50 + (frame - 3) * .035) * 8) * 28
-    value = min(245, value)
+        temperature = max(0, min(1, depth * .72 + coarse * .35 + detail * .38 + grain * .12 - frame * .13))
+        palette = [(65, 31, 22), (148, 43, 16), (235, 82, 13), (255, 154, 28), (255, 224, 111), (255, 254, 231)]
+        t = temperature * (len(palette) - 1)
+        i = min(len(palette) - 2, int(t)); f = t - i
+        colour = tuple(round(palette[i][c] * (1 - f) + palette[i + 1][c] * f) for c in range(3))
+        return (*colour, alpha)
+    # Charcoal smoke with broad top-left illumination and small rolling density pockets.
+    shade = max(0, min(1, .48 - py * .20 - px * .12 + (coarse - .5) * .55 + (detail - .5) * .25))
+    value = min(200, round((30 + shade * 125 + (frame - 3) * 10) / 8) * 8)
     return (value, value, value, alpha)
 
 
@@ -161,8 +174,9 @@ def blast_flash(x, y):
     if depth <= 0:
         return (0, 0, 0, 0)
     # Uneven soft orange edge and a compact white-hot core, not a circular halo.
-    return (255, min(255, round(135 + depth * 150)), round(35 + depth * 190),
-            round(min(1, depth * 3) * (1 - frame / 10) * 235))
+    core = max(0, min(1, depth * 2.5 - frame * .08))
+    return (255, round(150 + core * 105), round(40 + core * 205),
+            round(min(1, depth * 4) * (1 - frame / 10) * 255))
 
 
 if __name__ == '__main__':
@@ -173,5 +187,5 @@ if __name__ == '__main__':
     png('m8_flare_halo.png', SIZE, SIZE, halo)
     png('m8_wash.png', SIZE * 2, SIZE * 2, wash)
     png('m8_wash_ripple.png', SIZE, SIZE, ripple)
-    png('m8_blast_cloud.png', SIZE * 4, SIZE * 2, blast_cloud)
+    png('m8_blast_cloud.png', 64 * 4, 64 * 2, blast_cloud)
     png('m8_blast_flash.png', SIZE * 4, SIZE * 2, blast_flash)

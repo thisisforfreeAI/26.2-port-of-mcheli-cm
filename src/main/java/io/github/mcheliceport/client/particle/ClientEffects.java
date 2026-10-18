@@ -37,6 +37,10 @@ public final class ClientEffects implements McheliEffects.Sink {
     private ClientEffects() {
     }
 
+    @Override public boolean engineExhaust(io.github.mcheliceport.entity.aircraft.AircraftEntity aircraft) {
+        return EffectQuality.enhanced() && EngineExhaustEmitter.emit(aircraft);
+    }
+
     @Override
     public boolean rotorWash(io.github.mcheliceport.entity.aircraft.AircraftEntity aircraft, boolean seaOnly) {
         if (!EffectQuality.enhanced() || seaOnly || !(aircraft instanceof io.github.mcheliceport.entity.heli.HeliEntity heli)) return false;
@@ -140,13 +144,16 @@ public final class ClientEffects implements McheliEffects.Sink {
                 ^ Long.rotateLeft(Double.doubleToLongBits(y), 21)
                 ^ Long.rotateLeft(Double.doubleToLongBits(z), 42) ^ level.getGameTime());
         for (int i = 0; i < count; i++) {
-            if (!EffectAdmission.admit(level, x, y, z, false, 0.08F)) continue;
+            boolean broad = ExplosionLook.broad(style);
+            float radius = broad ? Math.clamp(size * 0.018F, 0.08F, 0.22F) : 0.08F;
+            if (!EffectAdmission.admit(level, x, y, z, false, radius)) continue;
             double angle = (i + random.nextDouble()) * Math.PI * 2 / count;
-            double speed = 0.12 + random.nextDouble() * 0.16;
+            double speed = broad ? Math.min(1.2, 0.2 + size * 0.065) * (0.6 + random.nextDouble() * 0.4)
+                    : 0.12 + random.nextDouble() * 0.16;
             boolean tight = style == BlastStyle.BLAST || style == BlastStyle.PENETRATOR;
             Minecraft.getInstance().particleEngine.add(new SparkParticle(level, x, y, z,
-                    Math.cos(angle) * speed, (tight ? 0.08 : 0.15) + random.nextDouble() * (tight ? 0.16 : 0.25),
-                    Math.sin(angle) * speed, tight ? 5 + random.nextInt(3) : 7 + random.nextInt(5)));
+                    Math.cos(angle) * speed, (tight ? 0.08 : speed * 0.25) + random.nextDouble() * (tight ? 0.16 : speed * 0.5),
+                    Math.sin(angle) * speed, tight ? 5 + random.nextInt(3) : 10 + random.nextInt(5), radius));
         }
     }
 
@@ -172,12 +179,12 @@ public final class ClientEffects implements McheliEffects.Sink {
             for (int i = 0; i < count; i++) {
                 double angle = (i + random.nextDouble()) * Math.PI * 2 / count;
                 double dx = Math.cos(angle), dz = Math.sin(angle);
-                if (!EffectAdmission.admit(level, x + dx * 0.6, surface + 0.2, z + dz * 0.6, false, 0.8F)) continue;
-                double speed = Math.min(0.4, 0.1 + size * 0.025) * (0.7 + random.nextDouble() * 0.3);
-                Minecraft.getInstance().particleEngine.add(new BlastDustParticle(level,
-                        x + dx * 0.6, surface + 0.2, z + dz * 0.6, dx * speed,
-                        0.04 + random.nextDouble() * 0.04, dz * speed,
-                        tint[0], tint[1], tint[2], 18 + random.nextInt(8)));
+                float radius = Math.min(2.8F, 0.7F + size * 0.12F);
+                if (!EffectAdmission.admit(level, x + dx * 0.6, surface + 0.35, z + dz * 0.6, false, radius)) continue;
+                double speed = Math.min(0.9, 0.2 + size * 0.05) * (0.7 + random.nextDouble() * 0.3);
+                Minecraft.getInstance().particleEngine.add(new RotorWashParticle(level,
+                        x + dx * 0.6, surface + 0.35, z + dz * 0.6, dx * speed, dz * speed,
+                        radius, 0.7F, tint[0], tint[1], tint[2], 20 + random.nextInt(8), 0.01));
             }
             return;
         }

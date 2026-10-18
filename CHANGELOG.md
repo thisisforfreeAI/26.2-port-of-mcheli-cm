@@ -12,6 +12,10 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 
 ### Changed
 
+- M8 explosion blend: restore earlier smoke-led missile/rocket and small-bomb effects with brief
+  hot flash/sparks; mix familiar puffs into large bombs with faster irregular fire, dark developing
+  smoke and outward dust fans. Preserve bounded requests and shared coverage/live limits.
+
 - M8 enhanced explosions: irregular short hot flashes, bounded overlapping fire/cloud lobes,
   outward expansion and a rising smoke crown. Large bombs fill out with power; small impacts
   cool faster. Airburst visibility no longer depends on affected terrain blocks.
@@ -84,6 +88,9 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
   taxis back to a free parking spot. A helicopter, or a VTOL plane returning to a helipad, takes
   off and lands vertically. The chunks around an aircraft on a mission stay loaded (KNOWN_ISSUES
   98, 99).
+- M8 aircraft engine exhaust: short throttle-responsive turbine wisps at defined outlets and
+  restrained hot jet accents, with shared smoke admission and global quality/load caps. Stock
+  Apache and two Black Hawk variants include outlets; Classic nozzle smoke remains available.
 - The GPS panel, as upstream: Open GPS Panel (N) in a vehicle takes X, Y and Z (or the player's
   position) for a GPS point, marked on the HUD with its distance until the player gets off.
 - The BVR scope and the mortar radar, as upstream: a weapon with `EnableBVR` marks vehicles, chaff

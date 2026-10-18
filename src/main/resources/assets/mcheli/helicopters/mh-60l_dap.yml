@@ -19,6 +19,12 @@ PhysicalProperties:
     Yaw: 0.9
     Pitch: 0.9
     Roll: 0.9
+Render:
+  EngineOutlets:
+  - Position: [1.05, 2.60, -5.75]
+    Direction: [0.15, 0.12, -1.0]
+  - Position: [-1.05, 2.60, -5.75]
+    Direction: [-0.15, 0.12, -1.0]
 Weapons:
 - Type: m230_30
   Position: [-2.51, 1.29, -1.51]

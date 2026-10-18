@@ -28,7 +28,7 @@ final class ImpactCoreParticle extends McheliParticle {
             net.minecraft.client.Camera camera, float partialTick) {
         float progress = Math.clamp((this.age + partialTick) / this.lifetime, 0, 1);
         this.frame = Math.min(7, (int) (progress * 8));
-        this.alpha = EffectLook.glowAlpha(this.age + partialTick, this.lifetime);
+        this.alpha = Math.min(1, EffectLook.glowAlpha(this.age + partialTick, this.lifetime) * 2);
         super.extract(state, camera, partialTick);
     }
 

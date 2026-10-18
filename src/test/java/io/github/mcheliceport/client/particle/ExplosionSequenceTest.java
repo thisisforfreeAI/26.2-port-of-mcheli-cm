@@ -6,6 +6,13 @@ import io.github.mcheliceport.effect.BlastStyle;
 import org.junit.jupiter.api.Test;
 
 class ExplosionSequenceTest {
+    @Test void smallerImpactsKeepEarlierSmokeWhileLargeBombsMixFireAndSmoke() {
+        assertTrue(ExplosionSequence.smokeLed(4, BlastStyle.BLAST));
+        assertTrue(ExplosionSequence.smokeLed(12, BlastStyle.PENETRATOR));
+        assertTrue(ExplosionSequence.smokeLed(2, BlastStyle.HEAVY));
+        assertFalse(ExplosionSequence.smokeLed(8, BlastStyle.HEAVY));
+        assertFalse(ExplosionSequence.smokeLed(8, BlastStyle.INCENDIARY));
+    }
     @Test void airburstsAndExtremePowersHaveFiniteWorkAtEveryQualityAndPressure() {
         for (var quality : EffectBudget.values()) for (var style : BlastStyle.values()) {
             int previous = Integer.MAX_VALUE;
@@ -16,7 +23,7 @@ class ExplosionSequenceTest {
             }
             assertEquals(0, ExplosionSequence.lobes(Float.NaN, style, quality, 0));
             assertEquals(0, ExplosionSequence.lobes(-1, style, quality, 0));
-            assertTrue(ExplosionSequence.radius(Float.MAX_VALUE, style) <= 6.4F);
+            assertTrue(ExplosionSequence.radius(Float.MAX_VALUE, style) <= 8);
             assertTrue(ExplosionSequence.life(Float.MAX_VALUE, style) <= 100);
         }
     }

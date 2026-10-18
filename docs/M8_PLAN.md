@@ -27,7 +27,7 @@ or render path B wait for it. Preserve decisions D1 to D23.
 | Effect | Today (upstream look) | M8 look | Slice |
 |---|---|---|---|
 | Smoke (explosions, trails, damage, downwash, flares, grenades) | 8-frame puff that pops in and out at full opacity; size jumps once per tick | Fades in over 2 ticks and out over the last 30 % of its life; size grows smoothly between ticks | 1 (done) |
-| Explosions / fire | Grey-brown smoke puffs, block dust, flares from large blasts | Explosion puffs are born as fire (hot orange, glowing at block light 15) and cool to their own smoke colour over the first 35 % of their life; a soft additive fireball glow under the blast | 1 (done) |
+| Explosions / fire | Grey-brown smoke puffs, block dust, flares from large blasts | Earlier growing puffs for small hits; mixed fast fire, familiar puffs and dark smoke for large bombs; [combined presentation](M8_EXPLOSION_BLEND.md) | Follow-up (done) |
 | Muzzle flashes | 8-frame starburst, alpha blended | Same starburst drawn additively, plus a short warm glow | 1 (done) |
 | Tracers (machine-gun rounds) | Bullet model lit by the world, dark at night | Full-bright model with a soft streak one tick's travel long (at most 8 blocks) in the round's colour | 1 (done) |
 | Missile trails | Flame quad, smoke trail | Smoke as above, plus an additive glow at the flame | 1 (done) |
@@ -37,7 +37,7 @@ or render path B wait for it. Preserve decisions D1 to D23.
 | Burning vehicles | Dark damage smoke | Hot damage puffs below 30% health, cooling into smoke; existing helicopter, plane/ship and tank emitters | 2 (done) |
 | Explosion shockwave and debris | Block dust | Bounded sparks and existing block dust; ground ring deferred pending hardware profiling | 2 (sparks done) |
 | Smoke lighting | Always full sky light (upstream sampled 3000 blocks up) | Cached local sky/block light; time of day handled by the existing light map | 2 (done) |
-| Heat haze, exhaust | Addon exhaust flames only | Investigate a vanilla-pipeline distortion substitute; may stay out | 3 |
+| Engine exhaust | Addon exhaust flames and plane nozzle smoke | Short bounded turbine wisps and restrained jet accents at supported outlets; distortion deferred | 3 (plumes done) |
 | Quality levels and budgets | Vanilla particle setting only | Low/Balanced/High particle budgets and distant thinning | Pixel follow-up (§6) |
 
 ## 3. Slice 1 as built
@@ -151,10 +151,19 @@ pass on both Vulkan and OpenGL, including thin snow/powder snow. Hardware FPS re
   that develops upward over time. Smaller impacts get a quicker, compact sequence. Improve
   connected cloud shading while retaining pixel silhouettes and bounded overdraw/admission.
   See [M8_EXPLOSION_STRUCTURE.md](M8_EXPLOSION_STRUCTURE.md) for the bounded primary emitter.
-- [ ] **Engine exhaust plumes:** faint short wisps at helicopter turbine outlets; brighter jet
+- [x] **Engine exhaust plumes:** faint short wisps at helicopter turbine outlets; brighter jet
   plumes only where nozzle/afterburner definitions support them. Intensity follows throttle;
   heavy smoke remains a damage cue. Use content-defined outlets, existing pipelines and
   distance/adaptive caps. Heat-distortion rendering remains deferred.
 
 These requests follow the rotor-wash work. The 80 FPS target on the specified PC
 remains the acceptance goal; each added layer needs native captures and measured cost.
+
+## 13. Engine exhaust implementation
+
+[M8_ENGINE_EXHAUST.md](M8_ENGINE_EXHAUST.md) implements the engine-outlet item in §12: short
+throttle-responsive turbine wisps, restrained hot jet accents, explicit helicopter outlets and
+existing plane nozzle/flame attachments. Low/Balanced/High global emission, shared smoke admission,
+range and adaptive periods bound cost. Classic nozzle smoke and existing damage smoke remain.
+Stock Apache and two Black Hawk variants include calibrated outlet positions; other helicopter
+definitions can opt in. Heat distortion remains deferred and target-PC acceptance remains open.

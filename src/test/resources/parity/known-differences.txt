@@ -1,7 +1,9 @@
 # Known differences between upstream's legacy TXT stock content (left, src/test/resources/legacy)
 # and its YAML stock content (right, src/main/resources/assets/mcheli), as parsed by the port.
 # Checked by ContentParityTest; regenerate with ./gradlew test -Dmcheli.updateParity=true and
-# review the diff. Every difference comes from upstream:
+# review the diff. Differences come from upstream except the explicitly listed M8 engine outlets:
+# M8 adds two cosmetic outlets to AH-64, MH-60G and MH-60L DAP stock YAML definitions.
+# They are deliberately absent from the pinned legacy TXT fixtures.
 #
 # Content that upstream's TXT -> YAML conversion dropped or changed (searchlight alpha has been
 # restored in the port): recipeString/isShapedRecipe (no stock YAML recipes), itemID, author (added in YAML),
@@ -843,3 +845,6 @@ throwable/m18_violet.itemID: 28905 vs -257
 throwable/m18_violet.recipeString: size 1 vs 0
 throwable/m18_yellow.itemID: 28904 vs -257
 throwable/m18_yellow.recipeString: size 1 vs 0
+helicopters/ah-64.engineOutlets: size 0 vs 2
+helicopters/mh-60g.engineOutlets: size 0 vs 2
+helicopters/mh-60l_dap.engineOutlets: size 0 vs 2

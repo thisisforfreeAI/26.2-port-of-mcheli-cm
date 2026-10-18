@@ -7,6 +7,11 @@ import io.github.mcheliceport.effect.BlastStyle;
 public final class ExplosionSequence {
     private ExplosionSequence() {}
 
+    /** Rockets/missiles and small bombs keep the earlier smoke-led character. */
+    public static boolean smokeLed(float power, BlastStyle style) {
+        return !ExplosionLook.broad(style) || power < 4;
+    }
+
     public static int lobes(float power, BlastStyle style, EffectBudget budget, int pressure) {
         if (!Float.isFinite(power) || power <= 0) return 0;
         int cap = switch (budget) { case LOW -> 6; case BALANCED -> 12; case HIGH -> 18; };
@@ -17,8 +22,8 @@ public final class ExplosionSequence {
 
     public static float radius(float power, BlastStyle style) {
         if (!Float.isFinite(power) || power <= 0) return 0;
-        float scale = ExplosionLook.broad(style) ? 0.48F : style == BlastStyle.PENETRATOR ? 0.25F : 0.34F;
-        return Math.clamp(power * scale, 0.25F, ExplosionLook.broad(style) ? 6.4F : 3.2F);
+        float scale = ExplosionLook.broad(style) ? 0.6F : style == BlastStyle.PENETRATOR ? 0.25F : 0.36F;
+        return Math.clamp(power * scale, 0.25F, ExplosionLook.broad(style) ? 8 : 3.2F);
     }
 
     public static int life(float power, BlastStyle style) {
@@ -32,7 +37,7 @@ public final class ExplosionSequence {
     }
 
     public static float flashRadius(float power, BlastStyle style) {
-        return radius(power, style) * 1.25F;
+        return radius(power, style) * 1.5F;
     }
 
     public static float growth(float age, int life) {

@@ -1,0 +1,50 @@
+{
+  "target_fps": 80,
+  "frame_budget_ms": 12.5,
+  "results": [
+    {
+      "scene": "exhaust-adaptive",
+      "frames": 113,
+      "mean_ms": 84.557,
+      "median_ms": 83.977,
+      "p95_ms": 104.859,
+      "p99_ms": 117.328,
+      "average_fps": 11.83,
+      "within_budget_percent": 0.0,
+      "p95_within_target": false
+    },
+    {
+      "scene": "exhaust-empty",
+      "frames": 132,
+      "mean_ms": 71.514,
+      "median_ms": 72.5,
+      "p95_ms": 97.971,
+      "p99_ms": 108.88,
+      "average_fps": 13.98,
+      "within_budget_percent": 0.0,
+      "p95_within_target": false
+    },
+    {
+      "scene": "exhaust-fixed",
+      "frames": 96,
+      "mean_ms": 98.822,
+      "median_ms": 90.795,
+      "p95_ms": 155.964,
+      "p99_ms": 256.814,
+      "average_fps": 10.12,
+      "within_budget_percent": 0.0,
+      "p95_within_target": false
+    },
+    {
+      "scene": "exhaust-models",
+      "frames": 97,
+      "mean_ms": 98.001,
+      "median_ms": 94.066,
+      "p95_ms": 134.017,
+      "p99_ms": 168.479,
+      "average_fps": 10.2,
+      "within_budget_percent": 0.0,
+      "p95_within_target": false
+    }
+  ]
+}
