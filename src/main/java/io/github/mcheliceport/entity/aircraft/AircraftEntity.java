@@ -3390,6 +3390,31 @@ public abstract class AircraftEntity extends Entity
                 * (float) Math.sin(partialTicks * Math.PI / 2);
     }
 
+    /** Upstream {@code getNameOnMyRadar}: what this vehicle's radar calls {@code other}. */
+    public String getNameOnMyRadar(AircraftEntity other) {
+        if (other.getAcInfo() == null || this.info == null || this.info.radarType == null) {
+            return "";
+        }
+        return radarName(other.getAcInfo(), this.info.radarType);
+    }
+
+    /** Upstream {@code getNameOnOtherRadar}: what {@code other}'s radar calls this vehicle. */
+    public String getNameOnOtherRadar(AircraftEntity other) {
+        if (other.getAcInfo() == null || this.info == null || other.getAcInfo().radarType == null) {
+            return "?";
+        }
+        return radarName(this.info, other.getAcInfo().radarType);
+    }
+
+    private static String radarName(AircraftInfo shown, io.github.mcheliceport.content.aircraft.RadarType radar) {
+        return switch (radar) {
+            case MODERN_AA -> shown.nameOnModernAARadar;
+            case EARLY_AA -> shown.nameOnEarlyAARadar;
+            case MODERN_AS -> shown.nameOnModernASRadar;
+            case EARLY_AS -> shown.nameOnEarlyASRadar;
+        };
+    }
+
     public boolean haveECMJammer() {
         return this.info != null && this.info.enableECMJammer;
     }

@@ -63,6 +63,10 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
   supported (see Added); JEI shows the drafting table as a crafting station for them.
 
 ### Added
+- Lock boxes, as upstream: while the current weapon has a seeker, a green box with the distance
+  hangs over everything it could lock, dimmed past its lock range, and turns red with a line to
+  the vehicle while locking. Radar seekers also show the target vehicle's radar name.
+- A creative gunner can be removed with `/kill`.
 - `Destruct` bombs, as upstream: the RC Goblin's plastic bomb now blows up the UAV that drops it.
 - The pulse-Doppler notch: a plane flying across a plane's seeker by more than the weapon's
   `PDHDNMaxDegree` breaks its lock, as upstream.

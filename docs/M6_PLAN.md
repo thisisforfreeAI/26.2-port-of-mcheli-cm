@@ -1490,3 +1490,23 @@ another plane's seeker breaks its lock past 60° while head-on, tail-on and stil
 and an iron curtain refuses damage for its use time, after which damage lands. Not run in the
 client: no stock vehicle has an iron curtain or crosses planes in a lock, and the RC Goblin's
 explosion was checked only by the test.
+
+## Lock boxes increment
+
+- `LockMarkerHudLayer` ports `MCH_RenderAircraft.renderEntityMarker`. While the rider's current
+  weapon has a guidance system, every living thing, vehicle and chaff cloud it could lock
+  (`canLockEntity`) within 1000 blocks and in clear sight gets upstream's box: its size grows with
+  distance on upstream's curve, it dims past `MaxLockOnRange` or the notch angle, and BVR weapons
+  skip targets beyond their minimum BVR range. The locking target's box is red and thicker, and in
+  first person on a crewed vehicle a red line joins it to the vehicle. The box is upstream's world
+  billboard projected with the frame's camera, drawn as a GUI layer below the vehicle HUD.
+- `AircraftEntity.getNameOnMyRadar`/`getNameOnOtherRadar` port upstream's radar names (modern or
+  early, air or surface); radar seekers print the target vehicle's name before the distance.
+- A creative gunner was invulnerable even to `/kill`; it now takes damage that bypasses
+  invulnerability, as vanilla mobs do.
+
+Validation: `build` passed and the GameTest server passed all 222 required tests. In the client
+(AH-64, AIM-92 Stinger), cows in the air at 45 and 73 blocks showed green boxes with their
+distances ([boxes](screens/m6-lock-markers.png)); one held ahead turned red with the line to the
+vehicle while locking, and the Stinger fired
+([locking](screens/m6-lock-marker-locking.png)). `/kill` removed a creative Blue Gunner.

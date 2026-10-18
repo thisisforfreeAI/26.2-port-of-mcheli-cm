@@ -24,6 +24,7 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -115,10 +116,15 @@ public class GunnerEntity extends LivingEntity {
         return HumanoidArm.RIGHT;
     }
 
-    /** Upstream {@code isEntityInvulnerable}: a gunner placed in creative mode takes no damage. */
+    /**
+     * Upstream {@code isEntityInvulnerable}: a gunner placed in creative mode takes no damage, except
+     * from the void and from what passes through invulnerability (such as {@code /kill}, which
+     * upstream's 1.12 command applied without damage).
+     */
     @Override
     public boolean isInvulnerableTo(ServerLevel level, DamageSource source) {
-        return this.isCreative && !source.is(DamageTypes.FELL_OUT_OF_WORLD) || super.isInvulnerableTo(level, source);
+        return this.isCreative && !source.is(DamageTypes.FELL_OUT_OF_WORLD)
+                && !source.is(DamageTypeTags.BYPASSES_INVULNERABILITY) || super.isInvulnerableTo(level, source);
     }
 
     @Override

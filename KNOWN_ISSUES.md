@@ -414,6 +414,10 @@ These follow from how Minecraft 26.2 works or from decisions approved in PORTING
     jammer, as upstream), `PassiveRadarLockOutCount`, `SemiActiveRadar`,
     `PDHDNMaxDegreeLockOutCount`, the aircraft-level `PassiveRadar` and `EnableBVR`, and the
     weapon's `HasMortarRadar`. GPS missiles do not steer to the GPS point, as upstream.
+89. Lock boxes (upstream's `renderEntityMarker`) are drawn on the HUD by projecting upstream's
+    in-world billboard onto the screen, so they keep upstream's size, place and colours but sit
+    under the vehicle HUD instead of in the world. As upstream, only targets with no block in
+    the way get one.
 
 ## Upstream content issues kept as they are
 
