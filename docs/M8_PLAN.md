@@ -132,3 +132,27 @@ native scene and measured software-renderer frame intervals.
 The implementation uses existing vanilla shader/pipeline families and pixel artwork. No extra
 scene copies or dynamic world lighting. Gameplay damage, trajectories, destruction and
 countermeasure behavior remain controlled by the port's existing systems.
+
+## 11. Rotor-wash follow-up
+
+[M8_ROTOR_WASH.md](M8_ROTOR_WASH.md) replaces enhanced helicopter wash's rising puffs with flatter,
+ground-level wisps, outward
+motion, mild swirl and smooth height/throttle/speed fading. Use main-rotor positions with
+coaxial deduplication, surface-specific dust/snow/spray and faint broken water ripples.
+Bound terrain sampling and particle admission; preserve Classic and other vehicles' wake emitters.
+Native material, moving-hover, high-altitude, repeated-tick and overlapping-helicopter checks
+pass on both Vulkan and OpenGL, including thin snow/powder snow. Hardware FPS remains open.
+
+## 12. Explosion structure and engine exhaust — planned
+
+- [ ] **Explosion structure:** give large blasts a short white-hot centre inside a softer,
+  irregular orange flash, varied overlapping fire lobes, fast outward dust and heavier smoke
+  that develops upward over time. Smaller impacts get a quicker, compact sequence. Improve
+  connected cloud shading while retaining pixel silhouettes and bounded overdraw/admission.
+- [ ] **Engine exhaust plumes:** faint short wisps at helicopter turbine outlets; brighter jet
+  plumes only where nozzle/afterburner definitions support them. Intensity follows throttle;
+  heavy smoke remains a damage cue. Use content-defined outlets, existing pipelines and
+  distance/adaptive caps. Heat-distortion rendering remains deferred.
+
+These requests follow the current rotor-wash work. The 80 FPS target on the specified PC
+remains the acceptance goal; each added layer needs native captures and measured cost.

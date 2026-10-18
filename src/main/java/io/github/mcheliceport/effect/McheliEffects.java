@@ -14,6 +14,10 @@ public final class McheliEffects {
 
     /** What the client draws. Every method is only called on the client thread. */
     public interface Sink {
+        /** True when the client handled enhanced helicopter wash; false keeps the upstream emitter. */
+        default boolean rotorWash(io.github.mcheliceport.entity.aircraft.AircraftEntity aircraft, boolean seaOnly) {
+            return false;
+        }
         /** Upstream {@code MCH_ParticlesUtil#spawnParticle}: a McHeli smoke or splash particle. */
         void spawnParticle(Level level, ParticleParam param);
 
@@ -56,6 +60,11 @@ public final class McheliEffects {
 
     private static @Nullable Sink sink(Level level) {
         return level.isClientSide() ? sink : null;
+    }
+
+    public static boolean rotorWash(io.github.mcheliceport.entity.aircraft.AircraftEntity aircraft, boolean seaOnly) {
+        Sink s = sink(aircraft.level());
+        return s != null && s.rotorWash(aircraft, seaOnly);
     }
 
     public static void spawnParticle(Level level, ParticleParam param) {
