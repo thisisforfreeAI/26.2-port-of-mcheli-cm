@@ -305,7 +305,7 @@ public final class ModNetwork {
             return;
         }
         if (p.unmount() == HeliControlPayload.UnmountAction.UNMOUNT_CREW) {
-            if (pilot) { aircraft.ropes().toggle(); }
+            if (pilot) { aircraft.unmountCrew(); }
             return;
         }
         if (pilot && p.unmount() == HeliControlPayload.UnmountAction.UNMOUNT_AIRCRAFT) {

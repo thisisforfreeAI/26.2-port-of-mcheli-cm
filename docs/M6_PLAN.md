@@ -1386,3 +1386,31 @@ non-operator PVP and Team shuffle changed nothing; as an operator PVP turned OFF
 moved Dev from Red to Blue, New team created a dark green team Green with friendly fire off
 ([new team](screens/m6-create-team.png)) and the lists made room for it, Jump spawn pos took Dev
 to the world spawn, and Destroy All removed an AH-64 in view. Not run: Vulkan, a second player.
+
+## Mobs in seats increment
+
+- `AircraftEntity.mountMobToSeats` ports upstream's: when a player boards as pilot through the
+  vehicle (not a passenger seat, and not when moving over from the seat menu, upstream's
+  `keepOnRideRotation`), living things within three blocks that ride nothing take the free seats
+  up to the first rack.
+- `unmountCrew()` ports upstream's pilot unload: with rope hooks it deploys or retracts the ropes
+  (or, near the ground, unloads); in the air above ten blocks a vehicle with `EnableParachuting`
+  starts dropping (`startUnmountCrew` opens the hatch); otherwise the crew get out.
+  `tickUnmountCrew` drops one mob each `MobDropOption` interval once the hatch is open, through
+  `ParachuteEntity.deploy` at the seat's `UnmountPos` (or the drop position), and stops near the
+  ground, when nobody is left or when the hatch closes. Players and rack loads stay.
+- The `UNMOUNT_CREW` action and its K key now run `unmountCrew` for every vehicle, not only ones
+  with rope hooks; the key reads "Unload Crew / Ropes" (KNOWN_ISSUES differences 72 and 84).
+- The common config `dismountAll` (upstream `DismountAll`, default off) unloads the mobs when the
+  pilot gets out.
+
+Validation: `build` passed and the GameTest server passed all 209 required tests, including two
+new ones: three cows beside an AN-2 take seats when a mock pilot boards while one twelve blocks
+away stays, and unloading on the ground puts them out with the pilot still aboard; and 40 blocks
+up, a parachute drop lets the second-seat cow out, puts the third-seat cow under a parachute and
+keeps the fourth for the next interval. On a dedicated server with an OpenGL client: boarding an
+AN-2 as pilot brought the two cows beside it aboard
+([aboard](screens/m6-mobs-aboard.png)), and K put them back on the ground
+([unloaded](screens/m6-mobs-unloaded.png)). Clicking a passenger seat directly seated the
+player without bringing mobs. Not run: a parachute drop in flight in the client,
+Vulkan.

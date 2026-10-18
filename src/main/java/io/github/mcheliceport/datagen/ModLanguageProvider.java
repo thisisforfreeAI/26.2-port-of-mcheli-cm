@@ -97,7 +97,7 @@ public class ModLanguageProvider extends LanguageProvider {
         add(prefix + "gear_up_down", "Landing Gear");
         add(prefix + "put_to_rack", "Load Rack / Board Carrier");
         add(prefix + "down_from_rack", "Unload / Leave Rack");
-        add(prefix + "ropes", "Deploy / Retract Ropes");
+        add(prefix + "ropes", "Unload Crew / Ropes");
         add(prefix + "search_light", "Searchlights / Headlights");
         add(prefix + "scoreboard", "[MP] Scoreboard");
         add(prefix + "multiplay_manager", "[MP][OP] Multiplay Manager");
@@ -137,6 +137,7 @@ public class ModLanguageProvider extends LanguageProvider {
         add(prefix + "breakableOnlyPickaxe", "Pick Up Only with a Pickaxe");
         add(prefix + "allHeliSpeed", "Helicopter Speed");
         add(prefix + "autoThrottleDownHeli", "Helicopter Auto Throttle");
+        add(prefix + "dismountAll", "Pilot Unloads Mobs");
         add(prefix + "experimentalQuaternionRotation", "Quaternion Rotation");
         add(prefix + "despawnCount", "Wreck Despawn Time");
         add(prefix + "killPassengersWhenDestroyed", "Kill Passengers When Destroyed");

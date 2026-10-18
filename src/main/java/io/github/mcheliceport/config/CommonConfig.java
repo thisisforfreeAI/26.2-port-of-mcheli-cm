@@ -27,6 +27,7 @@ public final class CommonConfig {
     public static final ModConfigSpec.BooleanValue ENABLE_PUT_RACK_IN_FLYING;
     public static final ModConfigSpec.BooleanValue AUTO_THROTTLE_DOWN_PLANE;
     public static final ModConfigSpec.BooleanValue AUTO_THROTTLE_DOWN_HELI;
+    public static final ModConfigSpec.BooleanValue DISMOUNT_ALL;
     public static final ModConfigSpec.BooleanValue EXPERIMENTAL_QUATERNION_ROTATION;
     public static final ModConfigSpec.IntValue DESPAWN_COUNT;
     public static final ModConfigSpec.BooleanValue KILL_PASSENGERS_WHEN_DESTROYED;
@@ -115,6 +116,10 @@ public final class CommonConfig {
                 .comment("A helicopter's throttle settles at hover (0.5) when no throttle key is held.",
                         "Upstream: AutoThrottleDownHeli (a client setting there; here each side reads its own copy).")
                 .define("autoThrottleDownHeli", true);
+        DISMOUNT_ALL = builder
+                .comment("When the pilot gets out, every rider but players gets out too.",
+                        "Upstream: DismountAll (a client setting there; here the server's copy decides).")
+                .define("dismountAll", false);
         EXPERIMENTAL_QUATERNION_ROTATION = builder
                 .comment("Turn vehicles with a persistent quaternion, so they can fly through vertical.",
                         "Upstream: ExperimentalQuaternionRotation.")

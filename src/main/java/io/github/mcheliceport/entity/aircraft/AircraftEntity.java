@@ -217,6 +217,8 @@ public abstract class AircraftEntity extends Entity
     private @Nullable AircraftHitBox lastHitBox;
     private @Nullable Entity lastPilot;
     private boolean keepOnRideRotation;
+    /** Upstream {@code isParachuting}: the crew are being dropped by parachute. Not saved, as upstream. */
+    private boolean isParachuting;
     /** Client: the pilot turned the vehicle this tick, so its attitude goes to the server. */
     public boolean rotationChanged;
     public boolean rollReversed;
@@ -1304,6 +1306,132 @@ public abstract class AircraftEntity extends Entity
         }
         this.setCommonStatus(STATUS_FREE_LOOK, false);
         this.lastPilot = null;
+        // Upstream cs_dismountAll, the pilot's DismountAll setting.
+        if (!this.level().isClientSide() && CommonConfig.SPEC.isLoaded() && CommonConfig.DISMOUNT_ALL.get()) {
+            this.unmountCrew(false);
+        }
+    }
+
+    // ---- mobs in seats ----
+
+    /**
+     * Upstream {@code mountMobToSeats}: when a pilot boards, the living things within three blocks
+     * (two up and down) that ride nothing take the free seats in order, up to the first rack.
+     */
+    public void mountMobToSeats() {
+        List<LivingEntity> list = this.level().getEntitiesOfClass(LivingEntity.class,
+                this.getBoundingBox().inflate(3.0, 2.0, 3.0));
+        for (LivingEntity entity : list) {
+            if (entity instanceof Player || entity.getVehicle() != null) {
+                continue;
+            }
+            int sid = 1;
+            for (SeatEntity seat : this.seats) {
+                if (seat != null && seat.getRider() == null && !this.isMountedEntity(entity)
+                        && this.canRideSeatOrRack(sid, entity)) {
+                    if (this.getSeatInfo(sid) instanceof SeatRackInfo) {
+                        break;
+                    }
+                    entity.startRiding(seat, true, true);
+                }
+                sid++;
+            }
+        }
+    }
+
+    /**
+     * Upstream {@code unmountCrew()}, the pilot's unload key. With rope hooks: near the ground the
+     * crew get out, otherwise the ropes go down or up. Otherwise a vehicle that drops by
+     * parachute starts or stops dropping its crew when ten blocks up, and near the ground the crew
+     * get out.
+     */
+    public void unmountCrew() {
+        if (this.info == null) {
+            return;
+        }
+        if (this.info.haveRepellingHook()) {
+            if (!this.ropes.active() && this.blockWithin(3, -4)) {
+                this.unmountCrew(false);
+            } else {
+                this.ropes.toggle();
+            }
+        } else if (this.isParachuting) {
+            this.stopUnmountCrew();
+        } else if (this.info.isEnableParachuting && !this.blockWithin(3, -10)) {
+            this.startUnmountCrew();
+        } else {
+            this.unmountCrew(false);
+        }
+    }
+
+    /** Upstream {@code startUnmountCrew}: the drop starts, with the hatch opening. */
+    public void startUnmountCrew() {
+        this.isParachuting = true;
+        if (this.partHatch != null) {
+            this.foldHatch(true, true);
+        }
+    }
+
+    public void stopUnmountCrew() {
+        this.isParachuting = false;
+    }
+
+    public boolean isParachuting() {
+        return this.isParachuting;
+    }
+
+    /**
+     * Upstream {@code onUpdate_UnmountCrew}: while dropping, one rider leaves each drop interval
+     * once the hatch is open, until ten blocks from the ground or nobody is left.
+     */
+    private void tickUnmountCrew() {
+        if (this.info == null || !this.isParachuting) {
+            return;
+        }
+        if (this.blockWithin(3, -10)) {
+            this.stopUnmountCrew();
+        } else if ((this.partHatch == null || this.partHatch.rotation > 89.0F)
+                && this.getCountOnUpdate() % Math.max(1, this.info.mobDropOption.interval) == 0
+                && !this.unmountCrew(true)) {
+            this.stopUnmountCrew();
+        }
+    }
+
+    /**
+     * Upstream {@code unmountCrew(boolean)}: every rider but players and rack loads gets out at its
+     * seat's exit. With {@code parachute}, the first such rider from the third seat on jumps
+     * instead, with a parachute, from the seat's {@code UnmountPos} or the drop position, and the
+     * drop stops there; as upstream, a rider in the second seat (the first crew seat) just gets out.
+     *
+     * @return whether a rider left
+     */
+    public boolean unmountCrew(boolean parachute) {
+        if (this.level().isClientSide() || this.info == null) {
+            return false;
+        }
+        boolean any = false;
+        for (int i = 0; i < this.seats.length; i++) {
+            SeatEntity seat = this.seats[i];
+            if (seat == null) {
+                continue;
+            }
+            Entity occupant = seat.getRider();
+            if (occupant == null || occupant instanceof Player || this.getSeatInfo(i + 1) instanceof SeatRackInfo) {
+                continue;
+            }
+            any = true;
+            if (parachute && this.getSeatIdByEntity(occupant) > 1) {
+                SeatInfo seatInfo = this.getSeatInfo(i + 1);
+                Vec3 local = seatInfo != null && seatInfo.unmountPos != null ? seatInfo.unmountPos
+                        : this.info.mobDropOption.pos;
+                Vec3 drop = this.getTransformedPosition(local);
+                ParachuteEntity.deploy((net.minecraft.server.level.ServerLevel) this.level(), occupant, 3, drop,
+                        this.getDeltaMovement());
+                break;
+            }
+            occupant.stopRiding();
+        }
+        return any;
     }
 
     /**
@@ -1397,10 +1525,15 @@ public abstract class AircraftEntity extends Entity
     /** Upstream {@code processInitialInteract} with {@code switchSeat} set (the seat menu's dismount). */
     public InteractionResult interactSwitchingSeat(Player player, InteractionHand hand) {
         this.switchSeat = true;
+        // Upstream: a rider moving to the pilot seat keeps their view and brings no mobs aboard.
+        this.keepOnRideRotation = true;
         try {
             return this.interact(player, hand, Vec3.ZERO);
         } finally {
             this.switchSeat = false;
+            if (this.getPilot() != player) {
+                this.keepOnRideRotation = false;
+            }
         }
     }
 
@@ -1456,6 +1589,9 @@ public abstract class AircraftEntity extends Entity
         this.lastPilot = null;
         if (!this.level().isClientSide()) {
             player.startRiding(this);
+            if (!this.keepOnRideRotation) {
+                this.mountMobToSeats();
+            }
         }
         return InteractionResult.SUCCESS;
     }
@@ -1636,6 +1772,9 @@ public abstract class AircraftEntity extends Entity
             this.changeType(this.getAircraftTypeName());
         }
         this.ropes.tick();
+        if (!this.level().isClientSide()) {
+            this.tickUnmountCrew();
+        }
         this.updateControl();
 
         Entity pilot = this.getPilot();
@@ -2241,9 +2380,17 @@ public abstract class AircraftEntity extends Entity
     }
 
     public void foldHatch(boolean fold) {
-        if (this.partHatch != null && this.modeSwitchCooldown <= 0) {
+        this.foldHatch(fold, false);
+    }
+
+    /** Upstream {@code foldHatch(fold, force)}: closing the hatch stops a parachute drop. */
+    public void foldHatch(boolean fold, boolean force) {
+        if (this.partHatch != null && (force || this.modeSwitchCooldown <= 0)) {
             this.partHatch.setStatusServer(fold);
             this.modeSwitchCooldown = 20;
+            if (!fold) {
+                this.stopUnmountCrew();
+            }
         }
     }
 
