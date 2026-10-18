@@ -1,6 +1,7 @@
 package io.github.mcheliceport.net;
 
 import io.github.mcheliceport.McheliCePort;
+import io.github.mcheliceport.effect.BlastStyle;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.core.BlockPos;
@@ -15,7 +16,11 @@ import net.minecraft.resources.Identifier;
  * blocks travel as offsets from the block at the centre.
  */
 public record ExplosionEffectPayload(double x, double y, double z, float size, boolean inWater,
-        List<BlockPos> affectedBlocks) implements CustomPacketPayload {
+        List<BlockPos> affectedBlocks, BlastStyle blastStyle) implements CustomPacketPayload {
+
+    public ExplosionEffectPayload(double x, double y, double z, float size, boolean inWater, List<BlockPos> blocks) {
+        this(x, y, z, size, inWater, blocks, BlastStyle.BLAST);
+    }
 
     /** Upstream {@code PacketParticleEffect.RANGE}. */
     public static final double RANGE = 1000.0;
@@ -30,6 +35,7 @@ public record ExplosionEffectPayload(double x, double y, double z, float size, b
                 buf.writeDouble(p.z);
                 buf.writeFloat(p.size);
                 buf.writeBoolean(p.inWater);
+                buf.writeEnum(p.blastStyle);
                 BlockPos origin = BlockPos.containing(p.x, p.y, p.z);
                 List<BlockPos> near = new ArrayList<>(p.affectedBlocks.size());
                 for (BlockPos pos : p.affectedBlocks) {
@@ -51,6 +57,7 @@ public record ExplosionEffectPayload(double x, double y, double z, float size, b
                 double z = buf.readDouble();
                 float size = buf.readFloat();
                 boolean inWater = buf.readBoolean();
+                BlastStyle style = buf.readEnum(BlastStyle.class);
                 BlockPos origin = BlockPos.containing(x, y, z);
                 int n = buf.readVarInt();
                 if (n < 0 || n > buf.readableBytes() / 6) {
@@ -60,7 +67,7 @@ public record ExplosionEffectPayload(double x, double y, double z, float size, b
                 for (int i = 0; i < n; i++) {
                     blocks.add(origin.offset(buf.readShort(), buf.readShort(), buf.readShort()));
                 }
-                return new ExplosionEffectPayload(x, y, z, size, inWater, blocks);
+                return new ExplosionEffectPayload(x, y, z, size, inWater, blocks, style);
             });
 
     private static boolean fits(int offset) {

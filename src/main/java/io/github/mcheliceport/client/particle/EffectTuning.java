@@ -32,6 +32,13 @@ public final class EffectTuning {
         return distanceStride * (1 << Math.clamp(particleSetting, 0, 2));
     }
 
+    /** Small secondary burst, shed before primary smoke and weapon cues under load. */
+    public static int sparkCount(float size, EffectBudget quality, int pressure) {
+        if (!Float.isFinite(size) || size < 2 || quality == EffectBudget.LOW || pressure >= 2) return 0;
+        int cap = quality == EffectBudget.HIGH ? 12 : 8;
+        return Math.min(cap, (int) Math.min(size * 2.0F, cap)) / (1 + Math.clamp(pressure, 0, 1));
+    }
+
     /** Estimate relative fill cost at the largest expected radius; no projection or allocations needed. */
     public static int coverageCost(float radius, double distanceSquared) {
         if (!Float.isFinite(radius) || !Double.isFinite(distanceSquared)) return 16;

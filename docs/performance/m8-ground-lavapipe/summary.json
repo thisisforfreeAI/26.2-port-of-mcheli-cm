@@ -1,0 +1,28 @@
+{
+  "target_fps": 80,
+  "frame_budget_ms": 12.5,
+  "results": [
+    {
+      "scene": "ground-perf-empty",
+      "frames": 156,
+      "mean_ms": 63.975,
+      "median_ms": 59.258,
+      "p95_ms": 98.29,
+      "p99_ms": 152.761,
+      "average_fps": 15.63,
+      "within_budget_percent": 0.0,
+      "p95_within_target": false
+    },
+    {
+      "scene": "ground-perf-marked",
+      "frames": 161,
+      "mean_ms": 62.123,
+      "median_ms": 60.154,
+      "p95_ms": 76.483,
+      "p99_ms": 96.498,
+      "average_fps": 16.1,
+      "within_budget_percent": 0.0,
+      "p95_within_target": false
+    }
+  ]
+}

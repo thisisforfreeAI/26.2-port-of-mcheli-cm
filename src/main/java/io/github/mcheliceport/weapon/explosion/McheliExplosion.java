@@ -1,6 +1,7 @@
 package io.github.mcheliceport.weapon.explosion;
 
 import io.github.mcheliceport.net.ModNetwork;
+import io.github.mcheliceport.effect.BlastStyle;
 import io.github.mcheliceport.config.CommonConfig;
 import io.github.mcheliceport.content.weapon.DamageFactor;
 import io.github.mcheliceport.content.weapon.WeaponInfo;
@@ -175,8 +176,10 @@ public class McheliExplosion extends ServerExplosion {
         }
         exp.doExplosionA();
         exp.doExplosionB();
+        WeaponInfo visualWeapon = p.exploder() instanceof WeaponTargets.InfoHolder holder ? holder.getWeaponInfo() : null;
+        BlastStyle style = BlastStyle.forWeapon(visualWeapon, p.isFlaming());
         ModNetwork.sendToPlayersNear(serverLevel, null, p.x(), p.y(), p.z(), ExplosionEffectPayload.RANGE,
-                new ExplosionEffectPayload(p.x(), p.y(), p.z(), p.size(), inWater, exp.affectedBlocks));
+                new ExplosionEffectPayload(p.x(), p.y(), p.z(), p.size(), inWater, exp.affectedBlocks, style));
         return exp.result;
     }
 

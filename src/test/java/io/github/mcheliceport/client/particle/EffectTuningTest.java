@@ -59,6 +59,17 @@ class EffectTuningTest {
     }
 
     @Test
+    void sparksHaveSmallHardCapsAndDisappearBeforeCoreEffectsUnderLoad() {
+        assertEquals(0, EffectTuning.sparkCount(10, EffectBudget.LOW, 0));
+        assertEquals(0, EffectTuning.sparkCount(10, EffectBudget.HIGH, 2));
+        assertEquals(0, EffectTuning.sparkCount(1, EffectBudget.HIGH, 0));
+        assertEquals(0, EffectTuning.sparkCount(Float.NaN, EffectBudget.HIGH, 0));
+        assertEquals(8, EffectTuning.sparkCount(1000, EffectBudget.BALANCED, 0));
+        assertEquals(12, EffectTuning.sparkCount(1000, EffectBudget.HIGH, 0));
+        assertEquals(4, EffectTuning.sparkCount(1000, EffectBudget.BALANCED, 1));
+    }
+
+    @Test
     void qualityScalesWithinAnExplicitLiveAndSpawnBudget() {
         int distance = 0;
         int live = 0;

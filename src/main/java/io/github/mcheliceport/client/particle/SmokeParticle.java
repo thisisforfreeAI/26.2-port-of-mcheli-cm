@@ -25,6 +25,10 @@ public class SmokeParticle extends McheliParticle {
     /** Scale at the previous tick, for smooth growth between ticks; 0 until the first growth. */
     private float prevScale;
     private final boolean mirror;
+    private final net.minecraft.core.BlockPos.MutableBlockPos lightPos = new net.minecraft.core.BlockPos.MutableBlockPos();
+    private long sampledBlock = Long.MIN_VALUE;
+    private int lightSampleAge = -4;
+    private int ambientLight;
 
     public SmokeParticle(ClientLevel level, double x, double y, double z, double mx, double my, double mz) {
         super(level, x, y, z, mx, my, mz, TEXTURE);
@@ -157,10 +161,16 @@ public class SmokeParticle extends McheliParticle {
 
     @Override
     protected int getLightCoords(float partialTick) {
-        if (this.enhanced && this.heat > 0.0F) {
-            float h = EffectLook.heat(this.heat, this.age - 1 + partialTick, this.lifetime);
-            return net.minecraft.util.LightCoordsUtil.pack(EffectLook.heatBlockLight(h), 15);
+        if (!this.enhanced) return SKY_LIGHT;
+        this.lightPos.set(this.x, this.y, this.z);
+        long key = this.lightPos.asLong();
+        if (EffectLook.refreshLight(this.age, this.lightSampleAge, key != this.sampledBlock)) {
+            this.lightSampleAge = this.age;
+            this.sampledBlock = key;
+            this.ambientLight = this.level.hasChunkAt(this.lightPos)
+                    ? net.minecraft.util.LightCoordsUtil.getLightCoords(this.level, this.lightPos) : 0;
         }
-        return SKY_LIGHT;
+        float h = EffectLook.heat(this.heat, this.age - 1 + partialTick, this.lifetime);
+        return EffectLook.smokeLight(this.ambientLight, h);
     }
 }

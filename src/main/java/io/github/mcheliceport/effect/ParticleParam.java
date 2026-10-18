@@ -26,6 +26,12 @@ public class ParticleParam {
     public boolean toWhite = false;
     public float gravity = 0.0F;
     public float motionYUpAge = 2.0F;
+    /** Client appearance hint only: existing damage smoke starts hot, then cools. */
+    public float damageHeat;
+
+    public void setDamageHeat(int hp, int maxHp) {
+        this.damageHeat = maxHp <= 0 ? 0 : Math.clamp((0.3F - (float) hp / maxHp) / 0.2F, 0, 1);
+    }
     /**
      * Not in upstream: the block a vehicle's downwash rises from, so the client's M8 look can
      * colour the dust after it (water gives white spray). Only the look depends on it.

@@ -24,7 +24,7 @@ public final class TankParticles {
                 int gate = (int) (((double) hp / maxHp - 0.2) / 0.3 * 15);
                 if (gate > 0) { random.nextInt(gate); }
             } else {
-                smoke(McheliMath.rotVec3(box.offsetX, box.offsetY, box.offsetZ, -yaw, -pitch, -roll).add(position), 1, random, sink);
+                smoke(McheliMath.rotVec3(box.offsetX, box.offsetY, box.offsetZ, -yaw, -pitch, -roll).add(position), 1, hp, maxHp, random, sink);
             }
         }
         boolean emit = true;
@@ -35,11 +35,11 @@ public final class TankParticles {
         if (emit) {
             Vec3 p = position;
             if (!info.seatList.isEmpty()) { p = p.add(McheliMath.rotVec3(0, info.seatList.getFirst().pos.y, -2, -yaw, -pitch, -roll)); }
-            smoke(p, count == 0 ? 2 : 1, random, sink);
+            smoke(p, count == 0 ? 2 : 1, hp, maxHp, random, sink);
         }
     }
 
-    private static void smoke(Vec3 p, float size, RandomSource random, Consumer<ParticleParam> sink) {
+    private static void smoke(Vec3 p, float size, int hp, int maxHp, RandomSource random, Consumer<ParticleParam> sink) {
         float color = 0.2F + random.nextFloat() * 0.3F;
         ParticleParam particle = new ParticleParam("smoke", p.x, p.y, p.z);
         particle.motionX = size * (random.nextDouble() - 0.5) * 0.3;
@@ -47,6 +47,7 @@ public final class TankParticles {
         particle.motionZ = size * (random.nextDouble() - 0.5) * 0.3;
         particle.size = size * (random.nextInt(5) + 5.0F);
         particle.setColor(0.7F + random.nextFloat() * 0.1F, color, color, color);
+        particle.setDamageHeat(hp, maxHp);
         sink.accept(particle);
     }
 

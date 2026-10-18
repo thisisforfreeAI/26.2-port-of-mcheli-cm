@@ -79,6 +79,10 @@ class PayloadCodecTest {
         assertEquals(p, roundTrip(ExplosionEffectPayload.CODEC, p));
         ExplosionEffectPayload empty = new ExplosionEffectPayload(0, 0, 0, 0, false, java.util.List.of());
         assertEquals(empty, roundTrip(ExplosionEffectPayload.CODEC, empty));
+        for (var style : io.github.mcheliceport.effect.BlastStyle.values()) {
+            var typed = new ExplosionEffectPayload(4.5, 66.2, -1.25, 3.5F, false, blocks, style);
+            assertEquals(typed, roundTrip(ExplosionEffectPayload.CODEC, typed));
+        }
     }
 
     @Test

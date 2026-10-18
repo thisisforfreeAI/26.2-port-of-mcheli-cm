@@ -98,6 +98,7 @@ class PlaneEffectsTest {
         RandomSource random = RandomSource.create(765);
         float color = 0.2F + random.nextFloat() * 0.3F;
         ParticleParam p = out.getFirst();
+        assertEquals(1.0F, p.damageHeat, "critical-health smoke carries a fire appearance hint");
         assertEquals(2.0F * (random.nextDouble() - 0.5) * 0.3, p.motionX);
         assertEquals(2.0F * random.nextDouble() * 0.1, p.motionY);
         assertEquals(2.0F * (random.nextDouble() - 0.5) * 0.3, p.motionZ);

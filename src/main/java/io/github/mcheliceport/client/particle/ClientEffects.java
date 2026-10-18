@@ -3,6 +3,8 @@ package io.github.mcheliceport.client.particle;
 import io.github.mcheliceport.config.EffectQuality;
 import io.github.mcheliceport.config.ClientConfig;
 import io.github.mcheliceport.effect.McheliEffects;
+import io.github.mcheliceport.effect.BlastStyle;
+import io.github.mcheliceport.client.effect.BlastMarks;
 import io.github.mcheliceport.effect.ParticleParam;
 import java.util.List;
 import java.util.Locale;
@@ -60,6 +62,11 @@ public final class ClientEffects implements McheliEffects.Sink {
             // M8 fireballs: explosion puffs are born as fire and cool to their own smoke colour.
             fx.heat = 0.6F + clientLevel.getRandom().nextFloat() * 0.4F;
         }
+        if (enhanced && p.damageHeat > 0 && !(fx instanceof SplashParticle)
+                && !clientLevel.getFluidState(BlockPos.containing(p.posX, p.posY, p.posZ))
+                        .is(net.minecraft.tags.FluidTags.WATER)) {
+            fx.heat = Math.clamp(p.damageHeat, 0, 1);
+        }
         fx.setAlphaF(p.a);
         if (p.age > 0) {
             fx.setParticleMaxAge(p.age);
@@ -110,6 +117,23 @@ public final class ClientEffects implements McheliEffects.Sink {
         int life = (int) Math.min(6.0F + size, 14.0F);
         Minecraft.getInstance().particleEngine.add(new GlowParticle(level, x, y, z, radius, 0.5F, life,
                 1.0F, 0.6F, 0.25F, 0.9F));
+    }
+
+    /** Independent cosmetic seed preserves the existing emitters' world RNG sequence. */
+    static void spawnExplosionSparks(ClientLevel level, double x, double y, double z, float size) {
+        int count = EffectTuning.sparkCount(size, ClientConfig.get(ClientConfig.EFFECT_BUDGET), EffectPerformance.pressure());
+        if (count == 0) return;
+        java.util.Random random = new java.util.Random(Double.doubleToLongBits(x)
+                ^ Long.rotateLeft(Double.doubleToLongBits(y), 21)
+                ^ Long.rotateLeft(Double.doubleToLongBits(z), 42) ^ level.getGameTime());
+        for (int i = 0; i < count; i++) {
+            if (!EffectAdmission.admit(level, x, y, z, false, 0.08F)) continue;
+            double angle = (i + random.nextDouble()) * Math.PI * 2 / count;
+            double speed = 0.12 + random.nextDouble() * 0.16;
+            Minecraft.getInstance().particleEngine.add(new SparkParticle(level, x, y, z,
+                    Math.cos(angle) * speed, 0.15 + random.nextDouble() * 0.25, Math.sin(angle) * speed,
+                    7 + random.nextInt(5)));
+        }
     }
 
     /** Optional glow shares the smoke budget, keeping the flash budget available for weapon cues. */
@@ -171,8 +195,15 @@ public final class ClientEffects implements McheliEffects.Sink {
     @Override
     public void explosionEffects(Level level, double x, double y, double z, float size, boolean inWater,
             List<BlockPos> affectedBlocks) {
+        explosionEffects(level, x, y, z, size, inWater, affectedBlocks, BlastStyle.BLAST);
+    }
+
+    @Override
+    public void explosionEffects(Level level, double x, double y, double z, float size, boolean inWater,
+            List<BlockPos> affectedBlocks, BlastStyle style) {
         if (level instanceof ClientLevel clientLevel) {
             ExplosionEffects.play(clientLevel, x, y, z, size, inWater, affectedBlocks);
+            if (!inWater) BlastMarks.add(clientLevel, x, y, z, size, style);
         }
     }
 

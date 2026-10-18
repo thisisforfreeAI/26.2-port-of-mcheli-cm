@@ -12,6 +12,12 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 
 ### Changed
 
+- M8 ground blast marks: weapon-scaled soot and disturbed-soil textures on surviving terrain,
+  material tints, stepped-surface fitting, occlusion/water rejection and bounded temporary storage.
+  Explosions carry a cosmetic weapon family; network version 21 requires matching client/server builds.
+- M8 lighting/fire follow-up: cached local smoke light, fire-to-smoke heat on existing critical
+  helicopter/plane/ship/tank damage puffs, and bounded explosion sparks using existing artwork
+  and pipelines. Includes native indoor/torch/water regression scenes; hardware FPS remains open.
 - M8 performance follow-up: default 80 FPS adaptive cosmetic detail, coverage-weighted smoke/glow
   admission, bounded McHeli dust and secondary spray, early distant-explosion rejection and cached
   flare/glow geometry. Adds a repeatable 1080p frame-time probe; target-PC validation remains open.

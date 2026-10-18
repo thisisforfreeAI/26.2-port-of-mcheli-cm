@@ -8,8 +8,10 @@ or render path B wait for it. Preserve decisions D1 to D23.
 ## 1. Rules
 
 - **Gameplay is untouched.** Effects stay client-only. No change to damage, projectile flight,
-  targeting, timings, payloads or what the server sends. Emitters retain upstream timing and
-  motion; client quality budgets may suppress cosmetic particles during heavy combat.
+  targeting or timings. Emitters retain upstream timing and motion; client quality budgets may
+  suppress cosmetic particles during heavy combat. The weapon-specific ground follow-up adds
+  one cosmetic family enum to the explosion effect payload and bumps the network version; it
+  does not change damage or terrain destruction.
 - **Both backends.** Only vanilla pipeline state (`RenderPipeline` snippets, blend functions,
   depth states) and vanilla shaders. No raw OpenGL and no shaders of our own. Every slice is
   checked on OpenGL and on Vulkan.
@@ -31,9 +33,9 @@ or render path B wait for it. Preserve decisions D1 to D23.
 | Flares | Yellow cube lit by the world, dark at night | Full-bright cube with a flickering two-layer glow; chaff unchanged | 1 (done) |
 | Water splashes | Puffs that pop out | Fade as smoke does | 1 (done) |
 | Rotor wash / downwash | Grey puffs whatever the ground | Puffs tinted by the ground's map colour (sand, dirt, snow); white spray over water | 1 (done) |
-| Burning vehicles | Dark damage smoke | Fire at low health (needs a heat hint at the damage-smoke call sites of helicopters, planes and ground vehicles) | 2 |
-| Explosion shockwave and debris | Block dust | A brief ring on the ground for large blasts; sparks | 2 |
-| Smoke lighting | Always full sky light (upstream sampled 3000 blocks up) | Shade with the sky light and time of day at the puff's position | 2 |
+| Burning vehicles | Dark damage smoke | Hot damage puffs below 30% health, cooling into smoke; existing helicopter, plane/ship and tank emitters | 2 (done) |
+| Explosion shockwave and debris | Block dust | Bounded sparks and existing block dust; ground ring deferred pending hardware profiling | 2 (sparks done) |
+| Smoke lighting | Always full sky light (upstream sampled 3000 blocks up) | Cached local sky/block light; time of day handled by the existing light map | 2 (done) |
 | Heat haze, exhaust | Addon exhaust flames only | Investigate a vanilla-pipeline distortion substitute; may stay out | 3 |
 | Quality levels and budgets | Vanilla particle setting only | Low/Balanced/High particle budgets and distant thinning | Pixel follow-up (§6) |
 
@@ -93,3 +95,39 @@ The target is RTX 3060 8 GB / Ryzen 7 7800X3D at 1080p (12.5 ms per frame).
 [M8_PERFORMANCE.md](M8_PERFORMANCE.md) documents adaptive cosmetic detail, coverage-weighted
 admission, dust/spray budgets and repeatable frame-interval capture. Hardware acceptance remains
 open; software-renderer checks cannot certify this PC's FPS.
+
+## 8. Lighting and damage-fire follow-up
+
+[M8_LIGHTING_FIRE.md](M8_LIGHTING_FIRE.md) records cached local smoke lighting, heat hints on
+existing damage puffs and tiny explosion sparks with quality/load caps. Classic remains
+available; the 80 FPS hardware target and real battle/flight checks remain open.
+
+## 9. Weapon-specific ground appearance
+
+At the user's request, [M8_GROUND_MARKS.md](M8_GROUND_MARKS.md) adds material-aware soot and
+disturbed-ground textures fitted to surviving block surfaces. Weapon definitions select the
+cosmetic family and explosion power scales its footprint. The cache, projection queue, draw
+range and lifetime are bounded; texture rendering uses the existing vanilla entity pipeline.
+
+## 10. Requested bomb/missile accents and stronger flare glow — planned
+
+Requested by the user after the blast-mark concept preview. These are follow-up work; the
+current small flare halo and the existing explosion heat/glow are already implemented.
+
+- [ ] **Bomb explosions:** add a more readable initial hot core, a brief outward dust/debris
+  accent and a fuller smoke silhouette scaled to the bomb's existing explosion power. Heavy
+  blasts should feel broader than cannon impacts without obscuring the whole scene.
+- [ ] **Missile explosions:** add a sharper, tighter impact flash and short spark/debris accents,
+  with a quick fire-to-smoke transition. Keep missile/rocket families distinct from large bombs
+  and keep their ground marks consistent with the weapon profile.
+- [ ] **Flare glow:** improve the existing small halo into a clearly visible warm glow around a
+  bright core, with restrained flicker. Check daylight, night and crowded countermeasure bursts;
+  chaff retains its own unlit appearance.
+- [ ] **Validation:** capture each change on Vulkan and OpenGL and compare frame times under
+  simultaneous bomb/missile explosions and multiple flares. Keep all accents inside the existing
+  per-tick/live/distance and adaptive budgets; Low or overload sheds secondary accents while
+  preserving the core cues. Target remains 80 FPS / 12.5 ms on RTX 3060 8 GB + 7800X3D at 1080p.
+
+Use the existing vanilla shader/pipeline families and pixel artwork approach. Avoid extra scene
+copies or dynamic world lighting. Gameplay damage, trajectories, destruction and countermeasure
+behavior remain controlled by the port's existing systems.
