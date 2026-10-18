@@ -32,7 +32,20 @@ final class EffectAdmission {
         return Optional.of((flash ? FLASH_LIMITS : SMOKE_LIMITS)[ClientConfig.get(ClientConfig.EFFECT_BUDGET).ordinal()]);
     }
 
+    /** Reject a whole effect before its block queries; include its extent at the range boundary. */
+    static boolean inRange(ClientLevel level, double x, double y, double z, float extent) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.level != level || mc.getCameraEntity() == null) return false;
+        double distance = mc.gameRenderer.mainCamera().position().distanceToSqr(x, y, z);
+        double range = EffectTuning.distance(ClientConfig.get(ClientConfig.EFFECT_BUDGET)) + Math.max(0, extent);
+        return Double.isFinite(distance) && distance <= range * range;
+    }
+
     static boolean admit(ClientLevel level, double x, double y, double z, boolean isFlash) {
+        return admit(level, x, y, z, isFlash, 0);
+    }
+
+    static boolean admit(ClientLevel level, double x, double y, double z, boolean isFlash, float radius) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.level != level || mc.getCameraEntity() == null) {
             return false;
@@ -48,7 +61,10 @@ final class EffectAdmission {
         if (!Double.isFinite(distance) || distance > range * range) {
             return false;
         }
-        return (isFlash ? flash : smoke).admit(level.getGameTime(), EffectTuning.perTick(quality, isFlash),
-                EffectTuning.stride(distance, mc.options.particles().get().ordinal(), isFlash));
+        int pressure = isFlash ? 0 : EffectPerformance.pressure();
+        int stride = EffectTuning.stride(distance, mc.options.particles().get().ordinal(), isFlash) * (1 + pressure);
+        int cap = Math.max(16, EffectTuning.perTick(quality, isFlash) / (1 + pressure));
+        int cost = isFlash ? 1 : EffectTuning.coverageCost(radius, distance);
+        return (isFlash ? flash : smoke).admit(level.getGameTime(), cap, stride, cost);
     }
 }

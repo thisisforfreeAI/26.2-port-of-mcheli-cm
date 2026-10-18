@@ -86,3 +86,10 @@ flash/glow pipelines, tracer/missile effects and ground tint. Either `effectQual
 or `style = "CLASSIC"` selects upstream presentation; budgets still apply. Polished flares use
 one small pixel halo instead of two glow discs, and Low disables optional particle glows/halos.
 The follow-up document records its earlier isolated captures separately from integration checks.
+
+## 7. 80 FPS performance follow-up
+
+The target is RTX 3060 8 GB / Ryzen 7 7800X3D at 1080p (12.5 ms per frame).
+[M8_PERFORMANCE.md](M8_PERFORMANCE.md) documents adaptive cosmetic detail, coverage-weighted
+admission, dust/spray budgets and repeatable frame-interval capture. Hardware acceptance remains
+open; software-renderer checks cannot certify this PC's FPS.

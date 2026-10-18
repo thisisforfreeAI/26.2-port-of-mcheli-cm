@@ -1,5 +1,9 @@
 # M8 pixel graphics and particle budgets
 
+The current 80 FPS performance follow-up is documented in [M8_PERFORMANCE.md](M8_PERFORMANCE.md).
+It adds adaptive detail, coverage weighting, bounded McHeli terrain dust and secondary spray.
+The measurements in this document describe earlier passes.
+
 This document records the first independent pixel-effects pass and its later integration with
 Claude's M8 slice 1 (PR #36). The initial screenshots and timing table below predate that integration. It does not declare M6, M6b, M7 or M8 complete. Gameplay, network payloads and content
 definitions stay with the port work; the files here concern client presentation only.
@@ -28,8 +32,9 @@ emitter positions and motion remain content-controlled.
 Default to Polished/Balanced. Low/Balanced/High scale smoke draw distance, emission per tick and
 live particle limits. Respect Minecraft's decreased/minimal particle setting. Reserve a separate
 budget for short flashes so smoke cannot exhaust it. Cull before allocating custom particles.
-Keep the existing vanilla explosion option working. Large explosion block scanning and terrain
-effects remain existing port costs and must not be represented as fixed by particle limits.
+Keep the existing vanilla explosion option working. Large explosion block scanning remains
+an existing port cost for visible explosions; it must not be represented as
+fixed by particle limits.
 
 Verify budget reset, distance/density boundaries and animation endpoints with focused tests.
 Run the build and repeatable scenes on Vulkan and OpenGL, capture both styles, and record actual
@@ -44,7 +49,7 @@ In `config/mcheli_ce_port-client.toml`, `[effects] style = "POLISHED"` enables t
 the style they started with. Both styles share the new budgets. The existing
 `defaultExplosionParticle` switch still selects vanilla explosions.
 
-| `quality` | Smoke range | Smoke per tick / live | Flash per tick / live | Flare halo |
+| `quality` | Smoke range | Smoke per tick (units) / live | Flash per tick / live | Flare halo |
 |---|---:|---:|---:|---|
 | `LOW` | 96 blocks | 48 / 384 | 24 / 48 | Off |
 | `BALANCED` (default) | 192 blocks | 96 / 768 | 48 / 96 | On |
@@ -52,8 +57,9 @@ the style they started with. Both styles share the new budgets. The existing
 
 Smoke density halves beyond 64 blocks and quarters beyond 128. Minecraft's Decreased and
 Minimal settings further halve/quarter smoke density; short flashes retain a separate bounded
-budget for weapon readability. This does not cap terrain debris, vanilla particles or flare
-entities, and it does not eliminate the existing explosion block ray march.
+budget for weapon readability. The performance follow-up also puts McHeli terrain debris and
+secondary spray under admission; unrelated vanilla particles and flare entities are not capped.
+Visible explosions still perform their existing block ray march.
 
 Textures are original procedural artwork, reproduced with
 `python3 scripts/generate-effect-textures.py` (standard library only). Compact 4×2 sheets avoid
@@ -78,7 +84,8 @@ working display and Vulkan driver. For the compatibility pass, add
 `-Dmcheli.probeBackend=OPENGL`. The extra probe Java source directory is included only by this
 init script; normal builds do not contain the probe or its event hooks.
 
-The camera is fixed at `(0.5, -55, -9.5)`, yaw 0, pitch 8, at midnight, 1280×720, four chunks.
+The camera is fixed at `(0.5, -55, -9.5)`, yaw 0, pitch 8, at midnight, four chunks (the historical captures below were 1280×720; the current probe defaults
+to 1920×1080).
 The probe emits a smoke column, an explosion-like burst, a muzzle flash, a flare with its stock
 trail and water drops. It runs Classic and Polished with the same seeded emitter parameters,
 then repeats with twelve emitters under each style and Low quality, and captures both styles

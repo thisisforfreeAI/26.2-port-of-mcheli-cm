@@ -12,6 +12,9 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 
 ### Changed
 
+- M8 performance follow-up: default 80 FPS adaptive cosmetic detail, coverage-weighted smoke/glow
+  admission, bounded McHeli dust and secondary spray, early distant-explosion rejection and cached
+  flare/glow geometry. Adds a repeatable 1080p frame-time probe; target-PC validation remains open.
 - M8 pixel-effects follow-up: shaded smoke, flash and water sprites, a small flare halo, and
   Low/Balanced/High particle budgets. Preserves the existing enhanced heat, tracer, missile and
   ground-tint effects. Classic presentation remains available; see `docs/M8_PIXEL_EFFECTS.md`.

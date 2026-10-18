@@ -35,6 +35,8 @@ public final class ClientConfig {
     public enum EffectBudget { LOW, BALANCED, HIGH }
     public static final ModConfigSpec.EnumValue<EffectStyle> EFFECT_STYLE;
     public static final ModConfigSpec.EnumValue<EffectBudget> EFFECT_BUDGET;
+    public static final ModConfigSpec.BooleanValue ADAPTIVE_EFFECTS;
+    public static final ModConfigSpec.IntValue EFFECT_TARGET_FPS;
     public static final ModConfigSpec.IntValue ALIVE_TIME_OF_CARTRIDGE;
     public static final ModConfigSpec.EnumValue<EffectQuality> EFFECT_QUALITY;
     public static final ModConfigSpec.BooleanValue SWITCH_WEAPON_WITH_MOUSE_WHEEL;
@@ -133,8 +135,15 @@ public final class ClientConfig {
         EFFECT_BUDGET = builder
                 .comment("Custom smoke/flash budget: LOW (96 blocks, 384 smoke), BALANCED (192 blocks, 768 smoke),",
                         "HIGH (256 blocks, 1536 smoke). Also respects Minecraft's particle setting.",
-                        "LOW disables flare halos. Does not change gameplay or vanilla/block particles.")
+                        "LOW disables flare halos. McHeli block dust shares the smoke budget; gameplay is unchanged.")
                 .defineEnum("quality", EffectBudget.BALANCED);
+        ADAPTIVE_EFFECTS = builder
+                .comment("Reduce cosmetic smoke, dust and optional glows during sustained slow frames; restore detail gradually.",
+                        "Respects lower FPS caps and VSync. Weapon flash cores keep their reserved budget.")
+                .define("adaptiveDetail", true);
+        EFFECT_TARGET_FPS = builder
+                .comment("Frame-rate goal for adaptive effects. This cannot guarantee FPS when terrain or other mods dominate.")
+                .defineInRange("targetFps", 80, 30, 240);
         ALIVE_TIME_OF_CARTRIDGE = builder
                 .comment("Ticks an ejected cartridge stays on the ground. Upstream: AliveTimeOfCartridge.")
                 .defineInRange("aliveTimeOfCartridge", 200, 0, 1000);
