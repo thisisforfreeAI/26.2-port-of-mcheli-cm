@@ -27,7 +27,7 @@ import net.minecraft.world.phys.BlockHitResult;
  * ({@code MCH_DraftingTableBlock}): sneak-using the table switches its lamp.
  *
  * <p>As upstream, the block itself is invisible: its block entity's renderer draws the table's
- * 3D model. Not ported yet: the crafting screen (milestone M6).
+ * 3D model. Using the table opens its recipe browser ({@code DraftingTableMenu}).
  */
 public class DraftingTableBlock extends Block implements EntityBlock {
 
@@ -72,8 +72,10 @@ public class DraftingTableBlock extends Block implements EntityBlock {
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player,
             BlockHitResult hitResult) {
         if (!player.isSecondaryUseActive()) {
-            // Upstream opens the crafting screen here (M6).
-            return InteractionResult.PASS;
+            if (player instanceof net.minecraft.server.level.ServerPlayer serverPlayer) {
+                io.github.mcheliceport.menu.DraftingTableMenu.open(serverPlayer, pos);
+            }
+            return InteractionResult.SUCCESS;
         }
         if (!level.isClientSide()) {
             BlockState switched = this.otherVariant.get().defaultBlockState()

@@ -961,7 +961,8 @@ JEI compatibility is also required for the M6 crafting work:
 - Keep JEI optional and client-only. Verify with a compatible JEI build for the target Minecraft
   and NeoForge versions, and verify normal client and dedicated-server startup without JEI.
   The special crafting recipes and JEI increment below implements this for fixed, content and
-  special recipes; drafting-table recipes and a recheck after `/reload` remain pending.
+  special recipes; the drafting table is a JEI crafting station for the port's recipes. A
+  recheck after `/reload` remains pending.
 
 The earlier question about recipes and paint variants lost by upstream YAML has no recorded
 resolution in the supplied handoff. Keep that content-restoration question separate from the
@@ -1151,6 +1152,35 @@ reloaded from a missile after the sight came down; C, X and Z switched night vis
 and the narrow field of view ([night and top](screens/m6-lweapon-javelin-night-top.png)), and
 lowering the sight ended night vision. Not run: Vulkan, a second player watching, and firing
 from a passenger seat.
+
+## Drafting table recipe browser increment
+
+- `DraftingTableMenu` ports `MCH_DraftingTableGuiContainer`: the inventory at upstream's places,
+  an output slot that takes nothing in, shift-click only from the output, the result dropped on
+  closing, and within 12 blocks of the table. `DraftingTableRecipes` collects the shaped and
+  shapeless recipes for the port's items into upstream's six lists (fixed items in
+  `MCH_ItemRecipe`'s order, then content in load order) and ports `MCH_Recipes#canCraft` and
+  `consumeInventory`, needing one item per ingredient (KNOWN_ISSUES 79).
+- `DraftingTableRecipesPayload` sends the list when the menu opens and
+  `DraftingTableCreatePayload` ports `PacketDrafttingTableCreate`; the server makes only a recipe
+  the table lists, into an empty output (creative may replace it). Protocol 18.
+- `DraftingTableScreen` ports `MCH_DraftingTableGui` and `MCH_CurrentRecipe`: the six list
+  buttons (inactive when empty), Create, previous and next recipe (arrow keys and the wheel),
+  description and specification pages, the search box and the list page with six recipes, Select
+  buttons and a scroll bar; ingredients that accept several items show each in turn and hovered
+  items show their tooltip. The 3D vehicle preview page is not ported yet.
+- `McheliJeiPlugin` adds the drafting table as a crafting station.
+
+Validation: `build` passed and the GameTest server passed all 198 required tests, including four
+new ones (the lists and the list payload, creating from the inventory, every ingredient needed
+across stacks with nothing taken when short, and creative, shift-click, dropping on closing and
+the table's presence). On a dedicated server with an OpenGL client, using a table opened the
+screen ([main](screens/m6-drafting-screen-main.png), [list](screens/m6-drafting-screen-list.png));
+the chain was selected and created from 20 iron ingots, leaving 13
+([create](screens/m6-drafting-screen-create.png)); searching "uav" listed the two stations
+([search](screens/m6-drafting-screen-search.png)); and closing dropped the chain. The stock
+vehicles have no recipes, so their lists were inactive and the specification page was not seen.
+Not run: Vulkan, JEI in the client, an addon with vehicle recipes.
 
 ## Drafting table model increment
 
