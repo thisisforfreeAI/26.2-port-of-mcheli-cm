@@ -62,8 +62,6 @@ Until then:
 - The drafting table is drawn with a simple block model; upstream drew a 3D model with a block
   entity renderer (M6). The rangefinder, wrench, GLTD and hand-held launchers show as flat items in
   the hand; upstream drew 3D models (M6).
-- Upstream's two special crafting recipes, refilling fuel and recharging the rangefinder, come with
-  those items (M6).
 - Every placed wingman marker is a waypoint until the marker screen is ported (M6b).
 - The targeting pod only plays its refusal sound when fired, until team spotting comes (M6).
 - An APS with upstream's "iron curtain" range (100) only plays its sounds (M6).

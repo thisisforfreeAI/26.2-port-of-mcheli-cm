@@ -9,6 +9,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -32,12 +33,14 @@ public final class ModRegistries {
             DeferredRegister.create(Registries.SOUND_EVENT, McheliCePort.MOD_ID);
     public static final DeferredRegister<ParticleType<?>> PARTICLE_TYPES =
             DeferredRegister.create(Registries.PARTICLE_TYPE, McheliCePort.MOD_ID);
+    public static final DeferredRegister<RecipeSerializer<?>> RECIPE_SERIALIZERS =
+            DeferredRegister.create(Registries.RECIPE_SERIALIZER, McheliCePort.MOD_ID);
     public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS =
             DeferredRegister.create(Registries.CREATIVE_MODE_TAB, McheliCePort.MOD_ID);
 
     private static final List<DeferredRegister<?>> ALL = List.of(
             ITEMS, BLOCKS, BLOCK_ENTITY_TYPES, ENTITY_TYPES, MENU_TYPES,
-            DATA_COMPONENT_TYPES, SOUND_EVENTS, PARTICLE_TYPES, CREATIVE_MODE_TABS);
+            DATA_COMPONENT_TYPES, SOUND_EVENTS, PARTICLE_TYPES, RECIPE_SERIALIZERS, CREATIVE_MODE_TABS);
 
     private ModRegistries() {}
 
@@ -49,6 +52,7 @@ public final class ModRegistries {
         ModEntityTypes.init();
         ModDataComponents.init();
         ModMenuTypes.init();
+        ModRecipeSerializers.init();
         ModCreativeTabs.init();
         ALL.forEach(register -> register.register(modBus));
     }

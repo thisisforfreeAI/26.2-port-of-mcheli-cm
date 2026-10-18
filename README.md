@@ -79,6 +79,7 @@ JDK 25 toolchain automatically.
 ./gradlew test        # JUnit tests, with Minecraft and the mod loaded
 ./gradlew runData     # regenerates models, lang, recipes and loot tables in src/generated/resources
 ./gradlew runClient   # development client
+./gradlew runClient -PwithJei   # the same with Just Enough Items installed
 ./gradlew runServer   # development dedicated server (no GUI; type "stop" to shut it down)
 ```
 
@@ -87,6 +88,11 @@ Development runs use `run/` as the game directory.
 For Vulkan with the pinned NeoForge build, set `earlyWindowControl = false` in
 `run/config/fml.toml` before launching. Its early OpenGL loading window otherwise conflicts
 with Vulkan surface creation. Select Vulkan in video settings and restart the client.
+
+Fuel cans and the rangefinder are refilled by crafting, as upstream: a used fuel can with coal
+(100 fuel per slot) or charcoal (75 per slot), or a used rangefinder with one redstone dust. With
+[Just Enough Items](https://www.curseforge.com/minecraft/mc-mods/jei) installed, its recipe and
+usage lookup lists the mod's crafting recipes, including these two. JEI is optional.
 
 Parachutes: right-click the item while airborne and unmounted. On an ejection-capable plane,
 load parachutes into the **Chutes** slots with **I**, then press **Space** from the pilot or first

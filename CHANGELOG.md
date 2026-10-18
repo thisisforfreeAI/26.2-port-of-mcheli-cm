@@ -12,6 +12,18 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 
 ### Added
 
+- Used fuel cans refill by crafting them with coal or charcoal, and used rangefinders recharge
+  with redstone, as upstream's `charge_fuel` and `charge_power_range_finder` recipes did. Each
+  coal slot restores 100 fuel and each charcoal slot 75, up to a full can of 600; one item is used
+  from each slot. The rangefinder takes exactly one redstone slot. Like upstream, both work in the
+  inventory's 2×2 grid as well as a crafting table.
+- Optional Just Enough Items (JEI) support. The fixed and content crafting recipes show in JEI's
+  recipe and usage lookup as normal crafting recipes. JEI cannot list special recipes, so the fuel
+  refill and rangefinder recharge show as example grids made by the real recipes (an empty can
+  with one coal, with six coal, with one charcoal and with eight charcoal), and the fuel can and
+  rangefinder get an information page. Checked with JEI 30.42.0.237 for 26.2 on a dedicated server and
+  client; the mod still runs without JEI.
+
 - UAV control now reaches 5,000 blocks from consoles and tablets, including vertical distance.
   A bounded camera window keeps distant UAVs ticking and delivers terrain/entities without
   moving the operator. Exit, range loss and operator loss release tickets and restore body

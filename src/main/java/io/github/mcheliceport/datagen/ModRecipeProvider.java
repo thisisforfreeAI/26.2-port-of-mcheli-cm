@@ -1,5 +1,8 @@
 package io.github.mcheliceport.datagen;
 
+import io.github.mcheliceport.McheliCePort;
+import io.github.mcheliceport.crafting.FuelRefillRecipe;
+import io.github.mcheliceport.crafting.RangeFinderRechargeRecipe;
 import io.github.mcheliceport.registry.ModItems;
 import java.util.concurrent.CompletableFuture;
 import net.minecraft.core.HolderLookup;
@@ -7,6 +10,7 @@ import net.minecraft.data.PackOutput;
 import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.data.recipes.RecipeProvider;
+import net.minecraft.data.recipes.SpecialRecipeBuilder;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.neoforged.neoforge.common.Tags;
@@ -15,8 +19,8 @@ import net.neoforged.neoforge.common.Tags;
  * The crafting recipes of the fixed items, from upstream's {@code assets/mcheli/recipes/*.json}.
  * Upstream's Forge ore dictionary names become common tags ({@code ingotIron} is {@code c:ingots/iron}).
  *
- * <p>Upstream's two special recipes, refilling fuel cans and recharging the rangefinder, come with
- * those items' behaviour (milestone M6).
+ * <p>Upstream's two special recipes, refilling fuel cans ({@link FuelRefillRecipe}) and recharging
+ * the rangefinder ({@link RangeFinderRechargeRecipe}), are saved under upstream's recipe names.
  */
 public class ModRecipeProvider extends RecipeProvider {
 
@@ -100,6 +104,10 @@ public class ModRecipeProvider extends RecipeProvider {
                 .pattern(" I ").pattern(" II").pattern("I  ")
                 .define('I', Tags.Items.INGOTS_IRON)
                 .unlockedBy("has_iron_ingot", this.has(Tags.Items.INGOTS_IRON)).save(this.output);
+        SpecialRecipeBuilder.special(() -> FuelRefillRecipe.INSTANCE)
+                .save(this.output, McheliCePort.MOD_ID + ":charge_fuel");
+        SpecialRecipeBuilder.special(() -> RangeFinderRechargeRecipe.INSTANCE)
+                .save(this.output, McheliCePort.MOD_ID + ":charge_power_range_finder");
     }
 
     /** Runs the provider in datagen. */
