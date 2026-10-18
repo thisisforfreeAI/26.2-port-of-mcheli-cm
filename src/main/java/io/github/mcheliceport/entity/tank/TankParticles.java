@@ -51,7 +51,37 @@ public final class TankParticles {
         sink.accept(particle);
     }
 
+    /**
+     * Upstream's iron curtain haze ({@code onUpdate_Particle2}): dark red puffs at every extra hit
+     * box, spreading wider through each 40-tick cycle. Upstream tinted vanilla clouds; McHeli's own
+     * smoke takes the tint here.
+     */
+    public static void ironCurtain(TankEntity tank, TankInfo info, RandomSource random) {
+        int tick = tank.getIronCurtainTick();
+        if (tick <= 0) {
+            return;
+        }
+        float factor = 0.5F + 0.5F * (float) Math.sin(tick * 0.15F);
+        float spread = 0.015F * (tick % 40 + 1);
+        for (var box : info.extraBoundingBox) {
+            Vec3 pos = tank.getTransformedPosition(new Vec3(box.offsetX, box.offsetY, box.offsetZ));
+            int count = 2 + random.nextInt(3);
+            for (int i = 0; i < count; i++) {
+                ParticleParam p = new ParticleParam("smoke", pos.x + random.nextGaussian() * 0.3,
+                        pos.y + random.nextGaussian() * 0.2, pos.z + random.nextGaussian() * 0.3,
+                        (random.nextFloat() - 0.5F) * spread, 0.01F + random.nextFloat() * 0.02F,
+                        (random.nextFloat() - 0.5F) * spread, 1.0F);
+                p.r = 0.5F * factor;
+                p.g = 0.1F * factor;
+                p.b = 0.1F * factor;
+                p.age = 20;
+                McheliEffects.spawnParticle(tank.level(), p);
+            }
+        }
+    }
+
     public static void tick(TankEntity tank, TankInfo info, RandomSource random, float previousYaw) {
+        ironCurtain(tank, info, random);
         damage(info, tank.getHP(), tank.getMaxHP(), tank.position(), tank.getYaw(), tank.getPitch(), tank.getRoll(),
                 random, p -> McheliEffects.spawnParticle(tank.level(), p));
         if (!info.wheels.isEmpty() && tank.getDeltaMovement().horizontalDistanceSqr() + Math.abs(previousYaw - tank.getYaw()) > 0.001) {

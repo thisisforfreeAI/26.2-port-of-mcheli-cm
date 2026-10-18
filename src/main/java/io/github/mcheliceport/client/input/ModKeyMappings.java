@@ -76,6 +76,10 @@ public final class ModKeyMappings {
     public static final KeyMapping DOWN_FROM_RACK = key("down_from_rack", GLFW.GLFW_KEY_U);
     public static final KeyMapping ROPES = key("ropes", GLFW.GLFW_KEY_K);
     public static final KeyMapping SEARCH_LIGHT = key("search_light", GLFW.GLFW_KEY_L);
+    /** Upstream {@code KeyRadarSwitch}. */
+    public static final KeyMapping RADAR_SWITCH = key("radar_switch", GLFW.GLFW_KEY_GRAVE_ACCENT);
+    /** Upstream {@code KeyOpenGPSPanel}; upstream's K is the port's ropes key, so N here. */
+    public static final KeyMapping OPEN_GPS_PANEL = key("open_gps_panel", GLFW.GLFW_KEY_N);
 
     public static final KeyMapping CAMERA_MODE = key("camera_mode", GLFW.GLFW_KEY_C);
     public static final KeyMapping CAMERA_DISTANCE_UP = key("camera_distance_up", GLFW.GLFW_KEY_PAGE_UP);
@@ -99,13 +103,15 @@ public final class ModKeyMappings {
     public static final KeyMapping FLARE = key("flare", GLFW.GLFW_KEY_V);
     public static final KeyMapping CHAFF = key("chaff", GLFW.GLFW_KEY_V);
     public static final KeyMapping APS = key("aps", GLFW.GLFW_KEY_V);
+    public static final KeyMapping ECM_JAMMER = key("ecm_jammer", GLFW.GLFW_KEY_V);
     /** Upstream {@code KeyAirburstDistReset} (-99, the right mouse button). */
     public static final KeyMapping AIRBURST_RESET = mouse("airburst_reset", GLFW.GLFW_MOUSE_BUTTON_RIGHT);
 
     public static final List<KeyMapping> ALL = List.of(UP, DOWN, RIGHT, LEFT, SWITCH_GUNNER, SWITCH_HOVERING, ZOOM,
             UNMOUNT, EXTRA, FREE_LOOK, GUI, GEAR_UP_DOWN, CAMERA_MODE, CAMERA_DISTANCE_UP, CAMERA_DISTANCE_DOWN,
-            USE_WEAPON, SWITCH_WEAPON_1, SWITCH_WEAPON_2, SWITCH_WEAPON_MODE, RELOAD_WEAPON, FLARE, CHAFF, APS,
-            AIRBURST_RESET, PUT_TO_RACK, DOWN_FROM_RACK, ROPES, SEARCH_LIGHT, SCOREBOARD, MULTIPLAY_MANAGER);
+            USE_WEAPON, SWITCH_WEAPON_1, SWITCH_WEAPON_2, SWITCH_WEAPON_MODE, RELOAD_WEAPON, FLARE, CHAFF, APS, ECM_JAMMER,
+            AIRBURST_RESET, PUT_TO_RACK, DOWN_FROM_RACK, ROPES, SEARCH_LIGHT, RADAR_SWITCH, OPEN_GPS_PANEL, SCOREBOARD,
+            MULTIPLAY_MANAGER);
 
     private ModKeyMappings() {
     }

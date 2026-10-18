@@ -15,8 +15,8 @@ import net.minecraft.world.level.Level;
  * and grenades within {@code APSRange} (not those of the pilot's team), then waits
  * {@code APSWaitTime}. Ported from upstream {@code MCH_APS}.
  *
- * <p>A range of 100 was upstream's "iron curtain" (invulnerability), which comes with tanks in M6;
- * until then such a system only plays its sounds. Upstream played the activation sound on both
+ * <p>A range of 100 is upstream's "iron curtain": instead of shooting anything down, the vehicle takes
+ * no damage while it runs, glows red, and hits on it throw up red sparks. Upstream played the activation sound on both
  * sides, so the user heard it twice; here the server plays it for everyone. Other mods'
  * projectiles count by their type name ("bullet", "grenade"), as upstream matched class names.
  */
@@ -43,6 +43,9 @@ public final class AircraftAps {
         }
         this.tick = this.waitTime;
         this.useTick = this.useTime;
+        if (this.range == IRON_CURTAIN_RANGE) {
+            this.aircraft.startIronCurtain(this.useTick);
+        }
         McheliSounds.play(this.world, this.aircraft.getX(), this.aircraft.getY(), this.aircraft.getZ(),
                 this.range == IRON_CURTAIN_RANGE ? "iron_curtain" : "aps_activate",
                 this.range == IRON_CURTAIN_RANGE ? 10.0F : 3.0F, 1.0F);
@@ -61,6 +64,9 @@ public final class AircraftAps {
             if (this.useTick == 0) {
                 McheliSounds.play(this.world, this.aircraft.getX(), this.aircraft.getY(), this.aircraft.getZ(),
                         "aps_deactivate", 3.0F, 1.0F);
+                if (this.range == IRON_CURTAIN_RANGE) {
+                    this.aircraft.endIronCurtain();
+                }
             } else {
                 this.onUsing();
             }

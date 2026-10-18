@@ -12,6 +12,10 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 
 ### Changed
 
+- M8 enhanced explosions: irregular short hot flashes, bounded overlapping fire/cloud lobes,
+  outward expansion and a rising smoke crown. Large bombs fill out with power; small impacts
+  cool faster. Airburst visibility no longer depends on affected terrain blocks.
+
 - M8 helicopter rotor wash: low, outward-moving animated dust/spray, material-specific density,
   rotor-height/throttle/speed fading and faint water ripples. Terrain sampling and emission are
   bounded across helicopters; Classic and other vehicles' sea-only wake emitters remain available.
@@ -62,6 +66,35 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 - M8 aircraft engine exhaust: short throttle-responsive turbine wisps at defined outlets and
   restrained hot jet accents, with shared smoke admission and global quality/load caps. Stock
   Apache and two Black Hawk variants include outlets; Classic nozzle smoke remains available.
+- The GPS panel, as upstream: Open GPS Panel (N) in a vehicle takes X, Y and Z (or the player's
+  position) for a GPS point, marked on the HUD with its distance until the player gets off.
+- The BVR scope and the mortar radar, as upstream: a weapon with `EnableBVR` marks vehicles, chaff
+  and incoming missiles reported by the server out to 2000 blocks, and the one held at the centre
+  becomes its target; a vehicle with its radar switched on shows a top-down scope with the
+  players and vehicles around it and where its weapon will land. Planes are shown on both,
+  which upstream missed (KNOWN_ISSUES 91).
+- The radar warning receiver scope and the Radar Switch key (`` ` ``), as upstream: a vehicle with
+  an `RWR` section shows its scope, and one with a `Radar` section switches its radar on and off.
+  As upstream, nothing fills the scope yet (KNOWN_ISSUES 90).
+- Lock boxes, as upstream: while the current weapon has a seeker, a green box with the distance
+  hangs over everything it could lock, dimmed past its lock range, and turns red with a line to
+  the vehicle while locking. Radar seekers also show the target vehicle's radar name.
+- A creative gunner can be removed with `/kill`.
+- `Destruct` bombs, as upstream: the RC Goblin's plastic bomb now blows up the UAV that drops it.
+- The pulse-Doppler notch: a plane flying across a plane's seeker by more than the weapon's
+  `PDHDNMaxDegree` breaks its lock, as upstream.
+- The APS iron curtain (an APS with range 100): the vehicle takes no damage while it runs and
+  glows red, tanks give off a red haze, and hits on it throw up red sparks.
+- The ECM jammer, as upstream: an addon vehicle with an `ECM` section switches it on with the ECM
+  Jammer key (V). While a lock-breaking jammer (`Type: 2`) runs, radar and anti-radiation
+  missiles homing on the vehicle lose it and radar seekers cannot lock it. Gunner NPCs switch it
+  on against incoming missiles.
+- Gunner NPCs, as upstream: the Gunner (vs Monster) and Gunner (vs Player) items seat a gunner
+  on a free seat within five blocks (a square at the crosshair shows the seat), and using one on
+  a gunner takes it off. A gunner turns its seat's weapon towards the nearest monster, or the
+  nearest player of another team, leads it and fires, and launches flares, chaff or the APS
+  against an incoming guided missile. Ctrl+C switches a vehicle's gunners on and off, and the
+  gunner search ranges are common config settings.
 - Mobs in seats, as upstream: animals and other mobs next to a vehicle board its free seats when
   a player takes the pilot seat, and the pilot's unload key (K) puts them out on the ground or,
   from vehicles that drop by parachute, sends them down one by one under parachutes. The

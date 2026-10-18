@@ -9,7 +9,8 @@ final class ImpactCoreParticle extends McheliParticle {
     private int frame;
 
     ImpactCoreParticle(ClientLevel level, double x, double y, double z, float radius, int life) {
-        super(level, x, y, z, 0, 0, 0, FlashParticle.POLISHED_TEXTURE);
+        super(level, x, y, z, 0, 0, 0,
+                net.minecraft.resources.Identifier.fromNamespaceAndPath("mcheli_ce_port", "m8_blast_flash"));
         this.radius = radius;
         this.lifetime = life;
         this.hasPhysics = false;

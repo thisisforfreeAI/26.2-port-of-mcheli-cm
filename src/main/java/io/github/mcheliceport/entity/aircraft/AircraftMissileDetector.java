@@ -12,8 +12,7 @@ import net.minecraft.world.level.Level;
  *
  * <p>Upstream also read "Tracking" and "LockOn" flags from the entity's custom data to send lock
  * warnings ({@code PacketNotifyLock}); nothing in upstream ever set them, so that path is not
- * ported. The UAV branch (an alert heard only on the operator's client) comes with UAVs (M6), as
- * does the ECM jammer's soft kill.
+ * ported. The UAV branch (an alert heard only on the operator's client) comes with UAVs (M6).
  */
 public final class AircraftMissileDetector {
 
@@ -28,6 +27,9 @@ public final class AircraftMissileDetector {
     }
 
     public void update() {
+        if (this.ac.isECMJammerUsing()) {
+            this.destroyMissileECM();
+        }
         if (!this.ac.haveFlare()) {
             return;
         }
@@ -65,6 +67,23 @@ public final class AircraftMissileDetector {
             if (this.targetsUs(msl)) {
                 msl.targetEntity = null;
                 msl.discard();
+            }
+        }
+    }
+
+    /**
+     * Upstream {@code destroyMissileECM}: while a lock-breaking jammer ({@code Type: 2}) runs, radar
+     * and anti-radiation missiles within 80 blocks homing on the vehicle lose their target.
+     */
+    public void destroyMissileECM() {
+        if (this.world.isClientSide() || this.ac.getAcInfo() == null || this.ac.getAcInfo().ecmJammerType != 2) {
+            return;
+        }
+        for (BaseBulletEntity msl : this.world.getEntitiesOfClass(BaseBulletEntity.class,
+                this.ac.getBoundingBox().inflate(80.0))) {
+            if (this.targetsUs(msl) && msl.getInfo() != null
+                    && (msl.getInfo().isRadarMissile || msl.getInfo().antiRadiationMissile)) {
+                msl.setTargetEntity(null);
             }
         }
     }

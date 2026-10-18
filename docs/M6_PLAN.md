@@ -1414,3 +1414,170 @@ AN-2 as pilot brought the two cows beside it aboard
 ([unloaded](screens/m6-mobs-unloaded.png)). Clicking a passenger seat directly seated the
 player without bringing mobs. Not run: a parachute drop in flight in the client,
 Vulkan.
+
+## Gunner NPCs increment
+
+- `GunnerEntity` ports upstream's `MCH_EntityGunner`: a living entity that only exists in a
+  vehicle (it goes away a second after leaving one) and keeps its team, owner, target type and
+  creative flag. On a vehicle with gunners switched on (Ctrl+C, on for new vehicles as upstream)
+  it searches every second for the nearest monster, or player of another team, within the common
+  config ranges that its seat's weapon can reach, turns at upstream's rates, leads the target by
+  the weapon's speed and fires through `AircraftWeapons.useCurrentWeapon`, passing the target to
+  seeker weapons and waiting for an overheating gun to cool. Against an incoming guided missile it
+  uses flares (preferring pattern 10), chaff and the APS, as upstream's gunner did.
+- `SpawnGunnerItem` ports `MCH_ItemSpawnGunner` for the two Gunner items: a five-block search
+  finds a gunner, then a seat, then a vehicle that is not a UAV; it seats a gunner of the player's
+  team, or takes off a gunner the player may remove. `SpawnGunnerHudLayer` ports
+  `MCH_GuiSpawnGunner`'s square and label, and `GunnerRenderer` ports `MCH_RenderGunner` with
+  upstream's texture on the 64×32 biped.
+- The weapon code that asked "is this a player?" now accepts a gunner (`isWeaponUser`), a gunner's
+  reload adds the weapon's reload count to its wait as upstream, and a vehicle counts as creative
+  when a creative gunner rides it. The gunner registry name is now a real entity, so
+  `PlaceholderEntity` is gone.
+- New common config settings: the gunner search ranges against monsters and players (upstream's
+  `RangeOfGunner_*`) and `hitBoxDelayTick`, as upstream.
+
+Validation: `build` passed and the GameTest server passed all 215 required tests, including six
+new ones: a gunner on an AH-64 picks a husk and hits it; it holds fire with gunners switched off;
+against players it only targets other teams and never a creative player; it fires flares at an
+incoming anti-tank missile; the item seats a gunner of the player's team and a second use takes
+it off; and a gunner off a vehicle goes away, dropping its item only when placed in survival. On a
+dedicated server with an OpenGL client: the crosshair square named the free seat and then the
+seated gunner ([overlay](screens/m6-gunner-overlay.png)), the gunner sat in the AH-64's front
+seat with its team name ([seated](screens/m6-gunner-seated.png)), and a creative gunner shot and
+killed a husk twenty blocks away within a second of it appearing
+([firing](screens/m6-gunner-firing.png)). A gunner placed in survival on a new AH-64 aimed but
+did not fire, because the vehicle had no ammunition loaded, as upstream. Not run: vs-player
+gunners and countermeasures in the client, Vulkan.
+
+## ECM jammer increment
+
+- `AircraftEntity` ports upstream's jammer: `useECMJammer` runs it for `ECM.UseTime` ticks
+  (status bit 15, as upstream, so riders see it) and blocks it for `ECM.WaitTime` ticks from the
+  start. The ECM Jammer key (V) sends it with the other countermeasures from the pilot or seat 1.
+- `AircraftMissileDetector.destroyMissileECM` ports the soft kill: while a `Type: 2` jammer runs,
+  radar and anti-radiation missiles within 80 blocks that home on the vehicle or a rider lose their
+  target. `WeaponGuidanceSystem.canLockEntity` refuses radar locks on such a vehicle.
+- Gunner NPCs switch the jammer on against incoming missiles, as upstream's gunner did.
+
+Validation: `build` passed and the GameTest server passed all 219 required tests, including four
+new ones: the jammer runs for its use time and waits out its wait time; a type 2 jammer strips a
+radar missile but not a heat seeker, and a type 1 jammer strips nothing; a radar seeker cannot
+lock a jamming vehicle while a heat seeker can; and a gunner switches the jammer on against an
+incoming missile. No stock vehicle has a jammer, so it was not tried in the client.
+
+## Destruct bombs, notch and iron curtain increment
+
+- `BombWeapon` ports the `Destruct` branch of upstream's `MCH_WeaponBomb.shot`: on a crewless UAV
+  helicopter (the RC Goblin's plastic bomb) the server explodes the weapon's charge at the vehicle
+  for the user and removes the vehicle, dropping its contents (upstream `destruct`).
+- `WeaponGuidanceSystem.canContinueLocking` ports the pulse-Doppler notch: when the shooter's
+  vehicle and the target are both planes, a lock breaks when their courses differ by more than
+  `PDHDNMaxDegree` (folded to the acute angle, so head-on and tail-on count alike). The in-flight
+  half was already in `BaseBulletEntity`.
+- The iron curtain: `AircraftAps` starts `AircraftEntity.startIronCurtain` for an APS with range
+  100 and ends it with the APS. The remaining ticks are synced entity data (upstream
+  `PacketIronCurtainUse`); `hurtServer` refuses damage while they run; the renderer pulses the
+  model red with upstream's wave; `TankParticles.ironCurtain` and
+  `BaseBulletEntity.spawnIronCurtainParticle` port the red haze and impact sparks.
+- A survey of the remaining combat settings found that upstream never acted on data link, the
+  anti-radiation tuning, passive-radar lock-out and several aircraft-level radar flags; they stay
+  parsed and inert (KNOWN_ISSUES 88).
+
+Validation: `build` passed and the GameTest server passed all 222 required tests, including three
+new ones: the RC Goblin's plastic bomb removes the UAV and hurts a husk beside it; a plane beaming
+another plane's seeker breaks its lock past 60° while head-on, tail-on and still targets keep it;
+and an iron curtain refuses damage for its use time, after which damage lands. Not run in the
+client: no stock vehicle has an iron curtain or crosses planes in a lock, and the RC Goblin's
+explosion was checked only by the test.
+
+## Lock boxes increment
+
+- `LockMarkerHudLayer` ports `MCH_RenderAircraft.renderEntityMarker`. While the rider's current
+  weapon has a guidance system, every living thing, vehicle and chaff cloud it could lock
+  (`canLockEntity`) within 1000 blocks and in clear sight gets upstream's box: its size grows with
+  distance on upstream's curve, it dims past `MaxLockOnRange` or the notch angle, and BVR weapons
+  skip targets beyond their minimum BVR range. The locking target's box is red and thicker, and in
+  first person on a crewed vehicle a red line joins it to the vehicle. The box is upstream's world
+  billboard projected with the frame's camera, drawn as a GUI layer below the vehicle HUD.
+- `AircraftEntity.getNameOnMyRadar`/`getNameOnOtherRadar` port upstream's radar names (modern or
+  early, air or surface); radar seekers print the target vehicle's name before the distance.
+- A creative gunner was invulnerable even to `/kill`; it now takes damage that bypasses
+  invulnerability, as vanilla mobs do.
+
+Validation: `build` passed and the GameTest server passed all 222 required tests. In the client
+(AH-64, AIM-92 Stinger), cows in the air at 45 and 73 blocks showed green boxes with their
+distances ([boxes](screens/m6-lock-markers.png)); one held ahead turned red with the line to the
+vehicle while locking, and the Stinger fired
+([locking](screens/m6-lock-marker-locking.png)). `/kill` removed a creative Blue Gunner.
+
+## Radar switch and RWR scope increment
+
+- `ModKeyMappings.RADAR_SWITCH` (upstream `KeyRadarSwitch`, default grave) toggles
+  `AircraftEntity.STATUS_RADAR` (upstream common status 13, `isRadarEnabledRuntime`) for a vehicle
+  with a `Radar` section, from any seat, and takes the key tick as upstream's
+  `handleCameraAndModes`. Other vehicles play the NG sound. Upstream's separate `switchRadar` byte
+  rides in the two spare control-switch bits (`RADAR_ON`, `RADAR_OFF`).
+- `RwrHudLayer` ports `HudRWR`'s scope: the plane, helicopter, tank and FAC textures at upstream's
+  height-scaled place and size, drawn twice as upstream's HUD list held it twice.
+- Upstream's `MCH_RWRThreatManager.serverTick` had no caller, so its threat table, the scope's
+  threat labels and the `locked`/`alert_radar` warnings never showed; they are not ported
+  (KNOWN_ISSUES 90). E4's radar names (`getNameOnMyRadar`/`getNameOnOtherRadar`) came with the
+  lock boxes.
+
+Validation: `build` passed and the GameTest server passed all 223 required tests, including a new
+one that sends the switch through the control payload's codec and turns an AH-64's radar on and
+off; the payload unit test covers the two new bits. In the client, an AH-64 given `Radar` and
+`RWR` sections in the extracted stock pack showed the helicopter scope on the left of its HUD
+([scope](screens/m6-rwr-scope.png)). No stock vehicle has either section.
+
+## Entity-info feed, BVR scope and mortar radar increment
+
+- E1, the entity-info feed: `EntityInfoFeed` ports `EntityInfoManagerAsync`. Every ten server
+  ticks each player is sent (`EntityInfoSyncPayload`) the players, vehicles, flares, chaff and
+  air-to-air missiles of their dimension within 2000 blocks horizontally; planes, helicopters and
+  chaff count only 30 blocks above the ground and at 0.5 blocks a tick or more. `EntityInfo`
+  carries a kind instead of upstream's class name. `EntityInfoClientTracker` ports the client
+  tracker, forgetting an entity after five seconds or 100 snapshots without it.
+- `BvrHudLayer` ports `HudBVRLock` with its own look-and-FOV projection, alpha rings, edge ring
+  and missile markers; the target held at the centre goes to the server every ten ticks
+  (`BvrLockPayload`, upstream `PacketLockTargetBVR`), which sets the rider's seeker target, the
+  target an active or passive radar missile then flies at.
+- `MortarRadarHudLayer` ports `HudMortarRadar`: shown while `isRadarEnabledRuntime`, turned with
+  the weapon set's yaw, with `AircraftWeapons` now keeping upstream's `impactPos`/`prevImpactPos`
+  from `getLandInDistance`, and the cross red when a tracked entity is within six blocks of it.
+- Planes are found by kind, so they show on both scopes (KNOWN_ISSUES 91, the owner's choice).
+
+Validation: `build` passed and the GameTest server passed all 225 required tests, including two
+new ones: the feed's tracking rules and its payload's codec, and the BVR lock setting and clearing
+an AH-64 seeker's target. In the client, an AH-64 given a `Radar` section and a Stinger given
+`EnableBVR` (`MinRangeBVR: 50`) in the extracted stock pack showed a green BVR box on an A-10 at
+124 m, red once centred, and the mortar radar listed the A-10 and a Merkava with their distances
+([BVR and mortar radar](screens/m6-bvr-mortar-radar.png), [locked](screens/m6-bvr-locked.png)).
+No stock weapon has `EnableBVR`.
+
+## GPS panel increment
+
+- `GpsInputScreen` ports `MCH_GuiGPSInput`: three coordinate fields, Fill with player position,
+  Done or Enter (an unreadable entry says "Invalid coordinates"), Cancel or Escape. It opens from
+  any seat with `ModKeyMappings.OPEN_GPS_PANEL` (upstream `KeyOpenGPSPanel`), N because the
+  port's ropes key holds upstream's K.
+- `GpsPosition` ports `GPSPosition`: the client's point for the HUD, cleared when the player is
+  off a vehicle (upstream `handleGps`), and `GpsSetPayload` (upstream `PacketResetGPS`) keeps each
+  player's point on the server, which nothing reads, as upstream.
+- `GpsHudLayer` ports `HudGPS`'s marker and `[GPS distance]` label with its alpha steps and red
+  within 1.5°, projected onto the point (KNOWN_ISSUES 92).
+
+Validation: `build` passed, the GameTest server passed all 225 required tests and the payload
+unit test covers the GPS and BVR payloads. In the client, N in an AH-64 opened the panel
+([panel](screens/m6-gps-panel.png)); 48, 150, 140 marked the point 59.8 m ahead
+([marker](screens/m6-gps-marker.png)), and the marker was gone after getting off and back on.
+
+## Passive radar survey
+
+The last radar row in KNOWN_ISSUES was passive radar. Upstream's `MCH_WeaponAAMissile.lock` and
+`onUnlock`, which would hand a passive-radar missile in flight the shooter's current lock through
+`clientSetTargetEntity` and `PacketLockTarget`, have no callers, and the guidance system's
+`passiveRadar` fields are never read. What runs is already ported: passive and active radar
+missiles fire without a client lock and take the seeker's server target, which the BVR scope
+sets. The row is closed and the dead path recorded in KNOWN_ISSUES 88.
