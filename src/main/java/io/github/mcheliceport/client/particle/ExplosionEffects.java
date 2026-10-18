@@ -47,14 +47,13 @@ public final class ExplosionEffects {
             effectExplosionInWater(level, x, y, z, size);
             return;
         }
+        boolean vanilla = ClientConfig.get(ClientConfig.DEFAULT_EXPLOSION_PARTICLE);
+        if (!vanilla && EffectQuality.enhanced()) {
+            ExplosionCloudEmitter.emit(level, x, y, z, size, style);
+            return;
+        }
         List<BlockPos> blocks = new ArrayList<>(affected);
         blocks.addAll(McheliExplosion.rayMarchBlocks(level, null, x, y, z, size, 1.0F, false, level.getRandom()));
-        boolean vanilla = ClientConfig.get(ClientConfig.DEFAULT_EXPLOSION_PARTICLE);
-        if (!vanilla && size >= 1.0F && EffectQuality.enhanced()) {
-            ClientEffects.spawnExplosionAccents(level, x, y, z, size, style);
-            ClientEffects.spawnExplosionGlow(level, x, y, z, size, style);
-            ClientEffects.spawnExplosionSparks(level, x, y, z, size, style);
-        }
         int cnt = 0;
         int flareCnt = (int) size;
         for (BlockPos pos : blocks) {

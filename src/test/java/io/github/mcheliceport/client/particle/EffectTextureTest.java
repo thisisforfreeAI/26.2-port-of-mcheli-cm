@@ -19,7 +19,7 @@ class EffectTextureTest {
         // The pinned stitcher can silently lose a wide, short sprite during Y expansion.
         // Exercise the real texture dimensions alongside the original flash, not a mock packer.
         sprites.add(new Sprite(63, 32, Identifier.fromNamespaceAndPath("mcheli", "flash")));
-        for (String effect : List.of("smoke", "splash", "flash")) {
+        for (String effect : List.of("smoke", "splash", "flash", "blast_cloud", "blast_flash")) {
             String path = "/assets/mcheli_ce_port/textures/particle/m8_" + effect + ".png";
             try (var stream = getClass().getResourceAsStream(path)) {
                 assertNotNull(stream, path);

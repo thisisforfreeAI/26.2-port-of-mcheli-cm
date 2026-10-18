@@ -154,11 +154,6 @@ public final class ClientEffects implements McheliEffects.Sink {
         var budget = ClientConfig.get(ClientConfig.EFFECT_BUDGET);
         int pressure = EffectPerformance.pressure();
         if (budget == ClientConfig.EffectBudget.LOW || pressure >= 2) return;
-        float core = ExplosionLook.coreRadius(size, style);
-        if (core > 0 && EffectAdmission.admit(level, x, y, z, false, core)) {
-            Minecraft.getInstance().particleEngine.add(new ImpactCoreParticle(level, x, y, z, core,
-                    ExplosionLook.coreLife(style)));
-        }
         int count = ExplosionLook.dustCount(size, style, budget, pressure);
         if (count == 0) return;
         // One loaded column only, bounded search; no dust from high airbursts, water or leaf canopies.

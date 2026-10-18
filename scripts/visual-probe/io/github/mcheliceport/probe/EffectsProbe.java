@@ -33,7 +33,7 @@ public final class EffectsProbe {
     public static void tick(ClientTickEvent.Post event) {
         if (Boolean.getBoolean("mcheli.probeLook") || Boolean.getBoolean("mcheli.probeGround")
                 || Boolean.getBoolean("mcheli.probeBombScale") || Boolean.getBoolean("mcheli.probeImpactFlare")
-                || Boolean.getBoolean("mcheli.probeRotorWash")) return;
+                || Boolean.getBoolean("mcheli.probeRotorWash") || Boolean.getBoolean("mcheli.probeExplosionStructure")) return;
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null || mc.player == null || mc.isPaused()) return;
         tick++;
