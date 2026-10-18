@@ -26,6 +26,11 @@ public class ParticleParam {
     public boolean toWhite = false;
     public float gravity = 0.0F;
     public float motionYUpAge = 2.0F;
+    /**
+     * Not in upstream: the block a vehicle's downwash rises from, so the client's M8 look can
+     * colour the dust after it (water gives white spray). Only the look depends on it.
+     */
+    public net.minecraft.world.level.block.state.@org.jspecify.annotations.Nullable BlockState groundState;
 
     public ParticleParam(String name, double x, double y, double z) {
         this.name = name;

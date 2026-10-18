@@ -182,6 +182,7 @@ public class ModLanguageProvider extends LanguageProvider {
         add(prefix + "effects", "Weapon Effects");
         add(prefix + "defaultExplosionParticle", "Vanilla Explosion Particles");
         add(prefix + "aliveTimeOfCartridge", "Cartridge Lifetime");
+        add(prefix + "effectQuality", "Effect Quality");
         add(prefix + "debug", "Debug");
         add(prefix + "testMode", "Test Mode");
         add(prefix + "camera", "Camera");

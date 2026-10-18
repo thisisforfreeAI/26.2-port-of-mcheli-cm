@@ -36,6 +36,14 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 
 ### Added
 
+- M8 effects polish, first slice, for the vehicles already ported (see docs/M8_PLAN.md): smoke
+  fades in and out and grows smoothly; explosion puffs start as fire and cool to smoke over a
+  soft additive fireball glow; muzzle flashes glow additively; machine-gun tracers burn at full
+  brightness with a soft streak; flares burn at full brightness with a flickering glow; missile
+  flames glow; downwash dust takes the ground's colour, with white spray over water. The client
+  config's `effects.effectQuality` switches back to upstream's look (`CLASSIC`). Only vanilla
+  pipeline state is used, so it draws the same on OpenGL and Vulkan.
+
 - Using a drafting table opens upstream's recipe browser: lists of helicopters, planes,
   vehicles, tanks, items and ships, a search box, a recipe page with its description pictures
   and a vehicle's specifications, and Create, which makes the recipe from the inventory into the
