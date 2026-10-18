@@ -186,7 +186,7 @@ public final class AircraftClientControl {
         }
 
         if (isPilot) {
-            if (ropesClicked && aircraft.ropes().supported()) {
+            if (ropesClicked) {
                 unmount = HeliControlPayload.UnmountAction.UNMOUNT_CREW; send = true;
             }
             if (ModKeyMappings.PUT_TO_RACK.consumeClick()) {

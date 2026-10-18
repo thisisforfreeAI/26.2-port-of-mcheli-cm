@@ -25,7 +25,7 @@ broader gameplay and hardware checks remain pending.
 
 | Area | Planned milestone |
 |---|---|
-| Remaining plane/ground equipment and UAV station preview camera, gunner NPCs and mobs in seats (and their weapon use) | M6 |
+| Remaining plane/ground equipment and UAV station preview camera, gunner NPCs (and their weapon use) | M6 |
 | BVR and passive radar, GPS panel and GPS missiles, mortar radar and RWR overlays, ECM jammer, the pulse-Doppler notch, the APS "iron curtain", data link, anti-radiation missiles, `Destruct` bombs (UAVs) | M6 (with the vehicles that use them) |
 | Wingman (AI wingmen, marker block screens and types, missions, `/wingman`) | M6b |
 | Remaining `/mcheli` commands (including reloading content with `reconfig`), advancement triggers, long-distance tracking and rendering, thermal vision (the third camera mode), GPU-buffer model rendering, projectile chunk loading (`ProjectileChunkLoad`), HBM:NTM stubs, performance work | M7 |
@@ -278,9 +278,9 @@ These follow from how Minecraft 26.2 works or from decisions approved in PORTING
     an occupied trailer may roll towards the tug when it stops. The local default-movement check
     logged one tug movement correction after braking, with no damage or lost link.
 
-72. K exposes rope deployment using the existing UNMOUNT_CREW action, whose client sender was
-    absent from the pinned upstream handler. This increment implements ropes; it does not add
-    that action's separate ground-unload or automatic transport-parachute paths. Ropes require
+72. K sends the existing UNMOUNT_CREW action, whose client sender was absent from the pinned
+    upstream handler, to upstream's `unmountCrew` (difference 84); with rope hooks away from the
+    ground it deploys or retracts the ropes. Ropes require
     configured hooks, hover, pitch/roll below three degrees, recent movement below .3 blocks and
     no ground within four blocks. Their canonical server length grows .25 blocks per tick to
     terrain or fifty blocks, replacing the independent .3 client rate. Terrain uses current world
@@ -387,6 +387,16 @@ These follow from how Minecraft 26.2 works or from decisions approved in PORTING
     Its lists show at least ten rows in steps of five; upstream also capped them at the server's
     player limit, which clients no longer receive. Team names take the characters `/team add`
     reads as one word, so OK stays greyed out for others; upstream sent the command and let it fail.
+
+84. Mobs in seats follow upstream's `mountMobToSeats` and `unmountCrew`: when a player boards as
+    pilot, living things within three blocks (two up or down) that ride nothing take the free
+    seats in order, up to the first rack; a player who clicks a passenger seat, or moves to the
+    pilot seat from the seat menu, brings none aboard. The pilot's K, which upstream sent from no
+    key, unloads them: on the ground they get out; ten blocks or more above ground a vehicle with
+    `EnableParachuting` opens its hatch and drops one mob every `MobDropOption` interval by
+    parachute from the third seat on, while a mob in the second seat just gets out, as upstream's
+    loop did; with rope hooks it lowers the ropes instead. The common config `dismountAll`
+    (upstream `DismountAll`, off) unloads the mobs when the pilot gets out.
 
 ## Upstream content issues kept as they are
 

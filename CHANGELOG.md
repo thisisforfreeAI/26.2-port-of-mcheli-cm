@@ -42,6 +42,10 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
   supported (see Added); JEI shows the drafting table as a crafting station for them.
 
 ### Added
+- Mobs in seats, as upstream: animals and other mobs next to a vehicle board its free seats when
+  a player takes the pilot seat, and the pilot's unload key (K) puts them out on the ground or,
+  from vehicles that drop by parachute, sends them down one by one under parachutes. The
+  `dismountAll` option unloads them when the pilot gets out.
 - Upstream's team screens for multiplayer: hold L for the team lists with each player's list
   score and ping, and press M for the multiplay manager, where operators toggle PVP, shuffle the
   players over the teams, send everyone to their spawn point, remove every vehicle and create a
