@@ -1,6 +1,7 @@
 package io.github.mcheliceport.entity.aircraft;
 
 import com.mojang.logging.LogUtils;
+import io.github.mcheliceport.compat.energy.EnergyCompat;
 import io.github.mcheliceport.config.CommonConfig;
 import io.github.mcheliceport.config.ServerSettings;
 import io.github.mcheliceport.content.ContentType;
@@ -713,6 +714,28 @@ public abstract class AircraftEntity extends Entity
 
     public int getMaxFuel() {
         return this.info != null ? this.info.maxFuel : 0;
+    }
+
+    /** Upstream {@code isElectric}: the fuel value is a plain energy store. */
+    public boolean isElectric() {
+        return this.info != null && this.info.electric;
+    }
+
+    /** Upstream {@code allowBattery}: a battery in the fuel slot extends an electric vehicle's store. */
+    public boolean allowBattery() {
+        return this.isElectric() && this.info.allowBattery;
+    }
+
+    /** Upstream {@code addEnergy}: server only; returns what the store took. */
+    public int addEnergy(int amount) {
+        if (this.level().isClientSide() || amount <= 0) {
+            return 0;
+        }
+        int accepted = Math.max(0, Math.min(amount, this.getMaxFuel() - this.getFuel()));
+        if (accepted > 0) {
+            this.setFuel(this.getFuel() + accepted);
+        }
+        return accepted;
     }
 
     public float getFuelPercentage() {
@@ -2310,6 +2333,7 @@ public abstract class AircraftEntity extends Entity
             this.setFuel(fuel);
         }
         if (this.info.electric) {
+            this.updateElectricBattery();
             return;
         }
         int current = this.getFuel();
@@ -2319,6 +2343,26 @@ public abstract class AircraftEntity extends Entity
             if (!input.isEmpty() && input.is(ModItems.FUEL.get())) {
                 this.refuelFromCan(input, current, max);
             }
+        }
+    }
+
+    /**
+     * Upstream {@code updateElectricBattery}: every 10 ticks a battery in the fuel slot tops up the
+     * store, in flight too. The charger fills the store directly.
+     */
+    private void updateElectricBattery() {
+        if (!this.allowBattery() || this.getCountOnUpdate() % 10 != 0) {
+            return;
+        }
+        int need = this.getMaxFuel() - this.getFuel();
+        if (need <= 0) {
+            return;
+        }
+        ItemStack battery = this.inventory.getItem(SLOT_FUEL_IN);
+        int pulled = EnergyCompat.dischargeFromItem(battery, need);
+        if (pulled > 0) {
+            this.inventory.setChanged();
+            this.setFuel(this.getFuel() + pulled);
         }
     }
 

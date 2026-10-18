@@ -14,6 +14,7 @@ import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import org.slf4j.Logger;
+import io.github.mcheliceport.registry.ModBlocks;
 import io.github.mcheliceport.registry.ModEntityTypes;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
@@ -46,6 +47,8 @@ public final class McheliCePort {
             event.registerEntity(Capabilities.Item.ENTITY_AUTOMATION,
                     ModEntityTypes.CONTAINER.get(),
                     (cargo, side) -> VanillaContainerWrapper.of(cargo));
+            event.registerBlockEntity(Capabilities.Energy.BLOCK, ModBlocks.CHARGER_ENTITY.get(),
+                    (charger, side) -> charger.energyHandler());
         });
         ModNetwork.register(modBus);
         io.github.mcheliceport.entity.uav.UavRemoteSession.register(modBus);

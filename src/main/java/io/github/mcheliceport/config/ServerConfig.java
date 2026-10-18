@@ -28,6 +28,9 @@ public final class ServerConfig {
     public static final ModConfigSpec.IntValue RANGE_FINDER_SPOT_TIME;
     public static final ModConfigSpec.BooleanValue RANGE_FINDER_CONSUME;
     public static final ModConfigSpec.DoubleValue STINGER_LOCK_RANGE;
+    public static final ModConfigSpec.DoubleValue CHARGER_RANGE;
+    public static final ModConfigSpec.IntValue CHARGER_TRANSFER_RATE;
+    public static final ModConfigSpec.IntValue CHARGER_CAPACITY;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -95,6 +98,18 @@ public final class ServerConfig {
         STINGER_LOCK_RANGE = builder
                 .comment("How far the hand-held Stinger and Javelin lock on, in blocks. Upstream: StingerLockRange.")
                 .defineInRange("stingerLockRange", 320.0, 1.0, 10000.0);
+        builder.pop();
+
+        builder.comment("The aircraft charger, which feeds energy to nearby electric vehicles.").push("charger");
+        CHARGER_RANGE = builder
+                .comment("How far the charger reaches, in blocks around it; 0 turns it off. Upstream: ChargerRange.")
+                .defineInRange("chargerRange", 6.0, 0.0, 256.0);
+        CHARGER_TRANSFER_RATE = builder
+                .comment("Energy the charger gives out every 10 ticks, shared by the vehicles in range. Upstream: ChargerTransferRate.")
+                .defineInRange("chargerTransferRate", 256, 0, Integer.MAX_VALUE);
+        CHARGER_CAPACITY = builder
+                .comment("Energy the charger holds. Upstream: ChargerCapacity.")
+                .defineInRange("chargerCapacity", 100000, 0, Integer.MAX_VALUE);
         builder.pop();
         SPEC = builder.build();
     }

@@ -25,7 +25,7 @@ broader gameplay and hardware checks remain pending.
 
 | Area | Planned milestone |
 |---|---|
-| Remaining plane/ground equipment and UAV station preview camera, gunner NPCs and mobs in seats (and their weapon use), the rest of the aircraft GUI, charger, the team scoreboard screens | M6 |
+| Remaining plane/ground equipment and UAV station preview camera, gunner NPCs and mobs in seats (and their weapon use), the rest of the aircraft GUI, the team scoreboard screens | M6 |
 | BVR and passive radar, GPS panel and GPS missiles, mortar radar and RWR overlays, ECM jammer, the pulse-Doppler notch, the APS "iron curtain", data link, anti-radiation missiles, `Destruct` bombs (UAVs) | M6 (with the vehicles that use them) |
 | Wingman (AI wingmen, marker block screens and types, missions, `/wingman`) | M6b |
 | Remaining `/mcheli` commands (including reloading content with `reconfig`), advancement triggers, long-distance tracking and rendering, thermal vision (the third camera mode), GPU-buffer model rendering, projectile chunk loading (`ProjectileChunkLoad`), HBM:NTM stubs, performance work | M7 |
@@ -57,8 +57,10 @@ Until then:
   plain container background. Supported planes also expose parachute reserves; the remaining
   aircraft menu controls come with M6.
 - Fuel comes from fuel cans or nearby supply vehicles. Refuelling from fluid containers and
-  external fluid capabilities still needs a registered fuel fluid (M6). Electric batteries and
-  charger energy remain pending; named vehicle-to-vehicle fuel transfer is not an energy capability.
+  external fluid capabilities still needs a registered fuel fluid (M6). Electric vehicles take
+  energy from the charger and from batteries (any item with NeoForge's item energy capability) in
+  the fuel slot. Upstream's GregTech EU and HBM HE energy systems are dropped, so the
+  `EnergySystem` and ratio settings are gone; the port registers no battery item, as upstream.
 - Every placed wingman marker is a waypoint until the marker screen is ported (M6b).
 - An APS with upstream's "iron curtain" range (100) only plays its sounds (M6).
 - Turret ballistics lines (upstream `drawTurretBallistics`) are not drawn yet (M7).

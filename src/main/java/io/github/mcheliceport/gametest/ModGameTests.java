@@ -72,6 +72,10 @@ public final class ModGameTests {
         GltdGameTests.register();
         LightWeaponGameTests.register();
         DraftingTableGameTests.register();
+        ChargerGameTests.register();
+        if (System.getProperty("neoforge.enabledGameTestNamespaces") != null) {
+            ChargerGameTests.registerTestBattery(modBus);
+        }
         FUNCTIONS.register(modBus);
         modBus.addListener(ModGameTests::onRegisterGameTests);
     }
