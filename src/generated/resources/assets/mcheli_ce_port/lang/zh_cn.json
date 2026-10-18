@@ -1,6 +1,7 @@
 {
   "block.mcheli_ce_port.drafting_table": "绘图台",
   "block.mcheli_ce_port.lit_drafting_table": "绘图台",
+  "fluid_type.mcheli_ce_port.mch_fuel": "燃料",
   "item.mcheli_ce_port.ammo_box": "弹药箱",
   "item.mcheli_ce_port.chain": "锁链",
   "item.mcheli_ce_port.container": "集装箱",
@@ -9,6 +10,7 @@
   "item.mcheli_ce_port.fim92": "FIM-92 刺針飛彈发射器",
   "item.mcheli_ce_port.fim92_bullet": "FIM-92 刺針飛彈",
   "item.mcheli_ce_port.fuel": "燃料",
+  "item.mcheli_ce_port.fuel_bucket": "燃料桶",
   "item.mcheli_ce_port.fuel_truck": "加油车",
   "item.mcheli_ce_port.gltd": "GLTD:目标指示器 (呼叫空中打击)",
   "item.mcheli_ce_port.m18_green": "M18 烟雾弹 (绿色)",

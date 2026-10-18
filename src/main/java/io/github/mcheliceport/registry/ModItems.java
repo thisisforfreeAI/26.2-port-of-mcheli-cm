@@ -64,6 +64,10 @@ public final class ModItems {
                             .build()),
             ModTab.ITEMS);
     public static final DeferredItem<Item> FUEL = item("fuel", p -> p.durability(600).setNoCombineRepair());
+    /** Upstream's Forge bucket of {@code mch_fuel}; see {@link ModFluids}. */
+    public static final DeferredItem<io.github.mcheliceport.item.FuelBucketItem> FUEL_BUCKET = register("fuel_bucket",
+            p -> new io.github.mcheliceport.item.FuelBucketItem(ModFluids.FUEL.get(), p),
+            p -> p.craftRemainder(net.minecraft.world.item.Items.BUCKET).stacksTo(1), ModTab.ITEMS);
     public static final DeferredItem<Item> GLTD = register("gltd", io.github.mcheliceport.item.GltdItem::new,
             p -> p.stacksTo(1), ModTab.ITEMS);
     public static final DeferredItem<Item> CHAIN = register("chain", io.github.mcheliceport.item.ChainItem::new,

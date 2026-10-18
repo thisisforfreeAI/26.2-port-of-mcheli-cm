@@ -47,6 +47,8 @@ public class ModLanguageProvider extends LanguageProvider {
         addItem(ModItems.WRENCH, "Wrench");
         add("item.mcheli_ce_port.wrench.tooltip", "Shift+Right click to change vehicle skin!");
         addItem(ModItems.FUEL, "Fuel");
+        addItem(ModItems.FUEL_BUCKET, "Fuel Bucket");
+        add("fluid_type.mcheli_ce_port.mch_fuel", "Fuel");
         add("jei.mcheli_ce_port.info.charge_fuel", "Refill a used fuel can by crafting it with coal or charcoal. "
                 + "Each slot of coal adds %s fuel and each slot of charcoal %s, up to a full can of %s. "
                 + "One item is used from each slot.");
@@ -209,6 +211,8 @@ public class ModLanguageProvider extends LanguageProvider {
         addItem(ModItems.RANGEFINDER, "レーザー レンジ ファインダー");
         addItem(ModItems.WRENCH, "レンチ");
         addItem(ModItems.FUEL, "燃料");
+        addItem(ModItems.FUEL_BUCKET, "燃料入りバケツ");
+        add("fluid_type.mcheli_ce_port.mch_fuel", "燃料");
         addItem(ModItems.GLTD, "GLTD:レーザー目標指示装置");
         addItem(ModItems.CHAIN, "鎖");
         addItem(ModItems.PARACHUTE, "パラシュート");
@@ -224,6 +228,8 @@ public class ModLanguageProvider extends LanguageProvider {
         addItem(ModItems.RANGEFINDER, "激光测距仪");
         addItem(ModItems.WRENCH, "扳手");
         addItem(ModItems.FUEL, "燃料");
+        addItem(ModItems.FUEL_BUCKET, "燃料桶");
+        add("fluid_type.mcheli_ce_port.mch_fuel", "燃料");
         addItem(ModItems.GLTD, "GLTD:目标指示器 (呼叫空中打击)");
         addItem(ModItems.CHAIN, "锁链");
         addItem(ModItems.PARACHUTE, "降落伞");

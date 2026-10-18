@@ -97,7 +97,9 @@ public class ModModelProvider extends ModelProvider {
         return ModRegistries.ITEMS.getEntries().stream()
                 .filter(holder -> !(holder.get() instanceof AircraftItem) && !(holder.get() instanceof ThrowableItem))
                 .filter(holder -> TOOLS.stream().noneMatch(tool -> tool.get() == holder.get())
-                        && holder.get() != ModItems.DRAFTING_TABLE.get());
+                        && holder.get() != ModItems.DRAFTING_TABLE.get()
+                        // The fuel bucket's model is hand-written (NeoForge's fluid container model).
+                        && holder.get() != ModItems.FUEL_BUCKET.get());
     }
 
     private static Identifier mcheli(String path) {

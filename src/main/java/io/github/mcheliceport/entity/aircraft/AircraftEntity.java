@@ -2,6 +2,7 @@ package io.github.mcheliceport.entity.aircraft;
 
 import com.mojang.logging.LogUtils;
 import io.github.mcheliceport.compat.energy.EnergyCompat;
+import io.github.mcheliceport.compat.fluid.FuelFluids;
 import io.github.mcheliceport.config.CommonConfig;
 import io.github.mcheliceport.config.ServerSettings;
 import io.github.mcheliceport.content.ContentType;
@@ -9,20 +10,22 @@ import io.github.mcheliceport.content.aircraft.AircraftInfo;
 import io.github.mcheliceport.content.aircraft.BoundingBoxInfo;
 import io.github.mcheliceport.content.aircraft.SeatInfo;
 import io.github.mcheliceport.content.aircraft.SeatRackInfo;
+import io.github.mcheliceport.entity.parachute.ParachuteEntity;
 import io.github.mcheliceport.entity.seat.SeatEntity;
 import io.github.mcheliceport.entity.uav.UavStationEntity;
-import java.util.UUID;
-import io.github.mcheliceport.entity.parachute.ParachuteEntity;
+import io.github.mcheliceport.entity.weapon.TvMissileEntity;
 import io.github.mcheliceport.item.AircraftItem;
 import io.github.mcheliceport.menu.AircraftMenu;
 import io.github.mcheliceport.registry.ModEntityTypes;
 import io.github.mcheliceport.registry.ModItems;
 import io.github.mcheliceport.util.McheliMath;
-import io.github.mcheliceport.weapon.DamageScaling;
-import io.github.mcheliceport.weapon.explosion.McheliExplosion;
 import io.github.mcheliceport.util.McheliSounds;
+import io.github.mcheliceport.weapon.DamageScaling;
+import io.github.mcheliceport.weapon.WeaponSet;
+import io.github.mcheliceport.weapon.explosion.McheliExplosion;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
@@ -66,11 +69,16 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.scores.Team;
+import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.entity.IEntityWithComplexSpawn;
 import net.neoforged.neoforge.entity.PartEntity;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.access.ItemAccess;
+import net.neoforged.neoforge.transfer.fluid.FluidResource;
+import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.neoforged.neoforge.transfer.item.VanillaContainerWrapper;
+import net.neoforged.neoforge.transfer.transaction.Transaction;
 import org.joml.Quaternionf;
-import io.github.mcheliceport.entity.weapon.TvMissileEntity;
-import io.github.mcheliceport.weapon.WeaponSet;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
@@ -223,6 +231,7 @@ public abstract class AircraftEntity extends Entity
 
     private final AircraftWeapons weapons;
     private final AircraftSupport support;
+    private final AircraftFluidHandler fluidHandler = new AircraftFluidHandler(this);
     private final AircraftRacks racks = new AircraftRacks(this);
     private final AircraftRopes ropes = new AircraftRopes(this);
     private final AircraftFlares flares;
@@ -2357,7 +2366,80 @@ public abstract class AircraftEntity extends Entity
             ItemStack input = this.inventory.getItem(SLOT_FUEL_IN);
             if (!input.isEmpty() && input.is(ModItems.FUEL.get())) {
                 this.refuelFromCan(input, current, max);
+            } else if (!input.isEmpty()) {
+                this.refuelFromContainer(input, current, max);
             }
+        }
+    }
+
+    /**
+     * Upstream {@code canAcceptFuel}: a fuel the definition burns, into an empty tank or one that
+     * holds the same fuel.
+     */
+    public boolean canAcceptFuel(String type) {
+        return this.info != null && this.info.isFuelValid(type)
+                && (this.getFuel() <= 0 || this.getFuelType().isBlank() || this.getFuelType().equals(type));
+    }
+
+    /**
+     * A fuelled vehicle's tank for pipes and tanks (upstream {@code hasFluidTank}), or {@code null}
+     * for an electric vehicle or one without a tank.
+     */
+    public @Nullable ResourceHandler<FluidResource> fluidHandler() {
+        return this.info != null && !this.info.electric && this.getMaxFuel() > 0 ? this.fluidHandler : null;
+    }
+
+    /**
+     * The fluid half of upstream {@code updateFuel}: one container in the fuel slot gives the
+     * first fuel it holds that this vehicle accepts, up to the free space, and what is left of the
+     * container goes to the output slot. Nothing moves while the output slot cannot take it.
+     */
+    private void refuelFromContainer(ItemStack input, int current, int max) {
+        ResourceHandler<ItemResource> slot = VanillaContainerWrapper.of(new SimpleContainer(input.copyWithCount(1)));
+        ResourceHandler<FluidResource> handler = ItemAccess.forHandlerIndexStrict(slot, 0)
+                .getCapability(Capabilities.Fluid.ITEM);
+        if (handler == null || this.info == null) {
+            return;
+        }
+        for (int i = 0; i < handler.size(); i++) {
+            FluidResource resource = handler.getResource(i);
+            String type = resource.isEmpty() ? null : FuelFluids.typeOf(this.info, resource.getFluid());
+            if (type == null || !this.canAcceptFuel(type)) {
+                continue;
+            }
+            try (Transaction transaction = Transaction.openRoot()) {
+                int drained = handler.extract(i, resource, max - current, transaction);
+                ItemStack container = slot.getResource(0).toStack(slot.getAmountAsInt(0));
+                if (drained <= 0 || !this.canPutFuelOut(container)) {
+                    return;
+                }
+                transaction.commit();
+                input.shrink(1);
+                this.putFuelOut(container);
+                this.setFuelType(type);
+                this.setFuel(current + drained);
+                this.inventory.setChanged();
+            }
+            return;
+        }
+    }
+
+    /** Upstream {@code manageOutputSlot}: whether the output slot can take this container. */
+    private boolean canPutFuelOut(ItemStack container) {
+        ItemStack out = this.inventory.getItem(SLOT_FUEL_OUT);
+        return container.isEmpty() || out.isEmpty() || ItemStack.isSameItemSameComponents(out, container)
+                && out.getCount() + container.getCount() <= out.getMaxStackSize();
+    }
+
+    private void putFuelOut(ItemStack container) {
+        if (container.isEmpty()) {
+            return;
+        }
+        ItemStack out = this.inventory.getItem(SLOT_FUEL_OUT);
+        if (out.isEmpty()) {
+            this.inventory.setItem(SLOT_FUEL_OUT, container);
+        } else {
+            out.grow(container.getCount());
         }
     }
 
@@ -2384,8 +2466,7 @@ public abstract class AircraftEntity extends Entity
     /** Upstream {@code handleItemFuelRefuel}. */
     private void refuelFromCan(ItemStack stack, int current, int max) {
         String type = AircraftFuel.DEFAULT_FUEL_TYPE;
-        if (!this.info.isFuelValid(type) || (current > 0 && !this.getFuelType().isEmpty()
-                && !this.getFuelType().equals(type))) {
+        if (!this.canAcceptFuel(type)) {
             return;
         }
         int amount = AircraftFuel.refuelAmount(current, max, stack.getDamageValue(), stack.getMaxDamage());
@@ -2398,12 +2479,8 @@ public abstract class AircraftEntity extends Entity
         if (stack.getDamageValue() >= stack.getMaxDamage()) {
             ItemStack empty = new ItemStack(stack.getItem());
             empty.setDamageValue(stack.getMaxDamage());
-            ItemStack out = this.inventory.getItem(SLOT_FUEL_OUT);
-            if (out.isEmpty()) {
-                this.inventory.setItem(SLOT_FUEL_OUT, empty);
-                stack.shrink(1);
-            } else if (ItemStack.isSameItemSameComponents(out, empty) && out.getCount() < out.getMaxStackSize()) {
-                out.grow(1);
+            if (this.canPutFuelOut(empty)) {
+                this.putFuelOut(empty);
                 stack.shrink(1);
             }
         }

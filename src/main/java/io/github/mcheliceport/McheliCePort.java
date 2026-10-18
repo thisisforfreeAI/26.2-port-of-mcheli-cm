@@ -49,6 +49,13 @@ public final class McheliCePort {
                     (cargo, side) -> VanillaContainerWrapper.of(cargo));
             event.registerBlockEntity(Capabilities.Energy.BLOCK, ModBlocks.CHARGER_ENTITY.get(),
                     (charger, side) -> charger.energyHandler());
+            for (var type : java.util.List.of(ModEntityTypes.HELICOPTER, ModEntityTypes.PLANE, ModEntityTypes.SHIP,
+                    ModEntityTypes.TANK, ModEntityTypes.VEHICLE)) {
+                event.registerEntity(Capabilities.Fluid.ENTITY, type.get(), (aircraft, side) -> aircraft.fluidHandler());
+            }
+            event.registerItem(Capabilities.Fluid.ITEM,
+                    (stack, access) -> new net.neoforged.neoforge.transfer.fluid.BucketResourceHandler(access),
+                    io.github.mcheliceport.registry.ModItems.FUEL_BUCKET.get());
         });
         ModNetwork.register(modBus);
         io.github.mcheliceport.entity.uav.UavRemoteSession.register(modBus);

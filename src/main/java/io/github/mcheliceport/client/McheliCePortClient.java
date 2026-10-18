@@ -1,6 +1,7 @@
 package io.github.mcheliceport.client;
 
 import io.github.mcheliceport.McheliCePort;
+import io.github.mcheliceport.registry.ModFluids;
 import io.github.mcheliceport.config.ClientConfig;
 import io.github.mcheliceport.client.gui.AircraftScreen;
 import io.github.mcheliceport.client.hud.AircraftHudLayer;
@@ -45,6 +46,7 @@ public final class McheliCePortClient {
         // Adds a Config button for the mod on the Mods screen.
         container.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
         modBus.addListener(McheliCePortClient::registerRenderers);
+        modBus.addListener(McheliCePortClient::registerFluidModels);
         modBus.addListener(ModKeyMappings::register);
         modBus.addListener(McheliCePortClient::registerScreens);
         modBus.addListener(RiderTilt::registerModifiers);
@@ -133,5 +135,17 @@ public final class McheliCePortClient {
     private static <T extends Entity> void registerNoop(EntityRenderersEvent.RegisterRenderers event,
             EntityType<T> type) {
         event.registerEntityRenderer(type, NoopRenderer::new);
+    }
+
+    /** Upstream drew {@code mch_fuel} with water's textures, tinted brown. */
+    private static void registerFluidModels(net.neoforged.neoforge.client.event.RegisterFluidModelsEvent event) {
+        event.register(new net.minecraft.client.renderer.block.FluidModel.Unbaked(
+                new net.minecraft.client.resources.model.sprite.Material(
+                        net.minecraft.resources.Identifier.withDefaultNamespace("block/water_still")),
+                new net.minecraft.client.resources.model.sprite.Material(
+                        net.minecraft.resources.Identifier.withDefaultNamespace("block/water_flow")),
+                null,
+                (net.neoforged.neoforge.client.fluid.FluidTintSource) state -> ModFluids.FUEL_COLOR),
+                ModFluids.FUEL, ModFluids.FLOWING_FUEL);
     }
 }
