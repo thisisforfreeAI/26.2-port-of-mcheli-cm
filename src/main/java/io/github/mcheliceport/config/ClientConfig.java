@@ -37,6 +37,7 @@ public final class ClientConfig {
     public static final ModConfigSpec.EnumValue<EffectBudget> EFFECT_BUDGET;
     public static final ModConfigSpec.BooleanValue ADAPTIVE_EFFECTS;
     public static final ModConfigSpec.BooleanValue BLAST_MARKS;
+    public static final ModConfigSpec.BooleanValue VEHICLE_TRACKS;
     public static final ModConfigSpec.IntValue EFFECT_TARGET_FPS;
     public static final ModConfigSpec.IntValue ALIVE_TIME_OF_CARTRIDGE;
     public static final ModConfigSpec.EnumValue<EffectQuality> EFFECT_QUALITY;
@@ -140,6 +141,8 @@ public final class ClientConfig {
         BLAST_MARKS = builder
                 .comment("Weapon-scaled soot and disturbed-ground textures on surviving block surfaces; client-only and bounded.")
                 .define("blastMarks", true);
+        VEHICLE_TRACKS = builder.comment("Temporary tank tread/tire imprints on surviving terrain; client-only and bounded.")
+                .define("vehicleTracks", true);
         ADAPTIVE_EFFECTS = builder
                 .comment("Reduce cosmetic smoke, dust and optional glows during sustained slow frames; restore detail gradually.",
                         "Respects lower FPS caps and VSync. Weapon flash cores keep their reserved budget.")
