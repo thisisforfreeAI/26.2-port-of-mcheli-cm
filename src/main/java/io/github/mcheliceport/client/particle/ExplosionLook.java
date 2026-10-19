@@ -40,12 +40,16 @@ public final class ExplosionLook {
     }
 
     public static float puffSize(float original, float power, BlastStyle style, EffectBudget budget) {
+        if ((style == BlastStyle.BLAST || style == BlastStyle.PENETRATOR) && Float.isFinite(power) && power >= 2)
+            return original * (budget == EffectBudget.LOW ? 1.1F : 1.3F);
         float boost = switch (budget) { case LOW -> 0.15F; case BALANCED -> 0.5F; case HIGH -> 0.75F; };
         return original * (1 + strength(power, style) * boost);
     }
 
     /** Relative to nominal size; the existing diffusion ceiling is twice nominal size. */
     public static float startScale(float power, BlastStyle style, EffectBudget budget) {
+        if ((style == BlastStyle.BLAST || style == BlastStyle.PENETRATOR) && Float.isFinite(power) && power >= 2)
+            return 0.32F;
         float boost = switch (budget) { case LOW -> 0.2F; case BALANCED -> 0.4F; case HIGH -> 0.5F; };
         return 0.2F + strength(power, style) * boost;
     }

@@ -71,6 +71,7 @@ public final class McheliCePortClient {
         modBus.addListener(io.github.mcheliceport.client.hud.TitleOverlay::register);
         modBus.addListener(AircraftHudLayer::registerPipelines);
         modBus.addListener(io.github.mcheliceport.client.particle.ParticleLayers::registerPipelines);
+        modBus.addListener(io.github.mcheliceport.client.render.EngineHeat::registerPipelines);
         modBus.addListener(io.github.mcheliceport.client.render.GlowGeometry::registerPipelines);
         modBus.addListener(io.github.mcheliceport.client.render.DraftingModelRenderer::registerPipelines);
         modBus.addListener(io.github.mcheliceport.client.render.DraftingModelRenderer::register);

@@ -29,7 +29,11 @@ public final class ExplosionSequence {
         int cap = switch (budget) { case LOW -> 6; case BALANCED -> 12; case HIGH -> 18; };
         if (style == BlastStyle.CANNON) cap = Math.min(cap, 4);
         int count = Math.min(cap, 3 + (int) Math.min(power, cap));
-        return Math.max(2, count / (1 + Math.clamp(pressure, 0, 3)));
+        if (power >= 2 && (style == BlastStyle.BLAST || style == BlastStyle.PENETRATOR))
+            count = Math.min(cap, 5 + (int) Math.ceil(Math.min(power, cap) * 1.5F));
+        int divisor = 1 + Math.clamp(pressure, 0, 3);
+        boolean missile = style == BlastStyle.BLAST || style == BlastStyle.PENETRATOR;
+        return Math.max(2, (count + (missile ? divisor - 1 : 0)) / divisor);
     }
 
     public static float radius(float power, BlastStyle style) {
@@ -57,6 +61,10 @@ public final class ExplosionSequence {
     /** Spend most large-blast requests on smoke, retaining at least one pocket of fire. */
     public static int smokeLobes(int lobes) {
         return Math.max(0, Math.min(lobes - 1, (lobes * 2 + 2) / 3));
+    }
+
+    public static int smokeLobes(int lobes, BlastStyle style) {
+        return style == BlastStyle.BLAST ? Math.max(0, Math.min(lobes - 1, (lobes * 3 + 3) / 4)) : smokeLobes(lobes);
     }
 
     /** Delayed particles are admitted at birth; there is no deferred emitter or spawn queue. */

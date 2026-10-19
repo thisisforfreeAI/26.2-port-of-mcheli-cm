@@ -29,18 +29,18 @@ final class ExplosionCloudEmitter {
             flash(level, x, y, z, power, style);
             for (int i = 0; i < count - fireCount; i++) {
                 double angle = i * 2.3999632297 + random.nextDouble() * 0.4;
-                double spread = radius * random.nextDouble() * 0.6;
+                double spread = radius * random.nextDouble() * 0.9;
                 // Keep the old puff sheet and growth, concentrating known rocket impacts along their heading.
-                double reach = radius * random.nextDouble() * 0.45;
-                oldSmoke(level, x + Math.cos(angle) * spread * (directed ? 0.65 : 1) + axis.x * reach,
+                double reach = radius * random.nextDouble() * 0.3;
+                oldSmoke(level, x + Math.cos(angle) * spread * (directed ? 0.9 : 1) + axis.x * reach,
                         y + random.nextDouble() * radius * (directed ? 0.25 : 0.4) + axis.y * reach,
-                        z + Math.sin(angle) * spread * (directed ? 0.65 : 1) + axis.z * reach, power, style, random, axis);
+                        z + Math.sin(angle) * spread * (directed ? 0.9 : 1) + axis.z * reach, power, style, random, axis);
             }
             BlastGroundEffects.emit(level, x, y, z, power, style, direction);
             ClientEffects.spawnExplosionSparks(level, x, y, z, power, style);
             return core;
         }
-        int smokeCount = ExplosionSequence.smokeLobes(count);
+        int smokeCount = ExplosionSequence.smokeLobes(count, style);
         int baseCount = (smokeCount + 1) / 2;
         int priority = Math.min(4, smokeCount);
         // The core must precede support smoke and optional glow: at high adaptive pressure,
@@ -51,12 +51,12 @@ final class ExplosionCloudEmitter {
             int i = smokeIndex(slot, baseCount, smokeCount);
             support(level, x, y, z, power, style, radius, i, baseCount, random, axis);
         }
-        BlastGroundEffects.emit(level, x, y, z, power, style, direction);
         for (int slot = priority; slot < smokeCount; slot++) {
             int i = smokeIndex(slot, baseCount, smokeCount);
             support(level, x, y, z, power, style, radius, i, baseCount, random, axis);
         }
         for (int i = 1; i < count - smokeCount; i++) fire(level, x, y, z, power, style, radius, i, random);
+        BlastGroundEffects.emit(level, x, y, z, power, style, direction);
         ClientEffects.spawnExplosionSparks(level, x, y, z, power, style);
         return core;
     }
@@ -137,9 +137,9 @@ final class ExplosionCloudEmitter {
         boolean upward = random.nextBoolean();
         boolean directed = !axis.equals(Vec3.ZERO);
         SmokeParticle puff = new SmokeParticle(level, x, y, z,
-                Math.cos(angle) * speed * (upward ? 0.1 : directed ? 0.5 : 1) + axis.x * speed * 0.8,
-                speed * (upward ? directed ? 0.9 : 1.2 : 0.2) + axis.y * speed * 0.5,
-                Math.sin(angle) * speed * (upward ? 0.1 : directed ? 0.5 : 1) + axis.z * speed * 0.8);
+                Math.cos(angle) * speed * (upward ? 0.25 : directed ? 0.8 : 1) + axis.x * speed * 0.35,
+                speed * (upward ? 0.65 : 0.12) + axis.y * speed * 0.15,
+                Math.sin(angle) * speed * (upward ? 0.25 : directed ? 0.8 : 1) + axis.z * speed * 0.35);
         float colour = 0.3F + random.nextFloat() * 0.4F;
         puff.setColor(colour + 0.1F, colour + 0.05F, colour);
         puff.diffusible = true;
@@ -149,7 +149,8 @@ final class ExplosionCloudEmitter {
         puff.heat = ExplosionSequence.smokeLed(power, style) ? 0.55F : 0.3F;
         puff.coolingShare = ExplosionLook.coolingShare(style);
         puff.motionYUpAge = 2;
-        puff.setParticleMaxAge(Math.clamp((int) ((10 + random.nextInt(30)) * Math.min(power, 6) * 2 / 3), 8, 100));
+        int minimumLife = style == BlastStyle.BLAST || style == BlastStyle.PENETRATOR ? 44 + (int) Math.min(power, 12) * 3 : 8;
+        puff.setParticleMaxAge(Math.clamp((int) ((10 + random.nextInt(30)) * Math.min(power, 6) * 2 / 3), minimumLife, 100));
         Minecraft.getInstance().particleEngine.add(puff);
     }
 }

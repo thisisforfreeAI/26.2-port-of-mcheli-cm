@@ -12,6 +12,12 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 
 ### Changed
 
+- M8 impacts: fuller growing rocket/missile smoke, wider billow spread and longer smoke retention
+  inside existing primary caps. Large general warheads devote more of their cloud to smoke.
+- M8 optional accents: broken surface-tinted dust fronts, calibrated AH-1Z/CH-47 exhaust outlets,
+  and depth-masked engine heat refraction using one shared conditional scene copy. Low and
+  adaptive load shed the new accents; heat has an independent client toggle.
+
 - M8 vehicle tracks: surface-fitted tread imprints and tire grooves follow ground contacts,
   turns and reversing, with material-specific colors, fading and shared adaptive work limits.
 

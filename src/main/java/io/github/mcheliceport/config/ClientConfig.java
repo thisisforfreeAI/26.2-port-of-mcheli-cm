@@ -38,6 +38,8 @@ public final class ClientConfig {
     public static final ModConfigSpec.BooleanValue ADAPTIVE_EFFECTS;
     public static final ModConfigSpec.BooleanValue BLAST_MARKS;
     public static final ModConfigSpec.BooleanValue VEHICLE_TRACKS;
+    public static final ModConfigSpec.BooleanValue BLAST_DUST_RING;
+    public static final ModConfigSpec.BooleanValue ENGINE_HEAT_HAZE;
     public static final ModConfigSpec.IntValue EFFECT_TARGET_FPS;
     public static final ModConfigSpec.IntValue ALIVE_TIME_OF_CARTRIDGE;
     public static final ModConfigSpec.EnumValue<EffectQuality> EFFECT_QUALITY;
@@ -143,6 +145,10 @@ public final class ClientConfig {
                 .define("blastMarks", true);
         VEHICLE_TRACKS = builder.comment("Temporary tank tread/tire imprints on surviving terrain; client-only and bounded.")
                 .define("vehicleTracks", true);
+        BLAST_DUST_RING = builder.comment("Broken ground-hugging dust fronts on substantial ground explosions; Low/load shed this layer.")
+                .define("blastDustRing", true);
+        ENGINE_HEAT_HAZE = builder.comment("Local exhaust refraction using one shared scene copy; off on Low or adaptive pressure.")
+                .define("engineHeatHaze", true);
         ADAPTIVE_EFFECTS = builder
                 .comment("Reduce cosmetic smoke, dust and optional glows during sustained slow frames; restore detail gradually.",
                         "Respects lower FPS caps and VSync. Weapon flash cores keep their reserved budget.")
