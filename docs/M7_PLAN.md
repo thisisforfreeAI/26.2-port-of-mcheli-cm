@@ -220,3 +220,24 @@ distance of 10 chunks (160 blocks), an AH-64 250 blocks away showed against the 
 past the last loaded chunk, and moved when teleported.
 
 ![A vehicle past the render distance](screens/m7-long-distance.png)
+
+## Sound and particle parity
+
+An audit of every upstream sound and particle call against the port found four gaps, now ported:
+
+- `onUpdate_ParticleSmoke`: while the pilot's selected weapon is a smoke generator and the
+  throttle is above 0.1, each weapon position trails `SmokeNum` coloured puffs a tick
+  (`AircraftEntity#onUpdateParticleSmoke`). The T-4's six smoke weapons did nothing before.
+- `MCH_ExplosionV2` threw up to `size` burning flares from explosions of size 4 or more. The hook
+  existed in `ExplosionEffects` but nothing filled it; it now adds a client-only `FlareEntity`
+  (negative id, so no server entity collides with it) that goes out on landing, on hitting a
+  block or after 300 ticks, where upstream's client copy never went out. Only the `CLASSIC` look
+  runs this path; `ENHANCED` (M8) draws its own explosions.
+- `MCH_MissileDetector`'s UAV branch: the operator's client plays the alert every 20 ticks while a
+  missile homes on the UAV. A client reads the missile's synced target id.
+- `MCH_EntityUavStation.attackEntityFrom`: "hit" for a player's attack, else "helidmg".
+
+Upstream sounds that never played (the "locked" notify, the commented-out chaff sound, the unused
+maintenance wrench) stay out. Validation: all required GameTests pass; in game the T-4's smoke
+trails (`docs/screens/m7-smoke-trail.png`) and the debris arcs out of a size-8 explosion with the
+`CLASSIC` look (`docs/screens/m7-explosion-debris.png`).

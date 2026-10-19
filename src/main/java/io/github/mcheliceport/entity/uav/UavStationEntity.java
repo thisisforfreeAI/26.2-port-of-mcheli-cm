@@ -341,6 +341,10 @@ public class UavStationEntity extends Entity {
         if (handheld() || isInvulnerableToBase(source) || !Float.isFinite(damage) || damage <= 0 || isRemoved()) { return false; }
         if (getFirstPassenger() instanceof Player rider && source.getEntity() instanceof Player attacker && !attacker.canHarmPlayer(rider)) { return false; }
         damage = io.github.mcheliceport.weapon.DamageScaling.applyDamageByExternal(this, source, damage);
+        // Upstream: "hit" for a player's attack, else "helidmg", even when the damage scales to none.
+        boolean byPlayer = source.getEntity() instanceof Player;
+        io.github.mcheliceport.util.McheliSounds.playAt(this, byPlayer ? "hit" : "helidmg", 1.0F,
+                byPlayer ? 1.0F : 0.9F + random.nextFloat() * 0.1F);
         if (damage <= 0) { return false; }
         if (getFirstPassenger() instanceof Player player && !exit(player)) { return false; }
         disconnect(); dropContents();

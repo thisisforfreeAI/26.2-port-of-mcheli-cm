@@ -590,6 +590,10 @@ These follow from how Minecraft 26.2 works or from decisions approved in PORTING
     four times the render distance or the cloud range, whichever is larger, and draws the
     vehicles past the render distance with a shader that leaves out fog, as upstream turned fog
     off. Riders are not sent that far (they never were), so far vehicles show empty seats.
+107. Burning debris thrown by explosions of size 4 or more lives only on the client that drew the
+    explosion, and goes out when it lands, hits a block or after 15 seconds; upstream's client copy
+    never went out. Only the `CLASSIC` effect look throws it: the `ENHANCED` look (M8) draws its own
+    explosions.
 
 ## Upstream content issues kept as they are
 

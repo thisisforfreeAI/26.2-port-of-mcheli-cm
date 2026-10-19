@@ -7,8 +7,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * Smoke generator: never fires; the vehicle trails smoke while it is selected and the fire key is
- * held. Ported from upstream {@code MCH_WeaponSmoke}.
+ * Smoke generator: never fires; the vehicle trails smoke while it is selected and the throttle is
+ * open (see {@code AircraftEntity#onUpdateParticleSmoke}). Ported from upstream {@code MCH_WeaponSmoke}.
  */
 public class SmokeWeapon extends WeaponBase {
 
