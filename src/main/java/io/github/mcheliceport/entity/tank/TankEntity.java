@@ -60,7 +60,8 @@ public class TankEntity extends GroundVehicleEntity {
                         * (signed >= 0 ? 1 : -1) * gmy);
             }
         } else {
-            double dx = this.getX() - this.xo, dz = this.getZ() - this.zo;
+            // Upstream measured the tick's move, which ran before this; here the move comes after, so use the motion it applies.
+            double dx = this.motionX(), dz = this.motionZ();
             double distance = dx * dx + dz * dz;
             float pivot = info.pivotTurnThrottle;
             if (pivot <= 0 || this.getCurrentThrottle() >= pivot || this.throttleBack() >= pivot / 10

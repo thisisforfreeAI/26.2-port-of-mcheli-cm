@@ -414,6 +414,9 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 
 ### Fixed
 
+- Wheeled tanks with a pivot-turn throttle (M1129, B1 Centauro) steer again: their turn rate
+  scaled with the distance moved since the start of the tick, measured before the move, so it was
+  always zero. It now uses the tick's motion, as upstream's order of moving then turning gave.
 - Tanks no longer fall nose first into shell craters: the ground tilts a tank at most 40 degrees
   either way, where a crater under its front used to tip it 64 degrees and more (KNOWN_ISSUES 103).
 - Tank wingmen no longer pitch their hull up (or down) at a leader or an enemy above or below
