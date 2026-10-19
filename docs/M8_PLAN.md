@@ -167,3 +167,18 @@ existing plane nozzle/flame attachments. Low/Balanced/High global emission, shar
 range and adaptive periods bound cost. Classic nozzle smoke and existing damage smoke remain.
 Stock Apache and two Black Hawk variants include calibrated outlet positions; other helicopter
 definitions can opt in. Heat distortion remains deferred and target-PC acceptance remains open.
+
+## 14. Combat-load follow-up and remaining acceptance
+
+- [x] Rolling fire, weapon-specific blast shapes, dirt streams, amber smoke backlighting and
+  terrain flashes; reduced bullet glow and sparse tracers. See [M8_BLAST_MOTION.md](M8_BLAST_MOTION.md).
+- [x] Spread terrain fitting and cache maintenance over bounded tick allowances, preserving
+  completed footprint sizes. See [M8_TERRAIN_BUDGET.md](M8_TERRAIN_BUDGET.md).
+- [ ] Hardware acceptance at 1080p on RTX 3060 8 GB / Ryzen 7 7800X3D: representative sustained
+  firing, overlapping explosions and mixed vehicles, targeting 80 FPS / 12.5 ms.
+- [ ] Final visual acceptance in actual flight and battles, including addon/content combinations.
+
+Heat distortion and an additional ground shockwave ring remain optional deferred effects,
+pending hardware profiling. Additional helicopter exhaust-outlet calibration is content-specific;
+current support is documented in [M8_ENGINE_EXHAUST.md](M8_ENGINE_EXHAUST.md). The native test
+scenes validate behavior and work bounds; they cannot replace target-hardware acceptance.
