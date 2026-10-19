@@ -1,5 +1,6 @@
 package io.github.mcheliceport.config;
 
+import java.util.List;
 import net.neoforged.neoforge.common.ModConfigSpec;
 
 /**
@@ -38,6 +39,9 @@ public final class ServerConfig {
     public static final ModConfigSpec.DoubleValue WINGMAN_MIN_ATTACK_ALTITUDE;
     public static final ModConfigSpec.DoubleValue WINGMAN_MAX_ATTACK_ALTITUDE;
     public static final ModConfigSpec.BooleanValue NPC_BATTLES;
+    public static final ModConfigSpec.BooleanValue ENABLE_COMMAND;
+    public static final ModConfigSpec.ConfigValue<List<? extends String>> COMMAND_PERMISSIONS;
+    public static final ModConfigSpec.BooleanValue ENABLE_DEBUG_BOUNDING_BOX;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -148,6 +152,20 @@ public final class ServerConfig {
         NPC_BATTLES = builder
                 .comment("false: NPCs only attack what upstream's did (monsters, players, target drones, team gunners).")
                 .define("enabled", true);
+        builder.pop();
+
+        builder.comment("The /mcheli command.").push("commands");
+        ENABLE_COMMAND = builder
+                .comment("false: there is no /mcheli command. Upstream: EnableCommand.")
+                .define("enabled", true);
+        COMMAND_PERMISSIONS = builder
+                .comment("Players who may use a /mcheli subcommand without operator permission, one entry per",
+                        "subcommand, such as \"title: Alice, Bob\". Upstream: CommandPermission.")
+                .defineListAllowEmpty("permissions", List.of(), () -> "", o -> o instanceof String);
+        ENABLE_DEBUG_BOUNDING_BOX = builder
+                .comment("false: clients cannot show entity hitboxes (F3 + B). /mcheli showboundingbox sets it.",
+                        "Upstream: EnableDebugBoundingBox.")
+                .define("enableDebugBoundingBox", true);
         builder.pop();
         SPEC = builder.build();
     }

@@ -65,6 +65,7 @@ public final class McheliCePortClient {
         modBus.addListener(io.github.mcheliceport.client.hud.TeamListOverlay::register);
         modBus.addListener(io.github.mcheliceport.client.hud.GltdHudLayer::register);
         modBus.addListener(io.github.mcheliceport.client.hud.LightWeaponHudLayer::register);
+        modBus.addListener(io.github.mcheliceport.client.hud.TitleOverlay::register);
         modBus.addListener(AircraftHudLayer::registerPipelines);
         modBus.addListener(io.github.mcheliceport.client.particle.ParticleLayers::registerPipelines);
         modBus.addListener(io.github.mcheliceport.client.render.GlowGeometry::registerPipelines);
@@ -85,6 +86,7 @@ public final class McheliCePortClient {
                             });
         });
         AircraftClientEvents.register();
+        io.github.mcheliceport.command.CommandClientHooks.setTitle(io.github.mcheliceport.client.hud.TitleOverlay::show);
         McheliEffects.setSink(ClientEffects.INSTANCE);
         WeaponClient.register();
     }
