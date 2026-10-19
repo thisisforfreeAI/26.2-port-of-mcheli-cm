@@ -87,6 +87,8 @@ public final class McheliCePortClient {
         });
         AircraftClientEvents.register();
         io.github.mcheliceport.command.CommandClientHooks.setTitle(io.github.mcheliceport.client.hud.TitleOverlay::show);
+        io.github.mcheliceport.command.CommandClientHooks.setRequest(CommandRequestClient::answer);
+        CommandRequestClient.register();
         McheliEffects.setSink(ClientEffects.INSTANCE);
         WeaponClient.register();
     }

@@ -107,11 +107,15 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
   the formation values (`dist`, `maxwings`, `minalt`, `maxalt`, `alt clear`), `status`, `marker`,
   `route`, `mission` and `order` (dispatch, abort, status and park), and `spawnuav` for operators.
 - The server config's `[wingman]` section, upstream's formation entries of its wingman config.
-- The rest of `/mcheli` but `sendss` and `modlist`: `list`, `status`, `killentity`,
+- The rest of `/mcheli`: `list`, `status`, `killentity`,
   `removeentity`, `attackentity`, `fill`, `title` (a message on every player's screen),
   `delayhitbox`, `showboundingbox` and `reconfig`, with upstream's permission list for players
   who are not operators and its switch for the whole command (the server config's `[commands]`).
-  Differences: KNOWN_ISSUES 102. Network protocol 26.
+  Differences: KNOWN_ISSUES 102.
+- `/mcheli sendss <player>`, which saves the player's screen to `screenshots_op` on the server if
+  their `privacy.allowScreenCapture` is on (they see a chat notice), and `/mcheli modlist
+  <players>`, which shows the sender each player's mods if their `debugLog` is on, as upstream.
+  Network protocol 27.
 - NPC battles, a port addition: vs-player gunners, wingmen and aircraft on missions of one team
   attack the gunners and unmanned aircraft of other teams. Wingmen fight for their leader's team,
   and dispatched aircraft for the team of the player who sent them. Turn it off with the server
