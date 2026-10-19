@@ -251,7 +251,7 @@ Deps columns come from a per-package scan of 1.12.2 API usage (counts are matchi
 
 ### 5.9 HBM:NTM and other compat
 
-- `compat/hbm`: weapon YAML `NTM` blocks are always **parsed** (no data loss). At runtime `ModList.get().isLoaded("hbm")` gates a reflection/stub bridge. Without HBM, NTM payloads fall back to the weapon's normal explosion and log once. No HBM build exists for 26.2 to test against; this is a stub only.
+- `compat/hbm`: weapon YAML `NTM` blocks are always **parsed** and preserved by YAML export. At runtime `ModList.get().isLoaded("hbm")` gates an optional reflection bridge to [NTM Next](https://github.com/Warfactory-Official/ntm-next), which supplies NeoForge 26.2 builds. Mini-nuke, nuclear, lingering-fire, fluid-mist, native chemical clouds and VNT payloads use its current APIs. Without HBM or when an API is unavailable, weapons retain their normal McHeli explosion and log once; `EffectOnly` still suppresses normal damage. Legacy NT payloads remain stubs. See `docs/M7_PLAN.md` for API differences and validation status, and `docs/NTM_NEXT_ADDONS.md` for addon configuration.
 - GregTech EU bridge: dropped; the charger accepts NeoForge `EnergyHandler` energy. The One Probe and Trajectory Preview hooks are stubbed (Jade could replace TOP later).
 - **Just Enough Items (JEI), M6.** Crafting recipes must support JEI recipe and ingredient-usage
   lookup, covering fixed recipes, generated content/addon recipes and the planned fuel-refill
