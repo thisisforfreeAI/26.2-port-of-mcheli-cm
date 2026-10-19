@@ -69,7 +69,8 @@ final class GroundGameTests {
                 .with(PlayerControlSwitches.MOVE_LEFT, left)), brake);
     }
     private static void ticks(GroundVehicleEntity entity, int count) {
-        for (int i = 0; i < count; i++) { entity.level().getChunk(entity.blockPosition()); entity.tick(); }
+        // As the level does, so the previous position is this tick's start, not the spawn point.
+        for (int i = 0; i < count; i++) { entity.level().getChunk(entity.blockPosition()); entity.setOldPosAndRot(); entity.tick(); }
     }
     private static GroundVehicleEntity copy(GameTestHelper h, GroundVehicleEntity entity) {
         var out = TagValueOutput.createWithContext(ProblemReporter.DISCARDING, h.getLevel().registryAccess());
@@ -105,7 +106,7 @@ final class GroundGameTests {
         check(h, tanks == 12 && vehicles == 18, "all 12 tanks and 18 vehicles checked"); h.succeed();
     }
     private static void drive(GameTestHelper h) {
-        for (String name : new String[] {"m1a2", "bnr32"}) {
+        for (String name : new String[] {"m1a2", "bnr32", "m1129", "centauro"}) {
             var tank = (TankEntity) spawn(h, name, ContentType.TANK);
             // Drive beyond the small test arena and its enclosing barrier walls.
             tank.setPos(tank.position().add(1000, 0, 0));
