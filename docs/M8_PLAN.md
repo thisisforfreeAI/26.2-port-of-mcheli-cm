@@ -192,22 +192,26 @@ pending hardware profiling. Additional helicopter exhaust-outlet calibration is 
 current support is documented in [M8_ENGINE_EXHAUST.md](M8_ENGINE_EXHAUST.md). The native test
 scenes validate behavior and work bounds; they cannot replace target-hardware acceptance.
 
-## 15. Tank and vehicle ground tracks (planned)
+## 15. Tank and vehicle ground tracks
 
-- [ ] Add tread imprints for tanks/tracked vehicles and tire marks for wheeled vehicles, using
+- [x] Add tread imprints for tanks/tracked vehicles and tire marks for wheeled vehicles, using
   their actual ground-contact positions and track/wheel width. Paths should follow turns,
   reversing and separate left/right tread motion instead of stamping beneath the vehicle centre.
-- [ ] Match the surface: disturbed soil/sand, pressed snow and restrained scuffs on hard ground.
+- [x] Match the surface: disturbed soil/sand, pressed snow and restrained scuffs on hard ground.
   Respect slopes, slabs and terrain steps; stop at gaps, airborne contacts and submerged surfaces.
-- [ ] Keep the simple pixel-art style. Make turning/skid marks stronger where appropriate,
-  vary repeating segments, fade older marks gradually and remove them when their surface changes.
-- [ ] Use client-only cached geometry with bounded contact sampling, segment counts, draw
+- [x] Keep the simple pixel-art style, strengthen turning marks, fade older marks gradually
+  and remove them when their surface changes. Broken tread bars and paired tire grooves
+  distinguish vehicle types.
+- [x] Use client-only cached geometry with bounded contact sampling, segment counts, draw
   distance and lifetime. Coalesce/space samples while moving; shed distant or old marks under
   load. Clear caches on world changes and avoid terrain queries during drawing.
-- [ ] Validate straight travel, tight turns, reversing, slopes, snow/water transitions and multiple
-  vehicles together. Profile with explosions and rotor wash against the existing 80 FPS target
-  on RTX 3060 8 GB / Ryzen 7 7800X3D at 1080p before raising any effect budget.
+- [x] Native fixtures: straight travel, turns, reversing, slab/step fitting, material/water/air
+  rejection, changed surfaces, multiple stock vehicles and combined explosions/rotor wash,
+  including Low and maximum adaptive pressure on Vulkan and OpenGL.
+- [ ] Final player-driven slope/transition and addon visual acceptance. Profile against the
+  existing 80 FPS target on RTX 3060 8 GB / Ryzen 7 7800X3D at 1080p before raising budgets.
 
-This item is planned, not implemented. Marks are cosmetic; they do not change terrain blocks,
-traction, vehicle handling, damage or server simulation. Content with custom contact geometry
-needs a defined fallback or explicit attachment data.
+Implemented in the requested order: fitting/bounds, materials, then contact paths. See
+[M8_VEHICLE_TRACKS.md](M8_VEHICLE_TRACKS.md) for limits and reproduction. Marks are cosmetic;
+they do not change terrain blocks, traction, handling, damage or server simulation. Movable
+addon vehicles require explicit wheel data; unsupported placed weapons leave no marks.

@@ -47,6 +47,10 @@ public final class TankTerrain {
     }
 
     public int wheelCount() { return this.wheels.length; }
+    /** Read-only contact data for client imprints; excludes the synthetic pitch-support flags below. */
+    public Vec3 contactPosition(int index) { return this.wheels[index].position(); }
+    public Vec3 contactLocal(int index) { return this.wheels[index].local; }
+    public boolean contactGrounded(int index) { return this.wheels[index].contactGrounded; }
 
     public void move() {
         if (this.wheels.length == 0) { return; }
@@ -58,6 +62,7 @@ public final class TankTerrain {
             Vec3 delta = target.subtract(w.position());
             w.move(MoverType.SELF, new Vec3(delta.x + this.tank.motionX(), delta.y * 0.15, delta.z + this.tank.motionZ()));
             w.move(MoverType.SELF, new Vec3(0, -0.1, 0));
+            w.contactGrounded = w.onGround();
         }
         int force = -1;
         for (int i = 0; i < this.wheels.length / 2; i++) {
@@ -114,6 +119,7 @@ public final class TankTerrain {
         final Vec3 local;
         final boolean plus;
         final TankEntity parent;
+        boolean contactGrounded;
         Wheel(TankEntity parent, Vec3 local, boolean plus) {
             super(parent.getType(), parent.level());
             this.parent = parent; this.local = local; this.plus = plus;
