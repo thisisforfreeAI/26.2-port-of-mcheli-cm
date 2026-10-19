@@ -4,6 +4,7 @@ import io.github.mcheliceport.content.aircraft.AircraftInfo;
 import io.github.mcheliceport.content.aircraft.TankInfo;
 import io.github.mcheliceport.util.McheliMath;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.MoverType;
@@ -19,6 +20,12 @@ public final class TankTerrain {
     private final Wheel[] wheels;
     private final Vec3 center;
     private final double span;
+    /**
+     * The most the ground tilts a tank, either way, in degrees. Upstream had no limit, so a tank
+     * whose front wheels hung over a shell crater tipped until it fell in nose first; 40 degrees
+     * still follows a one-block staircase hill (45 degrees between steps, smoothed by the wheels).
+     */
+    public static final float MAX_TILT = 40.0F;
     public float targetPitch;
     public float targetRoll;
 
@@ -92,7 +99,8 @@ public final class TankTerrain {
             if ((this.tank.onGround() || this.tank.blockWithin(1, -2)) && this.tank.getDeltaMovement().horizontalDistance() < 0.06) {
                 pitch = this.tank.getPitch() + Math.max(pitch - this.tank.getPitch(), -3.5F) * 0.45F;
             }
-            this.targetPitch = pitch; this.targetRoll = roll;
+            this.targetPitch = Mth.clamp(pitch, -MAX_TILT, MAX_TILT);
+            this.targetRoll = Mth.clamp(roll, -MAX_TILT, MAX_TILT);
         }
         for (Wheel w : this.wheels) {
             Vec3 target = McheliMath.rotVec3(w.local, -this.tank.getYaw(), -this.targetPitch, -this.targetRoll).add(this.tank.position());

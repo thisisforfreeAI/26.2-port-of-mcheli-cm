@@ -48,36 +48,31 @@ final class ProjectileChunkGameTests {
             ServerConfig.PROJECTILE_CHUNK_LOAD.set(chunkLoad);
             ServerConfig.PROJECTILE_CHUNK_LEASE_TICKS.set(leaseTicks);
         };
-        RocketEntity off = rocket(h);
-        h.runAfterDelay(2, () -> {
-            try {
-                check(h, ProjectileChunkLoader.leased(level) == 0, "a rocket leased chunks with chunkLoad off");
-                off.discard();
-                ServerConfig.PROJECTILE_CHUNK_LOAD.set(true);
-            } catch (RuntimeException e) {
-                restore.run();
-                throw e;
-            }
+        // The rockets are ticked here: in a batch whose chunks do not tick entities yet they would not move.
+        try {
+            RocketEntity off = rocket(h);
+            off.tick();
+            off.tick();
+            check(h, ProjectileChunkLoader.leased(level) == 0, "a rocket leased chunks with chunkLoad off");
+            off.discard();
+            ServerConfig.PROJECTILE_CHUNK_LOAD.set(true);
             RocketEntity on = rocket(h);
             Vec3 start = on.position();
-            h.runAfterDelay(1, () -> {
-                try {
-                    ChunkPos own = ChunkPos.containing(net.minecraft.core.BlockPos.containing(start));
-                    ChunkPos ahead = new ChunkPos(own.x() + 4, own.z());
-                    check(h, ProjectileChunkLoader.isLeased(level, own) && ProjectileChunkLoader.isLeased(level, ahead)
-                            && !ProjectileChunkLoader.isLeased(level, new ChunkPos(own.x() - 1, own.z())),
-                            "the rocket did not lease its chunk and the line ahead");
-                    on.discard();
-                } catch (RuntimeException e) {
-                    restore.run();
-                    throw e;
-                }
-                h.runAfterDelay(8, () -> {
-                    restore.run();
-                    check(h, ProjectileChunkLoader.leased(level) == 0, "the leases did not run out");
-                    h.succeed();
-                });
-            });
+            on.tick();
+            ChunkPos own = ChunkPos.containing(net.minecraft.core.BlockPos.containing(start));
+            ChunkPos ahead = new ChunkPos(own.x() + 4, own.z());
+            check(h, ProjectileChunkLoader.isLeased(level, own) && ProjectileChunkLoader.isLeased(level, ahead)
+                    && !ProjectileChunkLoader.isLeased(level, new ChunkPos(own.x() - 1, own.z())),
+                    "the rocket did not lease its chunk and the line ahead");
+            on.discard();
+        } catch (RuntimeException e) {
+            restore.run();
+            throw e;
+        }
+        h.runAfterDelay(8, () -> {
+            restore.run();
+            check(h, ProjectileChunkLoader.leased(level) == 0, "the leases did not run out");
+            h.succeed();
         });
     }
 }
