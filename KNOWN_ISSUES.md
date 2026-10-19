@@ -26,7 +26,7 @@ broader gameplay and hardware checks remain pending.
 | Area | Planned milestone |
 |---|---|
 | Remaining plane/ground equipment | M6 |
-| Remaining `/mcheli` commands (including reloading content with `reconfig`), advancement triggers, long-distance tracking and rendering, thermal vision (the third camera mode), GPU-buffer model rendering, projectile chunk loading (`ProjectileChunkLoad`), HBM:NTM stubs, performance work | M7 |
+| `/mcheli sendss` and `modlist`, advancement triggers, long-distance tracking and rendering, thermal vision (the third camera mode), GPU-buffer model rendering, projectile chunk loading (`ProjectileChunkLoad`), HBM:NTM stubs, performance work | M7 |
 
 Until then:
 
@@ -538,6 +538,17 @@ These follow from how Minecraft 26.2 works or from decisions approved in PORTING
     gunners and unmanned aircraft of other teams, and wingmen and aircraft on missions attack them
     on Auto, on station and at a route's attack node; NPCs spare their own team. NPCs without a team
     and vs-monster gunners keep upstream's targets.
+102. `/mcheli` follows upstream, with these differences. `reconfig` does not read the config files
+    again, since NeoForge already reloads a config file when it is saved; it applies the wingman
+    settings and sends every player the server settings again. It never reloaded content, upstream
+    or here. `killentity`, `removeentity` and `attackentity` also match part of an entity type ID,
+    such as `minecraft:bat`, besides part of the class name; 26.2's class names differ from 1.12's,
+    so upstream's examples such as `EntityBat` no longer match. `attackentity outOfWorld` deals the
+    void's damage, where upstream gave generic damage. `fill` takes 26.2's block states and data
+    tags, such as `minecraft:chest[facing=north]{...}`, in place of a metadata number.
+    `showboundingbox false` turns off entity hitboxes (F3 + B) on every client, as upstream did.
+    The settings these commands and upstream's `EnableCommand` and `CommandPermission` change live
+    in the server config's `[commands]` section and CommonConfig's `hitBoxDelayTick`.
 
 ## Upstream content issues kept as they are
 

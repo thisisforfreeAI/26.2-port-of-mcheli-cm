@@ -10,12 +10,12 @@ import net.minecraft.resources.Identifier;
 
 /**
  * The server settings clients fly by (upstream {@code PacketSyncServerSettings}): the rotation
- * limits, as bytes like upstream, whether riders may change the camera distance, whether clients may draw entity markers, the hand-held Stinger's lock range and the authority mode of decision D2. Sent on login and when
+ * limits, as bytes like upstream, whether riders may change the camera distance, whether clients may draw entity markers, the hand-held Stinger's lock range, whether entity hitboxes may be shown and the authority mode of decision D2. Sent on login and when
  * the server config changes. Upstream's other fields belong to later milestones.
  */
 public record ServerSettingsPayload(boolean enableRotationLimit, byte pitchLimitMax, byte pitchLimitMin,
         byte rollLimit, boolean serverAuthoritativeMovement, boolean enableCamDistChange, boolean enableEntityMarker,
-        double stingerLockRange) implements CustomPacketPayload {
+        double stingerLockRange, boolean enableDebugBoundingBox) implements CustomPacketPayload {
 
     public static final Type<ServerSettingsPayload> TYPE =
             new Type<>(Identifier.fromNamespaceAndPath(McheliCePort.MOD_ID, "server_settings"));
@@ -30,22 +30,23 @@ public record ServerSettingsPayload(boolean enableRotationLimit, byte pitchLimit
                 buf.writeBoolean(p.enableCamDistChange);
                 buf.writeBoolean(p.enableEntityMarker);
                 buf.writeDouble(p.stingerLockRange);
+                buf.writeBoolean(p.enableDebugBoundingBox);
             },
             buf -> new ServerSettingsPayload(buf.readBoolean(), buf.readByte(), buf.readByte(), buf.readByte(),
-                    buf.readBoolean(), buf.readBoolean(), buf.readBoolean(), buf.readDouble()));
+                    buf.readBoolean(), buf.readBoolean(), buf.readBoolean(), buf.readDouble(), buf.readBoolean()));
 
     public static ServerSettingsPayload of(ServerSettings.Values values) {
         HeliFlightModel.RotationLimits limits = values.rotationLimits();
         return new ServerSettingsPayload(limits.enabled(), (byte) limits.pitchMax(), (byte) limits.pitchMin(),
                 (byte) limits.rollLimit(), values.serverAuthoritativeMovement(), values.enableCamDistChange(),
-                values.enableEntityMarker(), values.stingerLockRange());
+                values.enableEntityMarker(), values.stingerLockRange(), values.enableDebugBoundingBox());
     }
 
     public ServerSettings.Values toValues() {
         return new ServerSettings.Values(this.serverAuthoritativeMovement,
                 new HeliFlightModel.RotationLimits(this.enableRotationLimit, this.pitchLimitMax, this.pitchLimitMin,
                         this.rollLimit),
-                this.enableCamDistChange, this.enableEntityMarker, this.stingerLockRange);
+                this.enableCamDistChange, this.enableEntityMarker, this.stingerLockRange, this.enableDebugBoundingBox);
     }
 
     @Override

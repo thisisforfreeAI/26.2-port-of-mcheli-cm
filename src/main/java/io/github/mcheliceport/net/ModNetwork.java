@@ -47,7 +47,7 @@ public final class ModNetwork {
     private static final Logger LOGGER = LogUtils.getLogger();
     /** Bump when payload encoding, menu layout or synchronized entity data changes. */
     // Wingman markers: the marker screen's payloads.
-    public static final String VERSION = "25";
+    public static final String VERSION = "26";
 
     private ModNetwork() {
     }
@@ -103,6 +103,8 @@ public final class ModNetwork {
                         p.size(), p.inWater(), p.affectedBlocks(), p.blastStyle()));
         registrar.playToClient(ServerSettingsPayload.TYPE, ServerSettingsPayload.CODEC,
                 (payload, context) -> ServerSettings.setClient(payload.toValues()));
+        registrar.playToClient(TitlePayload.TYPE, TitlePayload.CODEC,
+                (p, context) -> io.github.mcheliceport.command.CommandClientHooks.showTitle(p));
         registrar.playToClient(EntityInfoSyncPayload.TYPE, EntityInfoSyncPayload.CODEC,
                 (p, context) -> io.github.mcheliceport.radar.EntityInfoClientTracker.update(p.entities(),
                         p.snapshotSeq()));
@@ -259,11 +261,14 @@ public final class ModNetwork {
         }
         MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
         if (server != null) {
-            server.execute(() -> {
-                ServerSettingsPayload payload = ServerSettingsPayload.of(ServerSettings.server());
-                server.getPlayerList().getPlayers().forEach(player -> sendSettings(player, payload));
-            });
+            server.execute(() -> sendServerSettings(server));
         }
+    }
+
+    /** Sends every player the server settings again (a config change, {@code /mcheli reconfig}). */
+    public static void sendServerSettings(MinecraftServer server) {
+        ServerSettingsPayload payload = ServerSettingsPayload.of(ServerSettings.server());
+        server.getPlayerList().getPlayers().forEach(player -> sendSettings(player, payload));
     }
 
     // ---- client to server ----
