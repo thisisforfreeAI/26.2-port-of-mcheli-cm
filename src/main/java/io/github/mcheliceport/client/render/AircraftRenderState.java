@@ -15,6 +15,8 @@ public class AircraftRenderState extends EntityRenderState {
     public @Nullable Identifier texture;
     /** Thermal vision draws the vehicle white, unless it is the one being ridden. */
     public boolean thermal;
+    /** Past the render distance: drawn without fog, as upstream's far pass. */
+    public boolean far;
     public int color;
     public boolean flat;
     public final List<AircraftPartPoses.Draw> draws = new ArrayList<>();

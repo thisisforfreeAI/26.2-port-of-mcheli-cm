@@ -51,6 +51,8 @@ public final class McheliCePortClient {
         modBus.addListener(McheliCePortClient::registerScreens);
         modBus.addListener(RiderTilt::registerModifiers);
         io.github.mcheliceport.client.render.ThermalVision.register();
+        modBus.addListener(io.github.mcheliceport.client.render.FarVehicles::registerPipelines);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(io.github.mcheliceport.client.render.FarVehicles::onClientTick);
         modBus.addListener(io.github.mcheliceport.client.render.SearchLightRenderer::registerModifiers);
         modBus.addListener(io.github.mcheliceport.client.render.SearchLightRenderer::registerPipelines);
         modBus.addListener(AircraftHudLayer::register);
