@@ -53,8 +53,7 @@ public final class ClientConfig {
         builder.push("privacy");
         ALLOW_SCREEN_CAPTURE = builder
                 .comment("Allow server operators to capture your screen with /mcheli sendss.",
-                        "Requests are refused while this is false, and you get a chat notice whenever a capture happens.",
-                        "Has no effect yet: /mcheli sendss is not ported.")
+                        "Requests are refused while this is false, and you get a chat notice whenever a capture happens.")
                 .define("allowScreenCapture", false);
         builder.pop();
 

@@ -252,4 +252,29 @@ class PayloadCodecTest {
         assertTrue(java.util.Arrays.equals(one.ammo(), readOne.ammo()));
         assertTrue(java.util.Arrays.equals(one.restAmmo(), readOne.restAmmo()));
     }
+
+    @Test
+    void commandRequestPayloadsRoundTrip() {
+        for (CommandRequestPayload.Action action : CommandRequestPayload.Action.values()) {
+            CommandRequestPayload request = new CommandRequestPayload(77, action);
+            assertEquals(request, roundTripBytes(CommandRequestPayload.CODEC, request));
+        }
+        ScreenshotChunkPayload chunk = new ScreenshotChunkPayload(5, 30_000, 70_000, new byte[] {1, 2, 3});
+        ScreenshotChunkPayload readChunk = roundTripBytes(ScreenshotChunkPayload.CODEC, chunk);
+        assertEquals(chunk.offset(), readChunk.offset());
+        assertEquals(chunk.total(), readChunk.total());
+        assertTrue(java.util.Arrays.equals(chunk.data(), readChunk.data()));
+        assertEquals(ScreenshotChunkPayload.REFUSED,
+                roundTripBytes(ScreenshotChunkPayload.CODEC, ScreenshotChunkPayload.refused(5)).total());
+        ModListPayload list = new ModListPayload(9, true, java.util.List.of("[minecraft] Minecraft", "\u00a7e=== x ==="));
+        assertEquals(list, roundTripBytes(ModListPayload.CODEC, list));
+    }
+
+    private static <T> T roundTripBytes(StreamCodec<io.netty.buffer.ByteBuf, T> codec, T value) {
+        io.netty.buffer.ByteBuf buf = Unpooled.buffer();
+        codec.encode(buf, value);
+        T read = codec.decode(buf);
+        assertEquals(0, buf.readableBytes(), "the codec reads everything it writes");
+        return read;
+    }
 }

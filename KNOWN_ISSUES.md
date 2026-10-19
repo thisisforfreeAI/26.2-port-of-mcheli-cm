@@ -26,7 +26,7 @@ broader gameplay and hardware checks remain pending.
 | Area | Planned milestone |
 |---|---|
 | Remaining plane/ground equipment | M6 |
-| `/mcheli sendss` and `modlist`, advancement triggers, long-distance tracking and rendering, thermal vision (the third camera mode), GPU-buffer model rendering, projectile chunk loading (`ProjectileChunkLoad`), HBM:NTM stubs, performance work | M7 |
+| Advancement triggers, long-distance tracking and rendering, thermal vision (the third camera mode), GPU-buffer model rendering, projectile chunk loading (`ProjectileChunkLoad`), HBM:NTM stubs, performance work | M7 |
 
 Until then:
 
@@ -60,10 +60,6 @@ Until then:
   the fuel slot. Upstream's GregTech EU and HBM HE energy systems are dropped, so the
   `EnergySystem` and ratio settings are gone; the port registers no battery item, as upstream.
 - Turret ballistics lines (upstream `drawTurretBallistics`) are not drawn yet (M7).
-
-This config entry already exists but has no effect yet:
-
-- CLIENT `privacy.allowScreenCapture` (needs `/mcheli sendss`, M7)
 
 ## Deliberate differences from upstream
 
@@ -549,6 +545,14 @@ These follow from how Minecraft 26.2 works or from decisions approved in PORTING
     `showboundingbox false` turns off entity hitboxes (F3 + B) on every client, as upstream did.
     The settings these commands and upstream's `EnableCommand` and `CommandPermission` change live
     in the server config's `[commands]` section and CommonConfig's `hitBoxDelayTick`.
+    Upstream's `sendss` and `modlist` never worked: `sendss` sent its request with no action, and
+    the `modlist` answer went to the wrong request. Here `sendss` saves the player's screen as
+    upstream meant, to `<server folder>/screenshots_op/<player>_<date>.png`, but only for players
+    who allow it (item 10), and gives up after a minute without an answer. `modlist` lists
+    NeoForge's mods with their versions and files; upstream's class path, access transformer,
+    coremod and manifest sections have no 26.2 counterpart. As upstream, a client only shares its
+    mod list while its `debugLog` is on, and the sender is told when it does not. Both skip players
+    without the mod.
 
 ## Upstream content issues kept as they are
 

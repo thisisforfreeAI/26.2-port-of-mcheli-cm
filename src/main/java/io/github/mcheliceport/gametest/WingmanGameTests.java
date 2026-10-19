@@ -2,9 +2,13 @@ package io.github.mcheliceport.gametest;
 
 import static io.github.mcheliceport.gametest.GameTestSupport.check;
 
+import io.github.mcheliceport.content.ContentType;
+import io.github.mcheliceport.entity.ground.GroundVehicleEntity;
 import io.github.mcheliceport.entity.heli.HeliEntity;
+import io.github.mcheliceport.item.AircraftItem;
 import io.github.mcheliceport.net.WingmanPanelActionPayload;
 import io.github.mcheliceport.net.WingmanPanelDataPayload;
+import io.github.mcheliceport.registry.ModItems;
 import io.github.mcheliceport.wingman.WingmanPanel;
 import io.github.mcheliceport.wingman.config.WingmanConfig;
 import io.github.mcheliceport.wingman.handler.WingmanTickHandler;
@@ -31,6 +35,7 @@ final class WingmanGameTests {
     static void register() {
         ModGameTests.test("wingman_panel_follows_and_orders", 20, WingmanGameTests::panel);
         ModGameTests.testAlone("wingman_steers_to_its_formation_slot", 20, WingmanGameTests::formation);
+        ModGameTests.testAlone("wingman_tank_keeps_level", 20, WingmanGameTests::tankKeepsLevel);
     }
 
     private static boolean listed(WingmanPanelDataPayload data, UUID id) {
@@ -221,6 +226,56 @@ final class WingmanGameTests {
             GameTestSupport.cleanUp(wingman);
             zombie.discard();
             cow.discard();
+        }
+        h.succeed();
+    }
+
+    /**
+     * A tank wingman turns to its slot and to its target but leaves its pitch and roll to the ground,
+     * aiming its gun through the rider pitch: before, it pitched its nose up at a leader or an
+     * enemy above it.
+     */
+    private static void tankKeepsLevel(GameTestHelper h) {
+        WingmanConfig.reset();
+        HeliEntity leader = GameTestSupport.spawn(h, GameTestSupport.AH64, new Vec3(2, 2, 2), 0.0F);
+        var item = (AircraftItem) ModItems.contentItems().stream()
+                .filter(c -> c.type() == ContentType.TANK && c.contentName().equals("m1a2"))
+                .findFirst().orElseThrow().item().get();
+        Vec3 p = h.absoluteVec(new Vec3(8, 2, 8));
+        var tank = (GroundVehicleEntity) item.createAircraft(h.getLevel(), p.x, p.y, p.z);
+        h.getLevel().addFreshEntity(tank);
+        var zombie = EntityTypes.ZOMBIE.create(h.getLevel(), EntitySpawnReason.COMMAND);
+        try {
+            leader.setPos(leader.getX(), leader.getY() + 30, leader.getZ());
+            leader.setDeltaMovement(0, 0, 0.5);
+            tank.setPitch(0.0F);
+            tank.setRoll(0.0F);
+            WingmanRegistry.put(tank.getUUID(), new WingmanEntry(leader, 0));
+            for (int i = 0; i < 5; i++) {
+                WingmanTickHandler.tickStart(h.getLevel());
+            }
+            check(h, tank.getPitch() == 0.0F && tank.getRoll() == 0.0F,
+                    "the tank pitched towards a slot above it: " + tank.getPitch());
+
+            zombie.snapTo(h.absoluteVec(new Vec3(8, 12, 20)));
+            zombie.setNoGravity(true);
+            h.getLevel().addFreshEntity(zombie);
+            WingmanEntry entry = WingmanRegistry.get(tank.getUUID());
+            entry.attackMode = WingmanEntry.ATK_AUTO;
+            entry.weaponType = "cannon";
+            for (int i = 0; i < 5; i++) {
+                WingmanTickHandler.tickStart(h.getLevel());
+            }
+            check(h, entry.currentAutoTarget != null, "the tank found no enemy");
+            check(h, tank.getPitch() == 0.0F && tank.getRoll() == 0.0F,
+                    "the tank pitched towards an enemy above it: " + tank.getPitch());
+            check(h, tank.lastRiderPitch < -10.0F, "the tank's gun did not aim up: " + tank.lastRiderPitch);
+        } finally {
+            WingmanConfig.reset();
+            WingmanRegistry.remove(tank.getUUID());
+            GameTestSupport.cleanUp(leader);
+            GameTestSupport.cleanUp(tank);
+            zombie.discard();
         }
         h.succeed();
     }

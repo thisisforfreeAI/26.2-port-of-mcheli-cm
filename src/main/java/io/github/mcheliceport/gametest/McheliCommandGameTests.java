@@ -3,11 +3,21 @@ package io.github.mcheliceport.gametest;
 import static io.github.mcheliceport.gametest.GameTestSupport.check;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import io.github.mcheliceport.command.ClientRequests;
+import io.github.mcheliceport.command.ClientRequests.Result;
 import io.github.mcheliceport.command.McheliCommand;
 import io.github.mcheliceport.config.CommonConfig;
 import io.github.mcheliceport.config.ServerConfig;
 import io.github.mcheliceport.config.ServerSettings;
+import io.github.mcheliceport.net.CommandRequestPayload.Action;
+import io.github.mcheliceport.net.ModListPayload;
+import io.github.mcheliceport.net.ScreenshotChunkPayload;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Stream;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -34,6 +44,7 @@ final class McheliCommandGameTests {
     static void register() {
         ModGameTests.testAlone("mcheli_command_permissions_and_settings", 20, McheliCommandGameTests::settings);
         ModGameTests.testAlone("mcheli_command_entities_and_fill", 20, McheliCommandGameTests::entities);
+        ModGameTests.testAlone("mcheli_command_client_requests", 20, McheliCommandGameTests::clientRequests);
     }
 
     private static int run(CommandSourceStack source, String command) throws CommandSyntaxException {
@@ -160,5 +171,84 @@ final class McheliCommandGameTests {
             throw h.assertionException(net.minecraft.network.chat.Component.literal(e.getMessage()));
         }
         h.succeed();
+    }
+
+    /**
+     * {@code sendss} and {@code modlist} skip players without the mod; a request takes its answer
+     * only from the player it asked, a screenshot only in order and as a PNG, which is saved to
+     * {@code screenshots_op}; a refusal or a mod list ends the request.
+     */
+    private static void clientRequests(GameTestHelper h) {
+        ServerPlayer asker = h.makeMockServerPlayerInLevel();
+        ServerPlayer target = h.makeMockServerPlayerInLevel();
+        CommandSourceStack op = asker.createCommandSourceStack().withPermission(LevelBasedPermissionSet.GAMEMASTER)
+                .withSuppressedOutput();
+        try {
+            check(h, run(op, "mcheli sendss @s") == 0 && run(op, "mcheli modlist @a") == 0,
+                    "sendss or modlist asked a player without the mod");
+        } catch (CommandSyntaxException e) {
+            throw h.assertionException(net.minecraft.network.chat.Component.literal(e.getMessage()));
+        }
+
+        int refused = ClientRequests.request(asker, target, Action.SCREENSHOT);
+        check(h, ClientRequests.acceptScreenshot(asker, ScreenshotChunkPayload.refused(refused)) == Result.WRONG_PLAYER,
+                "a request took an answer from a player it did not ask");
+        check(h, ClientRequests.acceptModList(target, new ModListPayload(refused, true, List.of())) == Result.UNKNOWN_REQUEST,
+                "a screenshot request took a mod list");
+        check(h, ClientRequests.acceptScreenshot(target, ScreenshotChunkPayload.refused(refused)) == Result.REFUSED
+                && ClientRequests.acceptScreenshot(target, ScreenshotChunkPayload.refused(refused))
+                        == Result.UNKNOWN_REQUEST, "a refusal did not end the request");
+
+        byte[] png = new byte[45_000];
+        System.arraycopy(new byte[] {(byte) 0x89, 'P', 'N', 'G', '\r', '\n', 0x1A, '\n'}, 0, png, 0, 8);
+        int outOfOrder = ClientRequests.request(asker, target, Action.SCREENSHOT);
+        check(h, ClientRequests.acceptScreenshot(target, chunk(outOfOrder, png, 30_000)) == Result.BROKEN,
+                "a screenshot took its pieces out of order");
+        int notPng = ClientRequests.request(asker, target, Action.SCREENSHOT);
+        check(h, ClientRequests.acceptScreenshot(target, new ScreenshotChunkPayload(notPng, 0, 3, new byte[] {1, 2, 3}))
+                == Result.BROKEN, "a screenshot that is not a PNG was saved");
+
+        Path folder = h.getLevel().getServer().getServerDirectory().resolve(ClientRequests.FOLDER);
+        List<Path> before = pngs(folder);
+        int saved = ClientRequests.request(asker, target, Action.SCREENSHOT);
+        check(h, ClientRequests.acceptScreenshot(target, chunk(saved, png, 0)) == Result.INCOMPLETE
+                && ClientRequests.acceptScreenshot(target, chunk(saved, png, 30_000)) == Result.SAVED,
+                "a screenshot sent in order was not saved");
+        List<Path> written = pngs(folder).stream().filter(file -> !before.contains(file)).toList();
+        try {
+            check(h, written.size() == 1 && Arrays.equals(Files.readAllBytes(written.getFirst()), png)
+                    && written.getFirst().getFileName().toString().startsWith(target.getGameProfile().name() + "_"),
+                    "the saved screenshot is not the one sent");
+            for (Path file : written) {
+                Files.delete(file);
+            }
+        } catch (IOException e) {
+            throw h.assertionException(net.minecraft.network.chat.Component.literal(e.toString()));
+        }
+
+        int shared = ClientRequests.request(asker, target, Action.MOD_LIST);
+        check(h, ClientRequests.acceptModList(target, new ModListPayload(shared, true, List.of("[minecraft]")))
+                == Result.RELAYED, "the mod list was not relayed");
+        int hidden = ClientRequests.request(null, target, Action.MOD_LIST);
+        check(h, ClientRequests.acceptModList(target, new ModListPayload(hidden, false, List.of())) == Result.NOT_SHARED
+                && ClientRequests.acceptModList(target, new ModListPayload(hidden, false, List.of()))
+                        == Result.UNKNOWN_REQUEST, "an unshared mod list did not end the request");
+        h.succeed();
+    }
+
+    private static ScreenshotChunkPayload chunk(int requestId, byte[] png, int offset) {
+        int end = Math.min(png.length, offset + ScreenshotChunkPayload.MAX_CHUNK);
+        return new ScreenshotChunkPayload(requestId, offset, png.length, Arrays.copyOfRange(png, offset, end));
+    }
+
+    private static List<Path> pngs(Path folder) {
+        if (!Files.isDirectory(folder)) {
+            return List.of();
+        }
+        try (Stream<Path> files = Files.list(folder)) {
+            return files.filter(file -> file.toString().endsWith(".png")).toList();
+        } catch (IOException e) {
+            return List.of();
+        }
     }
 }

@@ -69,7 +69,8 @@ public final class CommonConfig {
         builder.push("general");
         DEBUG_LOG = builder
                 .comment("Write extra diagnostic messages to the log.",
-                        "Replaces upstream's hidden 'McHeliOutputDebugLog' line in mcheli.cfg.")
+                        "Replaces upstream's hidden 'McHeliOutputDebugLog' line in mcheli.cfg.",
+                        "On a client, also lets server operators see your mod list with /mcheli modlist, as upstream.")
                 .define("debugLog", false);
         builder.pop();
 

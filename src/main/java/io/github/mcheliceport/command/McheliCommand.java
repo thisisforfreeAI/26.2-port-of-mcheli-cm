@@ -15,12 +15,14 @@ import io.github.mcheliceport.config.CommonConfig;
 import io.github.mcheliceport.config.ServerConfig;
 import io.github.mcheliceport.content.ContentRegistries;
 import io.github.mcheliceport.content.emitter.YamlDump;
+import io.github.mcheliceport.net.CommandRequestPayload;
 import io.github.mcheliceport.net.ModNetwork;
 import io.github.mcheliceport.net.TitlePayload;
 import io.github.mcheliceport.wingman.config.WingmanConfig;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -32,6 +34,7 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.commands.arguments.ComponentArgument;
+import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.commands.arguments.blocks.BlockInput;
 import net.minecraft.commands.arguments.blocks.BlockStateArgument;
 import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
@@ -58,6 +61,10 @@ import org.jspecify.annotations.Nullable;
  * The {@code /mcheli} command (upstream {@code MCH_Command}), with Brigadier:
  * <ul>
  *   <li>{@code list}: the subcommands.</li>
+ *   <li>{@code sendss <player>}: saves the player's screen to {@code <server folder>/screenshots_op},
+ *       if their client allows it ({@code privacy.allowScreenCapture}).</li>
+ *   <li>{@code modlist <players>}: shows the sender each player's mods, if their client shares them
+ *       (its {@code debugLog} is on, as upstream).</li>
  *   <li>{@code status entity|tile [min]}: how many loaded entities or block entities of each class
  *       the sender's level holds, for the classes with at least {@code min}.</li>
  *   <li>{@code killentity|removeentity <name>}, {@code attackentity <name> <damage> [source]}: kill,
@@ -82,8 +89,8 @@ import org.jspecify.annotations.Nullable;
 public final class McheliCommand {
 
     public static final String DEFAULT_DUMP_FOLDER = "mcheli_yaml_dump";
-    /** Upstream's {@code ALL_COMMAND} order, without {@code sendss} and {@code modlist} (not ported yet). */
-    public static final List<String> SUBCOMMANDS = List.of("reconfig", "title", "fill", "status", "killentity",
+    /** Upstream's {@code ALL_COMMAND} order. */
+    public static final List<String> SUBCOMMANDS = List.of("sendss", "modlist", "reconfig", "title", "fill", "status", "killentity",
             "removeentity", "attackentity", "showboundingbox", "list", "delayhitbox", "dumpyaml");
     public static final int MAX_FILL = 3_000_000;
     static final List<String> DAMAGE_SOURCES = List.of("player", "inFire", "onFire", "lava", "inWall", "drown",
@@ -109,6 +116,12 @@ public final class McheliCommand {
         dispatcher.register(Commands.literal("mcheli")
                 .requires(source -> SUBCOMMANDS.stream().anyMatch(name -> canUse(source, name)))
                 .then(sub("list").executes(McheliCommand::list))
+                .then(sub("sendss").then(Commands.argument("player", EntityArgument.player())
+                        .executes(c -> requestFrom(c, List.of(EntityArgument.getPlayer(c, "player")),
+                                CommandRequestPayload.Action.SCREENSHOT))))
+                .then(sub("modlist").then(Commands.argument("players", EntityArgument.players())
+                        .executes(c -> requestFrom(c, EntityArgument.getPlayers(c, "players"),
+                                CommandRequestPayload.Action.MOD_LIST))))
                 .then(sub("status")
                         .then(Commands.literal("entity")
                                 .executes(c -> statusEntities(c, 0))
@@ -189,6 +202,28 @@ public final class McheliCommand {
         c.getSource().sendSuccess(() -> Component.literal("/mcheli command list : " + String.join(", ", SUBCOMMANDS)),
                 false);
         return SUBCOMMANDS.size();
+    }
+
+    /**
+     * Upstream {@code handleSendScreenshot} and {@code handleModList}: asks each player's client for a
+     * screenshot or its mod list ({@link ClientRequests}), and returns how many were asked.
+     */
+    private static int requestFrom(CommandContext<CommandSourceStack> c, Collection<ServerPlayer> players,
+            CommandRequestPayload.Action action) {
+        CommandSourceStack source = c.getSource();
+        int asked = 0;
+        for (ServerPlayer player : players) {
+            String name = player.getGameProfile().name();
+            if (player.connection == null || !player.connection.hasChannel(CommandRequestPayload.TYPE)) {
+                source.sendFailure(Component.literal(name + " does not have the mod"));
+                continue;
+            }
+            ClientRequests.request(source.getPlayer(), player, action);
+            asked++;
+            String what = action == CommandRequestPayload.Action.SCREENSHOT ? "a screenshot" : "the mod list";
+            source.sendSuccess(() -> Component.literal("Asked " + name + " for " + what), false);
+        }
+        return asked;
     }
 
     private static int statusEntities(CommandContext<CommandSourceStack> c, int min) {
