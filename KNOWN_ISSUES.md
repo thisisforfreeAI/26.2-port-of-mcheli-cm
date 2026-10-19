@@ -529,6 +529,15 @@ These follow from how Minecraft 26.2 works or from decisions approved in PORTING
     next order or `order abort`; upstream dropped it on the next tick unless the aircraft was a
     wingman. The formation values are read from the server config's `[wingman]` section when the
     server starts and, as upstream, changes made while it runs are not saved.
+101. NPC battles are a port addition, on by default; the server config's `npcBattles.enabled = false`
+    keeps upstream's targets. Upstream's NPCs never fought each other: gunners shot only monsters
+    or players, and wingmen only hostile mobs, target drones and team gunners. With battles on, an
+    NPC fights for a team. A gunner fights for its own team. An unmanned aircraft fights for the
+    team of its leader's pilot, or of the player who dispatched it or sent it on a planner route,
+    or else for the team of a gunner aboard. A vs-player gunner of a team then also attacks the
+    gunners and unmanned aircraft of other teams, and wingmen and aircraft on missions attack them
+    on Auto, on station and at a route's attack node; NPCs spare their own team. NPCs without a team
+    and vs-monster gunners keep upstream's targets.
 
 ## Upstream content issues kept as they are
 

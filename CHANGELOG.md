@@ -107,6 +107,10 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
   the formation values (`dist`, `maxwings`, `minalt`, `maxalt`, `alt clear`), `status`, `marker`,
   `route`, `mission` and `order` (dispatch, abort, status and park), and `spawnuav` for operators.
 - The server config's `[wingman]` section, upstream's formation entries of its wingman config.
+- NPC battles, a port addition: vs-player gunners, wingmen and aircraft on missions of one team
+  attack the gunners and unmanned aircraft of other teams. Wingmen fight for their leader's team,
+  and dispatched aircraft for the team of the player who sent them. Turn it off with the server
+  config's `npcBattles.enabled` (KNOWN_ISSUES 101).
 - M8 aircraft engine exhaust: short throttle-responsive turbine wisps at defined outlets and
   restrained hot jet accents, with shared smoke admission and global quality/load caps. Stock
   Apache and two Black Hawk variants include outlets; Classic nozzle smoke remains available.
