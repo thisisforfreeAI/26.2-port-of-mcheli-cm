@@ -23,7 +23,9 @@ import net.neoforged.neoforge.client.event.RenderFrameEvent;
 @EventBusSubscriber(modid = "mcheli_ce_port", value = Dist.CLIENT)
 public final class BlastMotionProbe {
     private static final String[] NAMES = {"bomb", "rocket-east", "rocket-west", "incendiary", "ground-flash",
-            "airburst", "water", "low", "marks-off", "stress", "tracer-day", "tracer-night", "tracer-classic"};
+            "airburst", "water", "low", "marks-off", "stress", "tracer-day", "tracer-night", "tracer-classic", "agm158", "rocket-low", "agm158-low"};
+    private static final boolean MISSILES = Boolean.getBoolean("mcheli.probeMissiles");
+    private static final int[] MISSILE_PHASES = {1, 13, 14, 15};
     private static final int LENGTH = 150;
     private static final int OFFSET = Boolean.getBoolean("mcheli.probeMotionTracersOnly") ? 10 : 0;
     private static final List<HeldBullet> bullets = new ArrayList<>();
@@ -35,7 +37,7 @@ public final class BlastMotionProbe {
     private static String capture;
 
     @SubscribeEvent public static void tick(ClientTickEvent.Post event) {
-        if (!Boolean.getBoolean("mcheli.probeBlastMotion")) return;
+        if (!MISSILES && !Boolean.getBoolean("mcheli.probeBlastMotion")) return;
         var mc = Minecraft.getInstance();
         if (mc.level == null || mc.player == null || mc.isPaused()) return;
         tick++;
@@ -51,7 +53,7 @@ public final class BlastMotionProbe {
             ClientConfig.DEFAULT_EXPLOSION_PARTICLE.set(false);
         }
         if (tick < 160) return;
-        int phase = (tick - 160) / LENGTH + OFFSET, age = (tick - 160) % LENGTH;
+        int phase = phase(), age = (tick - 160) % LENGTH;
         if (phase >= NAMES.length) { mc.stop(); return; }
         if (age == 0) {
             for (var bullet : bullets) bullet.discard(); bullets.clear();
@@ -59,7 +61,7 @@ public final class BlastMotionProbe {
             mc.particleEngine.clearParticles(); BlastMarks.clear(); BlastGroundEffects.clear();
             peakFlash = peakFragments = peakParticles = 0;
             ClientConfig.ADAPTIVE_EFFECTS.set(false);
-            ClientConfig.EFFECT_BUDGET.set(phase == 7 ? ClientConfig.EffectBudget.LOW : ClientConfig.EffectBudget.BALANCED);
+            ClientConfig.EFFECT_BUDGET.set(phase == 7 || phase >= 14 ? ClientConfig.EffectBudget.LOW : ClientConfig.EffectBudget.BALANCED);
             ClientConfig.BLAST_MARKS.set(phase != 8);
             commands(mc, "fill -24 -60 6 24 -58 48 air", "fill -24 -61 6 24 -61 48 grass_block",
                     phase == 3 || phase == 4 || phase == 8 || phase == 11 ? "time set midnight" : "time set noon",
@@ -72,7 +74,7 @@ public final class BlastMotionProbe {
         }
         if (age == 30) {
             if (phase == 4 || phase == 8) BlastMarks.add(mc.level, 0, -59.4, 20, 12, BlastStyle.HEAVY);
-            else if (phase < 10) blast(mc, phase);
+            else if (phase < 10 || phase >= 13) blast(mc, phase);
             else bullets(mc, phase);
         }
         if (phase == 9 && age > 30 && age < 75 && age % 5 == 0) {
@@ -86,13 +88,18 @@ public final class BlastMotionProbe {
                 || BlastGroundEffects.trackedFragments() > 24) throw new IllegalStateException("Ground budget exceeded");
         if (age == 130) {
             if ((phase == 4 || phase == 8) && peakFlash == 0) throw new IllegalStateException("Terrain flash never rendered");
-            if ((phase == 5 || phase == 6 || phase == 7) && (peakFlash > 0 || peakFragments > 0))
+            if ((phase == 5 || phase == 6 || phase == 7 || phase >= 14) && (peakFlash > 0 || peakFragments > 0))
                 throw new IllegalStateException("Airburst/water/Low ground effect leak");
             if (phase == 8 && BlastMarks.markCount() != 0) throw new IllegalStateException("Disabled scorch left a persistent mark");
             if (BlastMarks.flashQuadCount() != 0) throw new IllegalStateException("Flash outlived its initial impulse");
             System.out.println("M8_MOTION result=" + NAMES[phase] + " flash_faces=" + peakFlash
                     + " fragments=" + peakFragments + " particles=" + peakParticles);
         }
+    }
+
+    private static int phase() {
+        int index = (tick - 160) / LENGTH;
+        return MISSILES ? index < MISSILE_PHASES.length ? MISSILE_PHASES[index] : NAMES.length : index + OFFSET;
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
@@ -119,10 +126,17 @@ public final class BlastMotionProbe {
     }
 
     private static void blast(Minecraft mc, int phase) {
-        BlastStyle style = phase == 1 || phase == 2 ? BlastStyle.BLAST : phase == 3 ? BlastStyle.INCENDIARY : BlastStyle.HEAVY;
-        var direction = BlastDirection.from(new Vec3(phase == 1 ? 1 : phase == 2 ? -1 : 0, -0.4, 0));
+        BlastStyle style = phase == 1 || phase == 2 || phase >= 13 ? BlastStyle.BLAST : phase == 3 ? BlastStyle.INCENDIARY : BlastStyle.HEAVY;
+        var direction = BlastDirection.from(new Vec3(phase == 1 || phase >= 13 ? 1 : phase == 2 ? -1 : 0, -0.4, 0));
+        float power = phase == 1 || phase == 2 || phase == 14 ? 4 : 12;
+        if (phase == 13 || phase == 15) {
+            var info = io.github.mcheliceport.content.ContentRegistries.weapon().get("agm158");
+            if (info == null || info.explosion != 10) throw new IllegalStateException("Missing stock AGM-158 fixture");
+            power = info.explosion; style = BlastStyle.forWeapon(info, false);
+            if (ExplosionSequence.smokeLed(power, style)) throw new IllegalStateException("AGM-158 lost its heavy warhead profile");
+        }
         ClientEffects.INSTANCE.explosionEffects(mc.level, 0, phase == 5 ? -42 : -59.5, 20,
-                phase == 1 || phase == 2 ? 4 : 12, phase == 6, List.of(), style, direction);
+                power, phase == 6, List.of(), style, direction);
     }
 
     private static void checkParticles(Minecraft mc) {
@@ -140,7 +154,7 @@ public final class BlastMotionProbe {
         for (String command : commands) mc.player.connection.sendCommand(command);
     }
     @SubscribeEvent public static void frame(RenderFrameEvent.Post event) {
-        if (!Boolean.getBoolean("mcheli.probeBlastMotion") || tick < 160) return;
+        if ((!MISSILES && !Boolean.getBoolean("mcheli.probeBlastMotion")) || tick < 160) return;
         peakFlash = Math.max(peakFlash, BlastMarks.flashQuadCount());
         if (BlastMarks.flashQuadCount() > 64) throw new IllegalStateException("Terrain flash budget exceeded");
         if (capture == null) return;

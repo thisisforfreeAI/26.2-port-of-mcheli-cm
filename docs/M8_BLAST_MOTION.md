@@ -4,6 +4,8 @@ Enhanced dry explosions now develop in stages: a fast flash, irregular fire pock
 behind smoke, narrow ejecta streams, and a wider low cloud beneath rising bomb smoke. These
 are stylized visual cues from real blasts, sized in game blocks rather than simulated yields.
 Small rockets/missiles retain their familiar growing smoke puffs.
+The [missile follow-up](M8_MISSILE_IMPACTS.md) mixes short primary fire pockets into those
+puffs and gives large general warheads, including the AGM-158, a fuller rolling-cloud profile.
 
 ## Weapon presentation
 

@@ -10,6 +10,7 @@ import io.github.mcheliceport.entity.aircraft.AircraftEntity;
 import io.github.mcheliceport.entity.flare.FlareEntity;
 import io.github.mcheliceport.entity.heli.HeliEntity;
 import io.github.mcheliceport.entity.plane.PlaneEntity;
+import io.github.mcheliceport.entity.weapon.BulletEntity;
 import io.github.mcheliceport.registry.ModEntityTypes;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,13 +30,28 @@ import net.neoforged.neoforge.client.event.RenderFrameEvent;
 public final class BlastGroundProbe {
     private static final String[] NAMES = {"sand", "soil", "snow", "stone", "missile", "airburst", "water", "low",
             "empty", "models", "fixed", "adaptive"};
-    private static final int LENGTH = 240;
-    private static final int OFFSET = Boolean.getBoolean("mcheli.probeGroundPerfOnly") ? 8 : 0;
+    private static final boolean COMBAT = Boolean.getBoolean("mcheli.probeCombatSoak");
+    private static final int LENGTH = COMBAT ? 600 : 240;
+    private static final int OFFSET = (COMBAT || Boolean.getBoolean("mcheli.probeGroundPerfOnly")) ? 8 : 0;
     private static final List<Entity> entities = new ArrayList<>();
     private static final List<Double> frames = new ArrayList<>();
+    private static final List<HeldBullet> bullets = new ArrayList<>();
+    private static final StringBuilder telemetry = new StringBuilder("phase,tick,particles,bullets,fragment_slots,terrain_reads,terrain_rays,maintenance,pending,active,tiles,exhaust,wash,pressure\n");
+    private static int sequence;
     private static int tick, peakFragments, peakReads, peakHalos, peakExhaust, peakWash;
     private static long last;
     private static String capture;
+
+    /** Renderer fixture: bounded lifetime and motion, without running server ballistics. */
+    private static final class HeldBullet extends BulletEntity {
+        private int age;
+        HeldBullet(Minecraft mc) { super(ModEntityTypes.BULLET.get(), mc.level); }
+        @Override public void tick() {
+            this.xo = this.getX(); this.yo = this.getY(); this.zo = this.getZ();
+            this.setPos(this.getX() + 1, this.getY(), this.getZ());
+            if (++this.age >= 16) this.discard();
+        }
+    }
 
     private static final class HeldHeli extends HeliEntity {
         private int fuel;
@@ -53,7 +69,7 @@ public final class BlastGroundProbe {
     }
 
     @SubscribeEvent public static void tick(ClientTickEvent.Post event) {
-        if (!Boolean.getBoolean("mcheli.probeBlastGround")) return;
+        if (!COMBAT && !Boolean.getBoolean("mcheli.probeBlastGround")) return;
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null || mc.player == null || mc.isPaused()) return;
         tick++;
@@ -67,12 +83,17 @@ public final class BlastGroundProbe {
             ClientConfig.EFFECT_QUALITY.set(EffectQuality.ENHANCED);
             ClientConfig.EFFECT_STYLE.set(ClientConfig.EffectStyle.POLISHED);
             ClientConfig.DEFAULT_EXPLOSION_PARTICLE.set(false);
+            if (COMBAT) ClientConfig.BLAST_MARKS.set(true);
         }
         if (tick < 160) return;
         int phase = (tick - 160) / LENGTH + OFFSET, age = (tick - 160) % LENGTH;
-        if (phase >= NAMES.length) { mc.stop(); return; }
+        if (phase >= NAMES.length) {
+            if (COMBAT) write(mc, "m8-combat-ticks.csv", telemetry.toString());
+            mc.stop(); return;
+        }
         if (age == 0) {
             for (var entity : entities) entity.discard(); entities.clear();
+            for (var bullet : bullets) bullet.discard(); bullets.clear();
             mc.particleEngine.clearParticles(); BlastMarks.clear(); BlastGroundEffects.clear(); EngineExhaustEmitter.clear();
             RotorWashEmitter.clear();
             frames.clear(); last = 0; peakFragments = peakReads = peakHalos = peakExhaust = peakWash = 0;
@@ -96,25 +117,51 @@ public final class BlastGroundProbe {
         if (phase == 3 && age == 120) {
             for (int i = 0; i < 100; i++) BlastGroundEffects.emit(mc.level, 0, -59.5, 20, 12, BlastStyle.HEAVY);
         }
-        if (phase >= 10 && age >= 30) {
+        if (phase >= 10 && age >= 30 && (!COMBAT || age < 400)) {
             for (var entity : entities) if (entity instanceof AircraftEntity aircraft) {
                 McheliEffects.engineExhaust(aircraft);
                 if (aircraft instanceof HeliEntity) McheliEffects.rotorWash(aircraft, false);
             }
-            if (age == 40) for (int i = 0; i < 12; i++) {
+            if (age == 40 || COMBAT && age % 100 == 40) for (int i = 0; i < 12; i++) {
                 var flare = new FlareEntity(mc.level, -10 + i * 1.8, -51 - (i % 3) * 0.4, 27, 0, 0, 0, 4, 0);
-                flare.gravity = 0; flare.airResistance = 1; flare.setId(-90000 - phase * 100 - i);
+                flare.gravity = 0; flare.airResistance = 1; flare.setId(-90000 - phase * 10000 - age * 12 - i);
                 mc.level.addEntity(flare); entities.add(flare);
             }
             if (age >= 40 && age % 25 == 0) {
-                blast(mc, -6, 12, BlastStyle.HEAVY); blast(mc, 0, 4, BlastStyle.BLAST); blast(mc, 6, 8, BlastStyle.HEAVY);
+                blast(mc, -6, 12, BlastStyle.HEAVY); blast(mc, 0, 4, BlastStyle.BLAST);
+                blast(mc, 6, COMBAT ? 10 : 8, COMBAT ? BlastStyle.BLAST : BlastStyle.HEAVY);
             }
+            if (COMBAT) fire(mc);
             if (age % 4 == 0) {
                 ParticleParam trail = new ParticleParam("smoke", -12 + age % 40 * 0.6, -54, 21, -0.05, 0.01, 0, 3);
                 trail.age = 24; trail.r = trail.g = trail.b = 0.8F;
                 McheliEffects.spawnParticle(mc.level, trail);
             }
             if (age % 6 == 0) ClientEffects.INSTANCE.spawnMuzzleFlash(mc.level, -10, -54, 30, 0.6F, 1, 1, 1, 1, 3);
+        }
+        bullets.removeIf(b -> !b.isAlive());
+        if (COMBAT) {
+            // Client-only flare fixtures have no server lifetime/removal packet.
+            // End their source explicitly, without clearing the particles being tested.
+            if (age == 400) for (var entity : entities) if (entity instanceof FlareEntity) entity.discard();
+            if (bullets.size() > 64 || BlastMarks.projectionReads() > 256 || BlastMarks.projectionRays() > 32
+                    || BlastMarks.maintenanceChecks() > 40 || BlastMarks.pendingCount() > 16
+                    || BlastMarks.activeCount() > 2 || BlastMarks.quadCount() > 384
+                    || EngineExhaustEmitter.emitted() > 16) throw new IllegalStateException("Mixed combat budget exceeded");
+            telemetry.append(NAMES[phase]).append(',').append(age).append(',').append(particleCount(mc)).append(',')
+                    .append(bullets.size()).append(',').append(BlastGroundEffects.trackedFragments()).append(',')
+                    .append(BlastMarks.projectionReads()).append(',').append(BlastMarks.projectionRays()).append(',')
+                    .append(BlastMarks.maintenanceChecks()).append(',').append(BlastMarks.pendingCount()).append(',')
+                    .append(BlastMarks.activeCount()).append(',').append(BlastMarks.quadCount()).append(',')
+                    .append(age < 400 ? EngineExhaustEmitter.emitted() : 0).append(',')
+                    .append(age < 400 ? RotorWashEmitter.emitted() : 0).append(',')
+                    .append(EffectPerformance.pressure()).append('\n');
+            if (age == 580 && (bullets.size() != 0 || particleCount(mc) != 0
+                    || BlastMarks.pendingCount() != 0 || BlastMarks.activeCount() != 0))
+                throw new IllegalStateException("Transient effects failed to drain: particles=" + mc.particleEngine.countParticles()
+                        + " bullets=" + bullets.size() + " pending=" + BlastMarks.pendingCount() + " active=" + BlastMarks.activeCount());
+            if (age == 580) System.out.println("M8_COMBAT drained=" + NAMES[phase] + " tiles=" + BlastMarks.quadCount());
+            if (phase >= 10 && age == 420) capture = NAMES[phase] + "-cooldown";
         }
         var quality = ClientConfig.get(ClientConfig.EFFECT_BUDGET);
         if (BlastGroundEffects.emittedFragments() > BlastGroundLook.fragmentTickCap(quality, 0)
@@ -128,8 +175,8 @@ public final class BlastGroundProbe {
         if (phase < 5 && (age == 44 || age == 50 || age == 60 || age == 80)) capture = NAMES[phase] + "-age" + (age - 40);
         // Capture before the frame-sampling window so readback/compression cannot skew it.
         if (phase >= 10 && age == 60) capture = NAMES[phase];
-        if (phase >= 8 && age == 209 && frames.size() < 48) tick--;
-        if (age == 220) {
+        if (phase >= 8 && age == (COMBAT ? 379 : 209) && frames.size() < 48) tick--;
+        if (age == (COMBAT ? 590 : 220)) {
             if (phase >= 10 && peakExhaust == 0) throw new IllegalStateException("Mixed scene never emitted exhaust");
             if (phase == 10 && peakWash == 0) throw new IllegalStateException("Mixed scene never emitted rotor wash");
             if (phase == 10 && peakHalos == 0) throw new IllegalStateException("Mixed scene never drew flare halos");
@@ -139,9 +186,26 @@ public final class BlastGroundProbe {
             if (phase >= 8) {
                 StringBuilder csv = new StringBuilder("frame,interval_ms\n");
                 for (int i = 0; i < frames.size(); i++) csv.append(i).append(',').append(frames.get(i)).append('\n');
-                try { java.nio.file.Files.writeString(mc.gameDirectory.toPath().resolve("m8-ground-" + NAMES[phase] + ".csv"), csv); }
+                try { java.nio.file.Files.writeString(mc.gameDirectory.toPath().resolve((COMBAT ? "m8-combat-" : "m8-ground-") + NAMES[phase] + ".csv"), csv); }
                 catch (java.io.IOException ex) { throw new java.io.UncheckedIOException(ex); }
             }
+        }
+    }
+
+    private static int particleCount(Minecraft mc) {
+        return Integer.parseInt(mc.particleEngine.countParticles().replaceAll(".*T ", ""));
+    }
+    private static void write(Minecraft mc, String name, String content) {
+        try { java.nio.file.Files.writeString(mc.gameDirectory.toPath().resolve(name), content); }
+        catch (java.io.IOException ex) { throw new java.io.UncheckedIOException(ex); }
+    }
+    private static void fire(Minecraft mc) {
+        for (int i = 0; i < 4; i++) {
+            var bullet = new HeldBullet(mc); bullet.setId(-200000 - sequence); bullet.setUUID(new java.util.UUID(0, sequence++));
+            bullet.setName("m134"); bullet.isBomblet = 0;
+            bullet.setPos(-12, -54 + i % 2 * 0.5, 18 + i * 3); bullet.setYRot(-90); bullet.yRotO = -90;
+            bullet.setDeltaMovement(8, 0, 0); bullet.prevMotionX = 8;
+            mc.level.addEntity(bullet); bullets.add(bullet);
         }
     }
 
@@ -190,17 +254,18 @@ public final class BlastGroundProbe {
         for (String command : commands) mc.player.connection.sendCommand(command);
     }
     @SubscribeEvent public static void frame(RenderFrameEvent.Post event) {
-        if (!Boolean.getBoolean("mcheli.probeBlastGround") || tick < 160) return;
+        if ((!COMBAT && !Boolean.getBoolean("mcheli.probeBlastGround")) || tick < 160) return;
         int phase = (tick - 160) / LENGTH + OFFSET, age = (tick - 160) % LENGTH;
         int halos = EntityGlowAdmission.flareCount();
+        if (BlastMarks.flashQuadCount() > 64) throw new IllegalStateException("Terrain flash exceeded its limit");
         if (halos > EntityGlowAdmission.flareLimit()) throw new IllegalStateException("Flare geometry exceeded its limit");
         peakHalos = Math.max(peakHalos, halos);
         long now = System.nanoTime();
-        if (phase >= 8 && age >= 80 && age < 210 && last != 0) frames.add((now - last) / 1_000_000.0);
+        if (phase >= 8 && age >= 80 && age < (COMBAT ? 380 : 210) && last != 0) frames.add((now - last) / 1_000_000.0);
         last = now;
         if (capture == null) return;
         Minecraft mc = Minecraft.getInstance(); String name = capture; capture = null;
-        Screenshot.grab(mc.gameDirectory, "m8-ground-" + name + ".png", mc.gameRenderer.mainRenderTarget(), 1,
+        Screenshot.grab(mc.gameDirectory, (COMBAT ? "m8-combat-" : "m8-ground-") + name + ".png", mc.gameRenderer.mainRenderTarget(), 1,
                 message -> System.out.println("M8_GROUND " + message.getString()));
     }
 }

@@ -12,6 +12,13 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 
 ### Changed
 
+- M8 rockets retain growing smoke puffs around a sharper rolling-fire impact. Large general
+  missile warheads, including the AGM-158, use a fuller mixed fire/smoke cloud; reduce evenly
+  spaced directional puffs and retain primary fire when adaptive detail reduces the blast.
+
+- M8 validation: add an opt-in sustained mixed-effects scene with moving stock bullets,
+  fixed/adaptive controls, bounded-work telemetry and transient-effect cooldown checks.
+
 - M8 terrain performance: resume scorch/ground-flash fitting from the impact center under
   shared per-tick read/ray/column limits, coalesce repeated pending hits and spread cached
   surface validation/light updates across ticks. Preserve completed footprint sizes.

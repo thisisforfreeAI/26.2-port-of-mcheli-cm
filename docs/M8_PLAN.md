@@ -174,6 +174,11 @@ definitions can opt in. Heat distortion remains deferred and target-PC acceptanc
   terrain flashes; reduced bullet glow and sparse tracers. See [M8_BLAST_MOTION.md](M8_BLAST_MOTION.md).
 - [x] Spread terrain fitting and cache maintenance over bounded tick allowances, preserving
   completed footprint sizes. See [M8_TERRAIN_BUDGET.md](M8_TERRAIN_BUDGET.md).
+- [x] Provide a repeatable combined scene with moving bullets, aircraft exhaust/wash, flare
+  volleys, overlapping blasts, raw frame/counter traces and a particle/queue cooldown check.
+  See [M8_COMBAT_ACCEPTANCE.md](M8_COMBAT_ACCEPTANCE.md).
+- [x] Give rockets a fire/smoke impact mix and large general missile warheads (including the
+  AGM-158) a fuller blast profile. See [M8_MISSILE_IMPACTS.md](M8_MISSILE_IMPACTS.md).
 - [ ] Hardware acceptance at 1080p on RTX 3060 8 GB / Ryzen 7 7800X3D: representative sustained
   firing, overlapping explosions and mixed vehicles, targeting 80 FPS / 12.5 ms.
 - [ ] Final visual acceptance in actual flight and battles, including addon/content combinations.
