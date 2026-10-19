@@ -4,6 +4,7 @@ import io.github.mcheliceport.config.CommonConfig;
 import io.github.mcheliceport.content.aircraft.AircraftInfo;
 import io.github.mcheliceport.content.aircraft.SeatInfo;
 import io.github.mcheliceport.content.weapon.WeaponInfo;
+import io.github.mcheliceport.entity.NpcBattles;
 import io.github.mcheliceport.entity.aircraft.AircraftEntity;
 import io.github.mcheliceport.entity.seat.SeatEntity;
 import io.github.mcheliceport.entity.vehicle.VehicleEntity;
@@ -63,7 +64,7 @@ public class GunnerEntity extends LivingEntity {
     public int targetType = VS_MONSTER;
     private int despawnCount;
     private int switchTargetCount;
-    private @Nullable LivingEntity targetEntity;
+    private @Nullable Entity targetEntity;
     private double targetPrevPosX;
     private double targetPrevPosY;
     private double targetPrevPosZ;
@@ -107,7 +108,7 @@ public class GunnerEntity extends LivingEntity {
                 : Component.empty();
     }
 
-    public @Nullable LivingEntity getTargetEntity() {
+    public @Nullable Entity getTargetEntity() {
         return this.targetEntity;
     }
 
@@ -326,6 +327,26 @@ public class GunnerEntity extends LivingEntity {
         return ret;
     }
 
+    /**
+     * With NPC battles on, a team gunner attacks the gunners and unmanned aircraft of other teams
+     * (NpcBattles), but not its own vehicle or what rides it.
+     */
+    public boolean canAttackNpc(Entity entity, AircraftEntity ac, WeaponSet ws) {
+        if (this.targetType != VS_PLAYER || entity == this || entity.getRootVehicle() == ac.getRootVehicle()
+                || !NpcBattles.isEnemyNpc(this.getTeamName(), entity)) {
+            return false;
+        }
+        return ws.getCurrentWeapon().getGuidanceSystem() == null
+                || ws.getCurrentWeapon().getGuidanceSystem().canLockEntity(entity);
+    }
+
+    private static boolean isLiveTarget(Entity e) {
+        if (e instanceof AircraftEntity ac) {
+            return !ac.isRemoved() && !ac.isDestroyed();
+        }
+        return e.isAlive() && (!(e instanceof LivingEntity living) || living.getHealth() > 0.0F);
+    }
+
     /** Upstream {@code shotTarget}: picks the nearest target, turns towards where it will be and fires. */
     public void shotTarget(AircraftEntity ac) {
         if (ac.isDestroyed() || !ac.getGunnerStatus()) {
@@ -336,27 +357,32 @@ public class GunnerEntity extends LivingEntity {
             return;
         }
         WeaponBase cw = ws.getCurrentWeapon();
-        if (this.targetEntity != null && (!this.targetEntity.isAlive() || this.targetEntity.getHealth() <= 0.0F)
-                && this.switchTargetCount > 20) {
+        if (this.targetEntity != null && !isLiveTarget(this.targetEntity) && this.switchTargetCount > 20) {
             this.switchTargetCount = 20;
         }
         Vec3 pos = this.getGunnerWeaponPos(ac, ws);
         if (this.switchTargetCount <= 0) {
             this.switchTargetCount = 20;
-            LivingEntity nextTarget = null;
-            List<? extends LivingEntity> list;
+            Entity nextTarget = null;
+            List<Entity> list = new java.util.ArrayList<>();
             if (this.targetType == VS_MONSTER) {
                 int rh = CommonConfig.GUNNER_VS_MONSTER_HORIZONTAL.get();
                 int rv = CommonConfig.GUNNER_VS_MONSTER_VERTICAL.get();
-                list = this.level().getEntitiesOfClass(LivingEntity.class,
-                        this.getBoundingBox().inflate(rh, rv, rh), e -> e instanceof Enemy);
+                list.addAll(this.level().getEntitiesOfClass(LivingEntity.class,
+                        this.getBoundingBox().inflate(rh, rv, rh), e -> e instanceof Enemy));
             } else {
                 int rh = CommonConfig.GUNNER_VS_PLAYER_HORIZONTAL.get();
                 int rv = CommonConfig.GUNNER_VS_PLAYER_VERTICAL.get();
-                list = this.level().getEntitiesOfClass(Player.class, this.getBoundingBox().inflate(rh, rv, rh));
+                list.addAll(this.level().getEntitiesOfClass(Player.class, this.getBoundingBox().inflate(rh, rv, rh)));
+                if (NpcBattles.enabled() && !this.getTeamName().isEmpty()) {
+                    list.addAll(this.level().getEntities(this, this.getBoundingBox().inflate(rh, rv, rh),
+                            e -> e instanceof GunnerEntity || e instanceof AircraftEntity));
+                }
             }
-            for (LivingEntity entity : list) {
-                if (this.canAttackEntity(entity, ac, ws) && this.checkPitch(entity, ac, pos)
+            for (Entity entity : list) {
+                boolean canAttack = entity instanceof LivingEntity living && !(entity instanceof GunnerEntity)
+                        ? this.canAttackEntity(living, ac, ws) : this.canAttackNpc(entity, ac, ws);
+                if (canAttack && this.checkPitch(entity, ac, pos)
                         && (nextTarget == null || this.distanceTo(entity) < this.distanceTo(nextTarget))
                         && this.hasLineOfSight(entity) && this.isInAttackable(entity, ac, pos)) {
                     nextTarget = entity;
@@ -370,7 +396,7 @@ public class GunnerEntity extends LivingEntity {
             }
             this.targetEntity = nextTarget;
         }
-        LivingEntity target = this.targetEntity;
+        Entity target = this.targetEntity;
         if (target == null) {
             this.setXRot(this.getXRot() * 0.95F);
             return;
@@ -436,7 +462,7 @@ public class GunnerEntity extends LivingEntity {
     }
 
     /** Upstream {@code checkPitch}: the target is within the vehicle's and the weapon's pitch limits. */
-    private boolean checkPitch(LivingEntity entity, AircraftEntity ac, Vec3 pos) {
+    private boolean checkPitch(Entity entity, AircraftEntity ac, Vec3 pos) {
         double d0 = entity.getX() - pos.x;
         double d1 = entity.getY() - pos.y;
         double d2 = entity.getZ() - pos.z;
@@ -471,7 +497,7 @@ public class GunnerEntity extends LivingEntity {
     }
 
     /** Upstream {@code isInAttackable}: the target is within the weapon's yaw range. */
-    private boolean isInAttackable(LivingEntity entity, AircraftEntity ac, Vec3 pos) {
+    private boolean isInAttackable(Entity entity, AircraftEntity ac, Vec3 pos) {
         if (ac instanceof VehicleEntity || ac.getCurrentWeapon(this).getCurrentWeapon() instanceof EntitySeekerWeapon) {
             return true;
         }

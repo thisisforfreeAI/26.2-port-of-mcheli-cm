@@ -181,9 +181,9 @@ final class PlannerGameTests {
                     MissionNode.flyTo(heli.getX() + 10.0, heli.getY(), heli.getZ()), MissionNode.loiter(3),
                     MissionNode.attack(16.0), MissionNode.park("pln_m_p1"), MissionNode.takeoff(base)));
 
-            check(h, MissionPlanner.assign(level, flown.getUUID(), "pln_m_route").getString().startsWith("§c")
+            check(h, MissionPlanner.assign(level, flown.getUUID(), "pln_m_route", "").getString().startsWith("§c")
                     && WingmanRegistry.get(flown.getUUID()) == null, "an aircraft a player flies took a route");
-            check(h, MissionPlanner.assign(level, heli.getUUID(), "pln_m_none").getString().startsWith("§c")
+            check(h, MissionPlanner.assign(level, heli.getUUID(), "pln_m_none", "").getString().startsWith("§c")
                     && WingmanRegistry.get(heli.getUUID()) == null, "a route that does not exist was assigned");
 
             WingmanEntry entry = new WingmanEntry();
@@ -191,7 +191,7 @@ final class PlannerGameTests {
             entry.order.missionTypes.add(MissionType.CAP);
             WingmanRegistry.put(heli.getUUID(), entry);
             check(h, MissionPlanner.abortAll() == 0 && entry.order != null, "an abort ended an order");
-            MissionPlanner.assign(level, heli.getUUID(), "pln_m_route");
+            MissionPlanner.assign(level, heli.getUUID(), "pln_m_route", "");
             check(h, entry.order == null && entry.mission != null && entry.mission.size() == 6
                     && entry.autoState == AutonomousState.ENROUTE && entry.isAutonomous(),
                     "the route did not replace the order");
@@ -235,7 +235,7 @@ final class PlannerGameTests {
             check(h, WingmanRegistry.get(heli.getUUID()) == null, "the aircraft stayed in the registry");
 
             MissionPlan.put(level, "pln_m_short", List.of(MissionNode.loiter(0)));
-            MissionPlanner.assign(level, heli.getUUID(), "pln_m_short");
+            MissionPlanner.assign(level, heli.getUUID(), "pln_m_short", "");
             AutonomousFlightHandler.tickStart(level);
             AutonomousFlightHandler.tickStart(level);
             WingmanEntry done = WingmanRegistry.get(heli.getUUID());
