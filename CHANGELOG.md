@@ -392,6 +392,9 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 
 ### Fixed
 
+- Tank wingmen no longer pitch their hull up (or down) at a leader or an enemy above or below
+  them while following or attacking: a tank's pitch and roll follow the ground, and it aims with
+  its turret. Wingman steering pitched every vehicle as if it were an aircraft.
 - The Mission tab's Orbit Atk did nothing: an aircraft ordered with it now attacks while keeping
   its orbit, with any weapon, as upstream's AC-130 mode, and attack orbits use the order's orbit
   radius.

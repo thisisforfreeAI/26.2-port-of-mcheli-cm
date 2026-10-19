@@ -3,6 +3,7 @@ package io.github.mcheliceport.wingman.handler;
 import io.github.mcheliceport.McheliCePort;
 import io.github.mcheliceport.entity.NpcBattles;
 import io.github.mcheliceport.entity.aircraft.AircraftEntity;
+import io.github.mcheliceport.entity.ground.GroundVehicleEntity;
 import io.github.mcheliceport.entity.gunner.GunnerEntity;
 import io.github.mcheliceport.entity.heli.HeliEntity;
 import io.github.mcheliceport.entity.plane.PlaneEntity;
@@ -228,6 +229,8 @@ public final class WingmanTickHandler {
         Vec3 aimRef = aimTarget != null ? aimTarget : movTarget;
 
         boolean heli = wingman instanceof HeliEntity;
+        // A tank's pitch and roll follow the ground; it aims with its turret, through lastRiderPitch.
+        boolean ground = wingman instanceof GroundVehicleEntity;
         boolean inAttack = entry.attackMode != WingmanEntry.ATK_NONE;
         float maxYawRate = inAttack ? (heli ? 8.0F : 5.0F) : (heli ? MAX_YAW_RATE_HELI : MAX_YAW_RATE_PLANE);
         float maxPitchRate = inAttack ? 5.0F : MAX_PITCH_RATE;
@@ -252,7 +255,7 @@ public final class WingmanTickHandler {
                 wingman.setYaw(currentYaw + yawStep);
                 wingman.lastRiderYaw = targetYaw;
             }
-            if (!inAttack && !entry.isAutonomous() && entry.leader != null) {
+            if (!ground && !inAttack && !entry.isAutonomous() && entry.leader != null) {
                 float leaderRoll = entry.leader instanceof AircraftEntity la ? la.getRoll() : 0.0F;
                 float currentRoll = wingman.getRoll();
                 float rollStep = Mth.clamp(Mth.wrapDegrees(leaderRoll - currentRoll), -MAX_ROLL_RATE, MAX_ROLL_RATE);
@@ -260,7 +263,7 @@ public final class WingmanTickHandler {
             }
             // An autonomous plane banks into its turns, 7 degrees for each degree a tick of turn,
             // except on the ground and hovering.
-            if (entry.isAutonomous() && !heli && !entry.vtolHoverMode && entry.autoState != AutonomousState.TAKEOFF_ROLL
+            if (entry.isAutonomous() && !heli && !ground && !entry.vtolHoverMode && entry.autoState != AutonomousState.TAKEOFF_ROLL
                     && entry.autoState != AutonomousState.ALIGN) {
                 float targetRoll = Mth.clamp(yawStep * 7.0F, -45.0F, 45.0F);
                 float curRoll = wingman.getRoll();
@@ -269,7 +272,9 @@ public final class WingmanTickHandler {
             // Fixed guns aim with the nose; other weapons keep the aircraft level and aim through lastRiderPitch.
             boolean fixedGun = inAttack && isFixedGunWeapon(entry.weaponType);
             float targetPitch;
-            if (fixedGun) {
+            if (ground) {
+                targetPitch = currentPitch;
+            } else if (fixedGun) {
                 targetPitch = (float) -Math.toDegrees(Math.atan2(dy, Math.max(hDist, 1.0)));
                 targetPitch = Mth.clamp(targetPitch, MAX_PITCH_DOWN, MAX_PITCH_UP);
             } else {
