@@ -7,6 +7,7 @@ import io.github.mcheliceport.config.ClientConfig;
 import io.github.mcheliceport.config.ClientConfig.EffectBudget;
 import io.github.mcheliceport.config.EffectQuality;
 import io.github.mcheliceport.effect.BlastStyle;
+import io.github.mcheliceport.client.render.GlowGeometry;
 import java.lang.ref.WeakReference;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -44,6 +45,7 @@ public final class BlastMarks {
     private static final ArrayDeque<Mark> MARKS = new ArrayDeque<>();
     private static List<Mark> snapshot = List.of();
     private static int textureMask;
+    private static int flashQuads;
 
     private BlastMarks() {}
 
@@ -53,7 +55,7 @@ public final class BlastMarks {
     }
 
     private static boolean enabled() {
-        return EffectQuality.enhanced() && ClientConfig.get(ClientConfig.BLAST_MARKS);
+        return EffectQuality.enhanced() && (ClientConfig.get(ClientConfig.BLAST_MARKS) || EffectPerformance.optionalGlows());
     }
 
     private static void world(ClientLevel level) {
@@ -68,6 +70,7 @@ public final class BlastMarks {
         MARKS.clear();
         snapshot = List.of();
         textureMask = 0;
+        flashQuads = 0;
     }
 
     public static void add(ClientLevel level, double x, double y, double z, float size, BlastStyle style) {
@@ -79,7 +82,8 @@ public final class BlastMarks {
         if (Minecraft.getInstance().gameRenderer.mainCamera().position().distanceToSqr(x, y, z) > range * range) return;
         // Allow server block updates to arrive before fitting the surviving crater surfaces.
         if (PENDING.size() >= 16) PENDING.removeFirst();
-        PENDING.addLast(new Pending(x, y, z, size, style, level.getGameTime() + 2));
+        PENDING.addLast(new Pending(x, y, z, size, style, level.getGameTime() + 2,
+                level.getGameTime(), ClientConfig.get(ClientConfig.BLAST_MARKS), EffectPerformance.optionalGlows()));
     }
 
     @SubscribeEvent
@@ -92,11 +96,14 @@ public final class BlastMarks {
         long now = level.getGameTime();
         EffectBudget budget = ClientConfig.get(ClientConfig.EFFECT_BUDGET);
         boolean dirty = MARKS.removeIf(mark -> now < mark.born || now - mark.born >= mark.lifetime);
+        for (Mark mark : MARKS) if (now - mark.flashBorn >= mark.flashDuration) mark.flash.clear();
         if (now % 10 == 0) {
             for (Mark mark : MARKS) {
-                dirty |= mark.tiles.removeIf(tile -> !level.hasChunkAt(tile.pos)
+                boolean removed = mark.tiles.removeIf(tile -> !level.hasChunkAt(tile.pos)
                         || level.getBlockState(tile.pos) != tile.state
                         || !level.getBlockState(tile.pos.above()).getCollisionShape(level, tile.pos.above()).isEmpty());
+                if (removed) mark.flash.clear();
+                dirty |= removed;
                 for (Tile tile : mark.tiles) tile.light = LightCoordsUtil.getLightCoords(level, tile.pos.above());
             }
             dirty |= MARKS.removeIf(mark -> mark.tiles.isEmpty());
@@ -122,14 +129,18 @@ public final class BlastMarks {
         if (dirty) {
             snapshot = List.copyOf(MARKS);
             textureMask = 0;
-            for (Mark mark : snapshot) textureMask |= 1 << mark.texture;
+            for (Mark mark : snapshot) if (mark.paint) textureMask |= 1 << mark.texture;
         }
     }
 
     private static Mark project(ClientLevel level, Pending p, EffectBudget budget, long now) {
         float radius = BlastMarkTuning.radius(p.size, p.style, budget);
         int texture = switch (p.style) { case CANNON, PENETRATOR -> 0; case INCENDIARY -> 2; default -> 1; };
-        Mark mark = new Mark(p.x, p.y, p.z, radius, texture, now, BlastMarkTuning.lifetime(budget), new ArrayList<>());
+        if (!p.paint) radius = Math.min(radius, 4);
+        int duration = p.style == BlastStyle.HEAVY || p.style == BlastStyle.INCENDIARY ? 9 : 6;
+        Mark mark = new Mark(p.x, p.y, p.z, radius, texture, now,
+                p.paint ? BlastMarkTuning.lifetime(budget) : duration, new ArrayList<>(), new ArrayList<>(),
+                p.born, duration, p.paint, p.flash);
         int turn = (int) (Double.doubleToLongBits(p.x) ^ Double.doubleToLongBits(p.z) ^ now) & 3;
         int top = Mth.floor(p.y + Math.min(2, p.size));
         int bottom = Math.max(level.getMinY(), Mth.floor(p.y - Math.min(16, p.size * 1.5)) - 1);
@@ -170,6 +181,21 @@ public final class BlastMarks {
                 }
             }
         }
+        // Center-first order lets the global flash face cap retain a complete compact light patch.
+        mark.tiles.sort(java.util.Comparator.comparingDouble(tile ->
+                Math.pow((tile.x0 + tile.x1) * 0.5 - p.x, 2) + Math.pow((tile.z0 + tile.z1) * 0.5 - p.z, 2)));
+        if (p.flash) for (Tile tile : mark.tiles) {
+            float r = Math.min(5, radius);
+            float dy = (float) (tile.y - p.y);
+            float a = BlastMarkTuning.flashFalloff(tile.x0 - p.x, dy, tile.z0 - p.z, r);
+            float b = BlastMarkTuning.flashFalloff(tile.x0 - p.x, dy, tile.z1 - p.z, r);
+            float c = BlastMarkTuning.flashFalloff(tile.x1 - p.x, dy, tile.z1 - p.z, r);
+            float d = BlastMarkTuning.flashFalloff(tile.x1 - p.x, dy, tile.z0 - p.z, r);
+            if (a + b + c + d <= 0) continue;
+            mark.flash.add(new GlowGeometry.Surface((float) (tile.x0 - p.x), (float) (tile.x1 - p.x), dy + 0.002F,
+                    (float) (tile.z0 - p.z), (float) (tile.z1 - p.z), a, b, c, d));
+            if (mark.flash.size() >= 64) break;
+        }
         return mark;
     }
 
@@ -189,6 +215,7 @@ public final class BlastMarks {
 
     @SubscribeEvent
     public static void submit(SubmitCustomGeometryEvent event) {
+        flashQuads = 0;
         if (snapshot.isEmpty() || !enabled()) return;
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null || world.get() != mc.level) return;
@@ -197,6 +224,24 @@ public final class BlastMarks {
         long now = mc.level.getGameTime();
         int range = BlastMarkTuning.range(ClientConfig.get(ClientConfig.EFFECT_BUDGET));
         List<Mark> captured = snapshot;
+        if (EffectPerformance.optionalGlows()) {
+            int remaining = ClientConfig.get(ClientConfig.EFFECT_BUDGET) == EffectBudget.HIGH ? 128 : 64;
+            int patches = 0;
+            float partial = mc.getDeltaTracker().getGameTimeDeltaPartialTick(false);
+            for (Mark mark : captured.reversed()) {
+                float alpha = BlastMarkTuning.flashAlpha(now - mark.flashBorn + partial, mark.flashDuration);
+                if (!mark.glow || alpha <= 0 || mark.flash.isEmpty()
+                        || cam.distanceToSqr(mark.x, mark.y, mark.z) > range * range) continue;
+                int count = Math.min(remaining, mark.flash.size());
+                if (count == 0 || patches >= 4) break;
+                var flashPose = event.getPoseStack();
+                flashPose.pushPose();
+                flashPose.translate(mark.x - cam.x, mark.y - cam.y, mark.z - cam.z);
+                GlowGeometry.surfaces(flashPose, event.getSubmitNodeCollector(), mark.flash, alpha, count);
+                flashPose.popPose();
+                flashQuads += count; remaining -= count; patches++;
+            }
+        }
         PoseStack pose = event.getPoseStack();
         pose.pushPose();
         pose.translate(origin.getX() - cam.x, origin.getY() - cam.y, origin.getZ() - cam.z);
@@ -205,8 +250,9 @@ public final class BlastMarks {
             int texture = t;
             event.getSubmitNodeCollector().submitCustomGeometry(pose, TYPES[t], (matrix, buffer) -> {
                 for (Mark mark : captured) {
-                    if (mark.texture != texture || cam.distanceToSqr(mark.x, mark.y, mark.z) > range * range) continue;
-                    int alpha = Math.round(255 * BlastMarkTuning.alpha(now - mark.born, mark.lifetime));
+                    if (!mark.paint || !ClientConfig.get(ClientConfig.BLAST_MARKS) || mark.texture != texture || cam.distanceToSqr(mark.x, mark.y, mark.z) > range * range) continue;
+                    int alpha = Math.round(255 * BlastMarkTuning.alpha(now - mark.born, mark.lifetime)
+                            * Math.clamp((now - mark.flashBorn) / 6.0F, 0, 1));
                     for (Tile tile : mark.tiles) tile.emit(buffer, matrix, origin, alpha);
                 }
             });
@@ -218,8 +264,12 @@ public final class BlastMarks {
     public static int markCount() { return snapshot.size(); }
     public static int quadCount() { return snapshot.stream().mapToInt(mark -> mark.tiles.size()).sum(); }
 
-    private record Pending(double x, double y, double z, float size, BlastStyle style, long ready) {}
-    private record Mark(double x, double y, double z, float radius, int texture, long born, int lifetime, List<Tile> tiles) {}
+    public static int flashQuadCount() { return flashQuads; }
+
+    private record Pending(double x, double y, double z, float size, BlastStyle style, long ready,
+            long born, boolean paint, boolean flash) {}
+    private record Mark(double x, double y, double z, float radius, int texture, long born, int lifetime,
+            List<Tile> tiles, List<GlowGeometry.Surface> flash, long flashBorn, int flashDuration, boolean paint, boolean glow) {}
 
     private static final class Tile {
         final BlockPos pos;

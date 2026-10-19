@@ -46,8 +46,8 @@ public final class ModNetwork {
 
     private static final Logger LOGGER = LogUtils.getLogger();
     /** Bump when payload encoding, menu layout or synchronized entity data changes. */
-    // Wingman markers: the marker screen's payloads.
-    public static final String VERSION = "26";
+    // Cosmetic explosion direction: clients and servers must use the same protocol.
+    public static final String VERSION = "27";
 
     private ModNetwork() {
     }
@@ -100,7 +100,7 @@ public final class ModNetwork {
                 ModNetwork::handleStatusResponse);
         registrar.playToClient(ExplosionEffectPayload.TYPE, ExplosionEffectPayload.CODEC,
                 (p, context) -> McheliEffects.explosionEffects(context.player().level(), p.x(), p.y(), p.z(),
-                        p.size(), p.inWater(), p.affectedBlocks(), p.blastStyle()));
+                        p.size(), p.inWater(), p.affectedBlocks(), p.blastStyle(), p.direction()));
         registrar.playToClient(ServerSettingsPayload.TYPE, ServerSettingsPayload.CODEC,
                 (payload, context) -> ServerSettings.setClient(payload.toValues()));
         registrar.playToClient(TitlePayload.TYPE, TitlePayload.CODEC,

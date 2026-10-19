@@ -9,7 +9,7 @@ public final class ExplosionSequence {
 
     /** Rockets/missiles and small bombs keep the earlier smoke-led character. */
     public static boolean smokeLed(float power, BlastStyle style) {
-        return !ExplosionLook.broad(style) || power < 4;
+        return style != BlastStyle.INCENDIARY && (!ExplosionLook.broad(style) || power < 4);
     }
 
     public static int lobes(float power, BlastStyle style, EffectBudget budget, int pressure) {
@@ -33,7 +33,7 @@ public final class ExplosionSequence {
 
     public static int fireTicks(float power, BlastStyle style) {
         float p = Float.isFinite(power) ? Math.clamp(power, 0, 16) : 0;
-        return style == BlastStyle.INCENDIARY ? 20 + (int) p : ExplosionLook.broad(style) ? 8 + (int) p : 4 + (int) (p * 0.5F);
+        return style == BlastStyle.INCENDIARY ? 40 + (int) p : ExplosionLook.broad(style) ? 8 + (int) p : 4 + (int) (p * 0.5F);
     }
 
     public static float flashRadius(float power, BlastStyle style) {
@@ -64,6 +64,11 @@ public final class ExplosionSequence {
     public static float flashGrowth(float age, int life) {
         float t = Math.clamp(age / Math.max(1, life), 0, 1);
         return 0.25F + 0.75F * (1 - (1 - t) * (1 - t));
+    }
+
+    public static float backlight(float age, int duration) {
+        if (duration <= 0 || age < 0 || age >= duration) return 0;
+        return (1 - EffectLook.smoothstep(age / duration)) * 0.45F;
     }
 
     /** A flame stays bright while hot; the smoke it leaves receives only ambient lighting. */

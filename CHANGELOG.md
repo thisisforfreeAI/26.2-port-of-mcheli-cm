@@ -12,6 +12,14 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 
 ### Changed
 
+- M8 bullet visuals: return projectile bodies to ambient lighting, remove round halos and use
+  sparse, thinner, shorter warm tracer streaks with restrained daylight/night opacity.
+
+- M8 blast motion: rolling fire pockets and brief amber smoke backlighting, wider low bomb
+  clouds, projectile-heading rocket bursts, longer incendiary flames, narrow material dirt
+  streams and a short terrain-fitted ground flash. Reuse bounded particle requests and cap
+  flash geometry. Explosion effects carry three cosmetic direction bytes (network protocol 27).
+
 - M8 ground-response polish: material-specific dust and a few short-lived tumbling surface
   fragments for enhanced bomb/missile impacts, with global geometry/sampling limits. Large
   bomb smoke now breaks up with varied fading and subtle late drift. Classic effects remain.

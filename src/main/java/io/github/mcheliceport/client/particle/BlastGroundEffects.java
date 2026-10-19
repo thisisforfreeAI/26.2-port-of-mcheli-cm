@@ -2,6 +2,7 @@ package io.github.mcheliceport.client.particle;
 
 import io.github.mcheliceport.config.ClientConfig;
 import io.github.mcheliceport.effect.BlastStyle;
+import io.github.mcheliceport.effect.BlastDirection;
 import java.lang.ref.WeakReference;
 import java.util.ArrayDeque;
 import java.util.Random;
@@ -22,6 +23,11 @@ final class BlastGroundEffects {
     private BlastGroundEffects() {}
 
     static void emit(ClientLevel level, double x, double y, double z, float power, BlastStyle style) {
+        emit(level, x, y, z, power, style, BlastDirection.NONE);
+    }
+
+    static void emit(ClientLevel level, double x, double y, double z, float power, BlastStyle style, BlastDirection direction) {
+        var axis = direction.burstAxis();
         var quality = ClientConfig.get(ClientConfig.EFFECT_BUDGET);
         int pressure = EffectPerformance.pressure();
         int count = BlastGroundLook.requests(power, style, quality, pressure);
@@ -43,8 +49,11 @@ final class BlastGroundEffects {
             Random random = new Random(Double.doubleToLongBits(x)
                     ^ Long.rotateLeft(Double.doubleToLongBits(z), 21) ^ level.getGameTime() ^ 0xD057L);
             for (int i = 0; i < count; i++) {
-                double angle = (i + random.nextDouble()) * Math.PI * 2 / count;
+                boolean jet = ExplosionLook.broad(style) ? i % 3 == 1 : i == 0 && !direction.equals(BlastDirection.NONE);
+                int sector = ExplosionLook.broad(style) && i % 3 == 2 ? i - 1 : i;
+                double angle = (sector + random.nextDouble() * 0.5) * Math.PI * 2 / count;
                 double dx = Math.cos(angle), dz = Math.sin(angle);
+                if (!ExplosionLook.broad(style)) { dx = dx * 0.4 + axis.x; dz = dz * 0.4 + axis.z; }
                 boolean broad = ExplosionLook.broad(style);
                 boolean fragment = count > 1 && (broad ? i % 3 == 2 : i == count - 1);
                 if (fragment) {
@@ -62,6 +71,14 @@ final class BlastGroundEffects {
                             block, pos.immutable(), surfaceY, radius, 26 + random.nextInt(10), hot);
                     Minecraft.getInstance().particleEngine.add(particle);
                     fragments.add(new WeakReference<>(particle)); emitted++;
+                } else if (jet) {
+                    float radius = Math.min(3, 0.7F + power * 0.15F) * (0.75F + random.nextFloat() * 0.25F);
+                    double py = surfaceY + radius * 0.6;
+                    if (!EffectAdmission.admit(level, x, py, z, false, radius)) continue;
+                    double speed = Math.min(0.85, 0.2 + power * 0.05) * (0.65 + random.nextDouble() * 0.35);
+                    Minecraft.getInstance().particleEngine.add(new BlastDirtJetParticle(level, x, py, z,
+                            dx * speed, speed * (0.6 + random.nextDouble() * 0.8), dz * speed, radius,
+                            tint[0], tint[1], tint[2], 18 + random.nextInt(10), material.opacity));
                 } else {
                     float radius = BlastGroundLook.dustRadius(power, style, material);
                     double px = x + dx * 0.6, pz = z + dz * 0.6;

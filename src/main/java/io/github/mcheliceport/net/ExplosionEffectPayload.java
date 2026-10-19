@@ -2,6 +2,7 @@ package io.github.mcheliceport.net;
 
 import io.github.mcheliceport.McheliCePort;
 import io.github.mcheliceport.effect.BlastStyle;
+import io.github.mcheliceport.effect.BlastDirection;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.core.BlockPos;
@@ -16,7 +17,12 @@ import net.minecraft.resources.Identifier;
  * blocks travel as offsets from the block at the centre.
  */
 public record ExplosionEffectPayload(double x, double y, double z, float size, boolean inWater,
-        List<BlockPos> affectedBlocks, BlastStyle blastStyle) implements CustomPacketPayload {
+        List<BlockPos> affectedBlocks, BlastStyle blastStyle, BlastDirection direction) implements CustomPacketPayload {
+
+    public ExplosionEffectPayload(double x, double y, double z, float size, boolean inWater,
+            List<BlockPos> blocks, BlastStyle style) {
+        this(x, y, z, size, inWater, blocks, style, BlastDirection.NONE);
+    }
 
     public ExplosionEffectPayload(double x, double y, double z, float size, boolean inWater, List<BlockPos> blocks) {
         this(x, y, z, size, inWater, blocks, BlastStyle.BLAST);
@@ -36,6 +42,9 @@ public record ExplosionEffectPayload(double x, double y, double z, float size, b
                 buf.writeFloat(p.size);
                 buf.writeBoolean(p.inWater);
                 buf.writeEnum(p.blastStyle);
+                buf.writeByte(p.direction.x());
+                buf.writeByte(p.direction.y());
+                buf.writeByte(p.direction.z());
                 BlockPos origin = BlockPos.containing(p.x, p.y, p.z);
                 List<BlockPos> near = new ArrayList<>(p.affectedBlocks.size());
                 for (BlockPos pos : p.affectedBlocks) {
@@ -58,6 +67,7 @@ public record ExplosionEffectPayload(double x, double y, double z, float size, b
                 float size = buf.readFloat();
                 boolean inWater = buf.readBoolean();
                 BlastStyle style = buf.readEnum(BlastStyle.class);
+                BlastDirection direction = new BlastDirection(buf.readByte(), buf.readByte(), buf.readByte());
                 BlockPos origin = BlockPos.containing(x, y, z);
                 int n = buf.readVarInt();
                 if (n < 0 || n > buf.readableBytes() / 6) {
@@ -67,7 +77,7 @@ public record ExplosionEffectPayload(double x, double y, double z, float size, b
                 for (int i = 0; i < n; i++) {
                     blocks.add(origin.offset(buf.readShort(), buf.readShort(), buf.readShort()));
                 }
-                return new ExplosionEffectPayload(x, y, z, size, inWater, blocks, style);
+                return new ExplosionEffectPayload(x, y, z, size, inWater, blocks, style, direction);
             });
 
     private static boolean fits(int offset) {

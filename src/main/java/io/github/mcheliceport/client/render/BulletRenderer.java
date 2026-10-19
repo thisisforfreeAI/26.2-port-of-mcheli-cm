@@ -69,7 +69,7 @@ public class BulletRenderer<T extends BaseBulletEntity> extends EntityRenderer<T
         public double flameY;
         public double flameZ;
         public Identifier flameTexture = TEX_FLAME;
-        /** M8: a machine-gun round drawn as a full-bright tracer with a glowing streak. */
+        /** M8: a sparse tracer round with a compact luminous streak. */
         public boolean tracer;
         /** The round's motion this frame, blocks per tick, for the tracer's streak. */
         public double motionX;
@@ -77,7 +77,7 @@ public class BulletRenderer<T extends BaseBulletEntity> extends EntityRenderer<T
         public double motionZ;
         /** M8: a glow at the missile's flame. */
         public boolean flameGlow;
-        public boolean tracerHalo;
+        public float tracerAlpha;
     }
 
     private final Kind kind;
@@ -118,8 +118,10 @@ public class BulletRenderer<T extends BaseBulletEntity> extends EntityRenderer<T
         double my = entity.prevMotionY + (entity.getDeltaMovement().y - entity.prevMotionY) * partialTicks;
         double mz = entity.prevMotionZ + (entity.getDeltaMovement().z - entity.prevMotionZ) * partialTicks;
         boolean enhanced = EffectQuality.enhanced();
-        state.tracerHalo = EffectPerformance.optionalGlows();
-        state.tracer = enhanced && this.kind == Kind.BULLET && entity instanceof BulletEntity;
+        // A stable sparse visual belt; ordinary rounds retain ambient-lit models. No synced/gameplay state.
+        state.tracer = enhanced && this.kind == Kind.BULLET && entity instanceof BulletEntity
+                && (entity.getUUID().getLeastSignificantBits() & 3) == 0;
+        state.tracerAlpha = 0.30F + 0.16F * Math.clamp(entity.level().getSkyDarken() / 11.0F, 0, 1);
         state.motionX = mx;
         state.motionY = my;
         state.motionZ = mz;
@@ -186,8 +188,8 @@ public class BulletRenderer<T extends BaseBulletEntity> extends EntityRenderer<T
         if (state.groups != null && state.texture != null) {
             List<McheliModel.Group> groups = state.groups;
             int color = state.color;
-            // M8: tracers burn at full brightness; upstream lit them by the world.
-            int light = state.tracer ? LightCoordsUtil.FULL_BRIGHT : state.lightCoords;
+            // Only the small tracer streak emits; the projectile body uses actual ambient light.
+            int light = state.lightCoords;
             poseStack.pushPose();
             poseStack.mulPose(Axis.YP.rotationDegrees(-state.yaw));
             poseStack.mulPose(Axis.XP.rotationDegrees(state.pitch));
@@ -212,23 +214,23 @@ public class BulletRenderer<T extends BaseBulletEntity> extends EntityRenderer<T
     }
 
     /**
-     * M8 tracer streak: one tick's travel long (at most 8 blocks), behind the round, in the round's
-     * colour brightened toward white.
+     * A thin fraction-of-a-tick exposure behind selected rounds, with no spherical halo.
+     * Keep explicit weapon colours; neutral definitions get a warm tracer rather than white bloom.
      */
     private static void submitTracerGlow(State state, PoseStack poseStack, SubmitNodeCollector collector,
             CameraRenderState camera) {
         Vec3 motion = new Vec3(state.motionX, state.motionY, state.motionZ);
         double speed = motion.length();
-        if (speed < 1.0E-3) {
+        if (!Double.isFinite(speed) || speed < 1.0E-3) {
             return;
         }
-        Vec3 tail = motion.scale(-Math.min(speed, 8.0) / speed);
+        Vec3 tail = motion.scale(-Math.min(speed * 0.22, 2.0) / speed);
         Vec3 toCamera = camera.pos.subtract(state.x, state.y, state.z);
         int c = state.color;
-        int rgb = ((c >> 16 & 0xFF) + 255) / 2 << 16 | ((c >> 8 & 0xFF) + 255) / 2 << 8 | ((c & 0xFF) + 255) / 2;
-        float alpha = 0.75F * (c >>> 24) / 255.0F;
-        GlowGeometry.streak(poseStack, collector, tail, toCamera, 0.22F, rgb, alpha);
-        if (state.tracerHalo) GlowGeometry.disc(poseStack, collector, camera, 0.35F, rgb, alpha);
+        int r = c >> 16 & 0xFF, g = c >> 8 & 0xFF, b = c & 0xFF;
+        int rgb = Math.max(r, Math.max(g, b)) - Math.min(r, Math.min(g, b)) < 16 ? 0xFFC77B : c & 0xFFFFFF;
+        float alpha = state.tracerAlpha * (c >>> 24) / 255.0F;
+        GlowGeometry.streak(poseStack, collector, tail, toCamera, 0.045F, rgb, alpha);
     }
 
     /** Upstream {@code renderMissileFlame}: a full-bright quad of {@code size} facing the camera. */

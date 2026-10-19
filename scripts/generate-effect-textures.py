@@ -140,29 +140,49 @@ def noise2(x, y, seed=7):
 
 
 def blast_cloud(x, y):
-    # 64-pixel cells retain pixel edges while allowing broken fire and smoke inside each lobe.
+    # Twelve evolving fire frames, then four neutral smoke frames, all in one 256px sheet.
     cell = 64
     frame = x // cell + y // cell * 4
     px, py = (x % cell - 31.5) / 31, (y % cell - 31.5) / 31
-    coarse = noise2(px * 3.1 + 5, py * 3.1 + 7 - frame * .10)
-    detail = noise2(px * 8 + 7, py * 8 + 4 - frame * .18, 23)
-    grain = noise2(px * 17 + 2, py * 17 + 5 - frame * .12, 37)
-    depth = 1 - math.hypot(px * .97, py * 1.05) * 1.32 + (coarse - .5) * .65 + (detail - .5) * .20
+    t = min(1, frame / 11)
+    coarse = noise2(px * 3.1 + 5 - t * .65, py * 3.1 + 7 + t * .9)
+    detail = noise2(px * 8 + 7 + t * 1.3, py * 8 + 4 + t * 2, 23)
+    depth = -1
+    # Billows separate and stretch as hot gas rolls outward; the outline is never a round disc.
+    for i, (cx, cy, rx, ry) in enumerate([(-.30, -.16, .51, .55), (.28, -.22, .48, .50),
+                                         (-.30, .32, .42, .38), (.30, .28, .47, .42), (0, 0, .57, .55)]):
+        cx += math.sin(i * 2.1 + t * 2.2) * .09 * t
+        cy -= t * .07 * (i % 2)
+        depth = max(depth, 1 - ((px - cx) / rx) ** 2 - ((py - cy) / ry) ** 2)
+    depth += (coarse - .5) * .48 + (detail - .5) * .16
     if depth <= 0:
         return (0, 0, 0, 0)
-    alpha = round(min(1, depth * 8) * 15) * 16
-    alpha = min(240, alpha)
-    if frame < 3:
-        temperature = max(0, min(1, depth * .72 + coarse * .35 + detail * .38 + grain * .12 - frame * .13))
-        palette = [(65, 31, 22), (148, 43, 16), (235, 82, 13), (255, 154, 28), (255, 224, 111), (255, 254, 231)]
-        t = temperature * (len(palette) - 1)
-        i = min(len(palette) - 2, int(t)); f = t - i
-        colour = tuple(round(palette[i][c] * (1 - f) + palette[i + 1][c] * f) for c in range(3))
-        return (*colour, alpha)
-    # Charcoal smoke with broad top-left illumination and small rolling density pockets.
+    alpha = min(240, round(min(1, depth * 5) * 15) * 16)
     shade = max(0, min(1, .48 - py * .20 - px * .12 + (coarse - .5) * .55 + (detail - .5) * .25))
-    value = min(200, round((30 + shade * 125 + (frame - 3) * 10) / 8) * 8)
-    return (value, value, value, alpha)
+    value = min(200, round((30 + shade * 125 + max(0, frame - 12) * 12) / 8) * 8)
+    if frame >= 12:
+        return (value, value, value, alpha)
+    # Coherent hot pockets split around rolling charcoal lobes. Late frames leave only amber windows.
+    warp_x = px + (coarse - .5) * .28
+    warp_y = py + (detail - .5) * .22
+    hot = 0
+    for i, (cx, cy, rx, ry) in enumerate([(-.30, .12, .34, .42), (.19, -.21, .34, .33),
+                                         (.35, .27, .27, .30), (-.12, -.42, .23, .26)]):
+        cx += math.sin(i * 2.3 + t * 2.7) * t * .18
+        cy -= t * .12
+        rx *= 1 + t * .25
+        ry *= 1 - t * .25
+        pocket = 1 - ((warp_x - cx) / rx) ** 2 - ((warp_y - cy) / ry) ** 2
+        hot = max(hot, pocket)
+    occlusion = noise2(px * 5 + 2 - t * .5, py * 5 + 3 + t * 1.7, 43)
+    hot = max(0, min(1, hot * .85 + detail * .45 - t * .42 - occlusion * (.15 + t * .7)))
+    temperature = min(1, hot * 1.55)
+    palette = [(88, 40, 24), (181, 55, 13), (255, 128, 19), (255, 209, 82), (255, 253, 224)]
+    f = temperature * (len(palette) - 1)
+    i = min(len(palette) - 2, int(f)); blend = f - i
+    colour = tuple(palette[i][c] * (1 - blend) + palette[i + 1][c] * blend for c in range(3))
+    exposure = min(1, hot * 5)
+    return (*(round(value * (1 - exposure) + c * exposure) for c in colour), alpha)
 
 
 def blast_flash(x, y):
@@ -202,6 +222,21 @@ def ground_dust(x, y):
     return (value, value, value, alpha)
 
 
+def dirt_jet(x, y):
+    cell = 64
+    frame = x // cell + y // cell * 2
+    px, py = (x % cell - 31.5) / 31, (y % cell - 31.5) / 31
+    t = frame / 3
+    noise = noise2(px * 16 + 4, py * 12 + 3 - t, 83)
+    center = math.sin(py * 5 + t * .7) * .04
+    width = .04 + (1 - py) * .045 + t * .035
+    depth = 1 - abs(px - center) / width
+    end = max(0, min(1, (1 - abs(py) / .90) * 5))
+    alpha = max(0, min(1, depth * 2)) * end * (.55 + noise * .45)
+    shade = round((195 + noise * 60) / 8) * 8
+    return (min(255, shade),) * 3 + (min(224, round(alpha * 14) * 16),)
+
+
 if __name__ == '__main__':
     # Compact sheets avoid a dropped slot for wide strips in the pinned 26.2 stitcher.
     png('m8_smoke.png', SIZE * 4, SIZE * 2, smoke)
@@ -210,6 +245,7 @@ if __name__ == '__main__':
     png('m8_flare_halo.png', SIZE, SIZE, halo)
     png('m8_wash.png', SIZE * 2, SIZE * 2, wash)
     png('m8_wash_ripple.png', SIZE, SIZE, ripple)
+    png('m8_dirt_jet.png', 128, 128, dirt_jet)
     png('m8_ground_dust.png', 128, 128, ground_dust)
-    png('m8_blast_cloud.png', 64 * 4, 64 * 2, blast_cloud)
+    png('m8_blast_cloud.png', 64 * 4, 64 * 4, blast_cloud)
     png('m8_blast_flash.png', SIZE * 4, SIZE * 2, blast_flash)
