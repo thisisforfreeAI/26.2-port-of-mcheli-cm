@@ -12,6 +12,11 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 
 ### Changed
 
+- M7 optional NTM Next warhead bridge: adapt mini-nukes, nuclear clouds, VNT processors,
+  lingering fire and fluid mist to the NeoForge 26.2 APIs. Preserve ordinary explosions and
+  EffectOnly behavior when HBM is absent or unsupported. Add fallback/API regression coverage;
+  validation against the installed NTM Next runtime is pending.
+
 - M8 impacts: fuller growing rocket/missile smoke, wider billow spread and longer smoke retention
   inside existing primary caps. Large general warheads devote more of their cloud to smoke.
 - M8 optional accents: broken surface-tinted dust fronts, calibrated AH-1Z/CH-47 exhaust outlets,

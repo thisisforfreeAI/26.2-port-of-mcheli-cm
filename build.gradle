@@ -27,6 +27,12 @@ sourceSets.main.resources {
 }
 
 repositories {
+    if (providers.gradleProperty('withHbm').isPresent()) {
+        maven {
+            url = 'https://www.cursemaven.com'
+            content { includeGroup 'curse.maven' }
+        }
+    }
     // Just Enough Items, an optional client integration (src/main/java/.../compat/jei).
     maven {
         url = 'https://maven.blamejared.com'
@@ -151,6 +157,10 @@ dependencies {
     compileOnly "mezz.jei:jei-${minecraft_version}-common-api:${jei_version}"
     if (providers.gradleProperty('withJei').isPresent()) {
         localRuntime "mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}"
+    }
+    // Optional NTM Next runtime for integration testing; the bridge has no hard HBM references.
+    if (providers.gradleProperty('withHbm').isPresent()) {
+        localRuntime "curse.maven:ntm-next-1699386:${providers.gradleProperty('hbmFile').orElse('9130786').get()}"
     }
 
     // Example mod dependency using a mod jar from ./libs with a flat dir repository
