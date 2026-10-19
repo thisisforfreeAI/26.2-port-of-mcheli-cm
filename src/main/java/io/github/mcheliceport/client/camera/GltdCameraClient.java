@@ -83,7 +83,7 @@ public final class GltdCameraClient {
         if (mc.getCameraEntity() != view) {
             mc.setCameraEntity(view);
         }
-        AircraftCameraClient.updatePostEffect(mc, gltd.camera.getMode(0) == AircraftCamera.MODE_NIGHTVISION);
+        AircraftCameraClient.updatePostEffect(mc, gltd.camera.getMode(0));
         riding = true;
     }
 
@@ -94,7 +94,7 @@ public final class GltdCameraClient {
         viewEntity = null;
         riding = false;
         useWeaponWasDown = false;
-        AircraftCameraClient.updatePostEffect(mc, false);
+        AircraftCameraClient.updatePostEffect(mc, AircraftCamera.MODE_NORMAL);
     }
 
     /** Upstream {@code playerControl}. */

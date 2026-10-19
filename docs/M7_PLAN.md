@@ -97,3 +97,31 @@ Relief supplies while one near the ground does not. All 249 required GameTests p
 placing an AH-64 in survival showed the "Advancement Made!" toast and the chat announcement.
 
 ![Advancement](screens/m7-advancement.png)
+
+## Thermal vision
+
+`AircraftCamera` now has upstream's third mode on vehicle cameras (`new AircraftCamera(true)`):
+`getModeNum` is 3 there, so the camera key cycles normal, night vision and thermal vision, while
+the GLTD's camera keeps two, as upstream gave only vehicle cameras shader support. The server
+keeps the night-vision effect on a viewer in either mode, as before. On the client,
+`AircraftCameraClient.updatePostEffect` picks the post effect from the mode:
+`post_effect/thermal.json` with `shaders/post/thermal.fsh`, upstream's `thermal.fsh` (by TV90) in
+vanilla's post-effect style. Bright, grey pixels turn white; the sky drops to half its grey and
+everything else to a quarter.
+
+Upstream made mobs and vehicles hot by binding its plain white `textures/test.png` for every entity
+texture while the local rider's camera was in thermal vision, except for the ridden vehicle
+(`MCH_TextureManagerDummy`). `ThermalVision` does the same for living entities: at the highest
+priority its `RenderLivingEvent.Pre` listener cancels the render and submits the entity again
+through a collector that swaps each model's render type for a white one (translucent where the
+model blended, else cut out), so the rider-tilt listener still runs once. `AircraftRenderer` swaps
+the texture of every vehicle but the ridden one. Differences: KNOWN_ISSUES 105.
+
+Validation: JUnit covers the mode counts (three on a vehicle, wrapping to normal; two on the
+GLTD) and the post effect for each mode. A GameTest switches an AH-64 pilot's camera to thermal
+vision, checks the night-vision effect, then wraps to normal and checks the effect is removed. All
+250 required GameTests pass. In the client, in an AH-64 by day, the third press of C showed
+"THERMAL VISION": the husk, cow and villager ahead were white, the M1A2 light grey, the ground and
+cockpit dark; the next press gave back the normal view and removed the effect.
+
+![Thermal vision](screens/m7-thermal-vision.png)

@@ -233,7 +233,7 @@ public abstract class AircraftEntity extends Entity
     public float thirdPersonDist = 4.0F;
     private boolean switchSeat;
     /** The gunner camera and the camera modes of seats 0 and 1 (upstream {@code camera}). */
-    public final AircraftCamera camera = new AircraftCamera();
+    public final AircraftCamera camera = new AircraftCamera(true);
     /** Client: the entity radar of {@code EnableEntityRadar} vehicles (upstream {@code entityRadar}). */
     public final AircraftRadar radar = new AircraftRadar();
     /** Client: a crew member switched their seat to gunner mode (upstream {@code isGunnerModeOtherSeat}). */

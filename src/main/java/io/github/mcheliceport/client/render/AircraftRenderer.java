@@ -55,6 +55,7 @@ public abstract class AircraftRenderer<T extends AircraftEntity> extends EntityR
         state.boxes.clear();
         state.ropeHooks.clear(); state.ropeLength = 0;
         state.texture = null;
+        state.thermal = ThermalVision.drawsWhite(entity);
         io.github.mcheliceport.content.aircraft.AircraftInfo info = entity.getAcInfo();
         if (info == null) {
             return;
@@ -226,7 +227,7 @@ public abstract class AircraftRenderer<T extends AircraftEntity> extends EntityR
                     state.boundingBoxWidth, state.boundingBoxHeight, state.boxes);
         }
         if (state.texture != null && !state.draws.isEmpty()) {
-            RenderType type = AircraftRenderTypes.aircraft(state.texture);
+            RenderType type = AircraftRenderTypes.aircraft(state.thermal ? ThermalVision.WHITE : state.texture);
             List<AircraftPartPoses.Draw> draws = List.copyOf(state.draws);
             int color = state.color;
             int light = state.lightCoords;
@@ -241,7 +242,8 @@ public abstract class AircraftRenderer<T extends AircraftEntity> extends EntityR
         }
         for (AircraftRenderState.EmissiveDraw draw : List.copyOf(state.emissiveDraws)) {
             collector.submitCustomGeometry(poseStack,
-                    net.minecraft.client.renderer.rendertype.RenderTypes.entityTranslucentEmissive(draw.texture()),
+                    net.minecraft.client.renderer.rendertype.RenderTypes.entityTranslucentEmissive(
+                            state.thermal ? ThermalVision.WHITE : draw.texture()),
                     (pose, buffer) -> {
                         PoseStack.Pose p = pose.copy();
                         p.mulPose(draw.pose());

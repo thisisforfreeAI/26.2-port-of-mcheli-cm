@@ -30,13 +30,14 @@ final class CameraModeGameTests {
         ModGameTests.test("camera_needs_night_vision_content", 20, CameraModeGameTests::needsNightVisionContent);
         ModGameTests.test("camera_modes_per_seat", 20, CameraModeGameTests::modesPerSeat);
         ModGameTests.test("camera_destroyed_resets", 20, CameraModeGameTests::destroyedResets);
+        ModGameTests.test("camera_thermal_vision", 20, CameraModeGameTests::thermalVision);
     }
 
     private static Player rider(GameTestHelper helper) {
         return player(helper, GameType.SURVIVAL, new Vec3(12.5, 1.0, 9.5));
     }
 
-    /** The camera-mode key as the rider's client sends it: 0 is normal, 1 night vision. */
+    /** The camera-mode key as the rider's client sends it: 0 is normal, 1 night vision, 2 thermal. */
     private static void switchCamera(HeliEntity heli, Player rider, int mode) {
         ModNetwork.applyHeliControl(heli, rider, new HeliControlPayload(heli.getId(),
                 HeliControlPayload.UnmountAction.NONE, HeliControlPayload.ModeSwitch.NONE,
@@ -145,6 +146,28 @@ final class CameraModeGameTests {
             heli.destroyAircraft();
             check(helper, heli.getCameraMode(pilot) == AircraftCamera.MODE_NORMAL,
                     "destruction puts the crew's cameras back to normal, as upstream");
+            GameTestSupport.cleanUp(heli);
+            helper.succeed();
+        });
+    }
+
+    private static void thermalVision(GameTestHelper helper) {
+        HeliEntity heli = spawn(helper, AH64, new Vec3(12.5, 1.0, 12.5), 0.0F);
+        Player pilot = rider(helper);
+        helper.runAfterDelay(5, () -> {
+            heli.interact(pilot, InteractionHand.MAIN_HAND, Vec3.ZERO);
+            switchCamera(heli, pilot, AircraftCamera.MODE_NIGHTVISION);
+            switchCamera(heli, pilot, AircraftCamera.MODE_THERMALVISION);
+            check(helper, heli.getCameraMode(pilot) == AircraftCamera.MODE_THERMALVISION,
+                    "the key's third press reaches thermal vision");
+        });
+        helper.runAfterDelay(8, () -> {
+            check(helper, pilot.hasEffect(MobEffects.NIGHT_VISION), "thermal vision gives night vision, as upstream");
+            switchCamera(heli, pilot, AircraftCamera.MODE_THERMALVISION + 1);
+            check(helper, heli.getCameraMode(pilot) == AircraftCamera.MODE_NORMAL, "the next press wraps to normal");
+        });
+        helper.runAfterDelay(11, () -> {
+            check(helper, !pilot.hasEffect(MobEffects.NIGHT_VISION), "and the effect goes with it");
             GameTestSupport.cleanUp(heli);
             helper.succeed();
         });

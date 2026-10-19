@@ -13,6 +13,8 @@ import org.joml.Matrix4f;
 public class AircraftRenderState extends EntityRenderState {
     /** Null while the models load: nothing is drawn, as upstream's on-demand mode. */
     public @Nullable Identifier texture;
+    /** Thermal vision draws the vehicle white, unless it is the one being ridden. */
+    public boolean thermal;
     public int color;
     public boolean flat;
     public final List<AircraftPartPoses.Draw> draws = new ArrayList<>();

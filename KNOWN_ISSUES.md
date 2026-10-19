@@ -26,7 +26,7 @@ broader gameplay and hardware checks remain pending.
 | Area | Planned milestone |
 |---|---|
 | Remaining plane/ground equipment | M6 |
-| Long-distance tracking and rendering, thermal vision (the third camera mode), GPU-buffer model rendering, HBM:NTM stubs, performance work | M7 |
+| Long-distance tracking and rendering, GPU-buffer model rendering, HBM:NTM stubs, performance work | M7 |
 
 Until then:
 
@@ -561,6 +561,12 @@ These follow from how Minecraft 26.2 works or from decisions approved in PORTING
     towed container from more than 20 blocks up, boarding a UH-1C (hidden) and hurting a villager
     with a bullet from a vehicle seat (hidden). To drop a container, the extra key unhitches what
     a helicopter or placed vehicle tows, as upstream; the port had not ported that key yet.
+105. Thermal vision follows upstream, with these differences. Upstream offered it when the rider's
+    client supported shaders and its `DisableShader` was off; every 26.2 client draws post effects,
+    so vehicle cameras always have it, and `DisableShader` and `EnableReplaceTextureManager` are not
+    ported. Upstream drew every entity but the ridden vehicle white; the port draws living entities
+    (not their held items, as upstream) and McHeli vehicles white, and leaves bullets, dropped
+    items, the GLTD, cargo containers and other entities in their own textures.
 
 ## Upstream content issues kept as they are
 

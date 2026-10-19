@@ -11,14 +11,14 @@ import org.jspecify.annotations.Nullable;
  * pilot (user 0) and the first crew seat (user 1). Ported from upstream's {@code MCH_Camera}.
  *
  * <p>Both sides keep one. The client moves and turns it each tick and draws the view from it; the
- * server only keeps the modes, to give viewers in night vision the night-vision effect. The
+ * server only keeps the modes, to give viewers in night or thermal vision the night-vision effect. The
  * client's post effect follows the mode in {@code AircraftCameraClient}, not here.
  */
 public final class AircraftCamera {
 
     public static final int MODE_NORMAL = 0;
     public static final int MODE_NIGHTVISION = 1;
-    /** Thermal vision (M7): not reachable until then, as upstream without shader support. */
+    /** Thermal vision: only on vehicle cameras, which upstream gave shader support. */
     public static final int MODE_THERMALVISION = 2;
     /** Night vision given while in a camera mode is topped up when below this many ticks. */
     private static final int EFFECT_REFRESH_BELOW = 500;
@@ -34,6 +34,21 @@ public final class AircraftCamera {
     private float zoom = 1.0F;
     private final int[] mode = {MODE_NORMAL, MODE_NORMAL};
     private final int[] lastMode = new int[2];
+    private final boolean thermal;
+
+    /** A camera with normal and night vision only, as upstream's GLTD. */
+    public AircraftCamera() {
+        this(false);
+    }
+
+    /**
+     * @param thermal whether thermal vision is the third mode. Upstream offered it when the
+     *        rider's client supported shaders; every 26.2 client draws post effects, so vehicle
+     *        cameras always have it.
+     */
+    public AircraftCamera(boolean thermal) {
+        this.thermal = thermal;
+    }
 
     public int getUserMax() {
         return this.mode.length;
@@ -50,15 +65,16 @@ public final class AircraftCamera {
         this.updateViewer(uid, viewer);
     }
 
-    /** Sets a user's mode, wrapped to the modes there are (normal and night vision until M7). */
+    /** Sets a user's mode, wrapped to the modes there are. */
     public void setMode(int uid, int m) {
         if (this.isValidUid(uid)) {
             this.mode[uid] = m < 0 ? 0 : m % this.getModeNum(uid);
         }
     }
 
+    /** Upstream {@code getModeNum}: three modes with thermal vision, else two. */
     public int getModeNum(int uid) {
-        return 2;
+        return this.thermal && this.isValidUid(uid) ? 3 : 2;
     }
 
     public int getMode(int uid) {
