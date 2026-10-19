@@ -173,7 +173,7 @@ final class HbmGameTests {
                 var clouds = chemicalEntities(h, pos);
                 check(h, clouds.size() == 2, type + " did not spawn exactly two native clouds");
                 check(h, clouds.stream().allMatch(e -> e.getClass().getSimpleName().equals(expected)
-                                && e.getDeltaMovement().equals(Vec3.ZERO)),
+                                && e.getDeltaMovement().lengthSqr() == 0),
                         type + " selected the wrong cloud type or ignored zero speed");
                 clouds.forEach(Entity::discard);
 
