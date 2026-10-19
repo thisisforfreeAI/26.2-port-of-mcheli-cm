@@ -26,7 +26,7 @@ broader gameplay and hardware checks remain pending.
 | Area | Planned milestone |
 |---|---|
 | Remaining plane/ground equipment | M6 |
-| GPU-buffer model rendering, NTM Next client validation, performance work | M7 |
+| NTM Next client validation | M7 |
 
 Until then:
 
@@ -594,6 +594,13 @@ These follow from how Minecraft 26.2 works or from decisions approved in PORTING
     explosion, and goes out when it lands, hits a block or after 15 seconds; upstream's client copy
     never went out. Only the `CLASSIC` effect look throws it: the `ENHANCED` look (M8) draws its own
     explosions.
+108. Vehicle models are drawn from GPU buffers (client config `render.gpuModelBuffers`, on by
+    default), as upstream drew them from display lists. They are drawn with the solid entities, so their
+    see-through texels (canopies) are unsorted and do not show translucent things behind them, as
+    upstream's were; the per-frame path the option turns back on sorts them. Vehicles in thermal
+    vision, past the render distance or glowing always take the per-frame path. M8's surface shading
+    is baked into the GPU buffers too. If the GPU path fails once, it turns itself off for the
+    session and logs why.
 
 ## Upstream content issues kept as they are
 

@@ -261,7 +261,10 @@ public abstract class AircraftRenderer<T extends AircraftEntity> extends EntityR
             int light = state.lightCoords;
             boolean flat = state.flat;
             boolean surfaceShade = state.surfaceShade;
-            collector.submitCustomGeometry(poseStack, type, (pose, buffer) -> {
+            boolean baked = !state.thermal && !state.far && state.outlineColor == net.minecraft.client.renderer.entity.state.EntityRenderState.NO_OUTLINE
+                    && io.github.mcheliceport.client.render.baked.BakedVehicles.submit(collector, poseStack, texture,
+                            draws, color, light, flat, surfaceShade);
+            if (!baked) collector.submitCustomGeometry(poseStack, type, (pose, buffer) -> {
                 for (AircraftPartPoses.Draw draw : draws) {
                     PoseStack.Pose p = pose.copy();
                     p.mulPose(draw.pose());

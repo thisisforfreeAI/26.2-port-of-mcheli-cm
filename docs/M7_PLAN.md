@@ -273,3 +273,35 @@ the wheel probes' collision moves (`TankTerrain`).
 What the vehicles cost fell by about a third (from about 5.4 to 3.7 ms). The rest of the wheel
 probes' time is vanilla block collision, which upstream's wheels did too. Client rendering is
 the separate GPU-buffer item.
+
+## GPU-buffer model rendering (render path B)
+
+Path A, from M4, wrote every triangle of every vehicle into a vertex buffer each frame
+(`ModelVertices.emit`); with 28 vehicles in view that was about a third of the render thread.
+Path B (`client.render.baked`) uploads each model group once, as upstream's display lists did:
+
+- `BakedModelCache` bakes a group into a vertex buffer the first frame it is drawn: position, UV,
+  the vertex normal and the normal of the triangle's last corner (for upstream's `GL_FLAT`
+  shading), 28 bytes a vertex, drawn as plain triangles. A group undrawn for 1,200 frames is freed,
+  which also frees the groups of reloaded or unloaded models.
+- `AircraftRenderer.submit` hands the body to `BakedVehicles.submit`, which records each part's
+  pose (entity pose times part pose) and normal matrix in a `submitSpecial` node in the solid
+  phase. Feature renderers run in registration order, so in path A's translucent phase the body
+  would draw after every exhaust flame and search light beam, which write no depth, and cover
+  them; in the solid phase they land on top, as in upstream's entity pass.
+- `BakedVehicleRenderer`, a NeoForge feature renderer, writes each part's uniform block
+  (`McheliPart`: transform, normal matrix, colour, light, flat flag) while the frame is prepared,
+  and draws one render pass per group, one draw per part, with `core/baked_vehicle.vsh` and
+  vanilla's entity fragment shader, lighting, fog and lightmap.
+- Thermal vision, far vehicles, glowing outlines and the emissive exhaust flames stay on path A,
+  as does everything when `render.gpuModelBuffers` is off or the path fails once (it then logs and
+  turns itself off).
+
+Validation: JUnit covers the vertex and uniform layouts and normal packing; all required
+GameTests pass. In game, screenshots with the option on and off match to within the frame-to-frame
+noise of moving clouds and rotors, by day, by night, for a wreck, with a search light's beam in
+front of the body and after a resource reload (`docs/screens/m7-gpu-models.png`,
+`docs/screens/m7-gpu-models-night.png`). JFR on
+the render thread over 20 seconds with 28 vehicles in view (software rendering): 374 samples with
+path A, 274 of them drawing vehicles; 140 with path B, 42 drawing vehicles. Frame rate is bound by
+software rasterisation here and did not change; on a graphics card the saving is CPU time per frame.
