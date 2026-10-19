@@ -334,4 +334,62 @@ public abstract class WeaponBase {
         }
         return null;
     }
+
+    /**
+     * Upstream {@code MCH_AircraftCommonGui#getWeaponTrajectoryTarget}, for the turret ballistics
+     * dot: steps the shot's flight from {@code start} along {@code look} (gravity and drag in air
+     * and water) for up to 256 ticks or the time fuse, and returns where it meets a block. A shot
+     * that meets none returns the top of its arc while it is still climbing or was aimed upwards,
+     * otherwise where it ended up.
+     */
+    public Vec3 getTrajectoryTarget(Vec3 start, Vec3 look, Vec3 entityMotion) {
+        WeaponInfo info = this.weaponInfo;
+        if (info == null) {
+            return start;
+        }
+        double mx;
+        double my;
+        double mz;
+        if (this instanceof BombWeapon) {
+            mx = entityMotion.x;
+            my = entityMotion.y;
+            mz = entityMotion.z;
+        } else if (this instanceof TorpedoWeapon) {
+            mx = look.x * info.acceleration + entityMotion.x;
+            my = look.y * info.acceleration + entityMotion.y;
+            mz = look.z * info.acceleration + entityMotion.z;
+        } else {
+            double accel = Math.min(this.acceleration, 3.9F);
+            mx = look.x * accel;
+            my = look.y * accel;
+            mz = look.z * accel;
+        }
+        boolean gun = this instanceof MachineGun1Weapon || this instanceof MachineGun2Weapon;
+        double accelFactor = info.acceleration > 4.0F && (gun || this instanceof RocketWeapon)
+                ? info.acceleration / 4.0F : 1.0;
+        Vec3 current = gun ? start.add(mx * 0.5, my * 0.5, mz * 0.5) : start;
+        Vec3 apex = current;
+        double highestY = current.y;
+        int maxSteps = info.timeFuse > 0 ? Math.min(256, info.timeFuse) : 256;
+        for (int step = 0; step < maxSteps; step++) {
+            boolean inWater = this.world.getBlockState(BlockPos.containing(current)).is(Blocks.WATER);
+            if (current.y > highestY) {
+                highestY = current.y;
+                apex = current;
+            }
+            my += inWater ? info.gravityInWater : info.gravity;
+            if (inWater && info.velocityInWater > 0.0F) {
+                mx *= info.velocityInWater;
+                my *= info.velocityInWater;
+                mz *= info.velocityInWater;
+            }
+            Vec3 next = current.add(mx * accelFactor, my * accelFactor, mz * accelFactor);
+            BlockHitResult hit = WeaponWorld.rayTrace(this.world, current, next, false, true);
+            if (hit != null) {
+                return hit.getLocation();
+            }
+            current = next;
+        }
+        return my >= 0 || look.y > 0 ? apex : current;
+    }
 }
