@@ -33,6 +33,9 @@ public class ModLanguageProvider extends LanguageProvider {
 
     private void english() {
         configScreen();
+        advancements(new String[] {"Welcome to MC Helicopter MOD", "Put the helicopter", "Refueling", "Refuel aircraft",
+                "Supply ammo", "Supply ammo to the aircraft", "Relief supplies", "Drop a container",
+                "Ride Of The Valkyries", "?", "Ain't war hell?", "?"});
         for (ModTab tab : ModTab.values()) {
             add(tab.translationKey(), tab.title);
         }
@@ -219,7 +222,21 @@ public class ModLanguageProvider extends LanguageProvider {
         }
     }
 
+    /** Upstream's achievement names, {@code achievement.McHeli*} in its lang files, for the advancements. */
+    private static final String[] ADVANCEMENTS = {"root", "supply_fuel", "supply_ammo", "relief_supplies",
+            "ride_valkyries", "aint_war_hell"};
+
+    private void advancements(String[] titlesAndDescriptions) {
+        for (int i = 0; i < ADVANCEMENTS.length; i++) {
+            String key = "advancements." + McheliCePort.MOD_ID + "." + ADVANCEMENTS[i];
+            add(key + ".title", titlesAndDescriptions[i * 2]);
+            add(key + ".description", titlesAndDescriptions[i * 2 + 1]);
+        }
+    }
+
     private void japanese() {
+        advancements(new String[] {"MC Helicopter MOD へようこそ", "ヘリコプターを設置", "燃料補給", "燃料を補給",
+                "弾薬補給", "弾薬を補給", "支援物資", "コンテナを投下", "ワルキューレの騎行", "?", "ホント戦争は地獄だぜ", "?"});
         addItem(ModItems.SPAWN_GUNNER_VS_MONSTER, "対モンスター 射撃手");
         addItem(ModItems.SPAWN_GUNNER_VS_PLAYER, "対他チームプレイヤー 射撃手");
         addItem(ModItems.RANGEFINDER, "レーザー レンジ ファインダー");
@@ -239,6 +256,8 @@ public class ModLanguageProvider extends LanguageProvider {
     }
 
     private void chinese() {
+        advancements(new String[] {"欢迎使用MC直升机模组!", "飞翔吧~少年", "燃料满满", "停机加油~亲", "火力十足",
+                "没有弹药啦~补给 补给", "物资支援", "物资箱下投", "女武神的騎行", "?", "战争就是地狱?", "?"});
         addItem(ModItems.RANGEFINDER, "激光测距仪");
         addItem(ModItems.WRENCH, "扳手");
         addItem(ModItems.FUEL, "燃料");

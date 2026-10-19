@@ -202,6 +202,7 @@ public class AircraftItem extends Item {
         if (!level.isClientSide()) {
             aircraft.readDataFromItem(stack);
             level.addFreshEntity(aircraft);
+            io.github.mcheliceport.registry.ModCriteriaTriggers.trigger(io.github.mcheliceport.registry.ModCriteriaTriggers.PUT_AIRCRAFT, player);
         }
         stack.consume(1, player);
         return aircraft;

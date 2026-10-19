@@ -263,7 +263,14 @@ public final class AircraftClientControl {
                     .with(PlayerControlSwitches.MOVE_LEFT, left);
 
             if (extraClicked) {
-                if (aircraft instanceof HeliEntity helicopter && helicopter.canSwitchFoldBlades()) {
+                var chain = io.github.mcheliceport.entity.chain.ChainEntity.attached(aircraft);
+                if (chain != null && chain.tow() == aircraft
+                        && (aircraft instanceof HeliEntity || aircraft instanceof io.github.mcheliceport.entity.vehicle.VehicleEntity)) {
+                    // Upstream: the extra key unhitches what a helicopter or vehicle tows first.
+                    ClientPacketDistributor.sendToServer(new io.github.mcheliceport.net.RackControlPayload(aircraft.getId(),
+                            io.github.mcheliceport.net.RackControlPayload.Action.UNHITCH));
+                    playSoundOk();
+                } else if (aircraft instanceof HeliEntity helicopter && helicopter.canSwitchFoldBlades()) {
                     if (helicopter.isFoldBlades()) {
                         helicopter.unfoldBlades();
                         blades = HeliControlPayload.BladeStatus.UNFOLD;

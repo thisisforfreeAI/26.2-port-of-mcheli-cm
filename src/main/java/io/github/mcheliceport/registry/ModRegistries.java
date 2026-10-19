@@ -40,7 +40,8 @@ public final class ModRegistries {
 
     private static final List<DeferredRegister<?>> ALL = List.of(
             ITEMS, BLOCKS, ModFluids.FLUID_TYPES, ModFluids.FLUIDS, BLOCK_ENTITY_TYPES, ENTITY_TYPES, MENU_TYPES,
-            DATA_COMPONENT_TYPES, SOUND_EVENTS, PARTICLE_TYPES, RECIPE_SERIALIZERS, CREATIVE_MODE_TABS);
+            DATA_COMPONENT_TYPES, SOUND_EVENTS, PARTICLE_TYPES, RECIPE_SERIALIZERS, CREATIVE_MODE_TABS,
+            ModCriteriaTriggers.TRIGGERS);
 
     private ModRegistries() {}
 

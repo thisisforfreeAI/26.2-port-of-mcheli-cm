@@ -1,0 +1,25 @@
+{
+  "parent": "mcheli_ce_port:main/root",
+  "criteria": {
+    "riding_valkyries": {
+      "trigger": "mcheli_ce_port:riding_valkyries"
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "mcheli_ce_port:uh-1c"
+    },
+    "title": {
+      "translate": "advancements.mcheli_ce_port.ride_valkyries.title"
+    },
+    "description": {
+      "translate": "advancements.mcheli_ce_port.ride_valkyries.description"
+    },
+    "hidden": true
+  },
+  "requirements": [
+    [
+      "riding_valkyries"
+    ]
+  ]
+}

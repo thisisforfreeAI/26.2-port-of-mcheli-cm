@@ -1617,6 +1617,9 @@ public abstract class AircraftEntity extends Entity
             if (!this.keepOnRideRotation) {
                 this.mountMobToSeats();
             }
+            if ("uh-1c".equalsIgnoreCase(this.info.name)) {
+                io.github.mcheliceport.registry.ModCriteriaTriggers.trigger(io.github.mcheliceport.registry.ModCriteriaTriggers.RIDING_VALKYRIES, player);
+            }
         }
         return InteractionResult.SUCCESS;
     }
@@ -2598,6 +2601,7 @@ public abstract class AircraftEntity extends Entity
                 this.setFuelType(type);
                 this.setFuel(current + drained);
                 this.inventory.setChanged();
+                io.github.mcheliceport.registry.ModCriteriaTriggers.trigger(io.github.mcheliceport.registry.ModCriteriaTriggers.SUPPLY_FUEL, this.getPilot());
             }
             return;
         }
@@ -2664,6 +2668,7 @@ public abstract class AircraftEntity extends Entity
             }
         }
         this.inventory.setChanged();
+        io.github.mcheliceport.registry.ModCriteriaTriggers.trigger(io.github.mcheliceport.registry.ModCriteriaTriggers.SUPPLY_FUEL, this.getPilot());
     }
 
     // ---- damage ----
