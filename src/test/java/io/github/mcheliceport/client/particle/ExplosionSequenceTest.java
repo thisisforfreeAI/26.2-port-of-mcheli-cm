@@ -6,6 +6,23 @@ import io.github.mcheliceport.effect.BlastStyle;
 import org.junit.jupiter.api.Test;
 
 class ExplosionSequenceTest {
+    @Test void largeMissileWarheadsGetVolumeAndRollingFireWithoutChangingSmallSmokeProfiles() {
+        assertTrue(ExplosionSequence.smokeLed(4, BlastStyle.BLAST));
+        assertFalse(ExplosionSequence.smokeLed(10, BlastStyle.BLAST));
+        assertTrue(ExplosionSequence.largeMissile(10, BlastStyle.BLAST));
+        assertFalse(ExplosionSequence.largeMissile(Float.NaN, BlastStyle.BLAST));
+        assertFalse(ExplosionSequence.largeMissile(10, BlastStyle.CANNON));
+        assertTrue(ExplosionSequence.radius(10, BlastStyle.BLAST) > ExplosionSequence.radius(7, BlastStyle.BLAST) * 1.5F);
+        assertTrue(ExplosionSequence.fireTicks(10, BlastStyle.BLAST) > ExplosionSequence.fireTicks(4, BlastStyle.BLAST));
+        for (var budget : EffectBudget.values()) for (int pressure = 0; pressure <= 3; pressure++) {
+            int count = ExplosionSequence.lobes(4, BlastStyle.BLAST, budget, pressure);
+            int fire = ExplosionSequence.smokeFireLobes(4, BlastStyle.BLAST, count);
+            assertTrue(fire >= 1 && fire <= 2);
+            assertTrue(count - fire >= 1, "Retain the old growing smoke even under load");
+        }
+        assertEquals(0, ExplosionSequence.smokeFireLobes(4, BlastStyle.CANNON, 4));
+        assertEquals(0, ExplosionSequence.smokeFireLobes(Float.NaN, BlastStyle.BLAST, 12));
+    }
     @Test void backlightingExpiresAndIncendiariesKeepFireLongerThanHighExplosives() {
         for (int duration = 1; duration <= 56; duration++) {
             assertTrue(ExplosionSequence.backlight(0, duration) > 0);

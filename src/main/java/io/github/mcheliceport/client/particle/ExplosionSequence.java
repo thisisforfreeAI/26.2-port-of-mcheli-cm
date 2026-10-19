@@ -9,7 +9,19 @@ public final class ExplosionSequence {
 
     /** Rockets/missiles and small bombs keep the earlier smoke-led character. */
     public static boolean smokeLed(float power, BlastStyle style) {
-        return style != BlastStyle.INCENDIARY && (!ExplosionLook.broad(style) || power < 4);
+        return style != BlastStyle.INCENDIARY && !largeMissile(power, style)
+                && (!ExplosionLook.broad(style) || power < 4);
+    }
+
+    /** High-explosive missile warheads need volume even though they are not bomb profiles. */
+    public static boolean largeMissile(float power, BlastStyle style) {
+        return style == BlastStyle.BLAST && Float.isFinite(power) && power >= 8;
+    }
+
+    /** Replace primary smoke requests, including under pressure; never add to the request cap. */
+    public static int smokeFireLobes(float power, BlastStyle style, int count) {
+        if (power < 2 || !Float.isFinite(power) || style == BlastStyle.CANNON || count < 2) return 0;
+        return Math.min(count - 1, count >= 8 ? 2 : 1);
     }
 
     public static int lobes(float power, BlastStyle style, EffectBudget budget, int pressure) {
@@ -22,18 +34,20 @@ public final class ExplosionSequence {
 
     public static float radius(float power, BlastStyle style) {
         if (!Float.isFinite(power) || power <= 0) return 0;
-        float scale = ExplosionLook.broad(style) ? 0.6F : style == BlastStyle.PENETRATOR ? 0.25F : 0.36F;
-        return Math.clamp(power * scale, 0.25F, ExplosionLook.broad(style) ? 8 : 3.2F);
+        float scale = ExplosionLook.broad(style) ? 0.6F : largeMissile(power, style) ? 0.55F
+                : style == BlastStyle.PENETRATOR ? 0.25F : 0.36F;
+        return Math.clamp(power * scale, 0.25F, ExplosionLook.broad(style) ? 8 : largeMissile(power, style) ? 6 : 3.2F);
     }
 
     public static int life(float power, BlastStyle style) {
         float p = Float.isFinite(power) ? Math.clamp(power, 0, 16) : 0;
-        return (ExplosionLook.broad(style) ? 52 : 24) + (int) (p * 3);
+        return (ExplosionLook.broad(style) ? 52 : largeMissile(power, style) ? 44 : 24) + (int) (p * 3);
     }
 
     public static int fireTicks(float power, BlastStyle style) {
         float p = Float.isFinite(power) ? Math.clamp(power, 0, 16) : 0;
-        return style == BlastStyle.INCENDIARY ? 40 + (int) p : ExplosionLook.broad(style) ? 8 + (int) p : 4 + (int) (p * 0.5F);
+        return style == BlastStyle.INCENDIARY ? 40 + (int) p : ExplosionLook.broad(style) || largeMissile(power, style) ? 8 + (int) p
+                : (style == BlastStyle.CANNON ? 4 : 6) + (int) (p * 0.5F);
     }
 
     public static float flashRadius(float power, BlastStyle style) {
