@@ -3,6 +3,7 @@
   "minVersion": "0.8",
   "package": "io.github.mcheliceport.mixin",
   "compatibilityLevel": "JAVA_21",
-  "mixins": ["UavEntityTrackingMixin", "UavChunkTrackingMixin"],
+  "mixins": ["UavEntityTrackingMixin", "UavChunkTrackingMixin", "LongDistanceTrackingMixin"],
+  "client": ["FarVehicleVisibilityMixin"],
   "injectors": {"defaultRequire": 1}
 }

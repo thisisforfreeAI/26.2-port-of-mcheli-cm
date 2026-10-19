@@ -1641,6 +1641,15 @@ public abstract class AircraftEntity extends Entity
                 : player.distanceToSqr(this) <= 64.0;
     }
 
+    /**
+     * Upstream drew every vehicle the client had in a pass of its own ({@code VehicleRenderHook}),
+     * however far; vanilla's size-based distance would hide a vehicle past about 150 blocks.
+     */
+    @Override
+    public boolean shouldRenderAtSqrDistance(double distance) {
+        return true;
+    }
+
     @Override
     public boolean isPickable() {
         return !this.isRemoved();

@@ -26,7 +26,7 @@ broader gameplay and hardware checks remain pending.
 | Area | Planned milestone |
 |---|---|
 | Remaining plane/ground equipment | M6 |
-| Long-distance tracking and rendering, GPU-buffer model rendering, HBM:NTM stubs, performance work | M7 |
+| GPU-buffer model rendering, HBM:NTM stubs, performance work | M7 |
 
 Until then:
 
@@ -567,6 +567,14 @@ These follow from how Minecraft 26.2 works or from decisions approved in PORTING
     ported. Upstream drew every entity but the ridden vehicle white; the port draws living entities
     (not their held items, as upstream) and McHeli vehicles white, and leaves bullets, dropped
     items, the GLTD, cargo containers and other entities in their own textures.
+106. Long-distance tracking follows upstream's `ExperimentalRemoveClientTrackingRestrictions`
+    (on by default there and here, as the server config's `tracking.longDistance`), with these
+    differences. It covers McHeli vehicles only: upstream also sent its bullets, missiles, seats,
+    containers and the GLTD past the view distance. Upstream drew far entities in a second pass
+    with its own 3,000-block projection; the port keeps vanilla's projection, whose far plane is
+    four times the render distance or the cloud range, whichever is larger, and draws the
+    vehicles past the render distance with a shader that leaves out fog, as upstream turned fog
+    off. Riders are not sent that far (they never were), so far vehicles show empty seats.
 
 ## Upstream content issues kept as they are
 
