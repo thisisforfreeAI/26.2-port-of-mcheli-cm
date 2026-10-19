@@ -78,3 +78,22 @@ blocks up). All 246 required GameTests pass. In the client, riding an M1A2 towar
 the green cross showed at the centre and the gun's dot just below it on the wall.
 
 ![Turret ballistics sight](screens/m7-turret-ballistics.png)
+
+## Advancement triggers
+
+`ModCriteriaTriggers` ports `MCH_CriteriaTriggers`: `put_aircraft`, `supply_ammo`, `supply_fuel`,
+`relief_supplies`, `riding_valkyries` and `villager_hurt_bullet`, each a vanilla `PlayerTrigger`
+under the mod's ID, fired where upstream fired them (placing a vehicle from its item, an ammunition
+supply for the pilot, refuelling from the fuel slot for the pilot, unhitching a towed cargo
+container with no block in the 20 below, the pilot boarding a UH-1C, a bullet hurting a villager
+for a shooter in a vehicle seat). Upstream had no advancements for them; the port adds six in
+`data/mcheli_ce_port/advancement/main`, titled from upstream's achievement names in English,
+Japanese and Chinese (KNOWN_ISSUES 104). Upstream's extra-key unhitch (`unhitchChainId`) is now
+`RackControlPayload.Action.UNHITCH`; network protocol 29.
+
+Validation: three GameTests check that each advancement loads and its trigger earns it, that
+boarding a UH-1C earns Ride Of The Valkyries, and that unhitching a container 25 blocks up earns
+Relief supplies while one near the ground does not. All 249 required GameTests pass. In the client,
+placing an AH-64 in survival showed the "Advancement Made!" toast and the chat announcement.
+
+![Advancement](screens/m7-advancement.png)

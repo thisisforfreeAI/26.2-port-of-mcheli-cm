@@ -47,7 +47,7 @@ public final class ModNetwork {
     private static final Logger LOGGER = LogUtils.getLogger();
     /** Bump when payload encoding, menu layout or synchronized entity data changes. */
     // /mcheli sendss and modlist: the command request, screenshot and mod list payloads.
-    public static final String VERSION = "28";
+    public static final String VERSION = "29";
 
     private ModNetwork() {
     }
@@ -300,8 +300,26 @@ public final class ModNetwork {
             case UNLOAD -> aircraft.racks().unload();
             case RIDE -> aircraft.racks().ride();
             case LEAVE -> aircraft.racks().leave();
+            case UNHITCH -> unhitch(player, aircraft);
             default -> { }
         }
+    }
+
+    /**
+     * Upstream {@code handleChain}: the pilot lets go of what the vehicle tows. Dropping a cargo
+     * container with nothing in the 20 blocks below earns the relief supplies advancement.
+     */
+    public static void unhitch(Player player, AircraftEntity aircraft) {
+        var chain = io.github.mcheliceport.entity.chain.ChainEntity.attached(aircraft);
+        if (chain == null || chain.tow() != aircraft) {
+            return;
+        }
+        if (chain.towed() instanceof io.github.mcheliceport.entity.container.CargoContainerEntity
+                && !aircraft.blockWithin(3, -20)) {
+            io.github.mcheliceport.registry.ModCriteriaTriggers.trigger(
+                    io.github.mcheliceport.registry.ModCriteriaTriggers.RELIEF_SUPPLIES, player);
+        }
+        chain.discard();
     }
 
     /** The vehicle a player rides, in seat 0 or a crew seat (upstream's lookup in {@code onReceive}). */

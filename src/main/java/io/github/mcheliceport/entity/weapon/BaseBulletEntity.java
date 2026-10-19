@@ -1221,6 +1221,11 @@ public abstract class BaseBulletEntity extends Entity implements WeaponTargets.P
             damage *= this.getInfo() != null ? this.getInfo().getDamageFactor(WeaponTargets.targetName(entity)) : 1.0F;
             if (hitBox != null) { hitBox.hurtServer(server, ds, damage); }
             else { entity.hurtServer(server, ds, damage); }
+            if (this instanceof BulletEntity && entity instanceof net.minecraft.world.entity.npc.villager.Villager
+                    && this.shootingEntity != null
+                    && this.shootingEntity.getVehicle() instanceof io.github.mcheliceport.entity.seat.SeatEntity) {
+                io.github.mcheliceport.registry.ModCriteriaTriggers.trigger(io.github.mcheliceport.registry.ModCriteriaTriggers.VILLAGER_HURT_BULLET, this.shootingEntity);
+            }
         }
         this.notifyHitBullet();
     }

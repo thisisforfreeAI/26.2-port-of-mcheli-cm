@@ -6,9 +6,12 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.Identifier;
 
-/** Upstream RackAction, separate so existing vehicle-control layouts stay stable. */
+/**
+ * Upstream RackAction, separate so existing vehicle-control layouts stay stable; {@code UNHITCH}
+ * is upstream's {@code unhitchChainId}, dropping what the vehicle tows.
+ */
 public record RackControlPayload(int aircraftId, Action action) implements CustomPacketPayload {
-    public enum Action { NONE, LOAD, UNLOAD, RIDE, LEAVE }
+    public enum Action { NONE, LOAD, UNLOAD, RIDE, LEAVE, UNHITCH }
     public static final Type<RackControlPayload> TYPE = new Type<>(Identifier.fromNamespaceAndPath(McheliCePort.MOD_ID, "rack_control"));
     public static final StreamCodec<FriendlyByteBuf, RackControlPayload> CODEC = StreamCodec.of(
             (buf, p) -> { buf.writeVarInt(p.aircraftId); buf.writeByte(p.action.ordinal()); },

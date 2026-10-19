@@ -26,7 +26,7 @@ broader gameplay and hardware checks remain pending.
 | Area | Planned milestone |
 |---|---|
 | Remaining plane/ground equipment | M6 |
-| Advancement triggers, long-distance tracking and rendering, thermal vision (the third camera mode), GPU-buffer model rendering, HBM:NTM stubs, performance work | M7 |
+| Long-distance tracking and rendering, thermal vision (the third camera mode), GPU-buffer model rendering, HBM:NTM stubs, performance work | M7 |
 
 Until then:
 
@@ -555,6 +555,12 @@ These follow from how Minecraft 26.2 works or from decisions approved in PORTING
 103. The ground tilts a tank at most 40 degrees either way. Upstream had no limit, so a tank whose
     front wheels hung over a shell crater tipped until it fell in nose first, often near vertical;
     40 degrees still follows a one-block staircase hill.
+104. Upstream registered six advancement triggers but shipped no advancements that use them. The
+    port adds six, named after upstream's old achievements (`achievement.McHeli*` in its lang
+    files), in their own tab: placing a vehicle, refuelling, resupplying ammunition, dropping a
+    towed container from more than 20 blocks up, boarding a UH-1C (hidden) and hurting a villager
+    with a bullet from a vehicle seat (hidden). To drop a container, the extra key unhitches what
+    a helicopter or placed vehicle tows, as upstream; the port had not ported that key yet.
 
 ## Upstream content issues kept as they are
 

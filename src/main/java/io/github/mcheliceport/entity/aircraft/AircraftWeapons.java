@@ -963,6 +963,8 @@ public final class AircraftWeapons {
             ws.supplyRestAllAmmo();
             return;
         }
+        // As upstream, the pilot earns it whether or not the supply goes through.
+        io.github.mcheliceport.registry.ModCriteriaTriggers.trigger(io.github.mcheliceport.registry.ModCriteriaTriggers.SUPPLY_AMMO, this.ac.getPilot());
         if (!this.canPlayerSupplyAmmo(payer, ws)) {
             return;
         }

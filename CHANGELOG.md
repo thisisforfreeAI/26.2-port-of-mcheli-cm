@@ -101,6 +101,9 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
   supported (see Added); JEI shows the drafting table as a crafting station for them.
 
 ### Added
+- Advancements, as upstream's triggers: a McHeli tab for placing a vehicle, refuelling,
+  resupplying ammunition and dropping a towed container from high up, and two hidden ones. The
+  extra key (F) unhitches what a helicopter or placed vehicle tows, as upstream. Network protocol 29.
 - The turret ballistics sight, as upstream: in every vehicle, with the HUD shown, a small cross
   marks the centre of the screen and a dot with a circle as wide as the weapon's spread marks where
   the current weapon's shot would land, or the top of its arc when it meets nothing. Both invert

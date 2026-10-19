@@ -89,6 +89,7 @@ public final class ModGameTests {
         NpcBattleGameTests.register();
         McheliCommandGameTests.register();
         ProjectileChunkGameTests.register();
+        AdvancementGameTests.register();
         if (System.getProperty("neoforge.enabledGameTestNamespaces") != null) {
             ChargerGameTests.registerTestBattery(modBus);
         }
