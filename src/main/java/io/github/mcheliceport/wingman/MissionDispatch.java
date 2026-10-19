@@ -80,16 +80,41 @@ public final class MissionDispatch {
             player.sendSystemMessage(Component.literal("§cNo valid mission types."));
             return;
         }
-        // Upstream filled the tank, so a freshly placed aircraft does not return at once.
+        WingmanEntry entry = startOrder(wingman, order);
+        entry.assignedParkingId = "";
+        if (!p.routeId().isEmpty()) {
+            TaxiRoute route = TaxiRouteRegistry.findById(level, p.routeId());
+            if (route != null) {
+                entry.assignedParkingId = route.parkingId();
+                entry.departureRouteId = p.routeId();
+                player.sendSystemMessage(Component.literal("§aTaxi route §e" + route.routeId()
+                        + "§a → parking §e" + route.parkingId()));
+            } else {
+                player.sendSystemMessage(Component.literal("§cRoute not found: " + p.routeId() + " — airborne start"));
+            }
+        }
+        player.sendSystemMessage(Component.literal("§aOrder dispatched: §e" + String.join(",", p.missionTypes())
+                + "§a → " + p.aircraft().toString().substring(0, 8) + "..."));
+    }
+
+    /**
+     * Upstream's order start, shared by the base screen and {@code /wingman order dispatch}: fills
+     * the tank, so a freshly placed aircraft does not return at once, and puts the order in the
+     * aircraft's entry, replacing any planner mission. The parking spot it leaves from is kept.
+     */
+    public static WingmanEntry startOrder(AircraftEntity wingman, MissionOrder order) {
         if (wingman.getMaxFuel() > 0) {
             wingman.setFuel(wingman.getMaxFuel());
         }
-        WingmanEntry entry = WingmanRegistry.get(p.aircraft());
+        WingmanEntry entry = WingmanRegistry.get(wingman.getUUID());
         if (entry == null) {
             entry = new WingmanEntry();
-            WingmanRegistry.put(p.aircraft(), entry);
+            WingmanRegistry.put(wingman.getUUID(), entry);
         }
         entry.order = order;
+        entry.mission = null;
+        entry.missionIndex = 0;
+        entry.parkingHold = false;
         entry.orderTimer = 0;
         entry.missionOrbitAngle = 0.0;
         entry.strikePassesRemaining = order.strikePasses;
@@ -103,22 +128,9 @@ public final class MissionDispatch {
         entry.vtolHoverMode = false;
         entry.vtolOnSent = true;
         entry.climbHold = false;
-        entry.assignedParkingId = "";
         entry.departureRouteId = "";
-        if (!p.routeId().isEmpty()) {
-            TaxiRoute route = TaxiRouteRegistry.findById(level, p.routeId());
-            if (route != null) {
-                entry.assignedParkingId = route.parkingId();
-                entry.departureRouteId = p.routeId();
-                player.sendSystemMessage(Component.literal("§aTaxi route §e" + route.routeId()
-                        + "§a → parking §e" + route.parkingId()));
-            } else {
-                player.sendSystemMessage(Component.literal("§cRoute not found: " + p.routeId() + " — airborne start"));
-            }
-        }
         entry.weaponType = primaryWeapon(order);
-        player.sendSystemMessage(Component.literal("§aOrder dispatched: §e" + String.join(",", p.missionTypes())
-                + "§a → " + p.aircraft().toString().substring(0, 8) + "..."));
+        return entry;
     }
 
     /** The order the payload describes, or null without a valid mission type. */

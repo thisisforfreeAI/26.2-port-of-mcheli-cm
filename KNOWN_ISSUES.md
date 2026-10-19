@@ -26,7 +26,6 @@ broader gameplay and hardware checks remain pending.
 | Area | Planned milestone |
 |---|---|
 | Remaining plane/ground equipment | M6 |
-| Wingman (the mission planner and its route-node missions, `/wingman`, the wingman config file) | M6b |
 | Remaining `/mcheli` commands (including reloading content with `reconfig`), advancement triggers, long-distance tracking and rendering, thermal vision (the third camera mode), GPU-buffer model rendering, projectile chunk loading (`ProjectileChunkLoad`), HBM:NTM stubs, performance work | M7 |
 
 Until then:
@@ -60,11 +59,6 @@ Until then:
   energy from the charger and from batteries (any item with NeoForge's item energy capability) in
   the fuel slot. Upstream's GregTech EU and HBM HE energy systems are dropped, so the
   `EnergySystem` and ratio settings are gone; the port registers no battery item, as upstream.
-- Wingmen fly in formation and attack, and the base screen's Mission tab sends aircraft on
-  missions from the base's taxi routes, runways and helipads. Upstream's mission planner, its
-  route-node missions and `/wingman` are not ported yet (M6b). The formation values start at
-  upstream's defaults on each server start and have no config file entries until `/wingman` is
-  ported.
 - Turret ballistics lines (upstream `drawTurretBallistics`) are not drawn yet (M7).
 
 This config entry already exists but has no effect yet:
@@ -509,6 +503,32 @@ These follow from how Minecraft 26.2 works or from decisions approved in PORTING
     order had ended by then; the port turns it as it parks. The tab's VTOL landing note is drawn
     at the bottom left, where upstream's clipping hid it, and a button scrolled partly off the top
     of either tab is hidden rather than drawn over the tab buttons.
+100. The mission planner and `/wingman` follow upstream, with these differences. Planner routes
+    are saved with the dimension, where upstream kept one `wingman_routes.json` for every world,
+    since their nodes name that dimension's markers. A route is sent only to an aircraft in the
+    player's dimension that no player flies, and it replaces the aircraft's order; upstream left
+    the order in charge. An abort ends planner missions and leaves orders alone; upstream's
+    abort-all also stopped orders, which then restarted. A take-off or landing node finds the
+    runway from the base's ID or from either end's ID; upstream needed both ends to share the ID,
+    so the runway-end IDs its planner offered skipped the node. Its take-off and landing hints also
+    list bases. Nodes refuse numbers that are not finite, a negative radius or time and
+    coordinates past the world border, and a route takes up to 64 nodes. The planner narrows its
+    two panels and shows fewer rows in a small window, and the route editor keeps every row on
+    screen at 427 by 240. `/wingman` is for any player, as upstream, except `spawnuav`, which
+    spawns aircraft and needs operator permission (level 2). `follow`, `stop`, `engage`, `auto`,
+    `hold` and `weapon` act for the aircraft the player pilots, as the wingman panel does, and
+    `follow` takes an aircraft within 512 blocks that nobody flies; `order dispatch` orders an
+    aircraft within 512 blocks of the base, which must be one the player may build at; `marker id`
+    and `marker type` edit the marker the player looks at within reach, as the marker screen does,
+    where upstream looked 8 blocks ahead and let anyone edit it. Numbers out of upstream's config
+    ranges are refused. `engage` needs the target's UUID: without one upstream set a manual attack
+    on nothing, which left the wingmen out of formation attacking nothing. Brigadier ends a bare
+    word at a comma, so `order dispatch` takes several mission types as `cap+recon` or
+    `"cap,recon"`, and its last number is the time limit in seconds, which upstream's usage
+    called minutes but read as seconds. `order park` keeps the parking spot until the aircraft's
+    next order or `order abort`; upstream dropped it on the next tick unless the aircraft was a
+    wingman. The formation values are read from the server config's `[wingman]` section when the
+    server starts and, as upstream, changes made while it runs are not saved.
 
 ## Upstream content issues kept as they are
 

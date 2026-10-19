@@ -1,6 +1,7 @@
 package io.github.mcheliceport.wingman.wingman;
 
 import io.github.mcheliceport.wingman.mission.AutonomousState;
+import io.github.mcheliceport.wingman.mission.MissionNode;
 import io.github.mcheliceport.wingman.mission.MissionOrder;
 import java.util.ArrayList;
 import java.util.List;
@@ -10,8 +11,8 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * Upstream's {@code WingmanEntry}: one wingman's leader, formation slot and attack orders, and the
- * state of a mission it flies on its own. The route-node missions of upstream's planner and
- * {@code /wingman} come with that increment.
+ * state of a mission it flies on its own: an order from a base's Mission tab, or a list of route
+ * nodes from the mission planner or {@code /wingman mission assign}.
  */
 public class WingmanEntry {
 
@@ -46,6 +47,11 @@ public class WingmanEntry {
     public double autoTargetY;
     public double autoTargetZ;
 
+    /** The route nodes of a planner mission, or null when not flying one. */
+    public @Nullable List<MissionNode> mission;
+    /** The index of the node being flown. */
+    public int missionIndex;
+
     /** The mission order, or null when not flying one. */
     public @Nullable MissionOrder order;
     /** Ticks on station. */
@@ -58,6 +64,11 @@ public class WingmanEntry {
     public int strikePassesRemaining;
     /** The parking spot or helipad the aircraft left from or is taxiing to. */
     public String assignedParkingId = "";
+    /**
+     * Set by {@code /wingman order park}: the aircraft waits on {@link #assignedParkingId} for its
+     * next order, so the entry is kept without a leader.
+     */
+    public boolean parkingHold;
     /** The taxi route the order named for departure. */
     public String departureRouteId = "";
     /** The marker IDs of the taxi in progress, and the next one's index. */
@@ -99,12 +110,33 @@ public class WingmanEntry {
         this(null, 0);
     }
 
-    /** Upstream {@code isAutonomous}: flying a mission rather than following. */
+    /** Upstream {@code isAutonomous}: flying a planner mission or an order rather than following. */
     public boolean isAutonomous() {
-        return this.order != null;
+        return this.autoState != AutonomousState.NONE && this.mission != null || this.order != null;
     }
 
     public boolean hasOrder() {
         return this.order != null;
+    }
+
+    /** The planner mission's current node, or null when it has none left. */
+    public @Nullable MissionNode currentNode() {
+        List<MissionNode> nodes = this.mission;
+        return nodes == null || this.missionIndex >= nodes.size() ? null : nodes.get(this.missionIndex);
+    }
+
+    /** Upstream {@code advanceMission}: on to the next node, its timer reset. */
+    public void advanceMission() {
+        this.missionIndex++;
+        this.missionNodeTimer = 0;
+    }
+
+    /** Starts a planner mission from its first node. */
+    public void startMission(List<MissionNode> nodes) {
+        this.parkingHold = false;
+        this.mission = List.copyOf(nodes);
+        this.missionIndex = 0;
+        this.missionNodeTimer = 0;
+        this.autoState = AutonomousState.ENROUTE;
     }
 }

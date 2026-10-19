@@ -112,6 +112,8 @@ public final class AircraftClientEvents {
                 p -> Minecraft.getInstance().gui.setScreen(new io.github.mcheliceport.client.gui.WingmanPanelScreen(p)));
         io.github.mcheliceport.wingman.WingmanClientHooks.setBaseScreen(
                 p -> Minecraft.getInstance().gui.setScreen(new io.github.mcheliceport.client.gui.BaseConfigScreen(p)));
+        io.github.mcheliceport.wingman.WingmanClientHooks.setPlanner(
+                p -> Minecraft.getInstance().gui.setScreen(new io.github.mcheliceport.client.gui.WingmanPlannerScreen(p)));
     }
 
     public static @Nullable AircraftEntity riddenAircraft(@Nullable LocalPlayer player) {

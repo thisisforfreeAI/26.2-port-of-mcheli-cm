@@ -147,3 +147,37 @@ settling; both are fixed.
 ![Mission tab](screens/m6b-mission-tab.png)
 ![Routes and VTOL arrival](screens/m6b-mission-routes.png)
 ![Back on the base](screens/m6b-mission-parked.png)
+
+## Planner and command increment
+
+- `MissionNode` and `MissionPlan` keep upstream's node text (`flyto:x,y,z`, `takeoff:id`,
+  `land:id`, `attack:radius`, `loiter:ticks`, `park:id`); routes are saved per dimension.
+- `AutonomousFlightHandler` flies a route node by node: a take-off taxis straight to runway end A
+  and takes off as an order does, a fly-to point is reached within 30 blocks at no less than the
+  cruising height, a loiter circles 20 blocks round, an attack waits while a hostile mob is in its
+  radius, a landing flies the order's landing circuit and a park taxis to the spot and turns to
+  its heading. A take-off or landing node finds the runway from the base or either end's ID.
+- `WingmanPlannerScreen` and `NewRouteScreen` port `GuiWingmanPlanner` and `GuiNewRoute`;
+  `PlannerDataPayload`, `MissionActionPayload` and `MissionRouteActionPayload` replace
+  `PacketPlannerData`, `PacketMissionAction` and `PacketRouteAction`. `MissionPlanner` holds the
+  server side the screens and the command share.
+- `WingmanCommand` ports `/wingman` with Brigadier, including suggestions for aircraft, routes,
+  markers, mission types, weapons and UAV types. The server config's `[wingman]` section ports
+  upstream's formation entries.
+- The Mission tab's Orbit Atk, which the port had ignored, now flies upstream's AC-130 mode, and
+  the attack orbit uses the order's orbit radius.
+- Differences: KNOWN_ISSUES 100. Network protocol 25.
+
+Validation: three GameTests cover the nodes, routes, runway lookup, payload codecs and the
+Orbit Atk orbit; a helicopter flying a six-node route (a skipped take-off, fly-to, loiter, attack
+with and without a mob, park and a take-off taxi), assign replacing an order, aborts and a flown
+aircraft refused; and `/wingman` routes, formation values and their ranges, `spawnuav` for
+operators only, parking holds and an order dispatched, defaulted and aborted. All 237 required
+GameTests pass. In the client, on the test base, a route built with the planner and `/wingman
+route create` (take-off from the base, a fly-to point 200 blocks out, a 10-second loiter, a landing
+and a park) sent a P-51D through every node: it took off along the runway, flew to the point,
+circled, flew the circuit, landed and taxied back to its parking spot. The planner and the route
+editor fit the 427 by 240 window.
+
+![Mission planner](screens/m6b-planner.png)
+![Route editor](screens/m6b-new-route.png)

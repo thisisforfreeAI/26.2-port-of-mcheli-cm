@@ -2,6 +2,7 @@ package io.github.mcheliceport.wingman;
 
 import io.github.mcheliceport.net.OpenBaseScreenPayload;
 import io.github.mcheliceport.net.OpenMarkerScreenPayload;
+import io.github.mcheliceport.net.PlannerDataPayload;
 import io.github.mcheliceport.net.WingmanPanelDataPayload;
 import java.util.function.Consumer;
 import org.jspecify.annotations.Nullable;
@@ -12,6 +13,7 @@ public final class WingmanClientHooks {
     private static volatile @Nullable Consumer<OpenMarkerScreenPayload> markerScreen;
     private static volatile @Nullable Consumer<OpenBaseScreenPayload> baseScreen;
     private static volatile @Nullable Consumer<WingmanPanelDataPayload> wingmanPanel;
+    private static volatile @Nullable Consumer<PlannerDataPayload> planner;
 
     private WingmanClientHooks() {
     }
@@ -26,6 +28,18 @@ public final class WingmanClientHooks {
 
     public static void setWingmanPanel(@Nullable Consumer<WingmanPanelDataPayload> opener) {
         wingmanPanel = opener;
+    }
+
+    public static void setPlanner(@Nullable Consumer<PlannerDataPayload> opener) {
+        planner = opener;
+    }
+
+    /** Upstream {@code PacketPlannerData#onReceive}: opens the mission planner. */
+    public static void openPlanner(PlannerDataPayload payload) {
+        Consumer<PlannerDataPayload> opener = planner;
+        if (opener != null) {
+            opener.accept(payload);
+        }
     }
 
     /** Upstream {@code PacketWingmanPanelData#onReceive}: opens the wingman panel. */

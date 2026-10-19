@@ -31,6 +31,12 @@ public final class ServerConfig {
     public static final ModConfigSpec.DoubleValue CHARGER_RANGE;
     public static final ModConfigSpec.IntValue CHARGER_TRANSFER_RATE;
     public static final ModConfigSpec.IntValue CHARGER_CAPACITY;
+    public static final ModConfigSpec.DoubleValue WINGMAN_SIDE_DIST;
+    public static final ModConfigSpec.DoubleValue WINGMAN_ALT_OFFSET;
+    public static final ModConfigSpec.DoubleValue WINGMAN_REAR_DIST;
+    public static final ModConfigSpec.IntValue WINGMAN_MAX_WINGMEN;
+    public static final ModConfigSpec.DoubleValue WINGMAN_MIN_ATTACK_ALTITUDE;
+    public static final ModConfigSpec.DoubleValue WINGMAN_MAX_ATTACK_ALTITUDE;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -110,6 +116,29 @@ public final class ServerConfig {
         CHARGER_CAPACITY = builder
                 .comment("Energy the charger holds. Upstream: ChargerCapacity.")
                 .defineInRange("chargerCapacity", 100000, 0, Integer.MAX_VALUE);
+        builder.pop();
+
+        builder.comment("The wingman formation (upstream's [formation] section of its wingman config). These are read",
+                        "when the server starts; the wingman panel and /wingman change them until it stops, unsaved.")
+                .push("wingman");
+        WINGMAN_SIDE_DIST = builder
+                .comment("Lateral distance from the leader's centre line, in blocks. Upstream: formationSideDist.")
+                .defineInRange("formationSideDist", 20.0, 1.0, 500.0);
+        WINGMAN_ALT_OFFSET = builder
+                .comment("Altitude offset from the leader, in blocks; positive is above. Upstream: formationAltOffset.")
+                .defineInRange("formationAltOffset", 0.0, -500.0, 500.0);
+        WINGMAN_REAR_DIST = builder
+                .comment("Distance behind the leader, in blocks. Upstream: formationRearDist.")
+                .defineInRange("formationRearDist", 30.0, 1.0, 500.0);
+        WINGMAN_MAX_WINGMEN = builder
+                .comment("Wingmen per aircraft. Upstream: maxWingmen.")
+                .defineInRange("maxWingmen", 10, 1, 64);
+        WINGMAN_MIN_ATTACK_ALTITUDE = builder
+                .comment("Lowest absolute Y of attack runs, whatever the weapon; 0 is no floor. Upstream: minAttackAltitude.")
+                .defineInRange("minAttackAltitude", 0.0, 0.0, 10000.0);
+        WINGMAN_MAX_ATTACK_ALTITUDE = builder
+                .comment("Highest absolute Y of attack runs, whatever the weapon; 0 is no ceiling. Upstream: maxAttackAltitude.")
+                .defineInRange("maxAttackAltitude", 0.0, 0.0, 10000.0);
         builder.pop();
         SPEC = builder.build();
     }
