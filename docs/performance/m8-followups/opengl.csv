@@ -1,0 +1,1921 @@
+scene,tick,particles,ring_emitted,ground_reads,heat_sources,heat_drawn,scene_copies,pressure
+rocket-small,0,T 0,0,0,0,0,0,0
+rocket-small,1,T 0,0,0,0,0,0,0
+rocket-small,2,T 0,0,0,0,0,0,0
+rocket-small,3,T 0,0,0,0,0,0,0
+rocket-small,4,T 0,0,0,0,0,0,0
+rocket-small,5,T 0,0,0,0,0,0,0
+rocket-small,6,T 0,0,0,0,0,0,0
+rocket-small,7,T 0,0,0,0,0,0,0
+rocket-small,8,T 0,0,0,0,0,0,0
+rocket-small,9,T 0,0,0,0,0,0,0
+rocket-small,10,T 0,0,0,0,0,0,0
+rocket-small,11,T 0,0,0,0,0,0,0
+rocket-small,12,T 0,0,0,0,0,0,0
+rocket-small,13,T 0,0,0,0,0,0,0
+rocket-small,14,T 0,0,0,0,0,0,0
+rocket-small,15,T 0,0,0,0,0,0,0
+rocket-small,16,T 0,0,0,0,0,0,0
+rocket-small,17,T 0,0,0,0,0,0,0
+rocket-small,18,T 0,0,0,0,0,0,0
+rocket-small,19,T 0,0,0,0,0,0,0
+rocket-small,20,T 0,0,2,0,0,0,0
+rocket-small,21,SQ 19 T 19,0,2,0,0,0,0
+rocket-small,22,SQ 19 T 19,0,2,0,0,0,0
+rocket-small,23,SQ 19 T 19,0,2,0,0,0,0
+rocket-small,24,SQ 18 T 18,0,2,0,0,0,0
+rocket-small,25,SQ 18 T 18,0,2,0,0,0,0
+rocket-small,26,SQ 18 T 18,0,2,0,0,0,0
+rocket-small,27,SQ 18 T 18,0,2,0,0,0,0
+rocket-small,28,SQ 16 T 16,0,2,0,0,0,0
+rocket-small,29,SQ 12 T 12,0,2,0,0,0,0
+rocket-small,30,SQ 12 T 12,0,2,0,0,0,0
+rocket-small,31,SQ 12 T 12,0,2,0,0,0,0
+rocket-small,32,SQ 12 T 12,0,2,0,0,0,0
+rocket-small,33,SQ 12 T 12,0,2,0,0,0,0
+rocket-small,34,SQ 12 T 12,0,2,0,0,0,0
+rocket-small,35,SQ 12 T 12,0,2,0,0,0,0
+rocket-small,36,SQ 12 T 12,0,2,0,0,0,0
+rocket-small,37,SQ 12 T 12,0,2,0,0,0,0
+rocket-small,38,SQ 11 T 11,0,2,0,0,0,0
+rocket-small,39,SQ 11 T 11,0,2,0,0,0,0
+rocket-small,40,SQ 11 T 11,0,2,0,0,0,0
+rocket-small,41,SQ 11 T 11,0,2,0,0,0,0
+rocket-small,42,SQ 11 T 11,0,2,0,0,0,0
+rocket-small,43,SQ 11 T 11,0,2,0,0,0,0
+rocket-small,44,SQ 11 T 11,0,2,0,0,0,0
+rocket-small,45,SQ 11 T 11,0,2,0,0,0,0
+rocket-small,46,SQ 11 T 11,0,2,0,0,0,0
+rocket-small,47,SQ 11 T 11,0,2,0,0,0,0
+rocket-small,48,SQ 10 T 10,0,2,0,0,0,0
+rocket-small,49,SQ 10 T 10,0,2,0,0,0,0
+rocket-small,50,SQ 10 T 10,0,2,0,0,0,0
+rocket-small,51,SQ 10 T 10,0,2,0,0,0,0
+rocket-small,52,SQ 10 T 10,0,2,0,0,0,0
+rocket-small,53,SQ 10 T 10,0,2,0,0,0,0
+rocket-small,54,SQ 9 T 9,0,2,0,0,0,0
+rocket-small,55,SQ 9 T 9,0,2,0,0,0,0
+rocket-small,56,SQ 9 T 9,0,2,0,0,0,0
+rocket-small,57,SQ 9 T 9,0,2,0,0,0,0
+rocket-small,58,SQ 9 T 9,0,2,0,0,0,0
+rocket-small,59,SQ 9 T 9,0,2,0,0,0,0
+rocket-small,60,SQ 9 T 9,0,2,0,0,0,0
+rocket-small,61,SQ 9 T 9,0,2,0,0,0,0
+rocket-small,62,SQ 9 T 9,0,2,0,0,0,0
+rocket-small,63,SQ 8 T 8,0,2,0,0,0,0
+rocket-small,64,SQ 8 T 8,0,2,0,0,0,0
+rocket-small,65,SQ 8 T 8,0,2,0,0,0,0
+rocket-small,66,SQ 8 T 8,0,2,0,0,0,0
+rocket-small,67,SQ 8 T 8,0,2,0,0,0,0
+rocket-small,68,SQ 8 T 8,0,2,0,0,0,0
+rocket-small,69,SQ 8 T 8,0,2,0,0,0,0
+rocket-small,70,SQ 8 T 8,0,2,0,0,0,0
+rocket-small,71,SQ 8 T 8,0,2,0,0,0,0
+rocket-small,72,SQ 8 T 8,0,2,0,0,0,0
+rocket-small,73,SQ 8 T 8,0,2,0,0,0,0
+rocket-small,74,SQ 8 T 8,0,2,0,0,0,0
+rocket-small,75,SQ 2 T 2,0,2,0,0,0,0
+rocket-small,76,SQ 2 T 2,0,2,0,0,0,0
+rocket-small,77,SQ 2 T 2,0,2,0,0,0,0
+rocket-small,78,SQ 2 T 2,0,2,0,0,0,0
+rocket-small,79,SQ 2 T 2,0,2,0,0,0,0
+rocket-small,80,SQ 2 T 2,0,2,0,0,0,0
+rocket-small,81,SQ 2 T 2,0,2,0,0,0,0
+rocket-small,82,SQ 2 T 2,0,2,0,0,0,0
+rocket-small,83,SQ 2 T 2,0,2,0,0,0,0
+rocket-small,84,SQ 2 T 2,0,2,0,0,0,0
+rocket-small,85,SQ 2 T 2,0,2,0,0,0,0
+rocket-small,86,SQ 2 T 2,0,2,0,0,0,0
+rocket-small,87,SQ 2 T 2,0,2,0,0,0,0
+rocket-small,88,SQ 2 T 2,0,2,0,0,0,0
+rocket-small,89,SQ 2 T 2,0,2,0,0,0,0
+rocket-small,90,SQ 2 T 2,0,2,0,0,0,0
+rocket-small,91,SQ 2 T 2,0,2,0,0,0,0
+rocket-small,92,SQ 2 T 2,0,2,0,0,0,0
+rocket-small,93,SQ 2 T 2,0,2,0,0,0,0
+rocket-small,94,SQ 0 T 0,0,2,0,0,0,0
+rocket-small,95,SQ 0 T 0,0,2,0,0,0,0
+rocket-small,96,SQ 0 T 0,0,2,0,0,0,0
+rocket-small,97,SQ 0 T 0,0,2,0,0,0,0
+rocket-small,98,SQ 0 T 0,0,2,0,0,0,0
+rocket-small,99,SQ 0 T 0,0,2,0,0,0,0
+rocket-small,100,SQ 0 T 0,0,2,0,0,0,0
+rocket-small,101,SQ 0 T 0,0,2,0,0,0,0
+rocket-small,102,SQ 0 T 0,0,2,0,0,0,0
+rocket-small,103,SQ 0 T 0,0,2,0,0,0,0
+rocket-small,104,SQ 0 T 0,0,2,0,0,0,0
+rocket-small,105,SQ 0 T 0,0,2,0,0,0,0
+rocket-small,106,SQ 0 T 0,0,2,0,0,0,0
+rocket-small,107,SQ 0 T 0,0,2,0,0,0,0
+rocket-small,108,SQ 0 T 0,0,2,0,0,0,0
+rocket-small,109,SQ 0 T 0,0,2,0,0,0,0
+rocket-small,110,SQ 0 T 0,0,2,0,0,0,0
+rocket-small,111,SQ 0 T 0,0,2,0,0,0,0
+rocket-small,112,SQ 0 T 0,0,2,0,0,0,0
+rocket-small,113,SQ 0 T 0,0,2,0,0,0,0
+rocket-small,114,SQ 0 T 0,0,2,0,0,0,0
+rocket-small,115,SQ 0 T 0,0,2,0,0,0,0
+rocket-small,116,SQ 0 T 0,0,2,0,0,0,0
+rocket-small,117,SQ 0 T 0,0,2,0,0,0,0
+rocket-small,118,SQ 0 T 0,0,2,0,0,0,0
+rocket-small,119,SQ 0 T 0,0,2,0,0,0,0
+rocket,0,T 0,0,0,0,0,0,0
+rocket,1,T 0,0,0,0,0,0,0
+rocket,2,T 0,0,0,0,0,0,0
+rocket,3,T 0,0,0,0,0,0,0
+rocket,4,T 0,0,0,0,0,0,0
+rocket,5,T 0,0,0,0,0,0,0
+rocket,6,T 0,0,0,0,0,0,0
+rocket,7,T 0,0,0,0,0,0,0
+rocket,8,T 0,0,0,0,0,0,0
+rocket,9,T 0,0,0,0,0,0,0
+rocket,10,T 0,0,0,0,0,0,0
+rocket,11,T 0,0,0,0,0,0,0
+rocket,12,T 0,0,0,0,0,0,0
+rocket,13,T 0,0,0,0,0,0,0
+rocket,14,T 0,0,0,0,0,0,0
+rocket,15,T 0,0,0,0,0,0,0
+rocket,16,T 0,0,0,0,0,0,0
+rocket,17,T 0,0,0,0,0,0,0
+rocket,18,T 0,0,0,0,0,0,0
+rocket,19,T 0,0,0,0,0,0,0
+rocket,20,T 0,10,12,0,0,0,0
+rocket,21,SQ 33 T 33,10,12,0,0,0,0
+rocket,22,SQ 33 T 33,10,12,0,0,0,0
+rocket,23,SQ 33 T 33,10,12,0,0,0,0
+rocket,24,SQ 32 T 32,10,12,0,0,0,0
+rocket,25,SQ 32 T 32,10,12,0,0,0,0
+rocket,26,SQ 32 T 32,10,12,0,0,0,0
+rocket,27,SQ 30 T 30,10,12,0,0,0,0
+rocket,28,SQ 27 T 27,10,12,0,0,0,0
+rocket,29,SQ 24 T 24,10,12,0,0,0,0
+rocket,30,SQ 24 T 24,10,12,0,0,0,0
+rocket,31,SQ 24 T 24,10,12,0,0,0,0
+rocket,32,SQ 24 T 24,10,12,0,0,0,0
+rocket,33,SQ 24 T 24,10,12,0,0,0,0
+rocket,34,SQ 24 T 24,10,12,0,0,0,0
+rocket,35,SQ 24 T 24,10,12,0,0,0,0
+rocket,36,SQ 24 T 24,10,12,0,0,0,0
+rocket,37,SQ 24 T 24,10,12,0,0,0,0
+rocket,38,SQ 24 T 24,10,12,0,0,0,0
+rocket,39,SQ 14 T 14,10,12,0,0,0,0
+rocket,40,SQ 13 T 13,10,12,0,0,0,0
+rocket,41,SQ 12 T 12,10,12,0,0,0,0
+rocket,42,SQ 12 T 12,10,12,0,0,0,0
+rocket,43,SQ 12 T 12,10,12,0,0,0,0
+rocket,44,SQ 12 T 12,10,12,0,0,0,0
+rocket,45,SQ 12 T 12,10,12,0,0,0,0
+rocket,46,SQ 12 T 12,10,12,0,0,0,0
+rocket,47,SQ 12 T 12,10,12,0,0,0,0
+rocket,48,SQ 12 T 12,10,12,0,0,0,0
+rocket,49,SQ 12 T 12,10,12,0,0,0,0
+rocket,50,SQ 12 T 12,10,12,0,0,0,0
+rocket,51,SQ 12 T 12,10,12,0,0,0,0
+rocket,52,SQ 12 T 12,10,12,0,0,0,0
+rocket,53,SQ 12 T 12,10,12,0,0,0,0
+rocket,54,SQ 12 T 12,10,12,0,0,0,0
+rocket,55,SQ 12 T 12,10,12,0,0,0,0
+rocket,56,SQ 12 T 12,10,12,0,0,0,0
+rocket,57,SQ 12 T 12,10,12,0,0,0,0
+rocket,58,SQ 12 T 12,10,12,0,0,0,0
+rocket,59,SQ 12 T 12,10,12,0,0,0,0
+rocket,60,SQ 12 T 12,10,12,0,0,0,0
+rocket,61,SQ 12 T 12,10,12,0,0,0,0
+rocket,62,SQ 12 T 12,10,12,0,0,0,0
+rocket,63,SQ 11 T 11,10,12,0,0,0,0
+rocket,64,SQ 11 T 11,10,12,0,0,0,0
+rocket,65,SQ 11 T 11,10,12,0,0,0,0
+rocket,66,SQ 10 T 10,10,12,0,0,0,0
+rocket,67,SQ 10 T 10,10,12,0,0,0,0
+rocket,68,SQ 10 T 10,10,12,0,0,0,0
+rocket,69,SQ 10 T 10,10,12,0,0,0,0
+rocket,70,SQ 10 T 10,10,12,0,0,0,0
+rocket,71,SQ 10 T 10,10,12,0,0,0,0
+rocket,72,SQ 10 T 10,10,12,0,0,0,0
+rocket,73,SQ 10 T 10,10,12,0,0,0,0
+rocket,74,SQ 10 T 10,10,12,0,0,0,0
+rocket,75,SQ 10 T 10,10,12,0,0,0,0
+rocket,76,SQ 10 T 10,10,12,0,0,0,0
+rocket,77,SQ 10 T 10,10,12,0,0,0,0
+rocket,78,SQ 10 T 10,10,12,0,0,0,0
+rocket,79,SQ 10 T 10,10,12,0,0,0,0
+rocket,80,SQ 10 T 10,10,12,0,0,0,0
+rocket,81,SQ 7 T 7,10,12,0,0,0,0
+rocket,82,SQ 7 T 7,10,12,0,0,0,0
+rocket,83,SQ 7 T 7,10,12,0,0,0,0
+rocket,84,SQ 7 T 7,10,12,0,0,0,0
+rocket,85,SQ 7 T 7,10,12,0,0,0,0
+rocket,86,SQ 7 T 7,10,12,0,0,0,0
+rocket,87,SQ 7 T 7,10,12,0,0,0,0
+rocket,88,SQ 7 T 7,10,12,0,0,0,0
+rocket,89,SQ 7 T 7,10,12,0,0,0,0
+rocket,90,SQ 7 T 7,10,12,0,0,0,0
+rocket,91,SQ 7 T 7,10,12,0,0,0,0
+rocket,92,SQ 6 T 6,10,12,0,0,0,0
+rocket,93,SQ 6 T 6,10,12,0,0,0,0
+rocket,94,SQ 6 T 6,10,12,0,0,0,0
+rocket,95,SQ 5 T 5,10,12,0,0,0,0
+rocket,96,SQ 5 T 5,10,12,0,0,0,0
+rocket,97,SQ 5 T 5,10,12,0,0,0,0
+rocket,98,SQ 4 T 4,10,12,0,0,0,0
+rocket,99,SQ 4 T 4,10,12,0,0,0,0
+rocket,100,SQ 4 T 4,10,12,0,0,0,0
+rocket,101,SQ 4 T 4,10,12,0,0,0,0
+rocket,102,SQ 4 T 4,10,12,0,0,0,0
+rocket,103,SQ 4 T 4,10,12,0,0,0,0
+rocket,104,SQ 4 T 4,10,12,0,0,0,0
+rocket,105,SQ 4 T 4,10,12,0,0,0,0
+rocket,106,SQ 4 T 4,10,12,0,0,0,0
+rocket,107,SQ 4 T 4,10,12,0,0,0,0
+rocket,108,SQ 4 T 4,10,12,0,0,0,0
+rocket,109,SQ 4 T 4,10,12,0,0,0,0
+rocket,110,SQ 4 T 4,10,12,0,0,0,0
+rocket,111,SQ 4 T 4,10,12,0,0,0,0
+rocket,112,SQ 4 T 4,10,12,0,0,0,0
+rocket,113,SQ 4 T 4,10,12,0,0,0,0
+rocket,114,SQ 4 T 4,10,12,0,0,0,0
+rocket,115,SQ 3 T 3,10,12,0,0,0,0
+rocket,116,SQ 3 T 3,10,12,0,0,0,0
+rocket,117,SQ 3 T 3,10,12,0,0,0,0
+rocket,118,SQ 3 T 3,10,12,0,0,0,0
+rocket,119,SQ 3 T 3,10,12,0,0,0,0
+penetrator,0,T 0,0,0,0,0,0,0
+penetrator,1,T 0,0,0,0,0,0,0
+penetrator,2,T 0,0,0,0,0,0,0
+penetrator,3,T 0,0,0,0,0,0,0
+penetrator,4,T 0,0,0,0,0,0,0
+penetrator,5,T 0,0,0,0,0,0,0
+penetrator,6,T 0,0,0,0,0,0,0
+penetrator,7,T 0,0,0,0,0,0,0
+penetrator,8,T 0,0,0,0,0,0,0
+penetrator,9,T 0,0,0,0,0,0,0
+penetrator,10,T 0,0,0,0,0,0,0
+penetrator,11,T 0,0,0,0,0,0,0
+penetrator,12,T 0,0,0,0,0,0,0
+penetrator,13,T 0,0,0,0,0,0,0
+penetrator,14,T 0,0,0,0,0,0,0
+penetrator,15,T 0,0,0,0,0,0,0
+penetrator,16,T 0,0,0,0,0,0,0
+penetrator,17,T 0,0,0,0,0,0,0
+penetrator,18,T 0,0,0,0,0,0,0
+penetrator,19,T 0,0,0,0,0,0,0
+penetrator,20,T 0,0,2,0,0,0,0
+penetrator,21,SQ 22 T 22,0,2,0,0,0,0
+penetrator,22,SQ 22 T 22,0,2,0,0,0,0
+penetrator,23,SQ 22 T 22,0,2,0,0,0,0
+penetrator,24,SQ 21 T 21,0,2,0,0,0,0
+penetrator,25,SQ 21 T 21,0,2,0,0,0,0
+penetrator,26,SQ 21 T 21,0,2,0,0,0,0
+penetrator,27,SQ 16 T 16,0,2,0,0,0,0
+penetrator,28,SQ 14 T 14,0,2,0,0,0,0
+penetrator,29,SQ 13 T 13,0,2,0,0,0,0
+penetrator,30,SQ 13 T 13,0,2,0,0,0,0
+penetrator,31,SQ 13 T 13,0,2,0,0,0,0
+penetrator,32,SQ 13 T 13,0,2,0,0,0,0
+penetrator,33,SQ 13 T 13,0,2,0,0,0,0
+penetrator,34,SQ 13 T 13,0,2,0,0,0,0
+penetrator,35,SQ 13 T 13,0,2,0,0,0,0
+penetrator,36,SQ 13 T 13,0,2,0,0,0,0
+penetrator,37,SQ 13 T 13,0,2,0,0,0,0
+penetrator,38,SQ 13 T 13,0,2,0,0,0,0
+penetrator,39,SQ 12 T 12,0,2,0,0,0,0
+penetrator,40,SQ 12 T 12,0,2,0,0,0,0
+penetrator,41,SQ 12 T 12,0,2,0,0,0,0
+penetrator,42,SQ 11 T 11,0,2,0,0,0,0
+penetrator,43,SQ 11 T 11,0,2,0,0,0,0
+penetrator,44,SQ 11 T 11,0,2,0,0,0,0
+penetrator,45,SQ 11 T 11,0,2,0,0,0,0
+penetrator,46,SQ 11 T 11,0,2,0,0,0,0
+penetrator,47,SQ 11 T 11,0,2,0,0,0,0
+penetrator,48,SQ 11 T 11,0,2,0,0,0,0
+penetrator,49,SQ 11 T 11,0,2,0,0,0,0
+penetrator,50,SQ 11 T 11,0,2,0,0,0,0
+penetrator,51,SQ 11 T 11,0,2,0,0,0,0
+penetrator,52,SQ 11 T 11,0,2,0,0,0,0
+penetrator,53,SQ 11 T 11,0,2,0,0,0,0
+penetrator,54,SQ 11 T 11,0,2,0,0,0,0
+penetrator,55,SQ 11 T 11,0,2,0,0,0,0
+penetrator,56,SQ 11 T 11,0,2,0,0,0,0
+penetrator,57,SQ 11 T 11,0,2,0,0,0,0
+penetrator,58,SQ 11 T 11,0,2,0,0,0,0
+penetrator,59,SQ 11 T 11,0,2,0,0,0,0
+penetrator,60,SQ 10 T 10,0,2,0,0,0,0
+penetrator,61,SQ 9 T 9,0,2,0,0,0,0
+penetrator,62,SQ 9 T 9,0,2,0,0,0,0
+penetrator,63,SQ 9 T 9,0,2,0,0,0,0
+penetrator,64,SQ 9 T 9,0,2,0,0,0,0
+penetrator,65,SQ 9 T 9,0,2,0,0,0,0
+penetrator,66,SQ 9 T 9,0,2,0,0,0,0
+penetrator,67,SQ 9 T 9,0,2,0,0,0,0
+penetrator,68,SQ 9 T 9,0,2,0,0,0,0
+penetrator,69,SQ 9 T 9,0,2,0,0,0,0
+penetrator,70,SQ 9 T 9,0,2,0,0,0,0
+penetrator,71,SQ 9 T 9,0,2,0,0,0,0
+penetrator,72,SQ 9 T 9,0,2,0,0,0,0
+penetrator,73,SQ 9 T 9,0,2,0,0,0,0
+penetrator,74,SQ 9 T 9,0,2,0,0,0,0
+penetrator,75,SQ 9 T 9,0,2,0,0,0,0
+penetrator,76,SQ 9 T 9,0,2,0,0,0,0
+penetrator,77,SQ 9 T 9,0,2,0,0,0,0
+penetrator,78,SQ 5 T 5,0,2,0,0,0,0
+penetrator,79,SQ 5 T 5,0,2,0,0,0,0
+penetrator,80,SQ 5 T 5,0,2,0,0,0,0
+penetrator,81,SQ 5 T 5,0,2,0,0,0,0
+penetrator,82,SQ 5 T 5,0,2,0,0,0,0
+penetrator,83,SQ 5 T 5,0,2,0,0,0,0
+penetrator,84,SQ 5 T 5,0,2,0,0,0,0
+penetrator,85,SQ 5 T 5,0,2,0,0,0,0
+penetrator,86,SQ 5 T 5,0,2,0,0,0,0
+penetrator,87,SQ 5 T 5,0,2,0,0,0,0
+penetrator,88,SQ 5 T 5,0,2,0,0,0,0
+penetrator,89,SQ 5 T 5,0,2,0,0,0,0
+penetrator,90,SQ 5 T 5,0,2,0,0,0,0
+penetrator,91,SQ 5 T 5,0,2,0,0,0,0
+penetrator,92,SQ 5 T 5,0,2,0,0,0,0
+penetrator,93,SQ 5 T 5,0,2,0,0,0,0
+penetrator,94,SQ 5 T 5,0,2,0,0,0,0
+penetrator,95,SQ 5 T 5,0,2,0,0,0,0
+penetrator,96,SQ 4 T 4,0,2,0,0,0,0
+penetrator,97,SQ 4 T 4,0,2,0,0,0,0
+penetrator,98,SQ 4 T 4,0,2,0,0,0,0
+penetrator,99,SQ 4 T 4,0,2,0,0,0,0
+penetrator,100,SQ 4 T 4,0,2,0,0,0,0
+penetrator,101,SQ 4 T 4,0,2,0,0,0,0
+penetrator,102,SQ 4 T 4,0,2,0,0,0,0
+penetrator,103,SQ 4 T 4,0,2,0,0,0,0
+penetrator,104,SQ 4 T 4,0,2,0,0,0,0
+penetrator,105,SQ 4 T 4,0,2,0,0,0,0
+penetrator,106,SQ 4 T 4,0,2,0,0,0,0
+penetrator,107,SQ 3 T 3,0,2,0,0,0,0
+penetrator,108,SQ 3 T 3,0,2,0,0,0,0
+penetrator,109,SQ 3 T 3,0,2,0,0,0,0
+penetrator,110,SQ 2 T 2,0,2,0,0,0,0
+penetrator,111,SQ 2 T 2,0,2,0,0,0,0
+penetrator,112,SQ 1 T 1,0,2,0,0,0,0
+penetrator,113,SQ 1 T 1,0,2,0,0,0,0
+penetrator,114,SQ 1 T 1,0,2,0,0,0,0
+penetrator,115,SQ 1 T 1,0,2,0,0,0,0
+penetrator,116,SQ 1 T 1,0,2,0,0,0,0
+penetrator,117,SQ 1 T 1,0,2,0,0,0,0
+penetrator,118,SQ 1 T 1,0,2,0,0,0,0
+penetrator,119,SQ 1 T 1,0,2,0,0,0,0
+cruise,0,T 0,0,0,0,0,0,0
+cruise,1,T 0,0,0,0,0,0,0
+cruise,2,T 0,0,0,0,0,0,0
+cruise,3,T 0,0,0,0,0,0,0
+cruise,4,T 0,0,0,0,0,0,0
+cruise,5,T 0,0,0,0,0,0,0
+cruise,6,T 0,0,0,0,0,0,0
+cruise,7,T 0,0,0,0,0,0,0
+cruise,8,T 0,0,0,0,0,0,0
+cruise,9,T 0,0,0,0,0,0,0
+cruise,10,T 0,0,0,0,0,0,0
+cruise,11,T 0,0,0,0,0,0,0
+cruise,12,T 0,0,0,0,0,0,0
+cruise,13,T 0,0,0,0,0,0,0
+cruise,14,T 0,0,0,0,0,0,0
+cruise,15,T 0,0,0,0,0,0,0
+cruise,16,T 0,0,0,0,0,0,0
+cruise,17,T 0,0,0,0,0,0,0
+cruise,18,T 0,0,0,0,0,0,0
+cruise,19,T 0,0,0,0,0,0,0
+cruise,20,T 0,0,12,0,0,0,0
+cruise,21,SQ 11 T 11,0,12,0,0,0,0
+cruise,22,SQ 11 T 11,0,12,0,0,0,0
+cruise,23,SQ 11 T 11,0,12,0,0,0,0
+cruise,24,SQ 10 T 10,0,12,0,0,0,0
+cruise,25,SQ 10 T 10,0,12,0,0,0,0
+cruise,26,SQ 10 T 10,0,12,0,0,0,0
+cruise,27,SQ 10 T 10,0,12,0,0,0,0
+cruise,28,SQ 10 T 10,0,12,0,0,0,0
+cruise,29,SQ 10 T 10,0,12,0,0,0,0
+cruise,30,SQ 10 T 10,0,12,0,0,0,0
+cruise,31,SQ 10 T 10,0,12,0,0,0,0
+cruise,32,SQ 10 T 10,0,12,0,0,0,0
+cruise,33,SQ 10 T 10,0,12,0,0,0,0
+cruise,34,SQ 10 T 10,0,12,0,0,0,0
+cruise,35,SQ 10 T 10,0,12,0,0,0,0
+cruise,36,SQ 10 T 10,0,12,0,0,0,0
+cruise,37,SQ 10 T 10,0,12,0,0,0,0
+cruise,38,SQ 10 T 10,0,12,0,0,0,0
+cruise,39,SQ 10 T 10,0,12,0,0,0,0
+cruise,40,SQ 10 T 10,0,12,0,0,0,0
+cruise,41,SQ 10 T 10,0,12,0,0,0,0
+cruise,42,SQ 10 T 10,0,12,0,0,0,0
+cruise,43,SQ 10 T 10,0,12,0,0,0,0
+cruise,44,SQ 10 T 10,0,12,0,0,0,0
+cruise,45,SQ 10 T 10,0,12,0,0,0,0
+cruise,46,SQ 10 T 10,0,12,0,0,0,0
+cruise,47,SQ 10 T 10,0,12,0,0,0,0
+cruise,48,SQ 10 T 10,0,12,0,0,0,0
+cruise,49,SQ 10 T 10,0,12,0,0,0,0
+cruise,50,SQ 10 T 10,0,12,0,0,0,0
+cruise,51,SQ 10 T 10,0,12,0,0,0,0
+cruise,52,SQ 10 T 10,0,12,0,0,0,0
+cruise,53,SQ 10 T 10,0,12,0,0,0,0
+cruise,54,SQ 10 T 10,0,12,0,0,0,0
+cruise,55,SQ 10 T 10,0,12,0,0,0,0
+cruise,56,SQ 10 T 10,0,12,0,0,0,0
+cruise,57,SQ 10 T 10,0,12,0,0,0,0
+cruise,58,SQ 10 T 10,0,12,0,0,0,0
+cruise,59,SQ 10 T 10,0,12,0,0,0,0
+cruise,60,SQ 10 T 10,0,12,0,0,0,0
+cruise,61,SQ 10 T 10,0,12,0,0,0,0
+cruise,62,SQ 10 T 10,0,12,0,0,0,0
+cruise,63,SQ 10 T 10,0,12,0,0,0,0
+cruise,64,SQ 10 T 10,0,12,0,0,0,0
+cruise,65,SQ 10 T 10,0,12,0,0,0,0
+cruise,66,SQ 10 T 10,0,12,0,0,0,0
+cruise,67,SQ 10 T 10,0,12,0,0,0,0
+cruise,68,SQ 10 T 10,0,12,0,0,0,0
+cruise,69,SQ 10 T 10,0,12,0,0,0,0
+cruise,70,SQ 10 T 10,0,12,0,0,0,0
+cruise,71,SQ 10 T 10,0,12,0,0,0,0
+cruise,72,SQ 10 T 10,0,12,0,0,0,0
+cruise,73,SQ 10 T 10,0,12,0,0,0,0
+cruise,74,SQ 10 T 10,0,12,0,0,0,0
+cruise,75,SQ 10 T 10,0,12,0,0,0,0
+cruise,76,SQ 10 T 10,0,12,0,0,0,0
+cruise,77,SQ 10 T 10,0,12,0,0,0,0
+cruise,78,SQ 10 T 10,0,12,0,0,0,0
+cruise,79,SQ 10 T 10,0,12,0,0,0,0
+cruise,80,SQ 10 T 10,0,12,0,0,0,0
+cruise,81,SQ 10 T 10,0,12,0,0,0,0
+cruise,82,SQ 10 T 10,0,12,0,0,0,0
+cruise,83,SQ 10 T 10,0,12,0,0,0,0
+cruise,84,SQ 10 T 10,0,12,0,0,0,0
+cruise,85,SQ 10 T 10,0,12,0,0,0,0
+cruise,86,SQ 10 T 10,0,12,0,0,0,0
+cruise,87,SQ 10 T 10,0,12,0,0,0,0
+cruise,88,SQ 10 T 10,0,12,0,0,0,0
+cruise,89,SQ 10 T 10,0,12,0,0,0,0
+cruise,90,SQ 10 T 10,0,12,0,0,0,0
+cruise,91,SQ 10 T 10,0,12,0,0,0,0
+cruise,92,SQ 10 T 10,0,12,0,0,0,0
+cruise,93,SQ 10 T 10,0,12,0,0,0,0
+cruise,94,SQ 10 T 10,0,12,0,0,0,0
+cruise,95,SQ 10 T 10,0,12,0,0,0,0
+cruise,96,SQ 9 T 9,0,12,0,0,0,0
+cruise,97,SQ 9 T 9,0,12,0,0,0,0
+cruise,98,SQ 9 T 9,0,12,0,0,0,0
+cruise,99,SQ 9 T 9,0,12,0,0,0,0
+cruise,100,SQ 9 T 9,0,12,0,0,0,0
+cruise,101,SQ 8 T 8,0,12,0,0,0,0
+cruise,102,SQ 8 T 8,0,12,0,0,0,0
+cruise,103,SQ 8 T 8,0,12,0,0,0,0
+cruise,104,SQ 8 T 8,0,12,0,0,0,0
+cruise,105,SQ 8 T 8,0,12,0,0,0,0
+cruise,106,SQ 8 T 8,0,12,0,0,0,0
+cruise,107,SQ 8 T 8,0,12,0,0,0,0
+cruise,108,SQ 8 T 8,0,12,0,0,0,0
+cruise,109,SQ 8 T 8,0,12,0,0,0,0
+cruise,110,SQ 8 T 8,0,12,0,0,0,0
+cruise,111,SQ 7 T 7,0,12,0,0,0,0
+cruise,112,SQ 5 T 5,0,12,0,0,0,0
+cruise,113,SQ 5 T 5,0,12,0,0,0,0
+cruise,114,SQ 4 T 4,0,12,0,0,0,0
+cruise,115,SQ 4 T 4,0,12,0,0,0,0
+cruise,116,SQ 4 T 4,0,12,0,0,0,0
+cruise,117,SQ 4 T 4,0,12,0,0,0,0
+cruise,118,SQ 4 T 4,0,12,0,0,0,0
+cruise,119,SQ 4 T 4,0,12,0,0,0,0
+dust-front,0,T 0,0,0,0,0,0,0
+dust-front,1,T 0,0,0,0,0,0,0
+dust-front,2,T 0,0,0,0,0,0,0
+dust-front,3,T 0,0,0,0,0,0,0
+dust-front,4,T 0,0,0,0,0,0,0
+dust-front,5,T 0,0,0,0,0,0,0
+dust-front,6,T 0,0,0,0,0,0,0
+dust-front,7,T 0,0,0,0,0,0,0
+dust-front,8,T 0,0,0,0,0,0,0
+dust-front,9,T 0,0,0,0,0,0,0
+dust-front,10,T 0,0,0,0,0,0,0
+dust-front,11,T 0,0,0,0,0,0,0
+dust-front,12,T 0,0,0,0,0,0,0
+dust-front,13,T 0,0,0,0,0,0,0
+dust-front,14,T 0,0,0,0,0,0,0
+dust-front,15,T 0,0,0,0,0,0,0
+dust-front,16,T 0,0,0,0,0,0,0
+dust-front,17,T 0,0,0,0,0,0,0
+dust-front,18,T 0,0,0,0,0,0,0
+dust-front,19,T 0,0,0,0,0,0,0
+dust-front,20,T 0,10,12,0,0,0,0
+dust-front,21,SQ 37 T 37,10,12,0,0,0,0
+dust-front,22,SQ 37 T 37,10,12,0,0,0,0
+dust-front,23,SQ 37 T 37,10,12,0,0,0,0
+dust-front,24,SQ 37 T 37,10,12,0,0,0,0
+dust-front,25,SQ 37 T 37,10,12,0,0,0,0
+dust-front,26,SQ 37 T 37,10,12,0,0,0,0
+dust-front,27,SQ 36 T 36,10,12,0,0,0,0
+dust-front,28,SQ 36 T 36,10,12,0,0,0,0
+dust-front,29,SQ 36 T 36,10,12,0,0,0,0
+dust-front,30,SQ 36 T 36,10,12,0,0,0,0
+dust-front,31,SQ 36 T 36,10,12,0,0,0,0
+dust-front,32,SQ 31 T 31,10,12,0,0,0,0
+dust-front,33,SQ 30 T 30,10,12,0,0,0,0
+dust-front,34,SQ 29 T 29,10,12,0,0,0,0
+dust-front,35,SQ 29 T 29,10,12,0,0,0,0
+dust-front,36,SQ 28 T 28,10,12,0,0,0,0
+dust-front,37,SQ 28 T 28,10,12,0,0,0,0
+dust-front,38,SQ 28 T 28,10,12,0,0,0,0
+dust-front,39,SQ 17 T 17,10,12,0,0,0,0
+dust-front,40,SQ 17 T 17,10,12,0,0,0,0
+dust-front,41,SQ 17 T 17,10,12,0,0,0,0
+dust-front,42,SQ 17 T 17,10,12,0,0,0,0
+dust-front,43,SQ 17 T 17,10,12,0,0,0,0
+dust-front,44,SQ 17 T 17,10,12,0,0,0,0
+dust-front,45,SQ 17 T 17,10,12,0,0,0,0
+dust-front,46,SQ 16 T 16,10,12,0,0,0,0
+dust-front,47,SQ 16 T 16,10,12,0,0,0,0
+dust-front,48,SQ 15 T 15,10,12,0,0,0,0
+dust-front,49,SQ 14 T 14,10,12,0,0,0,0
+dust-front,50,SQ 13 T 13,10,12,0,0,0,0
+dust-front,51,SQ 13 T 13,10,12,0,0,0,0
+dust-front,52,SQ 13 T 13,10,12,0,0,0,0
+dust-front,53,SQ 13 T 13,10,12,0,0,0,0
+dust-front,54,SQ 12 T 12,10,12,0,0,0,0
+dust-front,55,SQ 12 T 12,10,12,0,0,0,0
+dust-front,56,SQ 12 T 12,10,12,0,0,0,0
+dust-front,57,SQ 12 T 12,10,12,0,0,0,0
+dust-front,58,SQ 12 T 12,10,12,0,0,0,0
+dust-front,59,SQ 12 T 12,10,12,0,0,0,0
+dust-front,60,SQ 12 T 12,10,12,0,0,0,0
+dust-front,61,SQ 12 T 12,10,12,0,0,0,0
+dust-front,62,SQ 12 T 12,10,12,0,0,0,0
+dust-front,63,SQ 12 T 12,10,12,0,0,0,0
+dust-front,64,SQ 12 T 12,10,12,0,0,0,0
+dust-front,65,SQ 12 T 12,10,12,0,0,0,0
+dust-front,66,SQ 12 T 12,10,12,0,0,0,0
+dust-front,67,SQ 12 T 12,10,12,0,0,0,0
+dust-front,68,SQ 12 T 12,10,12,0,0,0,0
+dust-front,69,SQ 12 T 12,10,12,0,0,0,0
+dust-front,70,SQ 12 T 12,10,12,0,0,0,0
+dust-front,71,SQ 12 T 12,10,12,0,0,0,0
+dust-front,72,SQ 12 T 12,10,12,0,0,0,0
+dust-front,73,SQ 12 T 12,10,12,0,0,0,0
+dust-front,74,SQ 12 T 12,10,12,0,0,0,0
+dust-front,75,SQ 12 T 12,10,12,0,0,0,0
+dust-front,76,SQ 12 T 12,10,12,0,0,0,0
+dust-front,77,SQ 12 T 12,10,12,0,0,0,0
+dust-front,78,SQ 12 T 12,10,12,0,0,0,0
+dust-front,79,SQ 12 T 12,10,12,0,0,0,0
+dust-front,80,SQ 12 T 12,10,12,0,0,0,0
+dust-front,81,SQ 12 T 12,10,12,0,0,0,0
+dust-front,82,SQ 12 T 12,10,12,0,0,0,0
+dust-front,83,SQ 12 T 12,10,12,0,0,0,0
+dust-front,84,SQ 12 T 12,10,12,0,0,0,0
+dust-front,85,SQ 12 T 12,10,12,0,0,0,0
+dust-front,86,SQ 12 T 12,10,12,0,0,0,0
+dust-front,87,SQ 12 T 12,10,12,0,0,0,0
+dust-front,88,SQ 12 T 12,10,12,0,0,0,0
+dust-front,89,SQ 12 T 12,10,12,0,0,0,0
+dust-front,90,SQ 12 T 12,10,12,0,0,0,0
+dust-front,91,SQ 12 T 12,10,12,0,0,0,0
+dust-front,92,SQ 12 T 12,10,12,0,0,0,0
+dust-front,93,SQ 12 T 12,10,12,0,0,0,0
+dust-front,94,SQ 12 T 12,10,12,0,0,0,0
+dust-front,95,SQ 12 T 12,10,12,0,0,0,0
+dust-front,96,SQ 12 T 12,10,12,0,0,0,0
+dust-front,97,SQ 12 T 12,10,12,0,0,0,0
+dust-front,98,SQ 12 T 12,10,12,0,0,0,0
+dust-front,99,SQ 12 T 12,10,12,0,0,0,0
+dust-front,100,SQ 12 T 12,10,12,0,0,0,0
+dust-front,101,SQ 12 T 12,10,12,0,0,0,0
+dust-front,102,SQ 12 T 12,10,12,0,0,0,0
+dust-front,103,SQ 12 T 12,10,12,0,0,0,0
+dust-front,104,SQ 12 T 12,10,12,0,0,0,0
+dust-front,105,SQ 12 T 12,10,12,0,0,0,0
+dust-front,106,SQ 12 T 12,10,12,0,0,0,0
+dust-front,107,SQ 12 T 12,10,12,0,0,0,0
+dust-front,108,SQ 12 T 12,10,12,0,0,0,0
+dust-front,109,SQ 12 T 12,10,12,0,0,0,0
+dust-front,110,SQ 11 T 11,10,12,0,0,0,0
+dust-front,111,SQ 10 T 10,10,12,0,0,0,0
+dust-front,112,SQ 10 T 10,10,12,0,0,0,0
+dust-front,113,SQ 10 T 10,10,12,0,0,0,0
+dust-front,114,SQ 10 T 10,10,12,0,0,0,0
+dust-front,115,SQ 9 T 9,10,12,0,0,0,0
+dust-front,116,SQ 8 T 8,10,12,0,0,0,0
+dust-front,117,SQ 8 T 8,10,12,0,0,0,0
+dust-front,118,SQ 8 T 8,10,12,0,0,0,0
+dust-front,119,SQ 8 T 8,10,12,0,0,0,0
+water,0,T 0,0,0,0,0,0,0
+water,1,T 0,0,0,0,0,0,0
+water,2,SQ 1 T 1,0,0,0,0,0,0
+water,3,SQ 3 T 3,0,0,0,0,0,0
+water,4,SQ 4 T 4,0,0,0,0,0,0
+water,5,SQ 7 T 7,0,0,0,0,0,0
+water,6,SQ 7 T 7,0,0,0,0,0,0
+water,7,SQ 9 T 9,0,0,0,0,0,0
+water,8,SQ 11 T 11,0,0,0,0,0,0
+water,9,SQ 11 T 11,0,0,0,0,0,0
+water,10,SQ 12 T 12,0,0,0,0,0,0
+water,11,SQ 12 T 12,0,0,0,0,0,0
+water,12,SQ 14 T 14,0,0,0,0,0,0
+water,13,SQ 15 T 15,0,0,0,0,0,0
+water,14,SQ 16 T 16,0,0,0,0,0,0
+water,15,SQ 18 T 18,0,0,0,0,0,0
+water,16,SQ 20 T 20,0,0,0,0,0,0
+water,17,SQ 21 T 21,0,0,0,0,0,0
+water,18,SQ 21 T 21,0,0,0,0,0,0
+water,19,SQ 22 T 22,0,0,0,0,0,0
+water,20,SQ 24 T 24,0,0,0,0,0,0
+water,21,SQ 63 T 63,0,0,0,0,0,0
+water,22,SQ 63 T 63,0,0,0,0,0,0
+water,23,SQ 64 T 64,0,0,0,0,0,0
+water,24,SQ 66 T 66,0,0,0,0,0,0
+water,25,SQ 66 T 66,0,0,0,0,0,0
+water,26,SQ 66 T 66,0,0,0,0,0,0
+water,27,SQ 67 T 67,0,0,0,0,0,0
+water,28,SQ 68 T 68,0,0,0,0,0,0
+water,29,SQ 68 T 68,0,0,0,0,0,0
+water,30,SQ 68 T 68,0,0,0,0,0,0
+water,31,SQ 67 T 67,0,0,0,0,0,0
+water,32,SQ 66 T 66,0,0,0,0,0,0
+water,33,SQ 69 T 69,0,0,0,0,0,0
+water,34,SQ 68 T 68,0,0,0,0,0,0
+water,35,SQ 68 T 68,0,0,0,0,0,0
+water,36,SQ 66 T 66,0,0,0,0,0,0
+water,37,SQ 65 T 65,0,0,0,0,0,0
+water,38,SQ 64 T 64,0,0,0,0,0,0
+water,39,SQ 62 T 62,0,0,0,0,0,0
+water,40,SQ 61 T 61,0,0,0,0,0,0
+water,41,SQ 62 T 62,0,0,0,0,0,0
+water,42,SQ 61 T 61,0,0,0,0,0,0
+water,43,SQ 59 T 59,0,0,0,0,0,0
+water,44,SQ 57 T 57,0,0,0,0,0,0
+water,45,SQ 55 T 55,0,0,0,0,0,0
+water,46,SQ 54 T 54,0,0,0,0,0,0
+water,47,SQ 56 T 56,0,0,0,0,0,0
+water,48,SQ 57 T 57,0,0,0,0,0,0
+water,49,SQ 57 T 57,0,0,0,0,0,0
+water,50,SQ 56 T 56,0,0,0,0,0,0
+water,51,SQ 58 T 58,0,0,0,0,0,0
+water,52,SQ 56 T 56,0,0,0,0,0,0
+water,53,SQ 56 T 56,0,0,0,0,0,0
+water,54,SQ 53 T 53,0,0,0,0,0,0
+water,55,SQ 51 T 51,0,0,0,0,0,0
+water,56,SQ 52 T 52,0,0,0,0,0,0
+water,57,SQ 51 T 51,0,0,0,0,0,0
+water,58,SQ 53 T 53,0,0,0,0,0,0
+water,59,SQ 52 T 52,0,0,0,0,0,0
+water,60,SQ 50 T 50,0,0,0,0,0,0
+water,61,SQ 49 T 49,0,0,0,0,0,0
+water,62,SQ 49 T 49,0,0,0,0,0,0
+water,63,SQ 48 T 48,0,0,0,0,0,0
+water,64,SQ 48 T 48,0,0,0,0,0,0
+water,65,SQ 46 T 46,0,0,0,0,0,0
+water,66,SQ 47 T 47,0,0,0,0,0,0
+water,67,SQ 47 T 47,0,0,0,0,0,0
+water,68,SQ 47 T 47,0,0,0,0,0,0
+water,69,SQ 48 T 48,0,0,0,0,0,0
+water,70,SQ 47 T 47,0,0,0,0,0,0
+water,71,SQ 45 T 45,0,0,0,0,0,0
+water,72,SQ 43 T 43,0,0,0,0,0,0
+water,73,SQ 42 T 42,0,0,0,0,0,0
+water,74,SQ 40 T 40,0,0,0,0,0,0
+water,75,SQ 38 T 38,0,0,0,0,0,0
+water,76,SQ 38 T 38,0,0,0,0,0,0
+water,77,SQ 38 T 38,0,0,0,0,0,0
+water,78,SQ 37 T 37,0,0,0,0,0,0
+water,79,SQ 35 T 35,0,0,0,0,0,0
+water,80,SQ 36 T 36,0,0,0,0,0,0
+water,81,SQ 36 T 36,0,0,0,0,0,0
+water,82,SQ 35 T 35,0,0,0,0,0,0
+water,83,SQ 36 T 36,0,0,0,0,0,0
+water,84,SQ 34 T 34,0,0,0,0,0,0
+water,85,SQ 37 T 37,0,0,0,0,0,0
+water,86,SQ 34 T 34,0,0,0,0,0,0
+water,87,SQ 35 T 35,0,0,0,0,0,0
+water,88,SQ 35 T 35,0,0,0,0,0,0
+water,89,SQ 35 T 35,0,0,0,0,0,0
+water,90,SQ 34 T 34,0,0,0,0,0,0
+water,91,SQ 35 T 35,0,0,0,0,0,0
+water,92,SQ 35 T 35,0,0,0,0,0,0
+water,93,SQ 37 T 37,0,0,0,0,0,0
+water,94,SQ 39 T 39,0,0,0,0,0,0
+water,95,SQ 39 T 39,0,0,0,0,0,0
+water,96,SQ 41 T 41,0,0,0,0,0,0
+water,97,SQ 40 T 40,0,0,0,0,0,0
+water,98,SQ 42 T 42,0,0,0,0,0,0
+water,99,SQ 41 T 41,0,0,0,0,0,0
+water,100,SQ 41 T 41,0,0,0,0,0,0
+water,101,SQ 41 T 41,0,0,0,0,0,0
+water,102,SQ 41 T 41,0,0,0,0,0,0
+water,103,SQ 40 T 40,0,0,0,0,0,0
+water,104,SQ 40 T 40,0,0,0,0,0,0
+water,105,SQ 45 T 45,0,0,0,0,0,0
+water,106,SQ 45 T 45,0,0,0,0,0,0
+water,107,SQ 43 T 43,0,0,0,0,0,0
+water,108,SQ 45 T 45,0,0,0,0,0,0
+water,109,SQ 45 T 45,0,0,0,0,0,0
+water,110,SQ 45 T 45,0,0,0,0,0,0
+water,111,SQ 46 T 46,0,0,0,0,0,0
+water,112,SQ 48 T 48,0,0,0,0,0,0
+water,113,SQ 48 T 48,0,0,0,0,0,0
+water,114,SQ 48 T 48,0,0,0,0,0,0
+water,115,SQ 48 T 48,0,0,0,0,0,0
+water,116,SQ 47 T 47,0,0,0,0,0,0
+water,117,SQ 46 T 46,0,0,0,0,0,0
+water,118,SQ 45 T 45,0,0,0,0,0,0
+water,119,SQ 44 T 44,0,0,0,0,0,0
+heat,0,T 0,0,0,0,0,0,0
+heat,1,SQ 5 T 5,0,0,0,0,0,0
+heat,2,SQ 5 T 5,0,0,0,0,0,0
+heat,3,SQ 5 T 5,0,0,0,0,0,0
+heat,4,SQ 5 T 5,0,0,0,0,0,0
+heat,5,SQ 5 T 5,0,0,0,0,0,0
+heat,6,SQ 5 T 5,0,0,0,0,0,0
+heat,7,SQ 5 T 5,0,0,0,0,0,0
+heat,8,SQ 5 T 5,0,0,0,0,0,0
+heat,9,SQ 5 T 5,0,0,0,0,0,0
+heat,10,SQ 5 T 5,0,0,0,0,0,0
+heat,11,SQ 5 T 5,0,0,0,0,0,0
+heat,12,SQ 5 T 5,0,0,0,0,0,0
+heat,13,SQ 5 T 5,0,0,0,0,0,0
+heat,14,SQ 5 T 5,0,0,0,0,0,0
+heat,15,SQ 5 T 5,0,0,0,0,0,0
+heat,16,SQ 5 T 5,0,0,0,0,0,0
+heat,17,SQ 5 T 5,0,0,0,0,0,0
+heat,18,SQ 5 T 5,0,0,0,0,0,0
+heat,19,SQ 5 T 5,0,0,0,0,0,0
+heat,20,SQ 5 T 5,0,0,10,0,0,0
+heat,21,SQ 5 T 5,0,0,10,0,0,0
+heat,22,SQ 5 T 5,0,0,10,0,0,0
+heat,23,SQ 4 T 4,0,0,10,4,1,0
+heat,24,SQ 4 T 4,0,0,10,4,1,0
+heat,25,SQ 4 T 4,0,0,10,4,1,0
+heat,26,SQ 4 T 4,0,0,10,4,1,0
+heat,27,SQ 4 T 4,0,0,10,4,1,0
+heat,28,SQ 4 T 4,0,0,10,4,1,0
+heat,29,SQ 4 T 4,0,0,10,4,1,0
+heat,30,SQ 4 T 4,0,0,10,4,1,0
+heat,31,SQ 4 T 4,0,0,10,4,1,0
+heat,32,SQ 3 T 3,0,0,10,4,1,0
+heat,33,SQ 3 T 3,0,0,10,4,1,0
+heat,34,SQ 3 T 3,0,0,10,4,1,0
+heat,35,SQ 2 T 2,0,0,10,4,1,0
+heat,36,SQ 2 T 2,0,0,10,4,1,0
+heat,37,SQ 2 T 2,0,0,10,4,1,0
+heat,38,SQ 2 T 2,0,0,10,4,1,0
+heat,39,SQ 2 T 2,0,0,10,4,1,0
+heat,40,SQ 2 T 2,0,0,10,4,1,0
+heat,41,SQ 2 T 2,0,0,10,4,1,0
+heat,42,SQ 2 T 2,0,0,10,4,1,0
+heat,43,SQ 2 T 2,0,0,10,4,1,0
+heat,44,SQ 2 T 2,0,0,10,4,1,0
+heat,45,SQ 2 T 2,0,0,10,4,1,0
+heat,46,SQ 2 T 2,0,0,10,4,1,0
+heat,47,SQ 2 T 2,0,0,10,4,1,0
+heat,48,SQ 2 T 2,0,0,10,4,1,0
+heat,49,SQ 2 T 2,0,0,10,4,1,0
+heat,50,SQ 2 T 2,0,0,10,4,1,0
+heat,51,SQ 2 T 2,0,0,10,4,1,0
+heat,52,SQ 2 T 2,0,0,10,4,1,0
+heat,53,SQ 2 T 2,0,0,10,4,1,0
+heat,54,SQ 2 T 2,0,0,10,4,1,0
+heat,55,SQ 2 T 2,0,0,10,4,1,0
+heat,56,SQ 2 T 2,0,0,10,4,1,0
+heat,57,SQ 2 T 2,0,0,10,4,1,0
+heat,58,SQ 2 T 2,0,0,10,4,1,0
+heat,59,SQ 2 T 2,0,0,10,4,1,0
+heat,60,SQ 2 T 2,0,0,10,4,1,0
+heat,61,SQ 2 T 2,0,0,10,4,1,0
+heat,62,SQ 2 T 2,0,0,10,4,1,0
+heat,63,SQ 2 T 2,0,0,10,4,1,0
+heat,64,SQ 2 T 2,0,0,10,4,1,0
+heat,65,SQ 2 T 2,0,0,10,4,1,0
+heat,66,SQ 2 T 2,0,0,0,0,0,0
+heat,67,SQ 2 T 2,0,0,0,0,0,0
+heat,68,SQ 2 T 2,0,0,0,0,0,0
+heat,69,SQ 2 T 2,0,0,0,0,0,0
+heat,70,SQ 2 T 2,0,0,0,0,0,0
+heat,71,SQ 2 T 2,0,0,0,0,0,0
+heat,72,SQ 2 T 2,0,0,0,0,0,0
+heat,73,SQ 1 T 1,0,0,0,0,0,0
+heat,74,SQ 1 T 1,0,0,0,0,0,0
+heat,75,SQ 0 T 0,0,0,0,0,0,0
+heat,76,SQ 0 T 0,0,0,0,0,0,0
+heat,77,SQ 0 T 0,0,0,0,0,0,0
+heat,78,SQ 0 T 0,0,0,0,0,0,0
+heat,79,SQ 0 T 0,0,0,0,0,0,0
+heat,80,SQ 0 T 0,0,0,0,0,0,0
+heat,81,SQ 0 T 0,0,0,0,0,0,0
+heat,82,SQ 0 T 0,0,0,0,0,0,0
+heat,83,SQ 0 T 0,0,0,0,0,0,0
+heat,84,SQ 0 T 0,0,0,0,0,0,0
+heat,85,SQ 0 T 0,0,0,0,0,0,0
+heat,86,SQ 0 T 0,0,0,0,0,0,0
+heat,87,SQ 0 T 0,0,0,0,0,0,0
+heat,88,SQ 0 T 0,0,0,0,0,0,0
+heat,89,SQ 0 T 0,0,0,0,0,0,0
+heat,90,SQ 0 T 0,0,0,0,0,0,0
+heat,91,SQ 0 T 0,0,0,0,0,0,0
+heat,92,SQ 0 T 0,0,0,0,0,0,0
+heat,93,SQ 0 T 0,0,0,0,0,0,0
+heat,94,SQ 0 T 0,0,0,0,0,0,0
+heat,95,SQ 0 T 0,0,0,0,0,0,0
+heat,96,SQ 0 T 0,0,0,0,0,0,0
+heat,97,SQ 0 T 0,0,0,0,0,0,0
+heat,98,SQ 0 T 0,0,0,0,0,0,0
+heat,99,SQ 0 T 0,0,0,0,0,0,0
+heat,100,SQ 0 T 0,0,0,0,0,0,0
+heat,101,SQ 0 T 0,0,0,0,0,0,0
+heat,102,SQ 0 T 0,0,0,0,0,0,0
+heat,103,SQ 0 T 0,0,0,0,0,0,0
+heat,104,SQ 0 T 0,0,0,0,0,0,0
+heat,105,SQ 0 T 0,0,0,0,0,0,0
+heat,106,SQ 0 T 0,0,0,0,0,0,0
+heat,107,SQ 0 T 0,0,0,0,0,0,0
+heat,108,SQ 0 T 0,0,0,0,0,0,0
+heat,109,SQ 0 T 0,0,0,0,0,0,0
+heat,110,SQ 0 T 0,0,0,0,0,0,0
+heat,111,SQ 0 T 0,0,0,0,0,0,0
+heat,112,SQ 0 T 0,0,0,0,0,0,0
+heat,113,SQ 0 T 0,0,0,0,0,0,0
+heat,114,SQ 0 T 0,0,0,0,0,0,0
+heat,115,SQ 0 T 0,0,0,0,0,0,0
+heat,116,SQ 0 T 0,0,0,0,0,0,0
+heat,117,SQ 0 T 0,0,0,0,0,0,0
+heat,118,SQ 0 T 0,0,0,0,0,0,0
+heat,119,SQ 0 T 0,0,0,0,0,0,0
+occlusion,0,T 0,0,0,0,0,0,0
+occlusion,1,T 0,0,0,0,0,0,0
+occlusion,2,T 0,0,0,0,0,0,0
+occlusion,3,T 0,0,0,0,0,0,0
+occlusion,4,T 0,0,0,0,0,0,0
+occlusion,5,T 0,0,0,0,0,0,0
+occlusion,6,T 0,0,0,0,0,0,0
+occlusion,7,T 0,0,0,0,0,0,0
+occlusion,8,T 0,0,0,0,0,0,0
+occlusion,9,T 0,0,0,0,0,0,0
+occlusion,10,T 0,0,0,0,0,0,0
+occlusion,11,T 0,0,0,0,0,0,0
+occlusion,12,T 0,0,0,0,0,0,0
+occlusion,13,T 0,0,0,0,0,0,0
+occlusion,14,T 0,0,0,0,0,0,0
+occlusion,15,T 0,0,0,0,0,0,0
+occlusion,16,T 0,0,0,0,0,0,0
+occlusion,17,T 0,0,0,0,0,0,0
+occlusion,18,T 0,0,0,0,0,0,0
+occlusion,19,T 0,0,0,0,0,0,0
+occlusion,20,T 0,0,0,10,0,0,0
+occlusion,21,T 0,0,0,10,4,1,0
+occlusion,22,T 0,0,0,10,4,1,0
+occlusion,23,T 0,0,0,10,4,1,0
+occlusion,24,T 0,0,0,10,4,1,0
+occlusion,25,T 0,0,0,10,4,1,0
+occlusion,26,T 0,0,0,10,4,1,0
+occlusion,27,T 0,0,0,10,4,1,0
+occlusion,28,T 0,0,0,10,4,1,0
+occlusion,29,T 0,0,0,10,4,1,0
+occlusion,30,T 0,0,0,10,4,1,0
+occlusion,31,T 0,0,0,10,4,1,0
+occlusion,32,T 0,0,0,10,4,1,0
+occlusion,33,T 0,0,0,10,4,1,0
+occlusion,34,T 0,0,0,10,4,1,0
+occlusion,35,T 0,0,0,10,4,1,0
+occlusion,36,T 0,0,0,10,4,1,0
+occlusion,37,T 0,0,0,10,4,1,0
+occlusion,38,T 0,0,0,10,4,1,0
+occlusion,39,T 0,0,0,10,4,1,0
+occlusion,40,T 0,0,0,10,4,1,0
+occlusion,41,T 0,0,0,10,4,1,0
+occlusion,42,T 0,0,0,10,4,1,0
+occlusion,43,T 0,0,0,10,4,1,0
+occlusion,44,T 0,0,0,10,4,1,0
+occlusion,45,T 0,0,0,10,4,1,0
+occlusion,46,T 0,0,0,10,4,1,0
+occlusion,47,T 0,0,0,10,4,1,0
+occlusion,48,T 0,0,0,10,4,1,0
+occlusion,49,T 0,0,0,10,4,1,0
+occlusion,50,T 0,0,0,10,4,1,0
+occlusion,51,T 0,0,0,10,4,1,0
+occlusion,52,T 0,0,0,10,4,1,0
+occlusion,53,T 0,0,0,10,4,1,0
+occlusion,54,T 0,0,0,10,4,1,0
+occlusion,55,T 0,0,0,10,4,1,0
+occlusion,56,T 0,0,0,10,4,1,0
+occlusion,57,T 0,0,0,10,4,1,0
+occlusion,58,T 0,0,0,10,4,1,0
+occlusion,59,T 0,0,0,10,4,1,0
+occlusion,60,T 0,0,0,10,4,1,0
+occlusion,61,T 0,0,0,10,4,1,0
+occlusion,62,T 0,0,0,10,4,1,0
+occlusion,63,T 0,0,0,10,4,1,0
+occlusion,64,T 0,0,0,10,4,1,0
+occlusion,65,T 0,0,0,10,4,1,0
+occlusion,66,T 0,0,0,0,0,0,0
+occlusion,67,T 0,0,0,0,0,0,0
+occlusion,68,T 0,0,0,0,0,0,0
+occlusion,69,T 0,0,0,0,0,0,0
+occlusion,70,T 0,0,0,0,0,0,0
+occlusion,71,T 0,0,0,0,0,0,0
+occlusion,72,T 0,0,0,0,0,0,0
+occlusion,73,T 0,0,0,0,0,0,0
+occlusion,74,T 0,0,0,0,0,0,0
+occlusion,75,T 0,0,0,0,0,0,0
+occlusion,76,T 0,0,0,0,0,0,0
+occlusion,77,T 0,0,0,0,0,0,0
+occlusion,78,T 0,0,0,0,0,0,0
+occlusion,79,T 0,0,0,0,0,0,0
+occlusion,80,T 0,0,0,0,0,0,0
+occlusion,81,T 0,0,0,0,0,0,0
+occlusion,82,T 0,0,0,0,0,0,0
+occlusion,83,T 0,0,0,0,0,0,0
+occlusion,84,T 0,0,0,0,0,0,0
+occlusion,85,T 0,0,0,0,0,0,0
+occlusion,86,T 0,0,0,0,0,0,0
+occlusion,87,T 0,0,0,0,0,0,0
+occlusion,88,T 0,0,0,0,0,0,0
+occlusion,89,T 0,0,0,0,0,0,0
+occlusion,90,T 0,0,0,0,0,0,0
+occlusion,91,T 0,0,0,0,0,0,0
+occlusion,92,T 0,0,0,0,0,0,0
+occlusion,93,T 0,0,0,0,0,0,0
+occlusion,94,T 0,0,0,0,0,0,0
+occlusion,95,T 0,0,0,0,0,0,0
+occlusion,96,T 0,0,0,0,0,0,0
+occlusion,97,T 0,0,0,0,0,0,0
+occlusion,98,T 0,0,0,0,0,0,0
+occlusion,99,T 0,0,0,0,0,0,0
+occlusion,100,T 0,0,0,0,0,0,0
+occlusion,101,T 0,0,0,0,0,0,0
+occlusion,102,T 0,0,0,0,0,0,0
+occlusion,103,T 0,0,0,0,0,0,0
+occlusion,104,T 0,0,0,0,0,0,0
+occlusion,105,T 0,0,0,0,0,0,0
+occlusion,106,T 0,0,0,0,0,0,0
+occlusion,107,T 0,0,0,0,0,0,0
+occlusion,108,T 0,0,0,0,0,0,0
+occlusion,109,T 0,0,0,0,0,0,0
+occlusion,110,T 0,0,0,0,0,0,0
+occlusion,111,T 0,0,0,0,0,0,0
+occlusion,112,T 0,0,0,0,0,0,0
+occlusion,113,T 0,0,0,0,0,0,0
+occlusion,114,T 0,0,0,0,0,0,0
+occlusion,115,T 0,0,0,0,0,0,0
+occlusion,116,T 0,0,0,0,0,0,0
+occlusion,117,T 0,0,0,0,0,0,0
+occlusion,118,T 0,0,0,0,0,0,0
+occlusion,119,T 0,0,0,0,0,0,0
+viper,0,T 0,0,0,0,0,0,0
+viper,1,T 0,0,0,0,0,0,0
+viper,2,T 0,0,0,0,0,0,0
+viper,3,T 0,0,0,0,0,0,0
+viper,4,T 0,0,0,0,0,0,0
+viper,5,T 0,0,0,0,0,0,0
+viper,6,T 0,0,0,0,0,0,0
+viper,7,T 0,0,0,0,0,0,0
+viper,8,T 0,0,0,0,0,0,0
+viper,9,T 0,0,0,0,0,0,0
+viper,10,T 0,0,0,0,0,0,0
+viper,11,T 0,0,0,0,0,0,0
+viper,12,T 0,0,0,0,0,0,0
+viper,13,T 0,0,0,0,0,0,0
+viper,14,T 0,0,0,0,0,0,0
+viper,15,T 0,0,0,0,0,0,0
+viper,16,T 0,0,0,0,0,0,0
+viper,17,T 0,0,0,0,0,0,0
+viper,18,T 0,0,0,0,0,0,0
+viper,19,T 0,0,0,0,0,0,0
+viper,20,T 0,0,0,0,0,0,0
+viper,21,T 0,0,0,2,0,0,0
+viper,22,SQ 2 T 2,0,0,2,2,1,0
+viper,23,SQ 2 T 2,0,0,2,2,1,0
+viper,24,SQ 4 T 4,0,0,2,2,1,0
+viper,25,SQ 4 T 4,0,0,2,2,1,0
+viper,26,SQ 6 T 6,0,0,2,2,1,0
+viper,27,SQ 6 T 6,0,0,2,2,1,0
+viper,28,SQ 8 T 8,0,0,2,2,1,0
+viper,29,SQ 8 T 8,0,0,2,2,1,0
+viper,30,SQ 10 T 10,0,0,2,2,1,0
+viper,31,SQ 10 T 10,0,0,2,2,1,0
+viper,32,SQ 12 T 12,0,0,2,2,1,0
+viper,33,SQ 12 T 12,0,0,2,2,1,0
+viper,34,SQ 14 T 14,0,0,2,2,1,0
+viper,35,SQ 14 T 14,0,0,2,2,1,0
+viper,36,SQ 16 T 16,0,0,2,2,1,0
+viper,37,SQ 16 T 16,0,0,2,2,1,0
+viper,38,SQ 18 T 18,0,0,2,2,1,0
+viper,39,SQ 18 T 18,0,0,2,2,1,0
+viper,40,SQ 18 T 18,0,0,2,2,1,0
+viper,41,SQ 18 T 18,0,0,2,2,1,0
+viper,42,SQ 18 T 18,0,0,2,2,1,0
+viper,43,SQ 18 T 18,0,0,2,2,1,0
+viper,44,SQ 18 T 18,0,0,2,2,1,0
+viper,45,SQ 18 T 18,0,0,2,2,1,0
+viper,46,SQ 18 T 18,0,0,2,2,1,0
+viper,47,SQ 18 T 18,0,0,2,2,1,0
+viper,48,SQ 18 T 18,0,0,2,2,1,0
+viper,49,SQ 18 T 18,0,0,2,2,1,0
+viper,50,SQ 18 T 18,0,0,2,2,1,0
+viper,51,SQ 18 T 18,0,0,2,2,1,0
+viper,52,SQ 18 T 18,0,0,2,2,1,0
+viper,53,SQ 18 T 18,0,0,2,2,1,0
+viper,54,SQ 18 T 18,0,0,2,2,1,0
+viper,55,SQ 18 T 18,0,0,2,2,1,0
+viper,56,SQ 18 T 18,0,0,2,2,1,0
+viper,57,SQ 18 T 18,0,0,2,2,1,0
+viper,58,SQ 18 T 18,0,0,2,2,1,0
+viper,59,SQ 18 T 18,0,0,2,2,1,0
+viper,60,SQ 18 T 18,0,0,2,2,1,0
+viper,61,SQ 18 T 18,0,0,2,2,1,0
+viper,62,SQ 18 T 18,0,0,2,2,1,0
+viper,63,SQ 18 T 18,0,0,2,2,1,0
+viper,64,SQ 18 T 18,0,0,2,2,1,0
+viper,65,SQ 18 T 18,0,0,2,2,1,0
+viper,66,SQ 18 T 18,0,0,2,2,1,0
+viper,67,SQ 18 T 18,0,0,2,2,1,0
+viper,68,SQ 18 T 18,0,0,2,2,1,0
+viper,69,SQ 18 T 18,0,0,2,2,1,0
+viper,70,SQ 18 T 18,0,0,2,2,1,0
+viper,71,SQ 18 T 18,0,0,2,2,1,0
+viper,72,SQ 18 T 18,0,0,2,2,1,0
+viper,73,SQ 18 T 18,0,0,2,2,1,0
+viper,74,SQ 18 T 18,0,0,2,2,1,0
+viper,75,SQ 18 T 18,0,0,2,2,1,0
+viper,76,SQ 18 T 18,0,0,2,2,1,0
+viper,77,SQ 18 T 18,0,0,2,2,1,0
+viper,78,SQ 18 T 18,0,0,2,2,1,0
+viper,79,SQ 18 T 18,0,0,2,2,1,0
+viper,80,SQ 18 T 18,0,0,2,2,1,0
+viper,81,SQ 18 T 18,0,0,2,2,1,0
+viper,82,SQ 18 T 18,0,0,2,2,1,0
+viper,83,SQ 18 T 18,0,0,2,2,1,0
+viper,84,SQ 18 T 18,0,0,2,2,1,0
+viper,85,SQ 18 T 18,0,0,2,2,1,0
+viper,86,SQ 18 T 18,0,0,2,2,1,0
+viper,87,SQ 18 T 18,0,0,2,2,1,0
+viper,88,SQ 18 T 18,0,0,2,2,1,0
+viper,89,SQ 18 T 18,0,0,2,2,1,0
+viper,90,SQ 18 T 18,0,0,2,2,1,0
+viper,91,SQ 18 T 18,0,0,2,2,1,0
+viper,92,SQ 18 T 18,0,0,2,2,1,0
+viper,93,SQ 18 T 18,0,0,2,2,1,0
+viper,94,SQ 18 T 18,0,0,2,2,1,0
+viper,95,SQ 18 T 18,0,0,2,2,1,0
+viper,96,SQ 18 T 18,0,0,2,2,1,0
+viper,97,SQ 18 T 18,0,0,2,2,1,0
+viper,98,SQ 18 T 18,0,0,2,2,1,0
+viper,99,SQ 18 T 18,0,0,2,2,1,0
+viper,100,SQ 18 T 18,0,0,2,2,1,0
+viper,101,SQ 18 T 18,0,0,2,2,1,0
+viper,102,SQ 18 T 18,0,0,2,2,1,0
+viper,103,SQ 18 T 18,0,0,2,2,1,0
+viper,104,SQ 18 T 18,0,0,2,2,1,0
+viper,105,SQ 18 T 18,0,0,2,2,1,0
+viper,106,SQ 18 T 18,0,0,2,2,1,0
+viper,107,SQ 18 T 18,0,0,2,2,1,0
+viper,108,SQ 18 T 18,0,0,2,2,1,0
+viper,109,SQ 18 T 18,0,0,2,2,1,0
+viper,110,SQ 18 T 18,0,0,2,2,1,0
+viper,111,SQ 18 T 18,0,0,2,2,1,0
+viper,112,SQ 18 T 18,0,0,2,2,1,0
+viper,113,SQ 18 T 18,0,0,2,2,1,0
+viper,114,SQ 18 T 18,0,0,2,2,1,0
+viper,115,SQ 18 T 18,0,0,2,2,1,0
+viper,116,SQ 18 T 18,0,0,2,2,1,0
+viper,117,SQ 18 T 18,0,0,2,2,1,0
+viper,118,SQ 18 T 18,0,0,2,2,1,0
+viper,119,SQ 18 T 18,0,0,2,2,1,0
+chinook,0,T 0,0,0,0,0,0,0
+chinook,1,T 0,0,0,0,0,0,0
+chinook,2,T 0,0,0,0,0,0,0
+chinook,3,T 0,0,0,0,0,0,0
+chinook,4,T 0,0,0,0,0,0,0
+chinook,5,T 0,0,0,0,0,0,0
+chinook,6,T 0,0,0,0,0,0,0
+chinook,7,T 0,0,0,0,0,0,0
+chinook,8,T 0,0,0,0,0,0,0
+chinook,9,T 0,0,0,0,0,0,0
+chinook,10,T 0,0,0,0,0,0,0
+chinook,11,T 0,0,0,0,0,0,0
+chinook,12,T 0,0,0,0,0,0,0
+chinook,13,T 0,0,0,0,0,0,0
+chinook,14,T 0,0,0,0,0,0,0
+chinook,15,T 0,0,0,0,0,0,0
+chinook,16,T 0,0,0,0,0,0,0
+chinook,17,T 0,0,0,0,0,0,0
+chinook,18,T 0,0,0,0,0,0,0
+chinook,19,T 0,0,0,0,0,0,0
+chinook,20,T 0,0,0,0,0,0,0
+chinook,21,T 0,0,0,0,0,0,0
+chinook,22,T 0,0,0,2,0,0,0
+chinook,23,SQ 2 T 2,0,0,2,2,1,0
+chinook,24,SQ 2 T 2,0,0,2,2,1,0
+chinook,25,SQ 4 T 4,0,0,2,2,1,0
+chinook,26,SQ 4 T 4,0,0,2,2,1,0
+chinook,27,SQ 6 T 6,0,0,2,2,1,0
+chinook,28,SQ 6 T 6,0,0,2,2,1,0
+chinook,29,SQ 8 T 8,0,0,2,2,1,0
+chinook,30,SQ 8 T 8,0,0,2,2,1,0
+chinook,31,SQ 10 T 10,0,0,2,2,1,0
+chinook,32,SQ 10 T 10,0,0,2,2,1,0
+chinook,33,SQ 12 T 12,0,0,2,2,1,0
+chinook,34,SQ 12 T 12,0,0,2,2,1,0
+chinook,35,SQ 14 T 14,0,0,2,2,1,0
+chinook,36,SQ 14 T 14,0,0,2,2,1,0
+chinook,37,SQ 16 T 16,0,0,2,2,1,0
+chinook,38,SQ 16 T 16,0,0,2,2,1,0
+chinook,39,SQ 18 T 18,0,0,2,2,1,0
+chinook,40,SQ 18 T 18,0,0,2,2,1,0
+chinook,41,SQ 18 T 18,0,0,2,2,1,0
+chinook,42,SQ 18 T 18,0,0,2,2,1,0
+chinook,43,SQ 18 T 18,0,0,2,2,1,0
+chinook,44,SQ 18 T 18,0,0,2,2,1,0
+chinook,45,SQ 18 T 18,0,0,2,2,1,0
+chinook,46,SQ 18 T 18,0,0,2,2,1,0
+chinook,47,SQ 18 T 18,0,0,2,2,1,0
+chinook,48,SQ 18 T 18,0,0,2,2,1,0
+chinook,49,SQ 18 T 18,0,0,2,2,1,0
+chinook,50,SQ 18 T 18,0,0,2,2,1,0
+chinook,51,SQ 18 T 18,0,0,2,2,1,0
+chinook,52,SQ 18 T 18,0,0,2,2,1,0
+chinook,53,SQ 18 T 18,0,0,2,2,1,0
+chinook,54,SQ 18 T 18,0,0,2,2,1,0
+chinook,55,SQ 18 T 18,0,0,2,2,1,0
+chinook,56,SQ 18 T 18,0,0,2,2,1,0
+chinook,57,SQ 18 T 18,0,0,2,2,1,0
+chinook,58,SQ 18 T 18,0,0,2,2,1,0
+chinook,59,SQ 18 T 18,0,0,2,2,1,0
+chinook,60,SQ 18 T 18,0,0,2,2,1,0
+chinook,61,SQ 18 T 18,0,0,2,2,1,0
+chinook,62,SQ 18 T 18,0,0,2,2,1,0
+chinook,63,SQ 18 T 18,0,0,2,2,1,0
+chinook,64,SQ 18 T 18,0,0,2,2,1,0
+chinook,65,SQ 18 T 18,0,0,2,2,1,0
+chinook,66,SQ 18 T 18,0,0,2,2,1,0
+chinook,67,SQ 18 T 18,0,0,2,2,1,0
+chinook,68,SQ 18 T 18,0,0,2,2,1,0
+chinook,69,SQ 18 T 18,0,0,2,2,1,0
+chinook,70,SQ 18 T 18,0,0,2,2,1,0
+chinook,71,SQ 18 T 18,0,0,2,2,1,0
+chinook,72,SQ 18 T 18,0,0,2,2,1,0
+chinook,73,SQ 18 T 18,0,0,2,2,1,0
+chinook,74,SQ 18 T 18,0,0,2,2,1,0
+chinook,75,SQ 18 T 18,0,0,2,2,1,0
+chinook,76,SQ 18 T 18,0,0,2,2,1,0
+chinook,77,SQ 18 T 18,0,0,2,2,1,0
+chinook,78,SQ 18 T 18,0,0,2,2,1,0
+chinook,79,SQ 18 T 18,0,0,2,2,1,0
+chinook,80,SQ 18 T 18,0,0,2,2,1,0
+chinook,81,SQ 18 T 18,0,0,2,2,1,0
+chinook,82,SQ 18 T 18,0,0,2,2,1,0
+chinook,83,SQ 18 T 18,0,0,2,2,1,0
+chinook,84,SQ 18 T 18,0,0,2,2,1,0
+chinook,85,SQ 18 T 18,0,0,2,2,1,0
+chinook,86,SQ 18 T 18,0,0,2,2,1,0
+chinook,87,SQ 18 T 18,0,0,2,2,1,0
+chinook,88,SQ 18 T 18,0,0,2,2,1,0
+chinook,89,SQ 18 T 18,0,0,2,2,1,0
+chinook,90,SQ 18 T 18,0,0,2,2,1,0
+chinook,91,SQ 18 T 18,0,0,2,2,1,0
+chinook,92,SQ 18 T 18,0,0,2,2,1,0
+chinook,93,SQ 18 T 18,0,0,2,2,1,0
+chinook,94,SQ 18 T 18,0,0,2,2,1,0
+chinook,95,SQ 18 T 18,0,0,2,2,1,0
+chinook,96,SQ 18 T 18,0,0,2,2,1,0
+chinook,97,SQ 18 T 18,0,0,2,2,1,0
+chinook,98,SQ 18 T 18,0,0,2,2,1,0
+chinook,99,SQ 18 T 18,0,0,2,2,1,0
+chinook,100,SQ 18 T 18,0,0,2,2,1,0
+chinook,101,SQ 18 T 18,0,0,2,2,1,0
+chinook,102,SQ 18 T 18,0,0,2,2,1,0
+chinook,103,SQ 18 T 18,0,0,2,2,1,0
+chinook,104,SQ 18 T 18,0,0,2,2,1,0
+chinook,105,SQ 18 T 18,0,0,2,2,1,0
+chinook,106,SQ 18 T 18,0,0,2,2,1,0
+chinook,107,SQ 18 T 18,0,0,2,2,1,0
+chinook,108,SQ 18 T 18,0,0,2,2,1,0
+chinook,109,SQ 18 T 18,0,0,2,2,1,0
+chinook,110,SQ 18 T 18,0,0,2,2,1,0
+chinook,111,SQ 18 T 18,0,0,2,2,1,0
+chinook,112,SQ 18 T 18,0,0,2,2,1,0
+chinook,113,SQ 18 T 18,0,0,2,2,1,0
+chinook,114,SQ 18 T 18,0,0,2,2,1,0
+chinook,115,SQ 18 T 18,0,0,2,2,1,0
+chinook,116,SQ 18 T 18,0,0,2,2,1,0
+chinook,117,SQ 18 T 18,0,0,2,2,1,0
+chinook,118,SQ 18 T 18,0,0,2,2,1,0
+chinook,119,SQ 18 T 18,0,0,2,2,1,0
+jet,0,T 0,0,0,0,0,0,0
+jet,1,T 0,0,0,0,0,0,0
+jet,2,T 0,0,0,0,0,0,0
+jet,3,T 0,0,0,0,0,0,0
+jet,4,T 0,0,0,0,0,0,0
+jet,5,T 0,0,0,0,0,0,0
+jet,6,T 0,0,0,0,0,0,0
+jet,7,T 0,0,0,0,0,0,0
+jet,8,T 0,0,0,0,0,0,0
+jet,9,T 0,0,0,0,0,0,0
+jet,10,T 0,0,0,0,0,0,0
+jet,11,T 0,0,0,0,0,0,0
+jet,12,T 0,0,0,0,0,0,0
+jet,13,T 0,0,0,0,0,0,0
+jet,14,T 0,0,0,0,0,0,0
+jet,15,T 0,0,0,0,0,0,0
+jet,16,T 0,0,0,0,0,0,0
+jet,17,T 0,0,0,0,0,0,0
+jet,18,T 0,0,0,0,0,0,0
+jet,19,T 0,0,0,0,0,0,0
+jet,20,T 0,0,0,0,0,0,0
+jet,21,T 0,0,0,1,0,0,0
+jet,22,SQ 2 T 2,0,0,1,0,0,0
+jet,23,SQ 2 T 2,0,0,1,1,1,0
+jet,24,SQ 4 T 4,0,0,1,1,1,0
+jet,25,SQ 4 T 4,0,0,1,1,1,0
+jet,26,SQ 5 T 5,0,0,1,1,1,0
+jet,27,SQ 5 T 5,0,0,1,1,1,0
+jet,28,SQ 6 T 6,0,0,1,1,1,0
+jet,29,SQ 6 T 6,0,0,1,1,1,0
+jet,30,SQ 7 T 7,0,0,1,1,1,0
+jet,31,SQ 7 T 7,0,0,1,1,1,0
+jet,32,SQ 8 T 8,0,0,1,1,1,0
+jet,33,SQ 8 T 8,0,0,1,1,1,0
+jet,34,SQ 8 T 8,0,0,1,1,1,0
+jet,35,SQ 8 T 8,0,0,1,1,1,0
+jet,36,SQ 8 T 8,0,0,1,1,1,0
+jet,37,SQ 8 T 8,0,0,1,1,1,0
+jet,38,SQ 8 T 8,0,0,1,1,1,0
+jet,39,SQ 8 T 8,0,0,1,1,1,0
+jet,40,SQ 8 T 8,0,0,1,1,1,0
+jet,41,SQ 8 T 8,0,0,1,1,1,0
+jet,42,SQ 8 T 8,0,0,1,1,1,0
+jet,43,SQ 8 T 8,0,0,1,1,1,0
+jet,44,SQ 8 T 8,0,0,1,1,1,0
+jet,45,SQ 8 T 8,0,0,1,1,1,0
+jet,46,SQ 8 T 8,0,0,1,1,1,0
+jet,47,SQ 8 T 8,0,0,1,1,1,0
+jet,48,SQ 8 T 8,0,0,1,1,1,0
+jet,49,SQ 8 T 8,0,0,1,1,1,0
+jet,50,SQ 8 T 8,0,0,1,1,1,0
+jet,51,SQ 8 T 8,0,0,1,1,1,0
+jet,52,SQ 8 T 8,0,0,1,1,1,0
+jet,53,SQ 8 T 8,0,0,1,1,1,0
+jet,54,SQ 8 T 8,0,0,1,1,1,0
+jet,55,SQ 8 T 8,0,0,1,1,1,0
+jet,56,SQ 8 T 8,0,0,1,1,1,0
+jet,57,SQ 8 T 8,0,0,1,1,1,0
+jet,58,SQ 8 T 8,0,0,1,1,1,0
+jet,59,SQ 8 T 8,0,0,1,1,1,0
+jet,60,SQ 8 T 8,0,0,1,1,1,0
+jet,61,SQ 10 T 10,0,0,1,1,1,0
+jet,62,SQ 8 T 8,0,0,1,1,1,0
+jet,63,SQ 10 T 10,0,0,1,1,1,0
+jet,64,SQ 8 T 8,0,0,1,1,1,0
+jet,65,SQ 9 T 9,0,0,1,1,1,0
+jet,66,SQ 8 T 8,0,0,1,1,1,0
+jet,67,SQ 9 T 9,0,0,1,1,1,0
+jet,68,SQ 8 T 8,0,0,1,1,1,0
+jet,69,SQ 9 T 9,0,0,1,1,1,0
+jet,70,SQ 8 T 8,0,0,1,1,1,0
+jet,71,SQ 9 T 9,0,0,1,1,1,0
+jet,72,SQ 8 T 8,0,0,1,1,1,0
+jet,73,SQ 8 T 8,0,0,1,1,1,0
+jet,74,SQ 8 T 8,0,0,1,1,1,0
+jet,75,SQ 8 T 8,0,0,1,1,1,0
+jet,76,SQ 8 T 8,0,0,1,1,1,0
+jet,77,SQ 8 T 8,0,0,1,1,1,0
+jet,78,SQ 8 T 8,0,0,1,1,1,0
+jet,79,SQ 8 T 8,0,0,1,1,1,0
+jet,80,SQ 10 T 10,0,0,1,1,1,0
+jet,81,SQ 8 T 8,0,0,1,1,1,0
+jet,82,SQ 10 T 10,0,0,1,1,1,0
+jet,83,SQ 8 T 8,0,0,1,1,1,0
+jet,84,SQ 9 T 9,0,0,1,1,1,0
+jet,85,SQ 8 T 8,0,0,1,1,1,0
+jet,86,SQ 9 T 9,0,0,1,1,1,0
+jet,87,SQ 8 T 8,0,0,1,1,1,0
+jet,88,SQ 9 T 9,0,0,1,1,1,0
+jet,89,SQ 8 T 8,0,0,1,1,1,0
+jet,90,SQ 9 T 9,0,0,1,1,1,0
+jet,91,SQ 8 T 8,0,0,1,1,1,0
+jet,92,SQ 8 T 8,0,0,1,1,1,0
+jet,93,SQ 8 T 8,0,0,1,1,1,0
+jet,94,SQ 8 T 8,0,0,1,1,1,0
+jet,95,SQ 8 T 8,0,0,1,1,1,0
+jet,96,SQ 8 T 8,0,0,1,1,1,0
+jet,97,SQ 8 T 8,0,0,1,1,1,0
+jet,98,SQ 8 T 8,0,0,1,1,1,0
+jet,99,SQ 8 T 8,0,0,1,1,1,0
+jet,100,SQ 8 T 8,0,0,1,1,1,0
+jet,101,SQ 8 T 8,0,0,1,1,1,0
+jet,102,SQ 6 T 6,0,0,1,1,1,0
+jet,103,SQ 8 T 8,0,0,1,1,1,0
+jet,104,SQ 6 T 6,0,0,1,1,1,0
+jet,105,SQ 8 T 8,0,0,1,1,1,0
+jet,106,SQ 7 T 7,0,0,1,1,1,0
+jet,107,SQ 8 T 8,0,0,1,1,1,0
+jet,108,SQ 7 T 7,0,0,1,1,1,0
+jet,109,SQ 8 T 8,0,0,1,1,1,0
+jet,110,SQ 7 T 7,0,0,1,1,1,0
+jet,111,SQ 8 T 8,0,0,1,1,1,0
+jet,112,SQ 7 T 7,0,0,1,1,1,0
+jet,113,SQ 8 T 8,0,0,1,1,1,0
+jet,114,SQ 8 T 8,0,0,1,1,1,0
+jet,115,SQ 8 T 8,0,0,1,1,1,0
+jet,116,SQ 8 T 8,0,0,1,1,1,0
+jet,117,SQ 8 T 8,0,0,1,1,1,0
+jet,118,SQ 8 T 8,0,0,1,1,1,0
+jet,119,SQ 8 T 8,0,0,1,1,1,0
+low,0,T 0,0,0,0,0,0,0
+low,1,T 0,0,0,0,0,0,0
+low,2,T 0,0,0,0,0,0,0
+low,3,T 0,0,0,0,0,0,0
+low,4,T 0,0,0,0,0,0,0
+low,5,T 0,0,0,0,0,0,0
+low,6,T 0,0,0,0,0,0,0
+low,7,T 0,0,0,0,0,0,0
+low,8,T 0,0,0,0,0,0,0
+low,9,T 0,0,0,0,0,0,0
+low,10,T 0,0,0,0,0,0,0
+low,11,T 0,0,0,0,0,0,0
+low,12,T 0,0,0,0,0,0,0
+low,13,T 0,0,0,0,0,0,0
+low,14,T 0,0,0,0,0,0,0
+low,15,T 0,0,0,0,0,0,0
+low,16,T 0,0,0,0,0,0,0
+low,17,T 0,0,0,0,0,0,0
+low,18,T 0,0,0,0,0,0,0
+low,19,T 0,0,0,0,0,0,0
+low,20,T 0,0,0,0,0,0,0
+low,21,T 0,0,0,0,0,0,0
+low,22,T 0,0,0,0,0,0,0
+low,23,T 0,0,0,0,0,0,0
+low,24,T 0,0,0,0,0,0,0
+low,25,T 0,0,0,0,0,0,0
+low,26,T 0,0,0,0,0,0,0
+low,27,T 0,0,0,0,0,0,0
+low,28,T 0,0,0,0,0,0,0
+low,29,T 0,0,0,0,0,0,0
+low,30,T 0,0,0,0,0,0,0
+low,31,T 0,0,0,0,0,0,0
+low,32,T 0,0,0,0,0,0,0
+low,33,T 0,0,0,0,0,0,0
+low,34,T 0,0,0,0,0,0,0
+low,35,T 0,0,0,0,0,0,0
+low,36,T 0,0,0,0,0,0,0
+low,37,T 0,0,0,0,0,0,0
+low,38,T 0,0,0,0,0,0,0
+low,39,T 0,0,0,0,0,0,0
+low,40,T 0,0,0,0,0,0,0
+low,41,T 0,0,0,0,0,0,0
+low,42,T 0,0,0,0,0,0,0
+low,43,T 0,0,0,0,0,0,0
+low,44,T 0,0,0,0,0,0,0
+low,45,T 0,0,0,0,0,0,0
+low,46,T 0,0,0,0,0,0,0
+low,47,T 0,0,0,0,0,0,0
+low,48,T 0,0,0,0,0,0,0
+low,49,T 0,0,0,0,0,0,0
+low,50,T 0,0,0,0,0,0,0
+low,51,T 0,0,0,0,0,0,0
+low,52,T 0,0,0,0,0,0,0
+low,53,T 0,0,0,0,0,0,0
+low,54,T 0,0,0,0,0,0,0
+low,55,T 0,0,0,0,0,0,0
+low,56,T 0,0,0,0,0,0,0
+low,57,T 0,0,0,0,0,0,0
+low,58,T 0,0,0,0,0,0,0
+low,59,T 0,0,0,0,0,0,0
+low,60,T 0,0,0,0,0,0,0
+low,61,T 0,0,0,0,0,0,0
+low,62,T 0,0,0,0,0,0,0
+low,63,T 0,0,0,0,0,0,0
+low,64,T 0,0,0,0,0,0,0
+low,65,T 0,0,0,0,0,0,0
+low,66,T 0,0,0,0,0,0,0
+low,67,T 0,0,0,0,0,0,0
+low,68,T 0,0,0,0,0,0,0
+low,69,T 0,0,0,0,0,0,0
+low,70,T 0,0,0,0,0,0,0
+low,71,T 0,0,0,0,0,0,0
+low,72,T 0,0,0,0,0,0,0
+low,73,T 0,0,0,0,0,0,0
+low,74,T 0,0,0,0,0,0,0
+low,75,T 0,0,0,0,0,0,0
+low,76,T 0,0,0,0,0,0,0
+low,77,T 0,0,0,0,0,0,0
+low,78,T 0,0,0,0,0,0,0
+low,79,T 0,0,0,0,0,0,0
+low,80,T 0,0,0,0,0,0,0
+low,81,T 0,0,0,0,0,0,0
+low,82,T 0,0,0,0,0,0,0
+low,83,T 0,0,0,0,0,0,0
+low,84,T 0,0,0,0,0,0,0
+low,85,T 0,0,0,0,0,0,0
+low,86,T 0,0,0,0,0,0,0
+low,87,T 0,0,0,0,0,0,0
+low,88,T 0,0,0,0,0,0,0
+low,89,T 0,0,0,0,0,0,0
+low,90,T 0,0,0,0,0,0,0
+low,91,T 0,0,0,0,0,0,0
+low,92,T 0,0,0,0,0,0,0
+low,93,T 0,0,0,0,0,0,0
+low,94,T 0,0,0,0,0,0,0
+low,95,T 0,0,0,0,0,0,0
+low,96,T 0,0,0,0,0,0,0
+low,97,T 0,0,0,0,0,0,0
+low,98,T 0,0,0,0,0,0,0
+low,99,T 0,0,0,0,0,0,0
+low,100,T 0,0,0,0,0,0,0
+low,101,T 0,0,0,0,0,0,0
+low,102,T 0,0,0,0,0,0,0
+low,103,T 0,0,0,0,0,0,0
+low,104,T 0,0,0,0,0,0,0
+low,105,T 0,0,0,0,0,0,0
+low,106,T 0,0,0,0,0,0,0
+low,107,T 0,0,0,0,0,0,0
+low,108,T 0,0,0,0,0,0,0
+low,109,T 0,0,0,0,0,0,0
+low,110,T 0,0,0,0,0,0,0
+low,111,T 0,0,0,0,0,0,0
+low,112,T 0,0,0,0,0,0,0
+low,113,T 0,0,0,0,0,0,0
+low,114,T 0,0,0,0,0,0,0
+low,115,T 0,0,0,0,0,0,0
+low,116,T 0,0,0,0,0,0,0
+low,117,T 0,0,0,0,0,0,0
+low,118,T 0,0,0,0,0,0,0
+low,119,T 0,0,0,0,0,0,0
+disabled,0,T 0,0,0,0,0,0,0
+disabled,1,T 0,0,0,0,0,0,0
+disabled,2,T 0,0,0,0,0,0,0
+disabled,3,T 0,0,0,0,0,0,0
+disabled,4,T 0,0,0,0,0,0,0
+disabled,5,T 0,0,0,0,0,0,0
+disabled,6,T 0,0,0,0,0,0,0
+disabled,7,T 0,0,0,0,0,0,0
+disabled,8,T 0,0,0,0,0,0,0
+disabled,9,T 0,0,0,0,0,0,0
+disabled,10,T 0,0,0,0,0,0,0
+disabled,11,T 0,0,0,0,0,0,0
+disabled,12,T 0,0,0,0,0,0,0
+disabled,13,T 0,0,0,0,0,0,0
+disabled,14,T 0,0,0,0,0,0,0
+disabled,15,T 0,0,0,0,0,0,0
+disabled,16,T 0,0,0,0,0,0,0
+disabled,17,T 0,0,0,0,0,0,0
+disabled,18,T 0,0,0,0,0,0,0
+disabled,19,T 0,0,0,0,0,0,0
+disabled,20,T 0,0,0,0,0,0,0
+disabled,21,T 0,0,0,0,0,0,0
+disabled,22,T 0,0,0,0,0,0,0
+disabled,23,T 0,0,0,0,0,0,0
+disabled,24,T 0,0,0,0,0,0,0
+disabled,25,T 0,0,0,0,0,0,0
+disabled,26,T 0,0,0,0,0,0,0
+disabled,27,T 0,0,0,0,0,0,0
+disabled,28,T 0,0,0,0,0,0,0
+disabled,29,T 0,0,0,0,0,0,0
+disabled,30,T 0,0,0,0,0,0,0
+disabled,31,T 0,0,0,0,0,0,0
+disabled,32,T 0,0,0,0,0,0,0
+disabled,33,T 0,0,0,0,0,0,0
+disabled,34,T 0,0,0,0,0,0,0
+disabled,35,T 0,0,0,0,0,0,0
+disabled,36,T 0,0,0,0,0,0,0
+disabled,37,T 0,0,0,0,0,0,0
+disabled,38,T 0,0,0,0,0,0,0
+disabled,39,T 0,0,0,0,0,0,0
+disabled,40,T 0,0,0,0,0,0,0
+disabled,41,T 0,0,0,0,0,0,0
+disabled,42,T 0,0,0,0,0,0,0
+disabled,43,T 0,0,0,0,0,0,0
+disabled,44,T 0,0,0,0,0,0,0
+disabled,45,T 0,0,0,0,0,0,0
+disabled,46,T 0,0,0,0,0,0,0
+disabled,47,T 0,0,0,0,0,0,0
+disabled,48,T 0,0,0,0,0,0,0
+disabled,49,T 0,0,0,0,0,0,0
+disabled,50,T 0,0,0,0,0,0,0
+disabled,51,T 0,0,0,0,0,0,0
+disabled,52,T 0,0,0,0,0,0,0
+disabled,53,T 0,0,0,0,0,0,0
+disabled,54,T 0,0,0,0,0,0,0
+disabled,55,T 0,0,0,0,0,0,0
+disabled,56,T 0,0,0,0,0,0,0
+disabled,57,T 0,0,0,0,0,0,0
+disabled,58,T 0,0,0,0,0,0,0
+disabled,59,T 0,0,0,0,0,0,0
+disabled,60,T 0,0,0,0,0,0,0
+disabled,61,T 0,0,0,0,0,0,0
+disabled,62,T 0,0,0,0,0,0,0
+disabled,63,T 0,0,0,0,0,0,0
+disabled,64,T 0,0,0,0,0,0,0
+disabled,65,T 0,0,0,0,0,0,0
+disabled,66,T 0,0,0,0,0,0,0
+disabled,67,T 0,0,0,0,0,0,0
+disabled,68,T 0,0,0,0,0,0,0
+disabled,69,T 0,0,0,0,0,0,0
+disabled,70,T 0,0,0,0,0,0,0
+disabled,71,T 0,0,0,0,0,0,0
+disabled,72,T 0,0,0,0,0,0,0
+disabled,73,T 0,0,0,0,0,0,0
+disabled,74,T 0,0,0,0,0,0,0
+disabled,75,T 0,0,0,0,0,0,0
+disabled,76,T 0,0,0,0,0,0,0
+disabled,77,T 0,0,0,0,0,0,0
+disabled,78,T 0,0,0,0,0,0,0
+disabled,79,T 0,0,0,0,0,0,0
+disabled,80,T 0,0,0,0,0,0,0
+disabled,81,T 0,0,0,0,0,0,0
+disabled,82,T 0,0,0,0,0,0,0
+disabled,83,T 0,0,0,0,0,0,0
+disabled,84,T 0,0,0,0,0,0,0
+disabled,85,T 0,0,0,0,0,0,0
+disabled,86,T 0,0,0,0,0,0,0
+disabled,87,T 0,0,0,0,0,0,0
+disabled,88,T 0,0,0,0,0,0,0
+disabled,89,T 0,0,0,0,0,0,0
+disabled,90,T 0,0,0,0,0,0,0
+disabled,91,T 0,0,0,0,0,0,0
+disabled,92,T 0,0,0,0,0,0,0
+disabled,93,T 0,0,0,0,0,0,0
+disabled,94,T 0,0,0,0,0,0,0
+disabled,95,T 0,0,0,0,0,0,0
+disabled,96,T 0,0,0,0,0,0,0
+disabled,97,T 0,0,0,0,0,0,0
+disabled,98,T 0,0,0,0,0,0,0
+disabled,99,T 0,0,0,0,0,0,0
+disabled,100,T 0,0,0,0,0,0,0
+disabled,101,T 0,0,0,0,0,0,0
+disabled,102,T 0,0,0,0,0,0,0
+disabled,103,T 0,0,0,0,0,0,0
+disabled,104,T 0,0,0,0,0,0,0
+disabled,105,T 0,0,0,0,0,0,0
+disabled,106,T 0,0,0,0,0,0,0
+disabled,107,T 0,0,0,0,0,0,0
+disabled,108,T 0,0,0,0,0,0,0
+disabled,109,T 0,0,0,0,0,0,0
+disabled,110,T 0,0,0,0,0,0,0
+disabled,111,T 0,0,0,0,0,0,0
+disabled,112,T 0,0,0,0,0,0,0
+disabled,113,T 0,0,0,0,0,0,0
+disabled,114,T 0,0,0,0,0,0,0
+disabled,115,T 0,0,0,0,0,0,0
+disabled,116,T 0,0,0,0,0,0,0
+disabled,117,T 0,0,0,0,0,0,0
+disabled,118,T 0,0,0,0,0,0,0
+disabled,119,T 0,0,0,0,0,0,0
+adaptive,0,T 0,0,0,0,0,0,0
+adaptive,1,T 0,0,0,0,0,0,0
+adaptive,2,T 0,0,0,0,0,0,0
+adaptive,3,T 0,0,0,0,0,0,0
+adaptive,4,T 0,0,0,0,0,0,0
+adaptive,5,T 0,0,0,0,0,0,0
+adaptive,6,T 0,0,0,0,0,0,0
+adaptive,7,T 0,0,0,0,0,0,0
+adaptive,8,T 0,0,0,0,0,0,0
+adaptive,9,T 0,0,0,0,0,0,0
+adaptive,10,T 0,0,0,0,0,0,0
+adaptive,11,T 0,0,0,0,0,0,0
+adaptive,12,T 0,0,0,0,0,0,0
+adaptive,13,T 0,0,0,0,0,0,0
+adaptive,14,T 0,0,0,0,0,0,0
+adaptive,15,T 0,0,0,0,0,0,0
+adaptive,16,T 0,0,0,0,0,0,0
+adaptive,17,T 0,0,0,0,0,0,0
+adaptive,18,T 0,0,0,0,0,0,0
+adaptive,19,T 0,0,0,0,0,0,0
+adaptive,20,T 0,0,0,10,0,0,0
+adaptive,21,T 0,0,0,10,4,1,0
+adaptive,22,T 0,0,0,10,4,1,0
+adaptive,23,T 0,0,0,10,4,1,0
+adaptive,24,T 0,0,0,10,4,1,0
+adaptive,25,T 0,0,0,10,4,1,0
+adaptive,26,T 0,0,0,10,4,1,0
+adaptive,27,T 0,0,0,10,4,1,0
+adaptive,28,T 0,0,0,10,4,1,0
+adaptive,29,T 0,0,0,10,4,1,0
+adaptive,30,T 0,0,0,10,4,1,0
+adaptive,31,T 0,0,0,10,4,1,0
+adaptive,32,T 0,0,0,10,4,1,0
+adaptive,33,T 0,0,0,10,4,1,0
+adaptive,34,T 0,0,0,10,4,1,0
+adaptive,35,T 0,0,0,10,4,1,0
+adaptive,36,T 0,0,0,10,4,1,0
+adaptive,37,T 0,0,0,10,4,1,0
+adaptive,38,T 0,0,0,10,4,1,0
+adaptive,39,T 0,0,0,10,4,1,0
+adaptive,40,T 0,0,0,10,4,1,0
+adaptive,41,T 0,0,0,10,4,1,0
+adaptive,42,T 0,0,0,10,4,1,0
+adaptive,43,T 0,0,0,10,4,1,0
+adaptive,44,T 0,0,0,10,4,1,0
+adaptive,45,T 0,0,0,10,4,1,0
+adaptive,46,T 0,0,0,10,4,1,0
+adaptive,47,T 0,0,0,10,4,1,0
+adaptive,48,T 0,0,0,10,4,1,0
+adaptive,49,T 0,0,0,10,4,1,0
+adaptive,50,T 0,0,0,10,4,1,0
+adaptive,51,T 0,0,0,10,4,1,0
+adaptive,52,T 0,0,0,10,4,1,0
+adaptive,53,T 0,0,0,10,4,1,0
+adaptive,54,T 0,0,0,10,4,1,0
+adaptive,55,T 0,0,0,10,4,1,0
+adaptive,56,T 0,0,0,10,4,1,0
+adaptive,57,T 0,0,0,0,0,0,1
+adaptive,58,T 0,0,0,0,0,0,1
+adaptive,59,T 0,0,0,0,0,0,1
+adaptive,60,T 0,0,0,0,0,0,1
+adaptive,61,T 0,0,0,0,0,0,1
+adaptive,62,T 0,0,0,0,0,0,1
+adaptive,63,T 0,0,0,0,0,0,1
+adaptive,64,T 0,0,0,0,0,0,1
+adaptive,65,T 0,0,0,0,0,0,1
+adaptive,66,T 0,0,0,0,0,0,1
+adaptive,67,T 0,0,0,0,0,0,1
+adaptive,68,T 0,0,0,0,0,0,1
+adaptive,69,T 0,0,0,0,0,0,1
+adaptive,70,T 0,0,0,0,0,0,1
+adaptive,71,T 0,0,0,0,0,0,1
+adaptive,72,T 0,0,0,0,0,0,1
+adaptive,73,T 0,0,0,0,0,0,2
+adaptive,74,T 0,0,0,0,0,0,2
+adaptive,75,T 0,0,0,0,0,0,2
+adaptive,76,T 0,0,0,0,0,0,2
+adaptive,77,T 0,0,0,0,0,0,2
+adaptive,78,T 0,0,0,0,0,0,2
+adaptive,79,T 0,0,0,0,0,0,2
+adaptive,80,T 0,0,0,0,0,0,2
+adaptive,81,T 0,0,0,0,0,0,2
+adaptive,82,T 0,0,0,0,0,0,2
+adaptive,83,T 0,0,0,0,0,0,2
+adaptive,84,T 0,0,0,0,0,0,2
+adaptive,85,T 0,0,0,0,0,0,2
+adaptive,86,T 0,0,0,0,0,0,2
+adaptive,87,T 0,0,0,0,0,0,2
+adaptive,88,T 0,0,0,0,0,0,2
+adaptive,89,T 0,0,0,0,0,0,3
+adaptive,90,T 0,0,0,0,0,0,3
+adaptive,91,T 0,0,0,0,0,0,3
+adaptive,92,T 0,0,0,0,0,0,3
+adaptive,93,T 0,0,0,0,0,0,3
+adaptive,94,T 0,0,0,0,0,0,3
+adaptive,95,T 0,0,0,0,0,0,3
+adaptive,96,T 0,0,0,0,0,0,3
+adaptive,97,T 0,0,0,0,0,0,3
+adaptive,98,T 0,0,0,0,0,0,3
+adaptive,99,T 0,0,0,0,0,0,3
+adaptive,100,T 0,0,0,0,0,0,3
+adaptive,101,T 0,0,0,0,0,0,3
+adaptive,102,T 0,0,0,0,0,0,3
+adaptive,103,T 0,0,0,0,0,0,3
+adaptive,104,T 0,0,0,0,0,0,3
+adaptive,105,T 0,0,0,0,0,0,3
+adaptive,106,T 0,0,0,0,0,0,3
+adaptive,107,T 0,0,0,0,0,0,3
+adaptive,108,T 0,0,0,0,0,0,3
+adaptive,109,T 0,0,0,0,0,0,3
+adaptive,110,T 0,0,0,0,0,0,3
+adaptive,111,T 0,0,0,0,0,0,3
+adaptive,112,T 0,0,0,0,0,0,3
+adaptive,113,T 0,0,0,0,0,0,3
+adaptive,114,T 0,0,0,0,0,0,3
+adaptive,115,T 0,0,0,0,0,0,3
+adaptive,116,T 0,0,0,0,0,0,3
+adaptive,117,T 0,0,0,0,0,0,3
+adaptive,118,T 0,0,0,0,0,0,3
+adaptive,119,T 0,0,0,0,0,0,3
+cooldown,0,T 0,0,0,0,0,0,0
+cooldown,1,T 0,0,0,0,0,0,0
+cooldown,2,T 0,0,0,0,0,0,0
+cooldown,3,T 0,0,0,0,0,0,0
+cooldown,4,T 0,0,0,0,0,0,0
+cooldown,5,T 0,0,0,0,0,0,0
+cooldown,6,T 0,0,0,0,0,0,0
+cooldown,7,T 0,0,0,0,0,0,0
+cooldown,8,T 0,0,0,0,0,0,0
+cooldown,9,T 0,0,0,0,0,0,0
+cooldown,10,T 0,0,0,0,0,0,0
+cooldown,11,T 0,0,0,0,0,0,0
+cooldown,12,T 0,0,0,0,0,0,0
+cooldown,13,T 0,0,0,0,0,0,0
+cooldown,14,T 0,0,0,0,0,0,0
+cooldown,15,T 0,0,0,0,0,0,0
+cooldown,16,T 0,0,0,0,0,0,0
+cooldown,17,T 0,0,0,0,0,0,0
+cooldown,18,T 0,0,0,0,0,0,0
+cooldown,19,T 0,0,0,0,0,0,0
+cooldown,20,T 0,0,0,0,0,0,0
+cooldown,21,T 0,0,0,0,0,0,0
+cooldown,22,T 0,0,0,0,0,0,0
+cooldown,23,T 0,0,0,0,0,0,0
+cooldown,24,T 0,0,0,0,0,0,0
+cooldown,25,T 0,0,0,0,0,0,0
+cooldown,26,T 0,0,0,0,0,0,0
+cooldown,27,T 0,0,0,0,0,0,0
+cooldown,28,T 0,0,0,0,0,0,0
+cooldown,29,T 0,0,0,0,0,0,0
+cooldown,30,T 0,0,0,0,0,0,0
+cooldown,31,T 0,0,0,0,0,0,0
+cooldown,32,T 0,0,0,0,0,0,0
+cooldown,33,T 0,0,0,0,0,0,0
+cooldown,34,T 0,0,0,0,0,0,0
+cooldown,35,T 0,0,0,0,0,0,0
+cooldown,36,T 0,0,0,0,0,0,0
+cooldown,37,T 0,0,0,0,0,0,0
+cooldown,38,T 0,0,0,0,0,0,0
+cooldown,39,T 0,0,0,0,0,0,0
+cooldown,40,T 0,0,0,0,0,0,0
+cooldown,41,T 0,0,0,0,0,0,0
+cooldown,42,T 0,0,0,0,0,0,0
+cooldown,43,T 0,0,0,0,0,0,0
+cooldown,44,T 0,0,0,0,0,0,0
+cooldown,45,T 0,0,0,0,0,0,0
+cooldown,46,T 0,0,0,0,0,0,0
+cooldown,47,T 0,0,0,0,0,0,0
+cooldown,48,T 0,0,0,0,0,0,0
+cooldown,49,T 0,0,0,0,0,0,0
+cooldown,50,T 0,0,0,0,0,0,0
+cooldown,51,T 0,0,0,0,0,0,0
+cooldown,52,T 0,0,0,0,0,0,0
+cooldown,53,T 0,0,0,0,0,0,0
+cooldown,54,T 0,0,0,0,0,0,0
+cooldown,55,T 0,0,0,0,0,0,0
+cooldown,56,T 0,0,0,0,0,0,0
+cooldown,57,T 0,0,0,0,0,0,0
+cooldown,58,T 0,0,0,0,0,0,0
+cooldown,59,T 0,0,0,0,0,0,0
+cooldown,60,T 0,0,0,0,0,0,0
+cooldown,61,T 0,0,0,0,0,0,0
+cooldown,62,T 0,0,0,0,0,0,0
+cooldown,63,T 0,0,0,0,0,0,0
+cooldown,64,T 0,0,0,0,0,0,0
+cooldown,65,T 0,0,0,0,0,0,0
+cooldown,66,T 0,0,0,0,0,0,0
+cooldown,67,T 0,0,0,0,0,0,0
+cooldown,68,T 0,0,0,0,0,0,0
+cooldown,69,T 0,0,0,0,0,0,0
+cooldown,70,T 0,0,0,0,0,0,0
+cooldown,71,T 0,0,0,0,0,0,0
+cooldown,72,T 0,0,0,0,0,0,0
+cooldown,73,T 0,0,0,0,0,0,0
+cooldown,74,T 0,0,0,0,0,0,0
+cooldown,75,T 0,0,0,0,0,0,0
+cooldown,76,T 0,0,0,0,0,0,0
+cooldown,77,T 0,0,0,0,0,0,0
+cooldown,78,T 0,0,0,0,0,0,0
+cooldown,79,T 0,0,0,0,0,0,0
+cooldown,80,T 0,0,0,0,0,0,0
+cooldown,81,T 0,0,0,0,0,0,0
+cooldown,82,T 0,0,0,0,0,0,0
+cooldown,83,T 0,0,0,0,0,0,0
+cooldown,84,T 0,0,0,0,0,0,0
+cooldown,85,T 0,0,0,0,0,0,0
+cooldown,86,T 0,0,0,0,0,0,0
+cooldown,87,T 0,0,0,0,0,0,0
+cooldown,88,T 0,0,0,0,0,0,0
+cooldown,89,T 0,0,0,0,0,0,0
+cooldown,90,T 0,0,0,0,0,0,0
+cooldown,91,T 0,0,0,0,0,0,0
+cooldown,92,T 0,0,0,0,0,0,0
+cooldown,93,T 0,0,0,0,0,0,0
+cooldown,94,T 0,0,0,0,0,0,0
+cooldown,95,T 0,0,0,0,0,0,0
+cooldown,96,T 0,0,0,0,0,0,0
+cooldown,97,T 0,0,0,0,0,0,0
+cooldown,98,T 0,0,0,0,0,0,0
+cooldown,99,T 0,0,0,0,0,0,0
+cooldown,100,T 0,0,0,0,0,0,0
+cooldown,101,T 0,0,0,0,0,0,0
+cooldown,102,T 0,0,0,0,0,0,0
+cooldown,103,T 0,0,0,0,0,0,0
+cooldown,104,T 0,0,0,0,0,0,0
+cooldown,105,T 0,0,0,0,0,0,0
+cooldown,106,T 0,0,0,0,0,0,0
+cooldown,107,T 0,0,0,0,0,0,0
+cooldown,108,T 0,0,0,0,0,0,0
+cooldown,109,T 0,0,0,0,0,0,0
+cooldown,110,T 0,0,0,0,0,0,0
+cooldown,111,T 0,0,0,0,0,0,0
+cooldown,112,T 0,0,0,0,0,0,0
+cooldown,113,T 0,0,0,0,0,0,0
+cooldown,114,T 0,0,0,0,0,0,0
+cooldown,115,T 0,0,0,0,0,0,0
+cooldown,116,T 0,0,0,0,0,0,0
+cooldown,117,T 0,0,0,0,0,0,0
+cooldown,118,T 0,0,0,0,0,0,0
+cooldown,119,T 0,0,0,0,0,0,0
+ring-isolated,0,T 0,0,0,0,0,0,0
+ring-isolated,1,T 0,0,0,0,0,0,0
+ring-isolated,2,T 0,0,0,0,0,0,0
+ring-isolated,3,T 0,0,0,0,0,0,0
+ring-isolated,4,T 0,0,0,0,0,0,0
+ring-isolated,5,T 0,0,0,0,0,0,0
+ring-isolated,6,T 0,0,0,0,0,0,0
+ring-isolated,7,T 0,0,0,0,0,0,0
+ring-isolated,8,T 0,0,0,0,0,0,0
+ring-isolated,9,T 0,0,0,0,0,0,0
+ring-isolated,10,T 0,0,0,0,0,0,0
+ring-isolated,11,T 0,0,0,0,0,0,0
+ring-isolated,12,T 0,0,0,0,0,0,0
+ring-isolated,13,T 0,0,0,0,0,0,0
+ring-isolated,14,T 0,0,0,0,0,0,0
+ring-isolated,15,T 0,0,0,0,0,0,0
+ring-isolated,16,T 0,0,0,0,0,0,0
+ring-isolated,17,T 0,0,0,0,0,0,0
+ring-isolated,18,T 0,0,0,0,0,0,0
+ring-isolated,19,T 0,0,0,0,0,0,0
+ring-isolated,20,T 0,10,12,0,0,0,0
+ring-isolated,21,SQ 16 T 16,10,12,0,0,0,0
+ring-isolated,22,SQ 16 T 16,10,12,0,0,0,0
+ring-isolated,23,SQ 16 T 16,10,12,0,0,0,0
+ring-isolated,24,SQ 16 T 16,10,12,0,0,0,0
+ring-isolated,25,SQ 16 T 16,10,12,0,0,0,0
+ring-isolated,26,SQ 16 T 16,10,12,0,0,0,0
+ring-isolated,27,SQ 16 T 16,10,12,0,0,0,0
+ring-isolated,28,SQ 16 T 16,10,12,0,0,0,0
+ring-isolated,29,SQ 16 T 16,10,12,0,0,0,0
+ring-isolated,30,SQ 16 T 16,10,12,0,0,0,0
+ring-isolated,31,SQ 16 T 16,10,12,0,0,0,0
+ring-isolated,32,SQ 16 T 16,10,12,0,0,0,0
+ring-isolated,33,SQ 16 T 16,10,12,0,0,0,0
+ring-isolated,34,SQ 16 T 16,10,12,0,0,0,0
+ring-isolated,35,SQ 16 T 16,10,12,0,0,0,0
+ring-isolated,36,SQ 16 T 16,10,12,0,0,0,0
+ring-isolated,37,SQ 16 T 16,10,12,0,0,0,0
+ring-isolated,38,SQ 16 T 16,10,12,0,0,0,0
+ring-isolated,39,SQ 6 T 6,10,12,0,0,0,0
+ring-isolated,40,SQ 5 T 5,10,12,0,0,0,0
+ring-isolated,41,SQ 5 T 5,10,12,0,0,0,0
+ring-isolated,42,SQ 5 T 5,10,12,0,0,0,0
+ring-isolated,43,SQ 4 T 4,10,12,0,0,0,0
+ring-isolated,44,SQ 4 T 4,10,12,0,0,0,0
+ring-isolated,45,SQ 3 T 3,10,12,0,0,0,0
+ring-isolated,46,SQ 2 T 2,10,12,0,0,0,0
+ring-isolated,47,SQ 2 T 2,10,12,0,0,0,0
+ring-isolated,48,SQ 2 T 2,10,12,0,0,0,0
+ring-isolated,49,SQ 2 T 2,10,12,0,0,0,0
+ring-isolated,50,SQ 2 T 2,10,12,0,0,0,0
+ring-isolated,51,SQ 2 T 2,10,12,0,0,0,0
+ring-isolated,52,SQ 1 T 1,10,12,0,0,0,0
+ring-isolated,53,SQ 0 T 0,10,12,0,0,0,0
+ring-isolated,54,SQ 0 T 0,10,12,0,0,0,0
+ring-isolated,55,SQ 0 T 0,10,12,0,0,0,0
+ring-isolated,56,SQ 0 T 0,10,12,0,0,0,0
+ring-isolated,57,SQ 0 T 0,10,12,0,0,0,0
+ring-isolated,58,SQ 0 T 0,10,12,0,0,0,0
+ring-isolated,59,SQ 0 T 0,10,12,0,0,0,0
+ring-isolated,60,SQ 0 T 0,10,12,0,0,0,0
+ring-isolated,61,SQ 0 T 0,10,12,0,0,0,0
+ring-isolated,62,SQ 0 T 0,10,12,0,0,0,0
+ring-isolated,63,SQ 0 T 0,10,12,0,0,0,0
+ring-isolated,64,SQ 0 T 0,10,12,0,0,0,0
+ring-isolated,65,SQ 0 T 0,10,12,0,0,0,0
+ring-isolated,66,SQ 0 T 0,10,12,0,0,0,0
+ring-isolated,67,SQ 0 T 0,10,12,0,0,0,0
+ring-isolated,68,SQ 0 T 0,10,12,0,0,0,0
+ring-isolated,69,SQ 0 T 0,10,12,0,0,0,0
+ring-isolated,70,SQ 0 T 0,10,12,0,0,0,0
+ring-isolated,71,SQ 0 T 0,10,12,0,0,0,0
+ring-isolated,72,SQ 0 T 0,10,12,0,0,0,0
+ring-isolated,73,SQ 0 T 0,10,12,0,0,0,0
+ring-isolated,74,SQ 0 T 0,10,12,0,0,0,0
+ring-isolated,75,SQ 0 T 0,10,12,0,0,0,0
+ring-isolated,76,SQ 0 T 0,10,12,0,0,0,0
+ring-isolated,77,SQ 0 T 0,10,12,0,0,0,0
+ring-isolated,78,SQ 0 T 0,10,12,0,0,0,0
+ring-isolated,79,SQ 0 T 0,10,12,0,0,0,0
+ring-isolated,80,SQ 0 T 0,10,12,0,0,0,0
+ring-isolated,81,SQ 0 T 0,10,12,0,0,0,0
+ring-isolated,82,SQ 0 T 0,10,12,0,0,0,0
+ring-isolated,83,SQ 0 T 0,10,12,0,0,0,0
+ring-isolated,84,SQ 0 T 0,10,12,0,0,0,0
+ring-isolated,85,SQ 0 T 0,10,12,0,0,0,0
+ring-isolated,86,SQ 0 T 0,10,12,0,0,0,0
+ring-isolated,87,SQ 0 T 0,10,12,0,0,0,0
+ring-isolated,88,SQ 0 T 0,10,12,0,0,0,0
+ring-isolated,89,SQ 0 T 0,10,12,0,0,0,0
+ring-isolated,90,SQ 0 T 0,10,12,0,0,0,0
+ring-isolated,91,SQ 0 T 0,10,12,0,0,0,0
+ring-isolated,92,SQ 0 T 0,10,12,0,0,0,0
+ring-isolated,93,SQ 0 T 0,10,12,0,0,0,0
+ring-isolated,94,SQ 0 T 0,10,12,0,0,0,0
+ring-isolated,95,SQ 0 T 0,10,12,0,0,0,0
+ring-isolated,96,SQ 0 T 0,10,12,0,0,0,0
+ring-isolated,97,SQ 0 T 0,10,12,0,0,0,0
+ring-isolated,98,SQ 0 T 0,10,12,0,0,0,0
+ring-isolated,99,SQ 0 T 0,10,12,0,0,0,0
+ring-isolated,100,SQ 0 T 0,10,12,0,0,0,0
+ring-isolated,101,SQ 0 T 0,10,12,0,0,0,0
+ring-isolated,102,SQ 0 T 0,10,12,0,0,0,0
+ring-isolated,103,SQ 0 T 0,10,12,0,0,0,0
+ring-isolated,104,SQ 0 T 0,10,12,0,0,0,0
+ring-isolated,105,SQ 0 T 0,10,12,0,0,0,0
+ring-isolated,106,SQ 0 T 0,10,12,0,0,0,0
+ring-isolated,107,SQ 0 T 0,10,12,0,0,0,0
+ring-isolated,108,SQ 0 T 0,10,12,0,0,0,0
+ring-isolated,109,SQ 0 T 0,10,12,0,0,0,0
+ring-isolated,110,SQ 0 T 0,10,12,0,0,0,0
+ring-isolated,111,SQ 0 T 0,10,12,0,0,0,0
+ring-isolated,112,SQ 0 T 0,10,12,0,0,0,0
+ring-isolated,113,SQ 0 T 0,10,12,0,0,0,0
+ring-isolated,114,SQ 0 T 0,10,12,0,0,0,0
+ring-isolated,115,SQ 0 T 0,10,12,0,0,0,0
+ring-isolated,116,SQ 0 T 0,10,12,0,0,0,0
+ring-isolated,117,SQ 0 T 0,10,12,0,0,0,0
+ring-isolated,118,SQ 0 T 0,10,12,0,0,0,0
+ring-isolated,119,SQ 0 T 0,10,12,0,0,0,0

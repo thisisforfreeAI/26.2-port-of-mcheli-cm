@@ -38,10 +38,15 @@ class ExplosionLookTest {
     }
 
     @Test
-    void ordinaryImpactsAndTinyBombsKeepTheirExistingScale() {
-        for (BlastStyle style : new BlastStyle[]{BlastStyle.CANNON, BlastStyle.BLAST, BlastStyle.PENETRATOR}) {
+    void cannonImpactsAndTinyBombsKeepTheirExistingScaleWhileMissileSmokeGrows() {
+        for (BlastStyle style : new BlastStyle[]{BlastStyle.CANNON}) {
             assertEquals(16, ExplosionLook.puffSize(16, 12, style, EffectBudget.HIGH));
             assertEquals(0.2F, ExplosionLook.startScale(12, style, EffectBudget.HIGH));
+            assertEquals(12, ExplosionLook.glowRadius(12, style, EffectBudget.HIGH));
+        }
+        for (BlastStyle style : new BlastStyle[]{BlastStyle.BLAST, BlastStyle.PENETRATOR}) {
+            assertTrue(ExplosionLook.puffSize(16, 12, style, EffectBudget.HIGH) > 16);
+            assertTrue(ExplosionLook.startScale(12, style, EffectBudget.HIGH) > 0.2F);
             assertEquals(12, ExplosionLook.glowRadius(12, style, EffectBudget.HIGH));
         }
         assertEquals(4, ExplosionLook.puffSize(4, 2, BlastStyle.HEAVY, EffectBudget.HIGH));

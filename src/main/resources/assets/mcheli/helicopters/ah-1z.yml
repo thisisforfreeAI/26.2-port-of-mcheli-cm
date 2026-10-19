@@ -1,4 +1,14 @@
 Author: EMB4
+Render:
+  EngineOutlets:
+  - Position: [0.85, 2.23, -6.83]
+    Direction: [0.29, 0.03, -1.0]
+    Size: 1.1
+    Jet: false
+  - Position: [-0.85, 2.23, -6.83]
+    Direction: [-0.29, 0.03, -1.0]
+    Size: 1.1
+    Jet: false
 DisplayName:
   DEFAULT: AH-1Z Viper
   ja_jp: AH-1Z ヴァイパー

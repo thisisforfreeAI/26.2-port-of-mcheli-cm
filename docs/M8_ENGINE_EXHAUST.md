@@ -13,6 +13,10 @@ tiny four-tick warm accent; this is not a new afterburner state. Existing addon 
 available. Wisps and hot accents inherit aircraft motion instead of leaving stationary glow dots.
 Destroyed or fuel-starved engines and submerged outlets do not emit the new effect.
 
+The [requested follow-up](M8_FOLLOWUPS.md) adds AH-1Z and CH-47 turbine outlets and optional
+depth-masked local heat refraction. The earlier no-distortion costs below describe the original
+plume-only implementation; the follow-up documents its additional conditional scene copy.
+
 ## Content
 
 YAML, under `Render`:

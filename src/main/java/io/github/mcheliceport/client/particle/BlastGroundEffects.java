@@ -18,7 +18,7 @@ final class BlastGroundEffects {
     private static WeakReference<ClientLevel> world = new WeakReference<>(null);
     private static final ArrayDeque<WeakReference<BlastFragmentParticle>> fragments = new ArrayDeque<>();
     private static long tick = Long.MIN_VALUE;
-    private static int emitted, sampled;
+    private static int emitted, sampled, ringEmitted;
 
     private BlastGroundEffects() {}
 
@@ -90,7 +90,37 @@ final class BlastGroundEffects {
                             tint[0], tint[1], tint[2], material.life + random.nextInt(8), material.opacity));
                 }
             }
+            if (y - surfaceY <= Math.min(3, power * 0.4F))
+                ring(level, x, surfaceY, z, power, style, tint, material, random);
             return;
+        }
+    }
+
+    private static void ring(ClientLevel level, double x, double y, double z, float power, BlastStyle style,
+            float[] tint, BlastGroundLook.Surface material, Random random) {
+        if (!ClientConfig.get(ClientConfig.BLAST_DUST_RING)) return;
+        var quality = ClientConfig.get(ClientConfig.EFFECT_BUDGET);
+        int sectors = BlastRingLook.sectors(power, style, quality, EffectPerformance.pressure());
+        float radius = BlastRingLook.width(power);
+        double phase = random.nextDouble() * Math.PI * 2;
+        for (int i = 0; i < sectors && ringEmitted < BlastRingLook.tickCap(quality); i++) {
+            double angle = phase + (i + random.nextDouble() * 0.35) * Math.PI * 2 / sectors;
+            double dx = Math.cos(angle), dz = Math.sin(angle);
+            double startRadius = Math.min(2, BlastRingLook.reach(power) * 0.25);
+            double px = x + dx * startRadius, pz = z + dz * startRadius;
+            BlockPos at = BlockPos.containing(px, y - 0.01, pz);
+            if (!level.hasChunkAt(at) || sampled >= BlastGroundLook.surfaceReadCap(quality)) continue;
+            sampled++;
+            BlockState ground = level.getBlockState(at);
+            if (!ground.getFluidState().isEmpty() || ground.is(BlockTags.LEAVES)) continue;
+            double height = surfaceHeight(level, at, ground);
+            if (height <= 0 || Math.abs(at.getY() + height - y) > 0.6) continue;
+            double py = at.getY() + height + radius * 0.3;
+            if (!EffectAdmission.admit(level, px, py, pz, false, radius)) continue;
+            Minecraft.getInstance().particleEngine.add(new BlastRingParticle(level, px, py, pz, dx, dz,
+                    BlastRingLook.reach(power) * material.speedScale, radius, tint,
+                    material.opacity * (0.75F + random.nextFloat() * 0.1F)));
+            ringEmitted++;
         }
     }
 
@@ -122,13 +152,14 @@ final class BlastGroundEffects {
     private static void prepare(ClientLevel level) {
         if (world.get() != level) { clear(); world = new WeakReference<>(level); }
         if (tick != level.getGameTime()) {
-            tick = level.getGameTime(); emitted = sampled = 0;
+            tick = level.getGameTime(); emitted = sampled = ringEmitted = 0;
             fragments.removeIf(ref -> { var particle = ref.get(); return particle == null || !particle.isAlive(); });
         }
     }
 
-    static void clear() { fragments.clear(); world.clear(); tick = Long.MIN_VALUE; emitted = sampled = 0; }
+    static void clear() { fragments.clear(); world.clear(); tick = Long.MIN_VALUE; emitted = sampled = ringEmitted = 0; }
     static int trackedFragments() { return fragments.size(); }
     static int emittedFragments() { return emitted; }
     static int surfaceReads() { return sampled; }
+    static int ringEmitted() { return ringEmitted; }
 }

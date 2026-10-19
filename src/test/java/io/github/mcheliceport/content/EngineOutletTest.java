@@ -8,6 +8,15 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 class EngineOutletTest {
+    @Test void calibratedTurbineOutletsLoadAndLeaveUnsupportedEnginesExplicit() {
+        var stock = ContentTestSupport.load(ContentTestSupport.stockPack());
+        for (String name : List.of("ah-1z", "ch47", "ah-64", "mh-60g", "mh-60l_dap")) {
+            var outlets = stock.heli().get(name).engineOutlets;
+            assertEquals(2, outlets.size(), name);
+            assertTrue(outlets.stream().allMatch(o -> !o.jet() && o.direction().z < -0.9));
+        }
+        assertTrue(stock.heli().get("bell47g").engineOutlets.isEmpty());
+    }
     @Test void txtOutletsSurviveYamlConversionWithDirectionSizeAndJetIntent() throws Exception {
         var location = ContentLocation.builtin("engine_test");
         var heli = TxtParser.INSTANCE.parseHelicopter(location, "engine_test.txt", List.of(

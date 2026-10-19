@@ -13,9 +13,11 @@ or render path B wait for it. Preserve decisions D1 to D23.
   cosmetic particles during heavy combat. The weapon-specific ground follow-up adds
   a cosmetic family enum and compact impact direction to the explosion effect payload, bumping the network version; it
   does not change damage or terrain destruction.
-- **Both backends.** Only vanilla pipeline state (`RenderPipeline` snippets, blend functions,
-  depth states) and vanilla shaders. No raw OpenGL and no shaders of our own. Every slice is
-  checked on OpenGL and on Vulkan.
+- **Both backends.** Minecraft pipeline state (`RenderPipeline` snippets, blend functions,
+  depth states) and vanilla shaders for the main effects. The requested exhaust heat follow-up
+  is a narrow exception: one small GLSL 330 refraction shader and a shared conditional scene
+  copy, disabled on Low or adaptive pressure. No raw OpenGL. Every slice is checked on both
+  backends; see [M8_FOLLOWUPS.md](M8_FOLLOWUPS.md).
 - **Upstream's look stays one setting away.** `effects.effectQuality` in the client config:
   `CLASSIC` draws exactly as upstream (and as 0.5.1); `ENHANCED` (the default) draws the M8 look.
   Later slices may add levels if a battle needs cheaper effects.
@@ -35,9 +37,9 @@ or render path B wait for it. Preserve decisions D1 to D23.
 | Water splashes | Puffs that pop out | Fade as smoke does | 1 (done) |
 | Rotor wash / downwash | Grey puffs whatever the ground | Puffs tinted by the ground's map colour (sand, dirt, snow); white spray over water | 1 (done) |
 | Burning vehicles | Dark damage smoke | Hot damage puffs below 30% health, cooling into smoke; existing helicopter, plane/ship and tank emitters | 2 (done) |
-| Explosion shockwave and debris | Block dust | Bounded sparks, material dust fans and tumbling surface chips/clods; [ground response and limits](M8_BLAST_DEBRIS.md); ground ring deferred pending hardware profiling | Follow-up (done) |
+| Explosion shockwave and debris | Block dust | Bounded sparks, material dust fans and tumbling surface chips/clods; [ground response](M8_BLAST_DEBRIS.md) and [optional ground dust front](M8_FOLLOWUPS.md) | Follow-up (done) |
 | Smoke lighting | Always full sky light (upstream sampled 3000 blocks up) | Cached local sky/block light; time of day handled by the existing light map | 2 (done) |
-| Engine exhaust | Addon exhaust flames and plane nozzle smoke | Short bounded turbine wisps and restrained jet accents at supported outlets; distortion deferred | 3 (plumes done) |
+| Engine exhaust | Addon exhaust flames and plane nozzle smoke | Short turbine wisps, restrained jet accents and bounded optional local heat shimmer | 3 + requested follow-up |
 | Quality levels and budgets | Vanilla particle setting only | Low/Balanced/High particle budgets and distant thinning | Pixel follow-up (§6) |
 
 ## 3. Slice 1 as built
@@ -130,8 +132,9 @@ native scene and measured software-renderer frame intervals.
 - [ ] **Hardware acceptance:** representative combat on RTX 3060 8 GB + 7800X3D at 1080p,
   targeting 80 FPS / 12.5 ms. Software-renderer checks cannot certify this target.
 
-The implementation uses existing vanilla shader/pipeline families and pixel artwork. No extra
-scene copies or dynamic world lighting. Gameplay damage, trajectories, destruction and
+These impact/flare layers use existing vanilla shader/pipeline families and pixel artwork,
+without extra scene copies or dynamic world lighting. The later optional engine heat layer
+has its own conditional scene copy (§16). Gameplay damage, trajectories, destruction and
 countermeasure behavior remain controlled by the port's existing systems.
 
 ## 11. Rotor-wash follow-up
@@ -154,7 +157,7 @@ pass on both Vulkan and OpenGL, including thin snow/powder snow. Hardware FPS re
 - [x] **Engine exhaust plumes:** faint short wisps at helicopter turbine outlets; brighter jet
   plumes only where nozzle/afterburner definitions support them. Intensity follows throttle;
   heavy smoke remains a damage cue. Use content-defined outlets, existing pipelines and
-  distance/adaptive caps. Heat-distortion rendering remains deferred.
+  distance/adaptive caps. Optional heat refraction is added in §16.
 
 These requests follow the rotor-wash work. The 80 FPS target on the specified PC
 remains the acceptance goal; each added layer needs native captures and measured cost.
@@ -166,7 +169,8 @@ throttle-responsive turbine wisps, restrained hot jet accents, explicit helicopt
 existing plane nozzle/flame attachments. Low/Balanced/High global emission, shared smoke admission,
 range and adaptive periods bound cost. Classic nozzle smoke and existing damage smoke remain.
 Stock Apache and two Black Hawk variants include calibrated outlet positions; other helicopter
-definitions can opt in. Heat distortion remains deferred and target-PC acceptance remains open.
+definitions can opt in. §16 adds Viper/Chinook outlets and optional heat refraction;
+target-PC acceptance remains open.
 
 ## 14. Combat-load follow-up and remaining acceptance
 
@@ -187,9 +191,10 @@ definitions can opt in. Heat distortion remains deferred and target-PC acceptanc
   firing, overlapping explosions and mixed vehicles, targeting 80 FPS / 12.5 ms.
 - [ ] Final visual acceptance in actual flight and battles, including addon/content combinations.
 
-Heat distortion and an additional ground shockwave ring remain optional deferred effects,
-pending hardware profiling. Additional helicopter exhaust-outlet calibration is content-specific;
-current support is documented in [M8_ENGINE_EXHAUST.md](M8_ENGINE_EXHAUST.md). The native test
+The user has requested the optional heat distortion, ground dust front and further exhaust
+placements. Their bounded implementation is documented in [M8_FOLLOWUPS.md](M8_FOLLOWUPS.md).
+Additional helicopter exhaust-outlet calibration remains content-specific; current support
+is documented in [M8_ENGINE_EXHAUST.md](M8_ENGINE_EXHAUST.md). The native test
 scenes validate behavior and work bounds; they cannot replace target-hardware acceptance.
 
 ## 15. Tank and vehicle ground tracks
@@ -215,3 +220,19 @@ Implemented in the requested order: fitting/bounds, materials, then contact path
 [M8_VEHICLE_TRACKS.md](M8_VEHICLE_TRACKS.md) for limits and reproduction. Marks are cosmetic;
 they do not change terrain blocks, traction, handling, damage or server simulation. Movable
 addon vehicles require explicit wheel data; unsupported placed weapons leave no marks.
+
+## 16. Requested optional effects and fuller missile smoke
+
+- [x] More rocket/anti-tank impact smoke within existing primary caps, wider billow spread,
+  longer smoke retention and a larger smoke share for general cruise-missile warheads.
+- [x] A broken, fast outward ground dust front with material tint, shared admission and strict
+  per-tick/read limits; shed on Low and at adaptive pressure one or higher.
+- [x] Calibrated AH-1Z Viper and CH-47 Chinook turbine outlets, with a bundled content revision
+  refresh so existing default packs receive the definitions.
+- [x] Local exhaust heat refraction on both supported backends using a small GLSL 330 pipeline,
+  reversed-depth masking and one shared conditional color copy. Low/Classic/adaptive pressure
+  disable it. The final world projection is read without altering the camera or simulation.
+- [ ] Target-hardware profiling and final visual acceptance in representative player-driven
+  combat remain required, especially for the optional scene copy.
+
+See [M8_FOLLOWUPS.md](M8_FOLLOWUPS.md) for appearance, limits, verification and remaining acceptance.
