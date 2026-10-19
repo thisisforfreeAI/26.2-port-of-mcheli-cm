@@ -110,6 +110,9 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
   supported (see Added); JEI shows the drafting table as a crafting station for them.
 
 ### Added
+- Long-distance tracking, as upstream: vehicles are sent to players up to 1,200 blocks away
+  (600 for placed guns), past the server's view distance, and drawn without fog past the render
+  distance. The server config's `tracking.longDistance` turns it off.
 - Thermal vision, upstream's third camera mode: the camera key now cycles normal, night vision
   and thermal vision in vehicles with night vision. Mobs and other vehicles show white-hot against
   a dark grey world, and the rider gets night vision as in the other mode.
@@ -429,6 +432,8 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 
 ### Fixed
 
+- Vehicles stay drawn as far as the client has them. Vanilla hid them past about 150 blocks
+  (by their small bounding box), while upstream drew every vehicle the client had.
 - Wheeled tanks with a pivot-turn throttle (M1129, B1 Centauro) steer again: their turn rate
   scaled with the distance moved since the start of the tick, measured before the move, so it was
   always zero. It now uses the tick's motion, as upstream's order of moving then turning gave.

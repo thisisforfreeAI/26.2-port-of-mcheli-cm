@@ -125,3 +125,35 @@ vision, checks the night-vision effect, then wraps to normal and checks the effe
 cockpit dark; the next press gave back the normal view and removed the effect.
 
 ![Thermal vision](screens/m7-thermal-vision.png)
+
+## Long-distance tracking and rendering
+
+Upstream's long-distance patch (`MixinEntityTrackerEntry`, `MixinEntityRendererFarPass`,
+`TrackerHook`, `EntityRendererHook`) was gated by `ExperimentalRemoveClientTrackingRestrictions`,
+on by default; the port's switch is the server config's `tracking.longDistance`, also on.
+
+- Server: `LongDistanceTrackingMixin` redirects the two checks in `ChunkMap.TrackedEntity#updatePlayer`.
+  For a McHeli vehicle (`LongDistanceTracking.applies`), the visible range is its own tracking range
+  (1,200 blocks for helicopters, planes, tanks and ships, 600 for placed guns) rather than the
+  smaller of that and the player's view distance, and the player need not have its chunk loaded
+  (upstream `getRenderDistance` and `shouldForceWatch`).
+- Client ticking: vanilla ticks only entities in chunks the client has loaded. `FarVehicles` ticks
+  the vehicles outside them after each client tick, so they keep moving between server updates.
+- Client drawing: `FarVehicleVisibilityMixin` lets `LevelExtractor#isEntityVisible` accept such a
+  vehicle when it is in the frustum, as vanilla draws entities only in compiled sections. Past
+  the render distance, `AircraftRenderer` draws with the `far_vehicle` pipeline, vanilla's entity
+  shader without fog, as upstream's far pass turned fog off. Vanilla's far plane (four times the
+  render distance or the cloud range) replaces upstream's own 3,000-block projection.
+- `AircraftEntity#shouldRenderAtSqrDistance` is always true: upstream drew every vehicle the client
+  had (`VehicleRenderHook`); vanilla's size-based test hid vehicles past about 150 blocks even
+  inside the view distance.
+
+Differences: KNOWN_ISSUES 106. UAVs keep the port's own remote-session tracking.
+
+Validation: a GameTest puts a mock player (two-chunk view distance) 160 blocks from an AH-64 and a
+pig. The AH-64 is sent to the player and the pig is not, and with the setting off the AH-64 is not
+either. All 251 required GameTests pass. In the client, against a dedicated server with a view
+distance of 10 chunks (160 blocks), an AH-64 250 blocks away showed against the sky without fog,
+past the last loaded chunk, and moved when teleported.
+
+![A vehicle past the render distance](screens/m7-long-distance.png)

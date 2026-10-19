@@ -44,6 +44,7 @@ public final class ServerConfig {
     public static final ModConfigSpec.BooleanValue ENABLE_COMMAND;
     public static final ModConfigSpec.ConfigValue<List<? extends String>> COMMAND_PERMISSIONS;
     public static final ModConfigSpec.BooleanValue ENABLE_DEBUG_BOUNDING_BOX;
+    public static final ModConfigSpec.BooleanValue LONG_DISTANCE_TRACKING;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -181,6 +182,14 @@ public final class ServerConfig {
                 .comment("false: clients cannot show entity hitboxes (F3 + B). /mcheli showboundingbox sets it.",
                         "Upstream: EnableDebugBoundingBox.")
                 .define("enableDebugBoundingBox", true);
+        builder.pop();
+
+        builder.push("tracking");
+        LONG_DISTANCE_TRACKING = builder
+                .comment("true: players see McHeli vehicles up to their tracking range (1,200 blocks for aircraft, tanks",
+                        "and ships), past the server's view distance and in chunks the player has not loaded.",
+                        "false: vanilla's limit, the view distance. Upstream: ExperimentalRemoveClientTrackingRestrictions.")
+                .define("longDistance", true);
         builder.pop();
         SPEC = builder.build();
     }
