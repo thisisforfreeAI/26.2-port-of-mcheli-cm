@@ -99,10 +99,12 @@ final class UavRangeGameTests {
         loaded.load(net.minecraft.world.level.storage.TagValueInput.create(net.minecraft.util.ProblemReporter.DISCARDING,
                 h.getLevel().registryAccess(), tag));
         h.runAfterDelay(5, () -> check(h, h.getLevel().addFreshEntity(loaded), "saved UAV arrives"));
-        h.runAfterDelay(20, () -> {
+        // The batch's chunks may not tick entities yet, so tick the station until the lookup finds the UAV.
+        h.runAfterDelay(20, () -> h.succeedWhen(() -> {
+            if (s.controlled() != loaded) { s.tick(); }
             check(h, s.controlled() == loaded && loaded.getUUID().equals(id) && loaded.getPilot() == p,
                     "UUID and ownership validated before reconnect: " + s.feedback());
-            clean(loaded, p, s); h.succeed();
-        });
+            clean(loaded, p, s);
+        }));
     }
 }
