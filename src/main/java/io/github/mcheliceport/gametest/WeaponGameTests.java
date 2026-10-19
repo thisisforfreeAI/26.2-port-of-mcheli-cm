@@ -94,6 +94,7 @@ final class WeaponGameTests {
         ModGameTests.test("weapon_ammo_used_reloaded_and_saved", 200, WeaponGameTests::ammo);
         ModGameTests.test("weapon_infinity_ammo_stays_full", 200, WeaponGameTests::infinityAmmo);
         ModGameTests.test("weapon_destroyed_helicopter_explodes", 60, WeaponGameTests::destroyedExplosion);
+        ModGameTests.test("weapon_trajectory_target", 20, WeaponGameTests::trajectoryTarget);
     }
 
     /** §8.2's other half: every stock weapon definition makes a weapon of its type in a level. */
@@ -111,6 +112,42 @@ final class WeaponGameTests {
             }
         }
         check(helper, failures.isEmpty(), "weapons not created: " + failures);
+        helper.succeed();
+    }
+
+    /**
+     * The turret ballistics dot's aim point: a gun meets the wall in front of it, a mortar's shell
+     * drops on the way there, and a gun aimed at the open sky shows the top of its path.
+     */
+    private static void trajectoryTarget(GameTestHelper helper) {
+        for (int x = 0; x <= 4; x++) {
+            for (int y = 1; y <= 4; y++) {
+                helper.setBlock(new BlockPos(x, y, 10), Blocks.STONE);
+            }
+        }
+        Vec3 start = helper.absoluteVec(new Vec3(2.5, 2.5, 2.5));
+        WeaponBase gun = WeaponCreator.createWeapon(helper.getLevel(), "m230", Vec3.ZERO, 0.0F, 0.0F, null, false);
+        WeaponBase mortar = WeaponCreator.createWeapon(helper.getLevel(), "60mm_mortar", Vec3.ZERO, 0.0F, 0.0F, null,
+                false);
+        check(helper, gun != null && mortar != null, "weapons not created");
+        Vec3 forward = helper.absoluteVec(new Vec3(2.5, 2.5, 3.5)).subtract(start);
+        Vec3 wall = gun.getTrajectoryTarget(start, forward, Vec3.ZERO);
+        double toWall = Math.abs(helper.absoluteVec(new Vec3(2.5, 2.5, 10.0)).subtract(start).dot(forward));
+        check(helper, Math.abs(wall.subtract(start).dot(forward) - toWall) < 0.01 && Math.abs(wall.y - start.y) < 1.0E-6,
+                "gun aim point " + wall + " is not on the wall");
+        Vec3 shell = mortar.getTrajectoryTarget(start, forward, Vec3.ZERO);
+        check(helper, Math.abs(shell.subtract(start).dot(forward) - toWall) < 0.01 && shell.y < start.y - 0.1,
+                "mortar aim point " + shell + " should drop on the way to the wall");
+        // Open the arena's barrier roof above the gun, so its shot meets nothing.
+        Vec3 up = new Vec3(0.0, 1.0, 0.0);
+        Vec3 sky = gun.getTrajectoryTarget(start, up, Vec3.ZERO);
+        for (int i = 0; i < 4 && sky.y < start.y + 500; i++) {
+            helper.getLevel().setBlock(BlockPos.containing(sky.add(0.0, 0.01, 0.0)),
+                    Blocks.AIR.defaultBlockState(), 3);
+            sky = gun.getTrajectoryTarget(start, up, Vec3.ZERO);
+        }
+        check(helper, sky.y > start.y + 500 && Math.abs(sky.x - start.x) < 1.0E-6,
+                "gun aimed at the sky should show the top of its path, not " + sky);
         helper.succeed();
     }
 

@@ -59,7 +59,6 @@ Until then:
   energy from the charger and from batteries (any item with NeoForge's item energy capability) in
   the fuel slot. Upstream's GregTech EU and HBM HE energy systems are dropped, so the
   `EnergySystem` and ratio settings are gone; the port registers no battery item, as upstream.
-- Turret ballistics lines (upstream `drawTurretBallistics`) are not drawn yet (M7).
 
 ## Deliberate differences from upstream
 

@@ -50,6 +50,11 @@ public final class GuiHudCanvas implements HudCanvas {
 
     @Override
     public void line(double[] xy, int color, int mode) {
+        this.line(xy, color, mode, RenderPipelines.GUI);
+    }
+
+    /** As {@link #line(double[], int, int)}, blended by {@code pipeline} (upstream's own blend functions). */
+    public void line(double[] xy, int color, int mode, RenderPipeline pipeline) {
         int points = xy.length / 2;
         if (points < 2) {
             return;
@@ -71,7 +76,7 @@ public final class GuiHudCanvas implements HudCanvas {
             }
             default -> throw new IllegalArgumentException("line mode " + mode);
         }
-        this.submit(RenderPipelines.GUI, TextureSetup.noTexture(), quads, color);
+        this.submit(pipeline, TextureSetup.noTexture(), quads, color);
     }
 
     @Override

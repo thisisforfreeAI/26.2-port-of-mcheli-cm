@@ -14,6 +14,8 @@ import io.github.mcheliceport.content.hud.Hud;
 import io.github.mcheliceport.entity.aircraft.AircraftCamera;
 import io.github.mcheliceport.content.weapon.WeaponInfo;
 import io.github.mcheliceport.entity.aircraft.AircraftEntity;
+import io.github.mcheliceport.util.McheliMath;
+import io.github.mcheliceport.weapon.WeaponBase;
 import io.github.mcheliceport.weapon.WeaponSet;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.util.Mth;
@@ -118,6 +120,7 @@ public final class AircraftHudLayer implements GuiLayer {
         }
         if (showHud) {
             this.drawHud(graphics, ac, player, seatId == 0 && ac.isGunnerMode(player) ? 1 : seatId, partialTicks);
+            drawTurretBallistics(graphics, ac, player, partialTicks);
         }
         // MCH_GuiHeli: in missile camera mode the TV missile's noise replaces the key hints.
         if (showHud) {
@@ -129,6 +132,58 @@ public final class AircraftHudLayer implements GuiLayer {
         }
         drawHitMarker(graphics, ac.getHitStatus(), AircraftWeapons.MAX_HIT_STATUS);
         drawCcip(graphics, ac, player);
+    }
+
+    /**
+     * Upstream {@code drawTurretBallistics} and {@code drawDetachedTurretDot}: a small cross at the
+     * centre of the screen, and where the current weapon's shot would land, a dot with a circle as
+     * wide as the weapon's spread. As upstream, both invert the colours under them, so they show on
+     * any background.
+     */
+    private static void drawTurretBallistics(GuiGraphicsExtractor graphics, AircraftEntity ac, LocalPlayer player,
+            float partialTicks) {
+        GuiHudCanvas canvas = new GuiHudCanvas(graphics);
+        double cx = graphics.guiWidth() / 2.0;
+        double cy = graphics.guiHeight() / 2.0;
+        canvas.line(cross(cx, cy), 0xFF00FF00, HudCanvas.LINES, RenderPipelines.GUI_INVERT);
+        WeaponSet ws = ac.getCurrentWeapon(player);
+        WeaponBase weapon = ws != null ? ws.getCurrentWeapon() : null;
+        if (weapon == null || weapon.getInfo() == null) {
+            return;
+        }
+        float[] shotDir = ac.weapons().getCurrentWeaponShotDir(player, partialTicks);
+        Vec3 look = McheliMath.rotVec3(0.0, 0.0, 1.0, -shotDir[0], -shotDir[1], 0.0F).normalize();
+        Vec3 position = new Vec3(Mth.lerp(partialTicks, ac.xo, ac.getX()), Mth.lerp(partialTicks, ac.yo, ac.getY()),
+                Mth.lerp(partialTicks, ac.zo, ac.getZ()));
+        Vec3 target = weapon.getTrajectoryTarget(weapon.getShotPos(ac).add(position), look, ac.getDeltaMovement());
+        CameraRenderState camera = Minecraft.getInstance().gameRenderer.gameRenderState().levelRenderState
+                .cameraRenderState;
+        Vector4f p = new Vector4f((float) (target.x - camera.pos.x), (float) (target.y - camera.pos.y),
+                (float) (target.z - camera.pos.z), 1.0F);
+        camera.viewRotationMatrix.transform(p);
+        camera.projectionMatrix.transform(p);
+        if (p.w <= 0.0F) {
+            return;
+        }
+        double x = (p.x / p.w + 1.0) * 0.5 * graphics.guiWidth();
+        double y = (1.0 - p.y / p.w) * 0.5 * graphics.guiHeight();
+        // The spread cone's radius at the target, over the distance, scaled by the focal length.
+        double radius = Math.max(2.0, Math.tan(Math.toRadians(weapon.getInfo().accuracy * 0.5F))
+                * camera.projectionMatrix.m11() * graphics.guiHeight() / 2.0);
+        double[] ring = new double[64];
+        for (int i = 0; i < 32; i++) {
+            double ang = Math.PI * 2.0 * i / 32.0;
+            ring[i * 2] = x + Math.cos(ang) * radius;
+            ring[i * 2 + 1] = y + Math.sin(ang) * radius;
+        }
+        canvas.line(ring, 0xCCFFFFFF, HudCanvas.LINE_LOOP, RenderPipelines.GUI_INVERT);
+        if (radius > 2.0) {
+            canvas.line(cross(x, y), 0xCCFFFFFF, HudCanvas.LINES, RenderPipelines.GUI_INVERT);
+        }
+    }
+
+    private static double[] cross(double x, double y) {
+        return new double[] {x - 2, y, x + 2, y, x, y - 2, x, y + 2};
     }
 
     /**

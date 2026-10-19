@@ -57,3 +57,24 @@ block a tick, at most 96). A GameTest fires a stock rocket with the setting off 
 on (its chunk and the chunk 4 ahead are leased, the one behind is not), and checks the leases run
 out after the rocket is gone. All 243 required GameTests pass. No stock weapon sets
 `CanLoadChunks`, so nothing changes with the default settings.
+
+## Turret ballistics sight
+
+`AircraftHudLayer#drawTurretBallistics` ports upstream's `drawTurretBallistics` and
+`drawDetachedTurretDot`, which every vehicle GUI called after its HUD. It draws a 4-pixel cross at
+the centre of the screen and, at the current weapon's aim point, a 32-segment circle as wide as
+the weapon's `Accuracy` cone at that distance (at least 2 pixels), with a cross in it when wider.
+`WeaponBase#getTrajectoryTarget` ports `getWeaponTrajectoryTarget`: the shot is stepped from the
+weapon's mount for up to 256 ticks or its time fuse, with gravity and drag in air and water, and
+the dot goes where it meets a block, or at the top of its arc when it meets nothing while
+climbing or aimed upwards. The point is projected with the camera's matrices, as the CCIP ring.
+Upstream drew with `ONE_MINUS_DST_COLOR, ONE_MINUS_SRC_COLOR`; the port uses vanilla's
+`GUI_INVERT` pipeline, the same blend. Upstream's detached weapon aim is not ported, so the shot
+always starts from the weapon's mount on the vehicle.
+
+Validation: a GameTest checks the aim point of an M230 at a wall (on the wall's face), of a 60 mm
+mortar (on the wall, lower), and of an M230 aimed at the open sky (the top of its path, 500+
+blocks up). All 246 required GameTests pass. In the client, riding an M1A2 towards a stone wall,
+the green cross showed at the centre and the gun's dot just below it on the wall.
+
+![Turret ballistics sight](screens/m7-turret-ballistics.png)

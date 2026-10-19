@@ -101,6 +101,10 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
   supported (see Added); JEI shows the drafting table as a crafting station for them.
 
 ### Added
+- The turret ballistics sight, as upstream: in every vehicle, with the HUD shown, a small cross
+  marks the centre of the screen and a dot with a circle as wide as the weapon's spread marks where
+  the current weapon's shot would land, or the top of its arc when it meets nothing. Both invert
+  the colours under them.
 - The wingman marker screen, as upstream: right-clicking a marker sets its type (base, runway ends,
   parking, waypoint, helipad and helipad heading), its ID, its parent base and, for a parking spot,
   the heading to park in. A new marker is a parking spot with its own ID, and every marker is kept
