@@ -120,8 +120,8 @@ public class BulletRenderer<T extends BaseBulletEntity> extends EntityRenderer<T
         boolean enhanced = EffectQuality.enhanced();
         // A stable sparse visual belt; ordinary rounds retain ambient-lit models. No synced/gameplay state.
         state.tracer = enhanced && this.kind == Kind.BULLET && entity instanceof BulletEntity
-                && (entity.getUUID().getLeastSignificantBits() & 3) == 0;
-        state.tracerAlpha = 0.30F + 0.16F * Math.clamp(entity.level().getSkyDarken() / 11.0F, 0, 1);
+                && TracerLook.selected(entity.getUUID().getLeastSignificantBits());
+        state.tracerAlpha = TracerLook.alpha(entity.level().getSkyDarken(), state.color);
         state.motionX = mx;
         state.motionY = my;
         state.motionZ = mz;
@@ -224,13 +224,14 @@ public class BulletRenderer<T extends BaseBulletEntity> extends EntityRenderer<T
         if (!Double.isFinite(speed) || speed < 1.0E-3) {
             return;
         }
-        Vec3 tail = motion.scale(-Math.min(speed * 0.22, 2.0) / speed);
+        Vec3 tail = motion.scale(-TracerLook.length(speed) / speed);
         Vec3 toCamera = camera.pos.subtract(state.x, state.y, state.z);
-        int c = state.color;
-        int r = c >> 16 & 0xFF, g = c >> 8 & 0xFF, b = c & 0xFF;
-        int rgb = Math.max(r, Math.max(g, b)) - Math.min(r, Math.min(g, b)) < 16 ? 0xFFC77B : c & 0xFFFFFF;
-        float alpha = state.tracerAlpha * (c >>> 24) / 255.0F;
-        GlowGeometry.streak(poseStack, collector, tail, toCamera, 0.045F, rgb, alpha);
+        double distance = toCamera.length();
+        if (!Double.isFinite(distance)) return;
+        double rearCosine = distance > 1.0E-4 ? -motion.dot(toCamera) / (speed * distance) : 1;
+        float alpha = state.tracerAlpha * TracerLook.viewFactor(rearCosine);
+        GlowGeometry.tracer(poseStack, collector, camera, tail, toCamera, TracerLook.width(distance),
+                TracerLook.color(state.color), alpha);
     }
 
     /** Upstream {@code renderMissileFlame}: a full-bright quad of {@code size} facing the camera. */

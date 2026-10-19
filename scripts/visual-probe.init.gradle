@@ -3,7 +3,8 @@ gradle.projectsEvaluated {
     def project = gradle.rootProject
     project.sourceSets.main.java.srcDir(project.file('scripts/visual-probe'))
     // These scenes own their driver; keep them independent of the default effects scene.
-    if (Boolean.getBoolean('mcheli.probeImpactPriority') || Boolean.getBoolean('mcheli.probeMissiles') || Boolean.getBoolean('mcheli.probeCombatSoak') || Boolean.getBoolean('mcheli.probeEngineExhaust') || Boolean.getBoolean('mcheli.probeBlastGround') || Boolean.getBoolean('mcheli.probeBlastMotion') || Boolean.getBoolean('mcheli.probeTerrainBudget')) project.sourceSets.main.java.exclude('io/github/mcheliceport/probe/EffectsProbe.java')
+    if (Boolean.getBoolean('mcheli.probeTracers') || Boolean.getBoolean('mcheli.probeImpactPriority') || Boolean.getBoolean('mcheli.probeMissiles') || Boolean.getBoolean('mcheli.probeCombatSoak') || Boolean.getBoolean('mcheli.probeEngineExhaust') || Boolean.getBoolean('mcheli.probeBlastGround') || Boolean.getBoolean('mcheli.probeBlastMotion') || Boolean.getBoolean('mcheli.probeTerrainBudget')) project.sourceSets.main.java.exclude('io/github/mcheliceport/probe/EffectsProbe.java')
+    project.neoForge.runs.client.systemProperty('mcheli.probeTracers', System.getProperty('mcheli.probeTracers', 'false'))
     project.neoForge.runs.client.systemProperty('mcheli.probeImpactPriority', System.getProperty('mcheli.probeImpactPriority', 'false'))
     project.neoForge.runs.client.systemProperty('mcheli.probeMissiles', System.getProperty('mcheli.probeMissiles', 'false'))
     project.neoForge.runs.client.systemProperty('mcheli.probeCombatSoak', System.getProperty('mcheli.probeCombatSoak', 'false'))

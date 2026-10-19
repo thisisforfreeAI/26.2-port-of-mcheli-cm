@@ -12,6 +12,9 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 
 ### Changed
 
+- M8 tracer readability: brighter narrow cores, tapered warm streaks and compact end-on burning
+  bases. Keep sparse tracer sampling, ambient-lit bullet models and four triangles per tracer.
+
 - M8 blast priority: admit the initial hot pocket before support smoke and optional glow,
   preventing the blast's own effects from crowding out fire in close adaptive-budget views.
 

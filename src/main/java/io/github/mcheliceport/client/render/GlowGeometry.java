@@ -90,38 +90,60 @@ public final class GlowGeometry {
         poseStack.popPose();
     }
 
-    /**
-     * A streak from the pose's origin back along {@code tail} (world axes, unrotated pose), bright at
-     * the origin and fading to nothing at the tail's end, turned to face the camera about its own
-     * axis. {@code toCamera} points from the origin to the camera.
-     */
-    public static void streak(PoseStack poseStack, SubmitNodeCollector collector, Vec3 tail, Vec3 toCamera,
-            float width, int rgb, float alpha) {
+    /** A tapered burning streak or tiny end-on base, four triangles in either case. */
+    public static void tracer(PoseStack poseStack, SubmitNodeCollector collector, CameraRenderState camera,
+            Vec3 tail, Vec3 toCamera, float width, int rgb, float alpha) {
+        double lengthSquared = tail.lengthSqr(), distanceSquared = toCamera.lengthSqr();
+        if (alpha <= 0 || width <= 0 || !Double.isFinite(lengthSquared) || !Double.isFinite(distanceSquared)
+                || lengthSquared < 1.0E-6) return;
         Vec3 side = tail.cross(toCamera);
-        double len = side.length();
-        if (alpha <= 0.0F || len < 1.0E-6 || tail.lengthSqr() < 1.0E-6) {
+        double sideLength = side.length();
+        boolean endOn = distanceSquared < 1.0E-6 || sideLength * sideLength < lengthSquared * distanceSquared * 0.0144;
+        int hot = argb(TracerLook.coreColor(rgb), alpha), warm = argb(rgb, alpha * 0.65F);
+        int edge = argb(rgb, alpha * 0.30F), end = argb(rgb, 0);
+        if (endOn) {
+            // The old cross-product ribbon vanished when looking along the shot direction.
+            // A compact base is visible from a firing camera, without a disc or bloom halo.
+            var right = new org.joml.Vector3f(1, 0, 0).rotate(camera.orientation).mul(width * 0.5F);
+            var up = new org.joml.Vector3f(0, 1, 0).rotate(camera.orientation).mul(width * 0.5F);
+            collector.submitCustomGeometry(poseStack, TYPE, (pose, buffer) -> {
+                tracerFace(buffer, pose, right.x, right.y, right.z, up.x, up.y, up.z, edge);
+                tracerFace(buffer, pose, right.x * 0.55F, right.y * 0.55F, right.z * 0.55F,
+                        up.x * 0.55F, up.y * 0.55F, up.z * 0.55F, hot);
+            });
             return;
         }
-        side = side.scale(width / 2.0 / len);
-        float sx = (float) side.x;
-        float sy = (float) side.y;
-        float sz = (float) side.z;
-        float tx = (float) tail.x;
-        float ty = (float) tail.y;
-        float tz = (float) tail.z;
-        int head = argb(rgb, alpha);
-        int end = argb(rgb, 0.0F);
+        side = side.scale(width * 0.5 / sideLength);
+        float sx = (float) side.x, sy = (float) side.y, sz = (float) side.z;
+        float tx = (float) tail.x, ty = (float) tail.y, tz = (float) tail.z;
         collector.submitCustomGeometry(poseStack, TYPE, (pose, buffer) -> {
-            // Two halves, each bright on the axis and clear at the edge, so the streak has a soft edge.
-            for (int s = -1; s <= 1; s += 2) {
-                vertex(buffer, pose, 0.0F, 0.0F, 0.0F, head);
-                vertex(buffer, pose, tx, ty, tz, end);
-                vertex(buffer, pose, tx + sx * s, ty + sy * s, tz + sz * s, end);
-                vertex(buffer, pose, 0.0F, 0.0F, 0.0F, head);
-                vertex(buffer, pose, tx + sx * s, ty + sy * s, tz + sz * s, end);
-                vertex(buffer, pose, sx * s, sy * s, sz * s, end);
-            }
+            // Faint tapered colour skirt, a narrow hot core, then a cooling pointed tip.
+            vertex(buffer, pose, sx, sy, sz, edge);
+            vertex(buffer, pose, tx, ty, tz, end);
+            vertex(buffer, pose, -sx, -sy, -sz, edge);
+            float hx = sx * 0.55F, hy = sy * 0.55F, hz = sz * 0.55F;
+            float mx = tx * 0.65F, my = ty * 0.65F, mz = tz * 0.65F;
+            float ex = sx * 0.18F, ey = sy * 0.18F, ez = sz * 0.18F;
+            vertex(buffer, pose, hx, hy, hz, hot);
+            vertex(buffer, pose, mx + ex, my + ey, mz + ez, warm);
+            vertex(buffer, pose, mx - ex, my - ey, mz - ez, warm);
+            vertex(buffer, pose, hx, hy, hz, hot);
+            vertex(buffer, pose, mx - ex, my - ey, mz - ez, warm);
+            vertex(buffer, pose, -hx, -hy, -hz, hot);
+            vertex(buffer, pose, mx + ex, my + ey, mz + ez, warm);
+            vertex(buffer, pose, tx, ty, tz, end);
+            vertex(buffer, pose, mx - ex, my - ey, mz - ez, warm);
         });
+    }
+
+    private static void tracerFace(VertexConsumer buffer, PoseStack.Pose pose, float rx, float ry, float rz,
+            float ux, float uy, float uz, int color) {
+        vertex(buffer, pose, -rx - ux, -ry - uy, -rz - uz, color);
+        vertex(buffer, pose, -rx + ux, -ry + uy, -rz + uz, color);
+        vertex(buffer, pose, rx + ux, ry + uy, rz + uz, color);
+        vertex(buffer, pose, -rx - ux, -ry - uy, -rz - uz, color);
+        vertex(buffer, pose, rx + ux, ry + uy, rz + uz, color);
+        vertex(buffer, pose, rx - ux, ry - uy, rz - uz, color);
     }
 
     private static void vertex(VertexConsumer buffer, PoseStack.Pose pose, float x, float y, float z, int color) {
