@@ -26,17 +26,17 @@ class EffectTextureTest {
                 var image = ImageIO.read(stream);
                 int cell = effect.equals("blast_cloud") ? 64 : 32;
                 assertEquals(cell * 4, image.getWidth());
-                assertEquals(cell * 2, image.getHeight());
+                assertEquals(cell * (effect.equals("blast_cloud") ? 4 : 2), image.getHeight());
                 sprites.add(new Sprite(image.getWidth(), image.getHeight(),
                         Identifier.fromNamespaceAndPath("mcheli_ce_port", "m8_" + effect)));
             }
         }
-        for (String effect : List.of("wash", "wash_ripple", "ground_dust")) {
+        for (String effect : List.of("wash", "wash_ripple", "ground_dust", "dirt_jet")) {
             String path = "/assets/mcheli_ce_port/textures/particle/m8_" + effect + ".png";
             try (var stream = getClass().getResourceAsStream(path)) {
                 assertNotNull(stream, path);
                 var image = ImageIO.read(stream);
-                int size = effect.equals("ground_dust") ? 128 : effect.equals("wash") ? 64 : 32;
+                int size = (effect.equals("ground_dust") || effect.equals("dirt_jet")) ? 128 : effect.equals("wash") ? 64 : 32;
                 assertEquals(size, image.getWidth());
                 assertEquals(size, image.getHeight());
                 sprites.add(new Sprite(size, size, Identifier.fromNamespaceAndPath("mcheli_ce_port", "m8_" + effect)));

@@ -6,6 +6,17 @@ import io.github.mcheliceport.effect.BlastStyle;
 import org.junit.jupiter.api.Test;
 
 class BlastMarkTuningTest {
+    @Test void surfaceFlashEndsPromptlyAndCannotReachOutsideItsVolume() {
+        for (int duration : new int[]{6, 9}) {
+            assertEquals(0, BlastMarkTuning.flashAlpha(-1, duration));
+            assertEquals(0, BlastMarkTuning.flashAlpha(duration, duration));
+            assertTrue(BlastMarkTuning.flashAlpha(2, duration) > BlastMarkTuning.flashAlpha(4, duration));
+        }
+        assertEquals(1, BlastMarkTuning.flashFalloff(0, 0, 0, 4));
+        assertEquals(0, BlastMarkTuning.flashFalloff(4, 0, 0, 4));
+        assertEquals(0, BlastMarkTuning.flashFalloff(0, -5, 0, 4));
+    }
+
     @Test
     void familiesScaleWithPowerButCannotCreateUnboundedFootprints() {
         assertTrue(BlastMarkTuning.radius(4, BlastStyle.HEAVY, EffectBudget.BALANCED)

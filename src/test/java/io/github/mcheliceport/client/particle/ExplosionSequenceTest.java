@@ -6,6 +6,17 @@ import io.github.mcheliceport.effect.BlastStyle;
 import org.junit.jupiter.api.Test;
 
 class ExplosionSequenceTest {
+    @Test void backlightingExpiresAndIncendiariesKeepFireLongerThanHighExplosives() {
+        for (int duration = 1; duration <= 56; duration++) {
+            assertTrue(ExplosionSequence.backlight(0, duration) > 0);
+            assertEquals(0, ExplosionSequence.backlight(duration, duration));
+            assertEquals(0, ExplosionSequence.backlight(duration + 10, duration));
+        }
+        assertEquals(0, ExplosionSequence.backlight(0, 0));
+        assertTrue(ExplosionSequence.fireTicks(12, BlastStyle.INCENDIARY)
+                >= ExplosionSequence.fireTicks(12, BlastStyle.HEAVY) * 2);
+    }
+
     @Test void billowsCanDissolveAtDifferentRatesWithoutGrowingOrOutlivingTheCloud() {
         assertTrue(ExplosionSequence.cloudAlpha(85, 100, 0, false, 24)
                 > ExplosionSequence.cloudAlpha(85, 100, 0, false, 47));
@@ -22,6 +33,7 @@ class ExplosionSequenceTest {
         assertTrue(ExplosionSequence.smokeLed(2, BlastStyle.HEAVY));
         assertFalse(ExplosionSequence.smokeLed(8, BlastStyle.HEAVY));
         assertFalse(ExplosionSequence.smokeLed(8, BlastStyle.INCENDIARY));
+        assertFalse(ExplosionSequence.smokeLed(2, BlastStyle.INCENDIARY));
     }
     @Test void airburstsAndExtremePowersHaveFiniteWorkAtEveryQualityAndPressure() {
         for (var quality : EffectBudget.values()) for (var style : BlastStyle.values()) {

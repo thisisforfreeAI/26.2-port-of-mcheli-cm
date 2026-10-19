@@ -11,7 +11,7 @@ or render path B wait for it. Preserve decisions D1 to D23.
   targeting or timings. Classic emitters retain upstream timing and motion; enhanced wash and
   explosion presentation use bounded cosmetic emitters. Client quality budgets may suppress
   cosmetic particles during heavy combat. The weapon-specific ground follow-up adds
-  one cosmetic family enum to the explosion effect payload and bumps the network version; it
+  a cosmetic family enum and compact impact direction to the explosion effect payload, bumping the network version; it
   does not change damage or terrain destruction.
 - **Both backends.** Only vanilla pipeline state (`RenderPipeline` snippets, blend functions,
   depth states) and vanilla shaders. No raw OpenGL and no shaders of our own. Every slice is
@@ -27,9 +27,9 @@ or render path B wait for it. Preserve decisions D1 to D23.
 | Effect | Today (upstream look) | M8 look | Slice |
 |---|---|---|---|
 | Smoke (explosions, trails, damage, downwash, flares, grenades) | 8-frame puff that pops in and out at full opacity; size jumps once per tick | Fades in over 2 ticks and out over the last 30 % of its life; size grows smoothly between ticks | 1 (done) |
-| Explosions / fire | Grey-brown smoke puffs, block dust, flares from large blasts | Earlier growing puffs for small hits; denser connected bomb billows with fast fire pockets and ground dust; [smoke volume follow-up](M8_BLAST_BILLOWS.md) | Follow-up (done) |
+| Explosions / fire | Grey-brown smoke puffs, block dust, flares from large blasts | Earlier growing puffs for small hits; denser connected bomb billows with fast fire pockets and ground dust; [rolling fire, weapon shapes and ground flash](M8_BLAST_MOTION.md) | Follow-up (done) |
 | Muzzle flashes | 8-frame starburst, alpha blended | Same starburst drawn additively, plus a short warm glow | 1 (done) |
-| Tracers (machine-gun rounds) | Bullet model lit by the world, dark at night | Full-bright model with a soft streak one tick's travel long (at most 8 blocks) in the round's colour | 1 (done) |
+| Tracers (machine-gun rounds) | Bullet model lit by the world, dark at night | Ambient-lit projectile bodies; sparse, thin warm streaks at most two blocks long, without halos; [visual correction](M8_BLAST_MOTION.md) | Follow-up (done) |
 | Missile trails | Flame quad, smoke trail | Smoke as above, plus an additive glow at the flame | 1 (done) |
 | Flares | Yellow cube lit by the world, dark at night | Full-bright cube with a flickering two-layer glow; chaff unchanged | 1 (done) |
 | Water splashes | Puffs that pop out | Fade as smoke does | 1 (done) |
@@ -167,3 +167,18 @@ existing plane nozzle/flame attachments. Low/Balanced/High global emission, shar
 range and adaptive periods bound cost. Classic nozzle smoke and existing damage smoke remain.
 Stock Apache and two Black Hawk variants include calibrated outlet positions; other helicopter
 definitions can opt in. Heat distortion remains deferred and target-PC acceptance remains open.
+
+## 14. Combat-load follow-up and remaining acceptance
+
+- [x] Rolling fire, weapon-specific blast shapes, dirt streams, amber smoke backlighting and
+  terrain flashes; reduced bullet glow and sparse tracers. See [M8_BLAST_MOTION.md](M8_BLAST_MOTION.md).
+- [x] Spread terrain fitting and cache maintenance over bounded tick allowances, preserving
+  completed footprint sizes. See [M8_TERRAIN_BUDGET.md](M8_TERRAIN_BUDGET.md).
+- [ ] Hardware acceptance at 1080p on RTX 3060 8 GB / Ryzen 7 7800X3D: representative sustained
+  firing, overlapping explosions and mixed vehicles, targeting 80 FPS / 12.5 ms.
+- [ ] Final visual acceptance in actual flight and battles, including addon/content combinations.
+
+Heat distortion and an additional ground shockwave ring remain optional deferred effects,
+pending hardware profiling. Additional helicopter exhaust-outlet calibration is content-specific;
+current support is documented in [M8_ENGINE_EXHAUST.md](M8_ENGINE_EXHAUST.md). The native test
+scenes validate behavior and work bounds; they cannot replace target-hardware acceptance.

@@ -174,12 +174,16 @@ public class McheliExplosion extends ServerExplosion {
         if (EventHooks.onExplosionStart(serverLevel, exp)) {
             return exp.result;
         }
+        // Capture before damage/knockback callbacks; presentation never changes projectile physics.
+        var direction = p.exploder() instanceof io.github.mcheliceport.entity.weapon.BaseBulletEntity bullet
+                ? io.github.mcheliceport.effect.BlastDirection.from(bullet.getDeltaMovement())
+                : io.github.mcheliceport.effect.BlastDirection.NONE;
         exp.doExplosionA();
         exp.doExplosionB();
         WeaponInfo visualWeapon = p.exploder() instanceof WeaponTargets.InfoHolder holder ? holder.getWeaponInfo() : null;
         BlastStyle style = BlastStyle.forWeapon(visualWeapon, p.isFlaming());
         ModNetwork.sendToPlayersNear(serverLevel, null, p.x(), p.y(), p.z(), ExplosionEffectPayload.RANGE,
-                new ExplosionEffectPayload(p.x(), p.y(), p.z(), p.size(), inWater, exp.affectedBlocks, style));
+                new ExplosionEffectPayload(p.x(), p.y(), p.z(), p.size(), inWater, exp.affectedBlocks, style, direction));
         return exp.result;
     }
 

@@ -21,7 +21,7 @@ vision and a performance pass. Its exit criterion is no crash in a 30-minute mix
   list with a `ModListPayload`, empty unless its `debugLog` is on. `ClientRequests` on the server
   takes answers only from the player asked, a screenshot only in order, up to 16 MB and as a PNG,
   saves it to `screenshots_op`, tells the sender, and drops requests nobody answers.
-- Differences: KNOWN_ISSUES 102. Network protocol 27.
+- Differences: KNOWN_ISSUES 102. Network protocol 28.
 
 Validation: JUnit covers the permission entries and the status counts; two GameTests cover
 permissions, the command switch, `delayhitbox`, `showboundingbox`, `title`, `reconfig` and

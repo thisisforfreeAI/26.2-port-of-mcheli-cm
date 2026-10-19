@@ -15,6 +15,7 @@ import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
+import java.util.List;
 import net.neoforged.neoforge.client.event.RegisterRenderPipelinesEvent;
 
 /**
@@ -43,6 +44,26 @@ public final class GlowGeometry {
     }
 
     private GlowGeometry() {
+    }
+
+    /** Cached terrain top face, relative to its explosion; corner strengths include distance falloff. */
+    public record Surface(float x0, float x1, float y, float z0, float z1, float a, float b, float c, float d) {}
+
+    public static void surfaces(PoseStack pose, SubmitNodeCollector collector, List<Surface> surfaces,
+            float alpha, int count) {
+        collector.submitCustomGeometry(pose, TYPE, (matrix, buffer) -> {
+            for (int i = 0; i < count; i++) {
+                Surface s = surfaces.get(i);
+                int a = argb(0xFFAC50, alpha * s.a), b = argb(0xFFAC50, alpha * s.b);
+                int c = argb(0xFFAC50, alpha * s.c), d = argb(0xFFAC50, alpha * s.d);
+                vertex(buffer, matrix, s.x0, s.y, s.z0, a);
+                vertex(buffer, matrix, s.x0, s.y, s.z1, b);
+                vertex(buffer, matrix, s.x1, s.y, s.z1, c);
+                vertex(buffer, matrix, s.x0, s.y, s.z0, a);
+                vertex(buffer, matrix, s.x1, s.y, s.z1, c);
+                vertex(buffer, matrix, s.x1, s.y, s.z0, d);
+            }
+        });
     }
 
     public static void registerPipelines(RegisterRenderPipelinesEvent event) {

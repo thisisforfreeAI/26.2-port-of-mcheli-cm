@@ -12,6 +12,18 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 
 ### Changed
 
+- M8 terrain performance: resume scorch/ground-flash fitting from the impact center under
+  shared per-tick read/ray/column limits, coalesce repeated pending hits and spread cached
+  surface validation/light updates across ticks. Preserve completed footprint sizes.
+
+- M8 bullet visuals: return projectile bodies to ambient lighting, remove round halos and use
+  sparse, thinner, shorter warm tracer streaks with restrained daylight/night opacity.
+
+- M8 blast motion: rolling fire pockets and brief amber smoke backlighting, wider low bomb
+  clouds, projectile-heading rocket bursts, longer incendiary flames, narrow material dirt
+  streams and a short terrain-fitted ground flash. Reuse bounded particle requests and cap
+  flash geometry. Explosion effects carry three cosmetic direction bytes (network protocol 27).
+
 - M8 ground-response polish: material-specific dust and a few short-lived tumbling surface
   fragments for enhanced bomb/missile impacts, with global geometry/sampling limits. Large
   bomb smoke now breaks up with varied fading and subtle late drift. Classic effects remain.
@@ -115,7 +127,7 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 - `/mcheli sendss <player>`, which saves the player's screen to `screenshots_op` on the server if
   their `privacy.allowScreenCapture` is on (they see a chat notice), and `/mcheli modlist
   <players>`, which shows the sender each player's mods if their `debugLog` is on, as upstream.
-  Network protocol 27.
+  Network protocol 28.
 - NPC battles, a port addition: vs-player gunners, wingmen and aircraft on missions of one team
   attack the gunners and unmanned aircraft of other teams. Wingmen fight for their leader's team,
   and dispatched aircraft for the team of the player who sent them. Turn it off with the server
