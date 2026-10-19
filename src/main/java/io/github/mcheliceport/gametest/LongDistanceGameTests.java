@@ -24,7 +24,7 @@ final class LongDistanceGameTests {
     }
 
     static void register() {
-        ModGameTests.test("long_distance_tracking", 20, LongDistanceGameTests::tracking);
+        ModGameTests.test("long_distance_tracking", 200, LongDistanceGameTests::tracking);
     }
 
     private static boolean seenBy(ServerLevel level, Entity entity, ServerPlayer player) {
@@ -32,8 +32,20 @@ final class LongDistanceGameTests {
         return tracked != null && tracked.seenBy.contains(player.connection);
     }
 
+    private static boolean tracked(ServerLevel level, Entity entity) {
+        return level.getChunkSource().chunkMap.entityMap.containsKey(entity.getId());
+    }
+
     private static void update(ServerLevel level, Entity entity) {
         level.getChunkSource().chunkMap.entityMap.get(entity.getId()).updatePlayers(level.players());
+    }
+
+    private static void awaitTracked(GameTestHelper helper, ServerLevel level, Entity a, Entity b, Runnable then) {
+        if (tracked(level, a) && tracked(level, b)) {
+            then.run();
+        } else {
+            helper.runAfterDelay(1, () -> awaitTracked(helper, level, a, b, then));
+        }
     }
 
     private static void tracking(GameTestHelper helper) {
@@ -51,24 +63,27 @@ final class LongDistanceGameTests {
         Pig pig = EntityTypes.PIG.create(level, EntitySpawnReason.COMMAND);
         pig.snapTo(far.x + 2.0, far.y, far.z);
         level.addFreshEntity(pig);
-        boolean setting = ServerConfig.LONG_DISTANCE_TRACKING.get();
-        try {
-            ServerConfig.LONG_DISTANCE_TRACKING.set(true);
-            update(level, heli);
-            update(level, pig);
-            check(helper, seenBy(level, heli, player), "the vehicle is sent 160 blocks away, past the view distance");
-            check(helper, !seenBy(level, pig, player), "a pig there is not");
-            ServerConfig.LONG_DISTANCE_TRACKING.set(false);
-            update(level, heli);
-            check(helper, !seenBy(level, heli, player), "with the setting off, the view distance limits vehicles too");
-        } finally {
-            ServerConfig.LONG_DISTANCE_TRACKING.set(setting);
-            pig.discard();
-            cleanUp(heli);
-            if (!wasForced) {
-                level.setChunkForced(chunkX, chunkZ, false);
+        // The forced chunk loads over the next ticks; its entities are tracked once it ticks them.
+        awaitTracked(helper, level, heli, pig, () -> {
+            boolean setting = ServerConfig.LONG_DISTANCE_TRACKING.get();
+            try {
+                ServerConfig.LONG_DISTANCE_TRACKING.set(true);
+                update(level, heli);
+                update(level, pig);
+                check(helper, seenBy(level, heli, player), "the vehicle is sent 160 blocks away, past the view distance");
+                check(helper, !seenBy(level, pig, player), "a pig there is not");
+                ServerConfig.LONG_DISTANCE_TRACKING.set(false);
+                update(level, heli);
+                check(helper, !seenBy(level, heli, player), "with the setting off, the view distance limits vehicles too");
+            } finally {
+                ServerConfig.LONG_DISTANCE_TRACKING.set(setting);
+                pig.discard();
+                cleanUp(heli);
+                if (!wasForced) {
+                    level.setChunkForced(chunkX, chunkZ, false);
+                }
             }
-        }
-        helper.succeed();
+            helper.succeed();
+        });
     }
 }
