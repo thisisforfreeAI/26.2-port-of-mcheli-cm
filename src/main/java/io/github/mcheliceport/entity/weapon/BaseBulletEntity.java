@@ -21,6 +21,7 @@ import io.github.mcheliceport.weapon.WeaponTargets;
 import io.github.mcheliceport.weapon.WeaponWorld;
 import io.github.mcheliceport.weapon.explosion.McheliExplosion;
 import io.github.mcheliceport.weapon.guidance.WeaponGuidanceSystem;
+import io.github.mcheliceport.wingman.handler.ProjectileChunkLoader;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -497,6 +498,9 @@ public abstract class BaseBulletEntity extends Entity implements WeaponTargets.P
                     this.setTargetEntity(null);
                     this.antiFlareUse = false;
                 }
+            }
+            if (level instanceof ServerLevel serverLevel && ProjectileChunkLoader.isEnabledFor(info)) {
+                ProjectileChunkLoader.requestPath(serverLevel, this);
             }
         }
         if (level.isClientSide() && this.countOnUpdate == 0) {

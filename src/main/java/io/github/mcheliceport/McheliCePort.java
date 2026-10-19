@@ -62,6 +62,7 @@ public final class McheliCePort {
         ModNetwork.register(modBus);
         io.github.mcheliceport.entity.uav.UavRemoteSession.register(modBus);
         io.github.mcheliceport.wingman.handler.MissionChunkLoader.register(modBus);
+        io.github.mcheliceport.wingman.handler.ProjectileChunkLoader.register(modBus);
         ModGameTests.register(modBus);
         io.github.mcheliceport.item.ChainItem.register();
         io.github.mcheliceport.radar.EntityInfoFeed.register();
