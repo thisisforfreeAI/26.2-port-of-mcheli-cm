@@ -104,6 +104,9 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
   supported (see Added); JEI shows the drafting table as a crafting station for them.
 
 ### Added
+- Thermal vision, upstream's third camera mode: the camera key now cycles normal, night vision
+  and thermal vision in vehicles with night vision. Mobs and other vehicles show white-hot against
+  a dark grey world, and the rider gets night vision as in the other mode.
 - Advancements, as upstream's triggers: a McHeli tab for placing a vehicle, refuelling,
   resupplying ammunition and dropping a towed container from high up, and two hidden ones. The
   extra key (F) unhitches what a helicopter or placed vehicle tows, as upstream. Network protocol 29.

@@ -33,7 +33,7 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * The client side of a vehicle's camera: the view from the camera position, the zoom, the
- * night-vision post effect and the third-person distance. Upstream spread this over
+ * night and thermal vision post effects and the third-person distance. Upstream spread this over
  * {@code MCH_ViewEntityDummy}, {@code MCH_ClientHeliTickHandler#onTick}, {@code MCH_CameraManager}
  * and {@code KeyboardInputHandler#handleCameraDistance}.
  *
@@ -48,6 +48,7 @@ public final class AircraftCameraClient {
 
     public static final Identifier NIGHT_VISION_EFFECT =
             Identifier.fromNamespaceAndPath(McheliCePort.MOD_ID, "nightvision");
+    public static final Identifier THERMAL_EFFECT = Identifier.fromNamespaceAndPath(McheliCePort.MOD_ID, "thermal");
     private static final float DEFAULT_THIRD_PERSON_DISTANCE = 4.0F;
     private static final int CAM_DIST_STEP = 4;
     private static final int CAM_DIST_MIN = 4;
@@ -187,7 +188,7 @@ public final class AircraftCameraClient {
         } else if (mc.getCameraEntity() == view) {
             mc.setCameraEntity(player);
         }
-        updatePostEffect(mc, aircraft.getCameraMode(player) == AircraftCamera.MODE_NIGHTVISION);
+        updatePostEffect(mc, aircraft.getCameraMode(player));
     }
 
     private static ViewMarker viewEntity(Minecraft mc, LocalPlayer player) {
@@ -211,23 +212,33 @@ public final class AircraftCameraClient {
         viewEntity = null;
         lastCockpitEye = null;
         thirdPersonDistance = DEFAULT_THIRD_PERSON_DISTANCE;
-        updatePostEffect(mc, false);
+        updatePostEffect(mc, AircraftCamera.MODE_NORMAL);
     }
 
     /**
-     * Upstream {@code MCH_Camera#setMode}: night vision draws through its post effect. Vanilla
-     * clears post effects when the camera entity or perspective changes, so this runs every tick;
-     * it only clears an effect that is its own.
+     * Upstream {@code MCH_Camera#setMode}: night and thermal vision draw through their post
+     * effects. Vanilla clears post effects when the camera entity or perspective changes, so this
+     * runs every tick; it only clears an effect that is its own.
      */
-    static void updatePostEffect(Minecraft mc, boolean nightVision) {
+    static void updatePostEffect(Minecraft mc, int cameraMode) {
+        Identifier wanted = postEffect(cameraMode);
         Identifier current = mc.gameRenderer.currentPostEffect();
-        if (nightVision) {
-            if (!NIGHT_VISION_EFFECT.equals(current)) {
-                mc.gameRenderer.setPostEffect(NIGHT_VISION_EFFECT);
+        if (wanted != null) {
+            if (!wanted.equals(current)) {
+                mc.gameRenderer.setPostEffect(wanted);
             }
-        } else if (NIGHT_VISION_EFFECT.equals(current)) {
+        } else if (NIGHT_VISION_EFFECT.equals(current) || THERMAL_EFFECT.equals(current)) {
             mc.gameRenderer.clearPostEffect();
         }
+    }
+
+    /** The post effect a camera mode draws with, or null for the normal view. */
+    static @Nullable Identifier postEffect(int cameraMode) {
+        return switch (cameraMode) {
+            case AircraftCamera.MODE_NIGHTVISION -> NIGHT_VISION_EFFECT;
+            case AircraftCamera.MODE_THERMALVISION -> THERMAL_EFFECT;
+            default -> null;
+        };
     }
 
     /** The view entity turns with the rider every frame, as upstream's render-tick hooks did. */

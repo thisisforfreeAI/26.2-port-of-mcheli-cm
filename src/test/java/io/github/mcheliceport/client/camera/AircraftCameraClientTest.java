@@ -1,8 +1,10 @@
 package io.github.mcheliceport.client.camera;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import io.github.mcheliceport.entity.aircraft.AircraftCamera;
 import io.github.mcheliceport.util.McheliMath;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
@@ -38,6 +40,15 @@ class AircraftCameraClientTest {
         AircraftCameraClient.setThirdPersonDistance(12.0F);
         AircraftCameraClient.reset();
         assertEquals(4.0F, AircraftCameraClient.thirdPersonDistance());
+    }
+
+    @Test
+    void eachCameraModeHasItsPostEffect() {
+        assertNull(AircraftCameraClient.postEffect(AircraftCamera.MODE_NORMAL));
+        assertEquals(AircraftCameraClient.NIGHT_VISION_EFFECT,
+                AircraftCameraClient.postEffect(AircraftCamera.MODE_NIGHTVISION));
+        assertEquals(AircraftCameraClient.THERMAL_EFFECT,
+                AircraftCameraClient.postEffect(AircraftCamera.MODE_THERMALVISION));
     }
 
     private static final double EYE = 1.62;
