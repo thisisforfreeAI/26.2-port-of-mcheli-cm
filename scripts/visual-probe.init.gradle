@@ -3,7 +3,9 @@ gradle.projectsEvaluated {
     def project = gradle.rootProject
     project.sourceSets.main.java.srcDir(project.file('scripts/visual-probe'))
     // These scenes own their driver; keep them independent of the default effects scene.
-    if (Boolean.getBoolean('mcheli.probeEngineExhaust') || Boolean.getBoolean('mcheli.probeBlastGround')) project.sourceSets.main.java.exclude('io/github/mcheliceport/probe/EffectsProbe.java')
+    if (Boolean.getBoolean('mcheli.probeEngineExhaust') || Boolean.getBoolean('mcheli.probeBlastGround') || Boolean.getBoolean('mcheli.probeBlastMotion')) project.sourceSets.main.java.exclude('io/github/mcheliceport/probe/EffectsProbe.java')
+    project.neoForge.runs.client.systemProperty('mcheli.probeMotionTracersOnly', System.getProperty('mcheli.probeMotionTracersOnly', 'false'))
+    project.neoForge.runs.client.systemProperty('mcheli.probeBlastMotion', System.getProperty('mcheli.probeBlastMotion', 'false'))
     project.neoForge.runs.client.systemProperty('mcheli.probeBlastGround', System.getProperty('mcheli.probeBlastGround', 'false'))
     project.neoForge.runs.client.systemProperty('mcheli.probeGroundPerfOnly', System.getProperty('mcheli.probeGroundPerfOnly', 'false'))
     project.neoForge.runs.client.systemProperty('mcheli.probeEngineExhaust', System.getProperty('mcheli.probeEngineExhaust', 'false'))

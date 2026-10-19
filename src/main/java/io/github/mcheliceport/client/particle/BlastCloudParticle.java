@@ -11,6 +11,7 @@ final class BlastCloudParticle extends SmokeParticle {
     private final float radius;
     private final int fireTicks;
     private final float opacity;
+    private final int backlightTicks;
     private final org.joml.Quaternionf rotation = new org.joml.Quaternionf();
     private final float angle;
     private final float smokeShade;
@@ -27,6 +28,11 @@ final class BlastCloudParticle extends SmokeParticle {
 
     BlastCloudParticle(ClientLevel level, double x, double y, double z, double mx, double my, double mz,
             float radius, int life, int fireTicks, float opacity, int delay, boolean base) {
+        this(level, x, y, z, mx, my, mz, radius, life, fireTicks, opacity, delay, base, 0);
+    }
+
+    BlastCloudParticle(ClientLevel level, double x, double y, double z, double mx, double my, double mz,
+            float radius, int life, int fireTicks, float opacity, int delay, boolean base, int backlightTicks) {
         super(level, x, y, z, mx, my, mz);
         this.setSprite(sprite(TEXTURE));
         this.radius = radius;
@@ -34,6 +40,7 @@ final class BlastCloudParticle extends SmokeParticle {
         this.base = base;
         this.lifetime = Math.min(128, life + this.delay);
         this.fireTicks = fireTicks;
+        this.backlightTicks = Math.clamp(backlightTicks, 0, 56);
         this.opacity = opacity;
         this.hasPhysics = false;
         this.angle = this.random.nextInt(4) * (float) (Math.PI / 2);
@@ -72,14 +79,16 @@ final class BlastCloudParticle extends SmokeParticle {
         if (age <= this.delay) return;
         float localAge = Math.max(0, age - this.delay);
         // Advance through fire promptly, then spend most of the lifetime as non-emissive smoke.
-        this.frame = localAge < this.fireTicks ? Math.min(2, (int) (localAge * 3 / this.fireTicks))
-                : 3 + Math.min(4, (int) ((localAge - this.fireTicks) * 5 / Math.max(1, this.lifetime - this.delay - this.fireTicks)));
+        if (localAge < this.fireTicks) this.frame = Math.min(11, (int) (localAge * 12 / this.fireTicks));
+        else if (localAge < this.backlightTicks) this.frame = 8 + Math.min(3, (int) (localAge * 4 / this.backlightTicks));
+        else this.frame = 12 + Math.min(3, (int) ((localAge - this.fireTicks) * 4
+                / Math.max(1, this.lifetime - this.delay - this.fireTicks)));
         this.alpha = this.opacity * ExplosionSequence.cloudAlpha(age, this.lifetime, this.delay, this.fireTicks > 0, this.fadeTicks);
         float shade = localAge >= this.fireTicks ? this.smokeShade : 1;
         this.setColor(shade, shade, shade);
         // Skip SmokeParticle's fire tint/fade; the dedicated sheet contains that transition.
         this.getFacingCameraMode().setRotation(this.rotation, camera, partialTick);
-        this.rotation.rotateZ(this.angle);
+        this.rotation.rotateZ(this.angle + (this.fireTicks > 0 ? localAge * 0.018F : 0));
         this.extractRotatedQuad(state, camera, this.rotation, partialTick);
     }
 
@@ -87,9 +96,15 @@ final class BlastCloudParticle extends SmokeParticle {
         return this.radius * ExplosionSequence.cloudGrowth(this.age + partialTick, this.delay, this.fireTicks > 0, this.base);
     }
 
+    @Override protected float getU0() { return this.frameU(this.frame % 4, 4, false); }
+    @Override protected float getU1() { return this.frameU(this.frame % 4, 4, true); }
+    @Override protected float getV0() { return this.sprite.getV(this.frame / 4 * 0.25F); }
+    @Override protected float getV1() { return this.sprite.getV((this.frame / 4 + 1) * 0.25F); }
+
     @Override protected int getLightCoords(float partialTick) {
         return EffectLook.smokeLight(super.getLightCoords(partialTick),
-                ExplosionSequence.fireHeat(this.age + partialTick - this.delay, this.fireTicks));
+                Math.max(ExplosionSequence.fireHeat(this.age + partialTick - this.delay, this.fireTicks),
+                        ExplosionSequence.backlight(this.age + partialTick, this.backlightTicks)));
     }
 
 }

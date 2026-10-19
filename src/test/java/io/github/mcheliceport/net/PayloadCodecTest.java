@@ -85,6 +85,10 @@ class PayloadCodecTest {
                 new net.minecraft.core.BlockPos(-120, -60, 300), new net.minecraft.core.BlockPos(5, 70, 0));
         ExplosionEffectPayload p = new ExplosionEffectPayload(4.5, 66.2, -1.25, 3.5F, true, blocks);
         assertEquals(p, roundTrip(ExplosionEffectPayload.CODEC, p));
+        var directed = new ExplosionEffectPayload(4.5, 66.2, -1.25, 3.5F, false, blocks,
+                io.github.mcheliceport.effect.BlastStyle.BLAST,
+                io.github.mcheliceport.effect.BlastDirection.from(new net.minecraft.world.phys.Vec3(-3, -1, 2)));
+        assertEquals(directed, roundTrip(ExplosionEffectPayload.CODEC, directed));
         ExplosionEffectPayload empty = new ExplosionEffectPayload(0, 0, 0, 0, false, java.util.List.of());
         assertEquals(empty, roundTrip(ExplosionEffectPayload.CODEC, empty));
         for (var style : io.github.mcheliceport.effect.BlastStyle.values()) {

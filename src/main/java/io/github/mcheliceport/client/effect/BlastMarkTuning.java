@@ -46,6 +46,18 @@ public final class BlastMarkTuning {
         return Math.min(1, (lifetime - age) / 200.0F);
     }
 
+    /** Only the initial few frames illuminate the fitted surface; no saved/world lighting changes. */
+    public static float flashAlpha(float age, int duration) {
+        if (age < 0 || age >= duration) return 0;
+        float t = 1 - age / duration;
+        return t * t;
+    }
+
+    public static float flashFalloff(double dx, double dy, double dz, float radius) {
+        double t = Math.clamp(1 - (dx * dx + dy * dy + dz * dz) / (radius * radius), 0, 1);
+        return (float) (t * t);
+    }
+
     /** Higher airbursts leave a smaller mark; a blast outside reach leaves none. */
     public static boolean reached(float size, double dx, double dy, double dz) {
         double reach = Math.min(16, Math.max(0, size) * 1.5);
