@@ -93,8 +93,9 @@ These follow from how Minecraft 26.2 works or from decisions approved in PORTING
    validation remain pending; see `docs/M7_PLAN.md`. Chemical clouds use their native NTM types,
    counts and initial velocities; `EffectOnly` creates none because the entities themselves cause
    damage. Addon configuration is documented in `docs/NTM_NEXT_ADDONS.md`.
-8. Vehicles beyond the far plane are drawn as scaled stand-ins instead of in a second far-plane render
-   pass.
+8. Vehicles past the render distance are drawn full size and without fog in the normal entity pass,
+   not in a second pass with upstream's own 3,000-block projection, so they disappear past vanilla's
+   far plane (four times the render distance or the cloud range, whichever is larger).
 9. The pilot's client simulates its own vehicle (decision D2). Servers can switch back to upstream's
    server-authoritative model with `vehicles.serverAuthoritativeMovement`. UAV motion always runs
    on the server because its pilot remains physically seated at the station.
