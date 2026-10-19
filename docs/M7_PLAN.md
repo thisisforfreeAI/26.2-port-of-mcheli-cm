@@ -241,3 +241,17 @@ Upstream sounds that never played (the "locked" notify, the commented-out chaff 
 maintenance wrench) stay out. Validation: all required GameTests pass; in game the T-4's smoke
 trails (`docs/screens/m7-smoke-trail.png`) and the debris arcs out of a size-8 explosion with the
 `CLASSIC` look (`docs/screens/m7-explosion-debris.png`).
+
+## 30-minute soak
+
+M7's exit criterion. A dedicated server and a client (software rendering, 1280x720) ran for 30
+minutes on the build with the parity work above. Every 10 seconds a script summoned three random
+vehicles out of twelve (AH-64, AH-6, Bell 206L, A-10, An-2, T-4, M1129, KV-2, Centauro, 12.7 mm
+gun, Zodiac, CB90); every 30 seconds it destroyed a random tank and helicopter, which crash and
+explode; every 40 seconds the player boarded a random helicopter, plane or tank, switched weapon,
+throttled up and fired; every 100 seconds it removed every vehicle. 51 destructions in all.
+
+Result: no crash and no exception from the mod on either side (the only exception was the
+container's missing OpenAL device). The server never fell behind ("Can't keep up" never logged).
+Average tick time per 100-tick sample stayed between 8 and 24 ms against the 50 ms budget, with a
+worst 99th percentile of 89 ms while a large aircraft crashed.
