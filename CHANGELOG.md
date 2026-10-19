@@ -12,6 +12,10 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 
 ### Changed
 
+- M8 terrain performance: resume scorch/ground-flash fitting from the impact center under
+  shared per-tick read/ray/column limits, coalesce repeated pending hits and spread cached
+  surface validation/light updates across ticks. Preserve completed footprint sizes.
+
 - M8 bullet visuals: return projectile bodies to ambient lighting, remove round halos and use
   sparse, thinner, shorter warm tracer streaks with restrained daylight/night opacity.
 
