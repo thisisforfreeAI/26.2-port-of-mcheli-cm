@@ -305,3 +305,7 @@ front of the body and after a resource reload (`docs/screens/m7-gpu-models.png`,
 the render thread over 20 seconds with 28 vehicles in view (software rendering): 374 samples with
 path A, 274 of them drawing vehicles; 140 with path B, 42 drawing vehicles. Frame rate is bound by
 software rasterisation here and did not change; on a graphics card the saving is CPU time per frame.
+On the Vulkan backend (Mesa lavapipe, started with `--graphicsBackend vulkan` and
+`earlyWindowControl = false`, as for M4 §5) the custom pipeline compiles and draws without errors,
+JFR shows path B drawing, and screenshots with the option on and off differ in 0.1 % of pixels
+(`docs/screens/m7-gpu-models-vulkan.png`).
