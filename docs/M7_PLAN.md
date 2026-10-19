@@ -23,7 +23,7 @@ path in place. There are no automatic retries after partial HBM execution.
   and its effect-only packet. Blast/kill/radiation, safe mode, shrapnel and resolution are passed
   through. Legacy `ExAttrib[]` no longer exists and is retained as parsed data only.
 - Nukes use `EntityNukeExplosionMK5.statFac` and the self-spawning `EntityNukeTorex.statFac`.
-  Their block explosion power must be positive.
+  Their block explosion power must be at least one; a zero integer radius selects NTM Next's default 25-block warhead.
 - Fire uses `EntityFireLingering` and `FlameCreator`; mist uses `EntityMist` and the new
   `NTMFluids.byName` lookup. Counts, areas, spread and duration are retained.
 - VNT constructs each detonation's processors from the YAML maps, restricted to the public
@@ -35,11 +35,15 @@ path in place. There are no automatic retries after partial HBM execution.
   removed, and chlorine has no direct equivalent in the poison-cloud helper. No stock weapon
   enables NTM payloads, so testing requires addon definitions or the integration GameTests.
 
-Validation so far: the bridge compiles against cached Minecraft/NeoForge dependencies and all
-six reflection-boundary JUnit tests pass using Java 25. The full Gradle build is blocked locally
-by the environment's denial of the existing `maven.blamejared.com` JEI dependency. Full default
-GameTests and installed-NTM Next validation are pending; these results do not establish graphics
-or multiplayer compatibility with NTM Next.
+Validation: initial GitHub Actions run
+[39266396386](https://github.com/thisisforfreeAI/26.2-port-of-mcheli-cm/actions/runs/39266396386)
+passed the full standard build (including JUnit), all 251 required GameTests without HBM and
+all 252 with the official NTM Next 1.0.3 runtime, including the installed-mod payload test.
+Six reflection-boundary tests also pass locally on Java 25. Follow-up CI checks the merge with
+the long-distance vehicle increment and additional nuclear factory/EffectOnly coverage.
+Local standard Gradle validation remains blocked by the environment's denial of the existing
+JEI Maven host; CI downloads dependencies normally. OpenGL/Vulkan and multiplayer presentation
+with NTM Next have not been checked.
 
 Run the normal `./gradlew build runGameTestServer` without HBM, and
 `./gradlew runGameTestServer -PwithHbm` for the pinned official release. `-PhbmFile=<file ID>`
@@ -47,7 +51,7 @@ selects another published NeoForge file. HBM is a test runtime dependency only a
 optional for users. Client runs with HBM also need its required CrankShaft dependency, as listed
 on the official download page. The default GameTest checks normal blast/EffectOnly behavior
 without HBM; the additional installed-mod test checks actual fire/mist entities, safe mini-nuke
-parameters, visual-only packets and VNT calls without detonating a large nuclear warhead.
+parameters, visual-only packets and VNT calls and nuclear entity factories (discarded before their first tick), without detonating a large warhead.
 
 ## `/mcheli` command increment
 

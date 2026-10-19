@@ -42,8 +42,9 @@ public final class HbmCompat {
                 case NTM_MINI_NUKE -> miniNuke(level, x, y, z,
                         Objects.requireNonNull(info.mukeContainer, "MiniNuke settings missing"), info.effectOnly);
                 case NTM_NUKE -> {
-                    if (!Float.isFinite(blockPower) || blockPower <= 0)
-                        throw new IllegalArgumentException("NUKE requires a positive block explosion power");
+                    // NTM treats an integer radius of zero as its default 25-block warhead.
+                    if (!Float.isFinite(blockPower) || blockPower < 1)
+                        throw new IllegalArgumentException("NUKE requires block explosion power of at least one");
                     if (!info.effectOnly) {
                         Entity blast = (Entity) HbmCalls.callStatic("com.hbm.entity.logic.EntityNukeExplosionMK5",
                                 "statFac", level, (int) blockPower, x, y, z);

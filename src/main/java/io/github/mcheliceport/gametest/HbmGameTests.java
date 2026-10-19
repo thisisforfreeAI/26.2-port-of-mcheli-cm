@@ -106,6 +106,11 @@ final class HbmGameTests {
                 e -> e.getClass().getName().equals("com.hbm.entity.effect.EntityMist"));
         check(h, mist.size() == 1, "NTM Next did not create exactly one fluid mist");
         mist.forEach(Entity::discard);
+        info.effectOnly = true;
+        apply(h, info, pos);
+        check(h, h.getLevel().getEntitiesOfClass(Entity.class, new AABB(pos, pos).inflate(2),
+                e -> e.getClass().getName().equals("com.hbm.entity.effect.EntityMist")).isEmpty(),
+                "EffectOnly created damaging fluid mist");
 
         info = info(WeaponInfo.Payload.NTM_MINI_NUKE);
         info.mukeContainer = new MukeContainer();
@@ -122,7 +127,31 @@ final class HbmGameTests {
         apply(h, info, pos);
         info.effectOnly = true;
         apply(h, info, pos);
+
+        // Verify both nuclear factories, then discard before their first tick.
+        info = info(WeaponInfo.Payload.NTM_NUKE);
+        try {
+            check(h, HbmCompat.detonate(h.getLevel(), projectile(h, info, pos), info, pos.x, pos.y, pos.z, 1)
+                    == HbmCompat.Outcome.APPLIED, "NTM Next nuclear factory failed");
+            var nuclear = nuclearEntities(h, pos);
+            check(h, nuclear.size() == 2, "Expected one nuclear blast and one cloud");
+            nuclear.forEach(Entity::discard);
+            info.effectOnly = true;
+            check(h, HbmCompat.detonate(h.getLevel(), projectile(h, info, pos), info, pos.x, pos.y, pos.z, 1)
+                    == HbmCompat.Outcome.APPLIED, "NTM Next nuclear visual failed");
+            nuclear = nuclearEntities(h, pos);
+            check(h, nuclear.size() == 1 && nuclear.getFirst().getClass().getSimpleName().equals("EntityNukeTorex"),
+                    "EffectOnly created a damaging nuke or duplicated its cloud");
+        } finally {
+            nuclearEntities(h, pos).forEach(Entity::discard);
+        }
         h.succeed();
+    }
+
+    private static java.util.List<Entity> nuclearEntities(GameTestHelper h, Vec3 pos) {
+        return h.getLevel().getEntitiesOfClass(Entity.class, new AABB(pos, pos).inflate(2),
+                e -> e.getClass().getName().equals("com.hbm.entity.logic.EntityNukeExplosionMK5")
+                        || e.getClass().getName().equals("com.hbm.entity.effect.EntityNukeTorex"));
     }
 
     private static void apply(GameTestHelper h, WeaponInfo info, Vec3 pos) {

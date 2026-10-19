@@ -26,7 +26,7 @@ broader gameplay and hardware checks remain pending.
 | Area | Planned milestone |
 |---|---|
 | Remaining plane/ground equipment | M6 |
-| GPU-buffer model rendering, NTM Next runtime validation, performance work | M7 |
+| GPU-buffer model rendering, NTM Next client validation, performance work | M7 |
 
 Until then:
 
@@ -89,8 +89,8 @@ These follow from how Minecraft 26.2 works or from decisions approved in PORTING
    the normal blast (none for `EffectOnly`). NTM Next removed `ExplosionNT` and mini-nuke
    `ExAttrib[]`; those settings remain parsed, but are not applied. Large VNT effect parameters
    are approximated by NTM Next's small/standard/large named effects; its small-cloud API retains
-   count, scale and speed. No stock weapon enables NTM payloads. Runtime validation with NTM Next
-   is pending; see `docs/M7_PLAN.md`.
+   count, scale and speed. No stock weapon enables NTM payloads. Server GameTests pass with and without NTM Next; client presentation and multiplayer
+   validation remain pending; see `docs/M7_PLAN.md`.
 8. Vehicles beyond the far plane are drawn as scaled stand-ins instead of in a second far-plane render
    pass.
 9. The pilot's client simulates its own vehicle (decision D2). Servers can switch back to upstream's
