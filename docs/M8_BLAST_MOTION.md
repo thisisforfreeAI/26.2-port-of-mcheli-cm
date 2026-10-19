@@ -67,7 +67,9 @@ Close blasts now interleave low/upper support, one main fire pocket and ground a
 requesting the rest of the cloud, so coverage admission cannot spend everything on smoke alone.
 The existing global fragment caps and 96/192 loaded surface-read budgets are unchanged.
 The fire/smoke sheet changes from 256×128 to 256×256; all animation/noise is baked offline by
-`scripts/generate-effect-textures.py`. Rendering uses vanilla pipelines on both backends.
+`scripts/generate-effect-textures.py`. Rendering uses vanilla pipelines on both backends. In the native scene the particle atlas grows
+from 512×512 to 1024×512 (about 1 MiB more RGBA storage at mip level zero). This is a small
+fixed memory cost, not a measured claim of free rendering.
 
 Network protocol **27** adds three cosmetic direction bytes to the explosion effect packet.
 Client and server must update together. Damage, flight, targeting and destruction are unchanged.
@@ -82,6 +84,28 @@ lifetimes, fragment/read/flash ceilings and no ground effect leakage in suppress
 Use `-Dmcheli.probeBlastMotion=true -I scripts/visual-probe.init.gradle` with `runClient`;
 `-Dmcheli.probeBackend=OPENGL` selects the second backend. It writes labeled screenshots in
 `.run/m8-preview/screenshots`, never into production resources.
+
+The final combined base passes 209 JUnit tests and all 241 required dedicated GameTests.
+Vulkan/lavapipe passes all 13 native scenes, including two of eight selected tracers in both
+lighting conditions and zero in Classic. OpenGL/llvmpipe passes the ten explosion scenes and a separate run of all
+three tracer scenes. Both renderers use Mesa 25.0.7 / LLVM 19.1.7 at
+1920×1080. The overlap scene stays within 64 flash faces, 24 tracked fragments and 96 ground
+reads per tick on Balanced. Airburst/water/Low scenes produce no flash or ground fragments.
+Water still produces its normal bounded splash particles. Native sound-device errors are
+expected on this headless host; renderer validation does not require audio.
+
+The bullet fixtures hold stock M134 projectile models still with an eight-block/tick render
+motion and controlled UUIDs. They isolate appearance and selection; they are not a firing-rate,
+network flight or frame-time benchmark. The normal release jar excludes all probe classes.
+All ten generated effect PNGs reproduce byte for byte.
+
+![Vulkan bomb: rolling fire, smoke and dirt response](screens/m8-motion-vulkan-bomb.png)
+
+![Vulkan controlled bullet fixture in daylight](screens/m8-motion-vulkan-tracers-day.png)
+
+![Vulkan controlled bullet fixture at night](screens/m8-motion-vulkan-tracers-night.png)
+
+![OpenGL initial terrain flash across slabs and blocks](screens/m8-motion-opengl-ground-flash.png)
 
 Local Gradle validation excludes optional JEI compatibility via an external init script because
 its Maven host is blocked in this environment. The JEI source and repository build are unchanged.
