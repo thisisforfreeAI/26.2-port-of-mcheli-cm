@@ -54,6 +54,11 @@ final class GunnerGameTests {
 
     /** A gunner of the given type in the AH-64's second seat, which works the M230. */
     static GunnerEntity seatGunner(GameTestHelper h, HeliEntity heli, int targetType) {
+        if (heli.getSeats()[0] == null) {
+            // The heli creates its seats when it first ticks; in a batch whose chunks have not
+            // started ticking yet that may not have happened, so tick it once here.
+            heli.tick();
+        }
         SeatEntity seat = heli.getSeats()[0];
         GunnerEntity gunner = gunner(h, targetType);
         gunner.snapTo(seat.getX(), seat.getY(), seat.getZ(), 0.0F, 0.0F);
