@@ -179,6 +179,8 @@ definitions can opt in. Heat distortion remains deferred and target-PC acceptanc
   See [M8_COMBAT_ACCEPTANCE.md](M8_COMBAT_ACCEPTANCE.md).
 - [x] Give rockets a fire/smoke impact mix and large general missile warheads (including the
   AGM-158) a fuller blast profile. See [M8_MISSILE_IMPACTS.md](M8_MISSILE_IMPACTS.md).
+- [x] Prioritize the initial hot pocket over the blast's own support smoke/glow in close views;
+  verify rocket and AGM-158 core admission at maximum adaptive pressure on both backends.
 - [ ] Hardware acceptance at 1080p on RTX 3060 8 GB / Ryzen 7 7800X3D: representative sustained
   firing, overlapping explosions and mixed vehicles, targeting 80 FPS / 12.5 ms.
 - [ ] Final visual acceptance in actual flight and battles, including addon/content combinations.

@@ -49,3 +49,37 @@ Raw frame/tick data and hardware acceptance limits are recorded in the linked co
 The final integrated build passes 216 JUnit tests, with optional JEI compatibility excluded
 locally through the external init script because its Maven host is blocked. The release jar
 excludes the opt-in scene drivers. No repository dependency or JEI source files change.
+
+## Close-view admission follow-up
+
+At adaptive pressure 3, Balanced smoke admission allows 24 weighted units per world tick.
+A sufficiently close large quad costs 16. Previously the large-cloud path requested two
+support billows before its initial fire pocket: the first billow could leave only eight units,
+so the fire was rejected. At lower pressure the optional additive flash could also spend
+coverage before the first pocket. A stronger weapon profile alone did not solve this ordering.
+
+The emitter now requests its initial rolling-fire pocket before support smoke and the optional
+additive flash. Both still share the same admission and live limits. Secondary smoke, dust or
+glow may shed sooner in crowded close views; other emitters, distance/particle settings and
+global caps can still reject a blast. This introduces no reservation, extra requests or budget
+increase. The fire particle cools into smoke using the existing lifetime and texture sequence.
+
+`-Dmcheli.probeImpactPriority=true` selects close-camera rocket/stock-AGM checks with fixed
+Balanced detail, then adaptive Balanced detail. It waits nine seconds before each impact so
+the real frame controller can warm up, asserts pressure 3 in the adaptive phases, and asserts
+that the actual emitter admits a hot pocket. It calls the production emitter directly and adds
+the normal terrain mark separately; the earlier missile scenes cover the full effect entry point.
+The pressure assertion requires an overloaded renderer; this is a regression scene, not a
+hardware FPS acceptance run. Add `-Dmcheli.probeBackend=OPENGL` to repeat on OpenGL.
+Screenshots cover ages 4/9/16/35; existing ground-read, fragment and flash ceilings still apply.
+
+Vulkan/lavapipe and OpenGL/llvmpipe both pass the four close-view scenes at 1920×1080.
+At pressure 3, the rocket requests two primary particles and the AGM-158 three; both admit
+their hot pocket. The close AGM view spends 16 of 24 available weighted units on that pocket,
+leaving too little for its other large quads: it renders one fire-to-smoke particle instead of
+losing fire to its support cloud. Fixed Balanced detail admits six AGM particles in this view.
+Optional ground flashes/fragments are absent under pressure 3, as before. In this mode the
+reused `rocket-low`/`agm158-low` scene labels refer to adaptive Balanced runs, not Low quality.
+These are functional software-renderer results, not target-hardware frame-rate measurements.
+The follow-up build also passes all 216 JUnit tests with the same local JEI exclusion, and its
+release jar excludes the probe drivers.

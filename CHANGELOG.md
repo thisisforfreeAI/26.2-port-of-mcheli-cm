@@ -12,6 +12,9 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 
 ### Changed
 
+- M8 blast priority: admit the initial hot pocket before support smoke and optional glow,
+  preventing the blast's own effects from crowding out fire in close adaptive-budget views.
+
 - M8 rockets retain growing smoke puffs around a sharper rolling-fire impact. Large general
   missile warheads, including the AGM-158, use a fuller mixed fire/smoke cloud; reduce evenly
   spaced directional puffs and retain primary fire when adaptive detail reduces the blast.

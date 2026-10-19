@@ -11,16 +11,12 @@ import net.minecraft.client.multiplayer.ClientLevel;
 final class ExplosionCloudEmitter {
     private ExplosionCloudEmitter() {}
 
-    static void emit(ClientLevel level, double x, double y, double z, float power, BlastStyle style, BlastDirection direction) {
+    /** Returns whether a primary hot pocket was admitted; smoke-only impacts can return false. */
+    static boolean emit(ClientLevel level, double x, double y, double z, float power, BlastStyle style, BlastDirection direction) {
         var quality = ClientConfig.get(ClientConfig.EFFECT_BUDGET);
         int count = ExplosionSequence.lobes(power, style, quality, EffectPerformance.pressure());
-        if (count == 0) return;
+        if (count == 0) return false;
         float radius = ExplosionSequence.radius(power, style);
-        float flash = ExplosionSequence.flashRadius(power, style);
-        if (EffectPerformance.optionalGlows() && EffectAdmission.admit(level, x, y, z, false, flash)) {
-            Minecraft.getInstance().particleEngine.add(new ImpactCoreParticle(level, x, y + 0.3, z, flash,
-                    ExplosionLook.broad(style) ? 6 : 3));
-        }
         Random random = new Random(Double.doubleToLongBits(x) ^ Long.rotateLeft(Double.doubleToLongBits(z), 21)
                 ^ level.getGameTime() ^ 0xB1A57L);
         Vec3 axis = direction.burstAxis();
@@ -28,7 +24,9 @@ final class ExplosionCloudEmitter {
             boolean directed = !direction.equals(BlastDirection.NONE);
             int fireCount = ExplosionSequence.smokeFireLobes(power, style, count);
             // Make the impact visible before the growing legacy puffs spend coverage admission.
-            for (int i = 0; i < fireCount; i++) fire(level, x, y, z, power, style, radius, i, random);
+            boolean core = false;
+            for (int i = 0; i < fireCount; i++) core |= fire(level, x, y, z, power, style, radius, i, random);
+            flash(level, x, y, z, power, style);
             for (int i = 0; i < count - fireCount; i++) {
                 double angle = i * 2.3999632297 + random.nextDouble() * 0.4;
                 double spread = radius * random.nextDouble() * 0.6;
@@ -40,19 +38,19 @@ final class ExplosionCloudEmitter {
             }
             BlastGroundEffects.emit(level, x, y, z, power, style, direction);
             ClientEffects.spawnExplosionSparks(level, x, y, z, power, style);
-            return;
+            return core;
         }
         int smokeCount = ExplosionSequence.smokeLobes(count);
         int baseCount = (smokeCount + 1) / 2;
         int priority = Math.min(4, smokeCount);
-        // Interleave low and upper support, one rolling fire pocket, then surface response.
-        // Close, large quads can consume the shared coverage allowance before a simple count cap;
-        // this order retains the blast's distinct stages without reserving or increasing any budget.
+        // The core must precede support smoke and optional glow: at high adaptive pressure,
+        // one close support quad can otherwise spend most of the shared coverage allowance.
+        boolean core = fire(level, x, y, z, power, style, radius, 0, random);
+        flash(level, x, y, z, power, style);
         for (int slot = 0; slot < priority; slot++) {
             int i = smokeIndex(slot, baseCount, smokeCount);
             support(level, x, y, z, power, style, radius, i, baseCount, random, axis);
         }
-        fire(level, x, y, z, power, style, radius, 0, random);
         BlastGroundEffects.emit(level, x, y, z, power, style, direction);
         for (int slot = priority; slot < smokeCount; slot++) {
             int i = smokeIndex(slot, baseCount, smokeCount);
@@ -60,6 +58,15 @@ final class ExplosionCloudEmitter {
         }
         for (int i = 1; i < count - smokeCount; i++) fire(level, x, y, z, power, style, radius, i, random);
         ClientEffects.spawnExplosionSparks(level, x, y, z, power, style);
+        return core;
+    }
+
+    private static void flash(ClientLevel level, double x, double y, double z, float power, BlastStyle style) {
+        float radius = ExplosionSequence.flashRadius(power, style);
+        if (EffectPerformance.optionalGlows() && EffectAdmission.admit(level, x, y, z, false, radius)) {
+            Minecraft.getInstance().particleEngine.add(new ImpactCoreParticle(level, x, y + 0.3, z, radius,
+                    ExplosionLook.broad(style) ? 6 : 3));
+        }
     }
 
     private static void support(ClientLevel level, double x, double y, double z, float power, BlastStyle style,
@@ -97,7 +104,7 @@ final class ExplosionCloudEmitter {
                 base || tier < 2 ? ExplosionSequence.fireTicks(power, style) : 0));
     }
 
-    private static void fire(ClientLevel level, double x, double y, double z, float power, BlastStyle style,
+    private static boolean fire(ClientLevel level, double x, double y, double z, float power, BlastStyle style,
             float radius, int i, Random random) {
         double angle = i * 2.3999632297 + random.nextDouble() * 0.6;
         double dx = Math.cos(angle), dz = Math.sin(angle);
@@ -108,7 +115,7 @@ final class ExplosionCloudEmitter {
         boolean lingering = style == BlastStyle.INCENDIARY;
         double py = y + radius * (lingering ? 0.07 : 0.10 + random.nextDouble() * 0.10);
         float r = radius * (i == 0 ? 1.05F : 0.60F + random.nextFloat() * 0.25F);
-        if (!EffectAdmission.admitBlastLobe(level, px, py, pz, r)) return;
+        if (!EffectAdmission.admitBlastLobe(level, px, py, pz, r)) return false;
         double speed = i == 0 ? 0 : Math.min(0.7, radius * 0.07) * (0.7 + random.nextDouble() * 0.3);
         int duration = ExplosionSequence.fireTicks(power, style);
         int fireTicks = i == 0 ? duration : duration * (65 + random.nextInt(30)) / 100;
@@ -116,6 +123,7 @@ final class ExplosionCloudEmitter {
         Minecraft.getInstance().particleEngine.add(new BlastCloudParticle(level, px, py, pz,
                 dx * speed, lingering ? 0.008 : 0.04 + random.nextDouble() * 0.06, dz * speed, r, life,
                 fireTicks, 0.95F, i == 0 ? 0 : 1 + i % 4, lingering));
+        return true;
     }
 
     /** Earlier McHeli growing puffs and two-way ejection, within the same primary request cap. */
