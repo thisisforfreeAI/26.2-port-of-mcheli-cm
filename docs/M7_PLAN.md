@@ -31,16 +31,28 @@ path in place. There are no automatic retries after partial HBM execution.
   constructors/builders; fractional values cannot silently truncate into integer parameters.
   Its small-cloud effect API is unchanged. NTM Next's named small/standard/large effects replace
   the removed fully parameterized large-effect API, selected by cloud scale.
-- Legacy `NTM_NT` and `NTM_CHEMICAL` remain explicit fallbacks; the former's `ExplosionNT` was
-  removed, and chlorine has no direct equivalent in the poison-cloud helper. No stock weapon
-  enables NTM payloads, so testing requires addon definitions or the integration GameTests.
+- Chemical payloads use the native `com.hbm.entity.particle` cloud constructors, including
+  `EntityChlorineFX`, `EntityCloudFX`, `EntityPinkCloudFX` and `EntityOrangeFX`. This avoids the
+  renamed poison-cloud helper's changed type-zero behavior. `NTM.Chemical` now configures the
+  explicit type, nonnegative integer count and finite nonnegative Gaussian velocity multiplier.
+  `EffectOnly` creates no cloud, because the native entities themselves damage their surroundings.
+- Legacy `NTM_NT` remains an explicit fallback because `ExplosionNT` was removed. No stock
+  weapon enables NTM payloads, so testing requires addon definitions or integration GameTests.
+- `NtmEmitter` preserves every parsed NTM container in weapon YAML exports, including unused
+  or unsupported legacy settings, mini-nuke preset values and raw nested VNT processor maps.
+  Canonical `NTM_MINI_NUKE` names now parse as well as upstream's `MININUKE` alias. Ordinary
+  weapons gain no NTM block. `/mcheli dumpyaml` retains its existing non-YAML-only selection;
+  the exporter itself now round-trips NTM data. See [NTM_NEXT_ADDONS.md](NTM_NEXT_ADDONS.md).
 
 Validation: initial GitHub Actions run
 [39266396386](https://github.com/thisisforfreeAI/26.2-port-of-mcheli-cm/actions/runs/39266396386)
 passed the full standard build (including JUnit), all 251 required GameTests without HBM and
 all 252 with the official NTM Next 1.0.3 runtime, including the installed-mod payload test.
-Six reflection-boundary tests also pass locally on Java 25. Follow-up CI checks the merge with
-the long-distance vehicle increment and additional nuclear factory/EffectOnly coverage.
+[Run 39266862038](https://github.com/thisisforfreeAI/26.2-port-of-mcheli-cm/actions/runs/39266862038)
+then passed the standard build, 252 default and 253 installed-mod GameTests after merging the
+long-distance increment and adding nuclear factory/EffectOnly coverage. Six reflection-boundary
+tests pass locally on Java 25. The chemical/export follow-up adds five YAML regression tests and
+one installed-mod chemical test; current CI results are attached to PR #74.
 Local standard Gradle validation remains blocked by the environment's denial of the existing
 JEI Maven host; CI downloads dependencies normally. OpenGL/Vulkan and multiplayer presentation
 with NTM Next have not been checked.
@@ -51,7 +63,9 @@ selects another published NeoForge file. HBM is a test runtime dependency only a
 optional for users. Client runs with HBM also need its required CrankShaft dependency, as listed
 on the official download page. The default GameTest checks normal blast/EffectOnly behavior
 without HBM; the additional installed-mod test checks actual fire/mist entities, safe mini-nuke
-parameters, visual-only packets and VNT calls and nuclear entity factories (discarded before their first tick), without detonating a large warhead.
+parameters, visual-only packets, VNT calls and nuclear entity factories (discarded before their
+first tick). The chemical test verifies all four real cloud types, count, motion, zero count and
+EffectOnly suppression, cleaning up clouds before they tick.
 
 ## `/mcheli` command increment
 

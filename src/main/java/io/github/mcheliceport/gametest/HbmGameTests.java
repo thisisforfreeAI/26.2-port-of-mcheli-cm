@@ -5,6 +5,7 @@ import static io.github.mcheliceport.gametest.GameTestSupport.check;
 import io.github.mcheliceport.compat.hbm.HbmCompat;
 import io.github.mcheliceport.content.ContentLocation;
 import io.github.mcheliceport.content.weapon.WeaponInfo;
+import io.github.mcheliceport.content.weapon.hbm.ChemicalContainer;
 import io.github.mcheliceport.content.weapon.hbm.FireContainer;
 import io.github.mcheliceport.content.weapon.hbm.MistContainer;
 import io.github.mcheliceport.content.weapon.hbm.MukeContainer;
@@ -27,8 +28,10 @@ final class HbmGameTests {
 
     static void register() {
         ModGameTests.test("hbm_normal_blast_and_effect_only", 20, HbmGameTests::normalBlast);
-        if (ModList.get().isLoaded("hbm"))
+        if (ModList.get().isLoaded("hbm")) {
             ModGameTests.test("hbm_next_payloads", 20, HbmGameTests::payloads);
+            ModGameTests.test("hbm_next_chemical_payloads", 20, HbmGameTests::chemicalPayloads);
+        }
     }
 
     private static WeaponInfo info(WeaponInfo.Payload payload) {
@@ -152,6 +155,54 @@ final class HbmGameTests {
         return h.getLevel().getEntitiesOfClass(Entity.class, new AABB(pos, pos).inflate(2),
                 e -> e.getClass().getName().equals("com.hbm.entity.logic.EntityNukeExplosionMK5")
                         || e.getClass().getName().equals("com.hbm.entity.effect.EntityNukeTorex"));
+    }
+
+    private static void chemicalPayloads(GameTestHelper h) {
+        Vec3 pos = h.absoluteVec(new Vec3(12, 8, 12));
+        for (var type : ChemicalContainer.ChemType.values()) {
+            String expected = switch (type) {
+                case CHLORINE -> "EntityChlorineFX";
+                case CLOUD -> "EntityCloudFX";
+                case PINK_CLOUD -> "EntityPinkCloudFX";
+                case ORANGE -> "EntityOrangeFX";
+            };
+            WeaponInfo info = info(WeaponInfo.Payload.NTM_CHEMICAL);
+            info.chemicalContainer = new ChemicalContainer(0, 2, type);
+            try {
+                apply(h, info, pos);
+                var clouds = chemicalEntities(h, pos);
+                check(h, clouds.size() == 2, type + " did not spawn exactly two native clouds");
+                check(h, clouds.stream().allMatch(e -> e.getClass().getSimpleName().equals(expected)
+                                && e.getDeltaMovement().equals(Vec3.ZERO)),
+                        type + " selected the wrong cloud type or ignored zero speed");
+                clouds.forEach(Entity::discard);
+
+                info.effectOnly = true;
+                apply(h, info, pos);
+                check(h, chemicalEntities(h, pos).isEmpty(), type + " EffectOnly spawned damaging clouds");
+
+                info.effectOnly = false;
+                info.chemicalContainer = new ChemicalContainer(0.125, 1, type);
+                apply(h, info, pos);
+                clouds = chemicalEntities(h, pos);
+                check(h, clouds.size() == 1 && clouds.getFirst().getDeltaMovement().lengthSqr() > 0,
+                        type + " ignored cloud speed or count");
+                clouds.forEach(Entity::discard);
+                info.chemicalContainer = new ChemicalContainer(0.125, 0, type);
+                apply(h, info, pos);
+                check(h, chemicalEntities(h, pos).isEmpty(), type + " ignored zero Count");
+            } finally {
+                // These clouds poison on ticking; none should escape into other test arenas.
+                chemicalEntities(h, pos).forEach(Entity::discard);
+            }
+        }
+        h.succeed();
+    }
+
+    private static java.util.List<Entity> chemicalEntities(GameTestHelper h, Vec3 pos) {
+        return h.getLevel().getEntitiesOfClass(Entity.class, new AABB(pos, pos).inflate(2),
+                e -> e.getClass().getName().startsWith("com.hbm.entity.particle.Entity")
+                        && e.getClass().getName().endsWith("FX"));
     }
 
     private static void apply(GameTestHelper h, WeaponInfo info, Vec3 pos) {

@@ -2,6 +2,7 @@ package io.github.mcheliceport.compat.hbm;
 
 import com.mojang.logging.LogUtils;
 import io.github.mcheliceport.content.weapon.WeaponInfo;
+import io.github.mcheliceport.content.weapon.hbm.ChemicalContainer;
 import io.github.mcheliceport.content.weapon.hbm.FireContainer;
 import io.github.mcheliceport.content.weapon.hbm.MistContainer;
 import io.github.mcheliceport.content.weapon.hbm.MukeContainer;
@@ -62,7 +63,11 @@ public final class HbmCompat {
                 }
                 case NTM_VNT -> vnt(level, projectile, x, y, z, blockPower,
                         Objects.requireNonNull(info.vntSettingContainer, "VNT settings missing"), info.effectOnly);
-                case NTM_NT, NTM_CHEMICAL -> {
+                case NTM_CHEMICAL -> {
+                    if (!info.effectOnly) chemical(level, x, y, z,
+                            Objects.requireNonNull(info.chemicalContainer, "Chemical settings missing"));
+                }
+                case NTM_NT -> {
                     warn(info.payloadNTM.name(), "NTM Next does not support legacy " + info.payloadNTM
                             + " through this bridge");
                     return Outcome.FALLBACK;
@@ -101,6 +106,26 @@ public final class HbmCompat {
         HbmCalls.field(params, "resolution", settings.resolution);
         HbmCalls.field(params, "tinytot", tiny);
         HbmCalls.callStatic("com.hbm.explosion.ExplosionNukeSmall", "explode", level, x, y, z, params);
+    }
+
+    private static void chemical(ServerLevel level, double x, double y, double z, ChemicalContainer settings)
+            throws ReflectiveOperationException {
+        // The old spawnChlorine helper was renamed and now maps type zero to orange, so use
+        // the native cloud constructors directly to preserve all four explicit chemical types.
+        String type = switch (settings.type()) {
+            case CHLORINE -> "EntityChlorineFX";
+            case CLOUD -> "EntityCloudFX";
+            case PINK_CLOUD -> "EntityPinkCloudFX";
+            case ORANGE -> "EntityOrangeFX";
+        };
+        for (int i = 0; i < settings.count(); i++) {
+            Entity cloud = (Entity) HbmCalls.create("com.hbm.entity.particle." + type,
+                    level, x, y, z, 0.0, 0.0, 0.0);
+            cloud.setDeltaMovement(level.getRandom().nextGaussian() * settings.speed(),
+                    level.getRandom().nextGaussian() * settings.speed(),
+                    level.getRandom().nextGaussian() * settings.speed());
+            level.addFreshEntity(cloud);
+        }
     }
 
     private static void fire(ServerLevel level, double x, double y, double z, FireContainer settings,

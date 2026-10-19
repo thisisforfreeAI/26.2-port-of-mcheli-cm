@@ -12,6 +12,11 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 
 ### Changed
 
+- M7 NTM Next follow-up: add configurable native chlorine, standard, pink and orange chemical
+  clouds with count/speed controls and EffectOnly suppression. Preserve every NTM setting during
+  YAML export/reload, including nested VNT processors, mini-nuke presets and legacy attributes.
+  Document addon setup in `docs/NTM_NEXT_ADDONS.md`.
+
 - M7 optional NTM Next warhead bridge: adapt mini-nukes, nuclear clouds, VNT processors,
   lingering fire and fluid mist to the NeoForge 26.2 APIs. Preserve ordinary explosions and
   EffectOnly behavior when HBM is absent or unsupported. Add fallback/API regression coverage;
