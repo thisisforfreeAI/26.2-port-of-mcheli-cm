@@ -255,3 +255,21 @@ Result: no crash and no exception from the mod on either side (the only exceptio
 container's missing OpenAL device). The server never fell behind ("Can't keep up" never logged).
 Average tick time per 100-tick sample stayed between 8 and 24 ms against the 50 ms budget, with a
 worst 99th percentile of 89 ms while a large aircraft crashed.
+
+## Performance pass (server)
+
+Measured on a dedicated server (`pause-when-empty-seconds=0`) with 60 parked vehicles of eleven
+types on a stone pad, `tick query` averaged over 100-tick samples, and JFR's execution samples
+for where the time goes. Parked tanks took about half of the mod's time, nearly all of it in
+the wheel probes' collision moves (`TankTerrain`).
+
+| Change | Average tick (60 vehicles; 0.8-1.1 ms empty) |
+| --- | --- |
+| Before | 6.0-6.6 ms |
+| Wheel probes test vanilla's solid-entity check before the seat lookup | 5.1-5.4 ms |
+| `BlockList` (breakable and protected block lists) keeps its answer per block, cleared when tags reload | 4.8-5.0 ms |
+| Wheel probes skip landing, step sounds and game events, as upstream's own wheel move did | 4.6-4.8 ms |
+
+What the vehicles cost fell by about a third (from about 5.4 to 3.7 ms). The rest of the wheel
+probes' time is vanilla block collision, which upstream's wheels did too. Client rendering is
+the separate GPU-buffer item.

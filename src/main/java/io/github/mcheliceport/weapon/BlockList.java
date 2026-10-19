@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.concurrent.ConcurrentHashMap;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
@@ -21,6 +22,11 @@ public final class BlockList {
 
     private final List<Block> blocks = new ArrayList<>();
     private final List<TagKey<Block>> tags = new ArrayList<>();
+    /**
+     * Answers per block, as tag lookups are costly and a tank asks for every block it touches each
+     * tick. Cleared when tags reload ({@link #clearCaches}).
+     */
+    private final Map<Block, Boolean> answers = new ConcurrentHashMap<>();
 
     private BlockList(List<? extends String> entries) {
         for (String entry : entries) {
@@ -45,14 +51,25 @@ public final class BlockList {
     }
 
     public boolean contains(BlockState state) {
-        if (this.blocks.contains(state.getBlock())) {
+        return this.answers.computeIfAbsent(state.getBlock(), this::lookUp);
+    }
+
+    private boolean lookUp(Block block) {
+        if (this.blocks.contains(block)) {
             return true;
         }
         for (TagKey<Block> tag : this.tags) {
-            if (state.is(tag)) {
+            if (block.builtInRegistryHolder().is(tag)) {
                 return true;
             }
         }
         return false;
+    }
+
+    /** Forgets every list's answers, for when block tags change. */
+    public static synchronized void clearCaches() {
+        for (BlockList list : PARSED.values()) {
+            list.answers.clear();
+        }
     }
 }
