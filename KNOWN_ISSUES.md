@@ -348,12 +348,13 @@ These follow from how Minecraft 26.2 works or from decisions approved in PORTING
     there: upstream's call had no vehicle and threw for every tracked vehicle. The page is there
     when the vehicle has a model file and stays empty while the model loads in the background.
 80. McHeli's effects are drawn with the M8 look by default (client config
-    `effects.effectQuality = ENHANCED`): smoke fades in and out and grows smoothly, explosion
-    puffs start as fire, muzzle flashes, fireballs, flares, tracers and missile flames glow
-    additively, flares and tracers burn at full brightness at night, and downwash takes the
-    ground's colour (white spray over water). `CLASSIC` draws exactly as upstream. The same
-    particles spawn at the same moments either way, so gameplay does not change
-    (docs/M8_PLAN.md).
+    `effects.effectQuality = ENHANCED`): growing/fading smoke, weapon-scaled fire/smoke impacts,
+    material dust, terrain marks, restrained sparse tracers, flare glow, surface-aware downwash,
+    exhaust and vehicle imprints. `CLASSIC` selects upstream presentation; cosmetic budgets
+    still apply. Enhanced emitters can change cosmetic counts/timing but do not change gameplay.
+    Optional exhaust heat refraction uses one shared scene copy, is disabled on Low/adaptive
+    pressure, and respects opaque depth; translucent surfaces may not hide it. See
+    docs/M8_PLAN.md and docs/M8_FOLLOWUPS.md. Target-PC 80 FPS acceptance remains open.
 81. Only players who may use game-master commands (permission level 2) can set a vehicle's
     command in the aircraft menu; for others the field is read-only. Upstream let any player set
     it, and it runs with full permissions when the vehicle is destroyed by anything but a player,

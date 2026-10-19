@@ -60,6 +60,9 @@ public final class EngineExhaustEmitter {
             Vec3 position = origin.add(direction.scale(legacyNozzle ? 1.15 : 0.15));
             BlockPos block = BlockPos.containing(position);
             if (!level.hasChunkAt(block) || !level.getFluidState(block).isEmpty()) continue;
+            io.github.mcheliceport.client.render.EngineHeat.add(level,
+                    ((long) aircraft.getId() << 3) ^ outlets.indexOf(outlet), position.add(direction.scale(0.25)),
+                    direction, motion, outlet.size(), strength * distanceFade, outlet.jet());
             float radius = EngineExhaustLook.radius(outlet.size() * Math.min(2, info.particlesScale), strength);
             if (!EffectAdmission.admit(level, position.x, position.y, position.z, false, radius)) continue;
             Vec3 velocity = direction.scale((outlet.jet() ? 0.18 : 0.07) + strength * (outlet.jet() ? 0.25 : 0.1)).add(motion);

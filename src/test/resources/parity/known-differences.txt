@@ -848,3 +848,5 @@ throwable/m18_yellow.recipeString: size 1 vs 0
 helicopters/ah-64.engineOutlets: size 0 vs 2
 helicopters/mh-60g.engineOutlets: size 0 vs 2
 helicopters/mh-60l_dap.engineOutlets: size 0 vs 2
+helicopters/ah-1z.engineOutlets: size 0 vs 2
+helicopters/ch47.engineOutlets: size 0 vs 2

@@ -119,6 +119,15 @@ class AddonOverrideTest {
         assertTrue(Files.readString(lamp).contains("'#50FFFFFF'"));
         assertEquals("custom override", Files.readString(override));
         assertFalse(BuiltinAddonPack.ensureExtracted(addonDir, stockSource(), "0.5.1"));
+        // A cached 0.5.1 revision-one pack predates the Viper/Chinook outlet definitions.
+        json = com.google.gson.JsonParser.parseString(Files.readString(meta)).getAsJsonObject();
+        json.getAsJsonObject("addon").addProperty("port_content_revision", 1);
+        Files.writeString(meta, json.toString());
+        Path viper = stock.resolve("assets/mcheli/helicopters/ah-1z.yml");
+        Files.writeString(viper, "old stock without outlets");
+        assertTrue(BuiltinAddonPack.ensureExtracted(addonDir, stockSource(), "0.5.1"));
+        assertTrue(Files.readString(viper).contains("EngineOutlets:"));
+        assertEquals("custom override", Files.readString(override));
     }
 
     private static long countContentFiles(Path pack) throws IOException {

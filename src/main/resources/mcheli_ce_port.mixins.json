@@ -4,5 +4,6 @@
   "package": "io.github.mcheliceport.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": ["UavEntityTrackingMixin", "UavChunkTrackingMixin"],
+  "client": ["EngineHeatProjectionMixin"],
   "injectors": {"defaultRequire": 1}
 }
