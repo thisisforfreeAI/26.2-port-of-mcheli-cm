@@ -599,7 +599,8 @@ public final class WingmanCommand {
         if (uid == null) {
             return 0;
         }
-        return send(c, MissionPlanner.assign(player.level(), uid, StringArgumentType.getString(c, "route")));
+        return send(c, MissionPlanner.assign(player.level(), uid, StringArgumentType.getString(c, "route"),
+                io.github.mcheliceport.entity.NpcBattles.teamName(player)));
     }
 
     /** Upstream {@code mission status}, for the aircraft flying a planner route. */
@@ -709,7 +710,7 @@ public final class WingmanCommand {
         if (order == null) {
             return fail(c, "No valid mission types in: " + typesArg);
         }
-        MissionDispatch.startOrder(wingman, order);
+        MissionDispatch.startOrder(wingman, order).teamName = io.github.mcheliceport.entity.NpcBattles.teamName(player);
         return ok(c, "§aOrder dispatched: §e" + typesArg + "§a to " + shortId(uid) + " §7(base=" + order.baseId
                 + " target=" + (int) order.targetX + "," + (int) order.targetZ + ")");
     }

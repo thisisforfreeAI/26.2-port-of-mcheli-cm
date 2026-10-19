@@ -1,6 +1,7 @@
 package io.github.mcheliceport.wingman.handler;
 
 import io.github.mcheliceport.McheliCePort;
+import io.github.mcheliceport.entity.NpcBattles;
 import io.github.mcheliceport.entity.aircraft.AircraftEntity;
 import io.github.mcheliceport.entity.gunner.GunnerEntity;
 import io.github.mcheliceport.entity.heli.HeliEntity;
@@ -611,7 +612,16 @@ public final class WingmanTickHandler {
      * target drones, and McHeli gunners of a team the leader's pilot is not on.
      */
     public static boolean isEnemy(@Nullable Entity leader, Entity e) {
-        if (e instanceof Player || e.isRemoved() || WingmanRegistry.get(e.getUUID()) != null) {
+        return isEnemy(leader, "", e);
+    }
+
+    /**
+     * {@link #isEnemy(Entity, Entity)} for an aircraft fighting for {@code team}: with NPC battles
+     * on, also the gunners, wingmen and mission aircraft of other teams (NpcBattles), and not the
+     * gunners of its own.
+     */
+    public static boolean isEnemy(@Nullable Entity leader, String team, Entity e) {
+        if (e instanceof Player || e.isRemoved()) {
             return false;
         }
         for (Entity passenger : e.getPassengers()) {
@@ -623,9 +633,13 @@ public final class WingmanTickHandler {
             return false;
         }
         boolean enemy;
-        if (e instanceof AircraftEntity ac) {
+        if (WingmanRegistry.get(e.getUUID()) != null) {
+            enemy = NpcBattles.isEnemyNpc(team, e);
+        } else if (e instanceof AircraftEntity ac) {
             enemy = ac.getAcInfo() != null && ac.getAcInfo().isTargetDrone && !ac.isDestroyed()
-                    && !(ac.getPilot() instanceof Player);
+                    && !(ac.getPilot() instanceof Player) || NpcBattles.isEnemyNpc(team, ac);
+        } else if (e instanceof GunnerEntity gunner && NpcBattles.enabled() && !team.isEmpty()) {
+            enemy = NpcBattles.isEnemyNpc(team, gunner);
         } else if (e instanceof GunnerEntity gunner) {
             Entity pilot = leader != null ? pilotOf(leader) : null;
             enemy = gunner.isAlive() && !gunner.getTeamName().isEmpty()
@@ -645,13 +659,14 @@ public final class WingmanTickHandler {
      */
     private static @Nullable Entity findNearestHostile(AircraftEntity wingman, @Nullable Entity leader, double range,
             Set<UUID> exclude, List<Entity> siblings) {
+        String team = NpcBattles.teamOf(wingman);
         double minSep = WingmanConfig.formationSideDist > 0 ? WingmanConfig.formationSideDist
                 : WingmanConfig.formationRearDist;
         double bestSq = range * range;
         Entity best = null;
         outer:
         for (Entity e : wingman.level().getEntities(wingman, wingman.getBoundingBox().inflate(range),
-                c -> isEnemy(leader, c))) {
+                c -> isEnemy(leader, team, c))) {
             if (exclude.contains(e.getUUID())) {
                 continue;
             }

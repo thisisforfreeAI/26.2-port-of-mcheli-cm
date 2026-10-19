@@ -37,6 +37,7 @@ public final class ServerConfig {
     public static final ModConfigSpec.IntValue WINGMAN_MAX_WINGMEN;
     public static final ModConfigSpec.DoubleValue WINGMAN_MIN_ATTACK_ALTITUDE;
     public static final ModConfigSpec.DoubleValue WINGMAN_MAX_ATTACK_ALTITUDE;
+    public static final ModConfigSpec.BooleanValue NPC_BATTLES;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -139,6 +140,14 @@ public final class ServerConfig {
         WINGMAN_MAX_ATTACK_ALTITUDE = builder
                 .comment("Highest absolute Y of attack runs, whatever the weapon; 0 is no ceiling. Upstream: maxAttackAltitude.")
                 .defineInRange("maxAttackAltitude", 0.0, 0.0, 10000.0);
+        builder.pop();
+
+        builder.comment("Battles between NPCs of different teams, a port addition: vs-player gunners, wingmen and",
+                        "aircraft on missions also attack the gunners and unmanned aircraft of other teams.")
+                .push("npcBattles");
+        NPC_BATTLES = builder
+                .comment("false: NPCs only attack what upstream's did (monsters, players, target drones, team gunners).")
+                .define("enabled", true);
         builder.pop();
         SPEC = builder.build();
     }

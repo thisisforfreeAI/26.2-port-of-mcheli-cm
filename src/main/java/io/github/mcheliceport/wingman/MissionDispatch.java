@@ -81,6 +81,7 @@ public final class MissionDispatch {
             return;
         }
         WingmanEntry entry = startOrder(wingman, order);
+        entry.teamName = io.github.mcheliceport.entity.NpcBattles.teamName(player);
         entry.assignedParkingId = "";
         if (!p.routeId().isEmpty()) {
             TaxiRoute route = TaxiRouteRegistry.findById(level, p.routeId());

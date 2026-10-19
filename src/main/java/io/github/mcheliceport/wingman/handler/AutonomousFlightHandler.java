@@ -941,8 +941,12 @@ public final class AutonomousFlightHandler {
     private static void tickAttack(ServerLevel level, AircraftEntity wingman, WingmanEntry entry, MissionNode node) {
         entry.autoState = AutonomousState.ATTACK;
         double r = node.attackRadius();
-        boolean hasTarget = !level.getEntitiesOfClass(LivingEntity.class, wingman.getBoundingBox().inflate(r),
-                e -> e instanceof Enemy && e.isAlive() && wingman.distanceToSqr(e) < r * r).isEmpty();
+        // With NPC battles on, the gunners and aircraft of other teams count too.
+        String team = io.github.mcheliceport.entity.NpcBattles.teamOf(wingman);
+        boolean hasTarget = !level.getEntities(wingman, wingman.getBoundingBox().inflate(r),
+                e -> (e instanceof Enemy && e instanceof LivingEntity living && living.isAlive()
+                        || io.github.mcheliceport.entity.NpcBattles.isEnemyNpc(team, e))
+                        && wingman.distanceToSqr(e) < r * r).isEmpty();
         entry.attackMode = hasTarget ? WingmanEntry.ATK_AUTO : WingmanEntry.ATK_NONE;
         if (!hasTarget) {
             McheliCePort.LOGGER.info("[Auto] {} ATTACK node complete (no targets in radius)", shortId(wingman));

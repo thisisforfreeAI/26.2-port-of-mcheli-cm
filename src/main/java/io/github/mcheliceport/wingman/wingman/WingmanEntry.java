@@ -69,6 +69,11 @@ public class WingmanEntry {
      * next order, so the entry is kept without a leader.
      */
     public boolean parkingHold;
+    /**
+     * The team of the player who sent it on its order or route, which it fights for without a
+     * leader (NpcBattles); "" for none.
+     */
+    public String teamName = "";
     /** The taxi route the order named for departure. */
     public String departureRouteId = "";
     /** The marker IDs of the taxi in progress, and the next one's index. */

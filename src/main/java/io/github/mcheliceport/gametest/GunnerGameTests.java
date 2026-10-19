@@ -53,7 +53,7 @@ final class GunnerGameTests {
     }
 
     /** A gunner of the given type in the AH-64's second seat, which works the M230. */
-    private static GunnerEntity seatGunner(GameTestHelper h, HeliEntity heli, int targetType) {
+    static GunnerEntity seatGunner(GameTestHelper h, HeliEntity heli, int targetType) {
         SeatEntity seat = heli.getSeats()[0];
         GunnerEntity gunner = gunner(h, targetType);
         gunner.snapTo(seat.getX(), seat.getY(), seat.getZ(), 0.0F, 0.0F);
@@ -70,11 +70,11 @@ final class GunnerGameTests {
         return husk;
     }
 
-    private static boolean bulletsNear(GameTestHelper h, AircraftEntity heli) {
+    static boolean bulletsNear(GameTestHelper h, AircraftEntity heli) {
         return !h.getLevel().getEntitiesOfClass(BaseBulletEntity.class, heli.getBoundingBox().inflate(40.0)).isEmpty();
     }
 
-    private static void loadM230(GameTestHelper h, HeliEntity heli, GunnerEntity gunner) {
+    static void loadM230(GameTestHelper h, HeliEntity heli, GunnerEntity gunner) {
         WeaponSet ws = heli.getCurrentWeapon(gunner);
         check(h, ws != null && ws.isName("m230"), "the gunner has the M230");
         ws.setAmmo(ws.getMagSize());

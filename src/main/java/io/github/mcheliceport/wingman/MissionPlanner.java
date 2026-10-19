@@ -1,5 +1,6 @@
 package io.github.mcheliceport.wingman;
 
+import io.github.mcheliceport.entity.NpcBattles;
 import io.github.mcheliceport.entity.aircraft.AircraftEntity;
 import io.github.mcheliceport.net.MissionActionPayload;
 import io.github.mcheliceport.net.MissionRouteActionPayload;
@@ -101,7 +102,7 @@ public final class MissionPlanner {
             if (uid == null) {
                 return;
             }
-            player.sendSystemMessage(assign(level, uid, p.routeName()));
+            player.sendSystemMessage(assign(level, uid, p.routeName(), NpcBattles.teamName(player)));
         } else if (p.action() == MissionActionPayload.ABORT) {
             UUID uid = p.aircraft().orElse(null);
             if (uid == null) {
@@ -157,8 +158,11 @@ public final class MissionPlanner {
                 && !(ac.getPilot() instanceof Player);
     }
 
-    /** Upstream's {@code ASSIGN}: the aircraft flies the route from its first node. */
-    public static Component assign(ServerLevel level, UUID uid, String routeName) {
+    /**
+     * Upstream's {@code ASSIGN}: the aircraft flies the route from its first node, for the team of
+     * the player who sent it.
+     */
+    public static Component assign(ServerLevel level, UUID uid, String routeName, String team) {
         Entity wingman = level.getEntity(uid);
         if (!canAssign(wingman)) {
             return Component.literal("§cEntity not found.");
@@ -174,6 +178,7 @@ public final class MissionPlanner {
         }
         AutonomousFlightHandler.cancelOrder(entry);
         entry.startMission(nodes);
+        entry.teamName = team;
         return Component.literal("§aMission §e" + routeName + "§a assigned to "
                 + uid.toString().substring(0, 8) + "... (" + nodes.size() + " nodes).");
     }
