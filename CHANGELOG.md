@@ -128,6 +128,11 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
   their `privacy.allowScreenCapture` is on (they see a chat notice), and `/mcheli modlist
   <players>`, which shows the sender each player's mods if their `debugLog` is on, as upstream.
   Network protocol 28.
+- Projectile chunk loading, as upstream: projectiles whose weapon sets `CanLoadChunks`, or every
+  projectile with the server config's new `projectiles.chunkLoad`, keep the chunks ahead of them
+  loaded so they fly on and hit targets where no player is. Chunks are shared and stay loaded for
+  `projectiles.chunkLeaseTicks` (40) after the last request; at most 5,000 per dimension, Forge's
+  default ticket budget upstream was bound by.
 - NPC battles, a port addition: vs-player gunners, wingmen and aircraft on missions of one team
   attack the gunners and unmanned aircraft of other teams. Wingmen fight for their leader's team,
   and dispatched aircraft for the team of the player who sent them. Turn it off with the server

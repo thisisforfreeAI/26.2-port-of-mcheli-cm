@@ -39,6 +39,8 @@ public final class ServerConfig {
     public static final ModConfigSpec.DoubleValue WINGMAN_MIN_ATTACK_ALTITUDE;
     public static final ModConfigSpec.DoubleValue WINGMAN_MAX_ATTACK_ALTITUDE;
     public static final ModConfigSpec.BooleanValue NPC_BATTLES;
+    public static final ModConfigSpec.BooleanValue PROJECTILE_CHUNK_LOAD;
+    public static final ModConfigSpec.IntValue PROJECTILE_CHUNK_LEASE_TICKS;
     public static final ModConfigSpec.BooleanValue ENABLE_COMMAND;
     public static final ModConfigSpec.ConfigValue<List<? extends String>> COMMAND_PERMISSIONS;
     public static final ModConfigSpec.BooleanValue ENABLE_DEBUG_BOUNDING_BOX;
@@ -152,6 +154,19 @@ public final class ServerConfig {
         NPC_BATTLES = builder
                 .comment("false: NPCs only attack what upstream's did (monsters, players, target drones, team gunners).")
                 .define("enabled", true);
+        builder.pop();
+
+        builder.comment("Keeping chunks loaded along the flight path of projectiles, so bullets, rockets and missiles",
+                        "keep flying and can hit targets where no player keeps the terrain loaded.")
+                .push("projectiles");
+        PROJECTILE_CHUNK_LOAD = builder
+                .comment("true: every projectile loads the chunks ahead of it. false: only the weapons whose content",
+                        "sets CanLoadChunks do. Can add server load while many projectiles fly. Upstream: ProjectileChunkLoad.")
+                .define("chunkLoad", false);
+        PROJECTILE_CHUNK_LEASE_TICKS = builder
+                .comment("Ticks a chunk stays loaded after the last projectile asked for it, so the shots of a burst",
+                        "keep the same chunks loaded (20 ticks = 1 second). Upstream: ProjectileChunkLeaseTicks.")
+                .defineInRange("chunkLeaseTicks", 40, 0, 1200);
         builder.pop();
 
         builder.comment("The /mcheli command.").push("commands");

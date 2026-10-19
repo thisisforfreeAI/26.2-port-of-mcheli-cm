@@ -40,3 +40,20 @@ pass. In the client, against a dedicated server, both were refused with the sett
 them on, `sendss` saved the player's view (226 KB) and `modlist` showed the mods in chat.
 
 ![/mcheli modlist](screens/m7-modlist.png)
+
+## Projectile chunk loading
+
+`ProjectileChunkLoader` ports upstream's class of the same name with a NeoForge ticket controller.
+A projectile whose weapon sets `CanLoadChunks`, or any projectile while the server config's
+`projectiles.chunkLoad` is on (upstream `ProjectileChunkLoad`, off by default), leases its own
+chunk and the line ahead of it each tick: 4 chunks, and up to 2 more for fast rounds. A lease
+lasts `projectiles.chunkLeaseTicks` (upstream `ProjectileChunkLeaseTicks`, 40) after the last
+request, so a burst shares its chunks; a sweep after each level tick releases the lapsed ones.
+Upstream was bound by Forge's ticket budget, 200 tickets of 25 chunks; the port caps a dimension
+at the same 5,000 chunks. The tickets are dropped when the world loads again.
+
+Validation: JUnit covers the path (own chunk only when still or vertical, 72 blocks ahead at 1
+block a tick, at most 96). A GameTest fires a stock rocket with the setting off (no lease), then
+on (its chunk and the chunk 4 ahead are leased, the one behind is not), and checks the leases run
+out after the rocket is gone. All 243 required GameTests pass. No stock weapon sets
+`CanLoadChunks`, so nothing changes with the default settings.

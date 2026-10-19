@@ -26,7 +26,7 @@ broader gameplay and hardware checks remain pending.
 | Area | Planned milestone |
 |---|---|
 | Remaining plane/ground equipment | M6 |
-| Advancement triggers, long-distance tracking and rendering, thermal vision (the third camera mode), GPU-buffer model rendering, projectile chunk loading (`ProjectileChunkLoad`), HBM:NTM stubs, performance work | M7 |
+| Advancement triggers, long-distance tracking and rendering, thermal vision (the third camera mode), GPU-buffer model rendering, HBM:NTM stubs, performance work | M7 |
 
 Until then:
 
