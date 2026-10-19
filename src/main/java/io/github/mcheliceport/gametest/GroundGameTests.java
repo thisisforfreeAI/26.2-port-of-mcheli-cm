@@ -11,6 +11,7 @@ import io.github.mcheliceport.content.aircraft.TankInfo;
 import io.github.mcheliceport.entity.aircraft.AircraftEntity;
 import io.github.mcheliceport.entity.ground.GroundVehicleEntity;
 import io.github.mcheliceport.entity.tank.TankEntity;
+import io.github.mcheliceport.entity.tank.TankTerrain;
 import io.github.mcheliceport.entity.vehicle.VehicleEntity;
 import io.github.mcheliceport.entity.weapon.BaseBulletEntity;
 import io.github.mcheliceport.entity.weapon.BulletEntity;
@@ -44,6 +45,7 @@ final class GroundGameTests {
         ModGameTests.test("ground_stock_place_mount_save", 30, GroundGameTests::stock);
         ModGameTests.test("tank_drive_brake_reverse_turn", 30, GroundGameTests::drive);
         ModGameTests.test("tank_terrain_contacts", 30, GroundGameTests::terrain);
+        ModGameTests.test("tank_terrain_tilt_limit", 30, GroundGameTests::tiltLimit);
         ModGameTests.test("ground_authority_and_controls", 30, GroundGameTests::authority);
         ModGameTests.test("vehicle_stationary_gun", 40, GroundGameTests::stationary);
         ModGameTests.test("tank_turret_weapon", 40, GroundGameTests::tankWeapon);
@@ -137,6 +139,31 @@ final class GroundGameTests {
                 "wheel contacts tilt on uneven ground: " + tank.getPitch() + "," + tank.getRoll());
         GameTestSupport.cleanUp(tank); h.succeed();
     }
+    /**
+     * A tank whose front wheels hang over a 6-block drop, as over a shell crater, tips no further
+     * than TankTerrain's limit instead of falling in nose first.
+     */
+    private static void tiltLimit(GameTestHelper h) {
+        for (int x = 4; x <= 20; x++) { for (int y = 1; y <= 6; y++) { for (int z = 2; z <= 22; z++) { h.setBlock(x, y, z, Blocks.STONE); } } }
+        var tank = (TankEntity) spawn(h, "m1a2", ContentType.TANK);
+        Vec3 p = h.absoluteVec(new Vec3(12.5, 7, 12.0));
+        tank.snapTo(p.x, p.y, p.z, 0.0F, 0.0F);
+        tank.setYaw(0.0F);
+        float max = 0;
+        for (int i = 0; i < 140; i++) {
+            if (i == 20) {
+                // A shell crater under the front half of the tank.
+                for (int x = 8; x <= 17; x++) { for (int y = 1; y <= 6; y++) { for (int z = 12; z <= 21; z++) {
+                    if ((x - 12.5) * (x - 12.5) + (y - 6.5) * (y - 6.5) * 0.5 + (z - 16.5) * (z - 16.5) < 16) { h.setBlock(x, y, z, Blocks.AIR); }
+                } } }
+            }
+            tank.tick();
+            if (i >= 20) { max = Math.max(max, Math.max(Math.abs(tank.getPitch()), Math.abs(tank.getRoll()))); }
+        }
+        check(h, max <= TankTerrain.MAX_TILT + 0.5F, "the tank tipped " + max + " degrees into the crater");
+        GameTestSupport.cleanUp(tank); h.succeed();
+    }
+
     private static void authority(GameTestHelper h) {
         var tank = (TankEntity) spawn(h, "m1a2", ContentType.TANK); tank.tick();
         Player p = pilot(h, tank);

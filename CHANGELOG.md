@@ -410,6 +410,8 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 
 ### Fixed
 
+- Tanks no longer fall nose first into shell craters: the ground tilts a tank at most 40 degrees
+  either way, where a crater under its front used to tip it 64 degrees and more (KNOWN_ISSUES 103).
 - Tank wingmen no longer pitch their hull up (or down) at a leader or an enemy above or below
   them while following or attacking: a tank's pitch and roll follow the ground, and it aims with
   its turret. Wingman steering pitched every vehicle as if it were an aircraft.

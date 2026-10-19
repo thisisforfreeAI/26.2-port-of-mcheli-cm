@@ -553,6 +553,9 @@ These follow from how Minecraft 26.2 works or from decisions approved in PORTING
     coremod and manifest sections have no 26.2 counterpart. As upstream, a client only shares its
     mod list while its `debugLog` is on, and the sender is told when it does not. Both skip players
     without the mod.
+103. The ground tilts a tank at most 40 degrees either way. Upstream had no limit, so a tank whose
+    front wheels hung over a shell crater tipped until it fell in nose first, often near vertical;
+    40 degrees still follows a one-block staircase hill.
 
 ## Upstream content issues kept as they are
 
