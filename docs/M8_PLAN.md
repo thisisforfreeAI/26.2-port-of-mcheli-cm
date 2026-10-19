@@ -179,6 +179,10 @@ definitions can opt in. Heat distortion remains deferred and target-PC acceptanc
   See [M8_COMBAT_ACCEPTANCE.md](M8_COMBAT_ACCEPTANCE.md).
 - [x] Give rockets a fire/smoke impact mix and large general missile warheads (including the
   AGM-158) a fuller blast profile. See [M8_MISSILE_IMPACTS.md](M8_MISSILE_IMPACTS.md).
+- [x] Prioritize the initial hot pocket over the blast's own support smoke/glow in close views;
+  verify rocket and AGM-158 core admission at maximum adaptive pressure on both backends.
+- [x] Improve tracer readability with narrow bright cores, tapered tails and visible burning
+  bases along the firing view. See [M8_TRACERS.md](M8_TRACERS.md).
 - [ ] Hardware acceptance at 1080p on RTX 3060 8 GB / Ryzen 7 7800X3D: representative sustained
   firing, overlapping explosions and mixed vehicles, targeting 80 FPS / 12.5 ms.
 - [ ] Final visual acceptance in actual flight and battles, including addon/content combinations.
@@ -187,3 +191,23 @@ Heat distortion and an additional ground shockwave ring remain optional deferred
 pending hardware profiling. Additional helicopter exhaust-outlet calibration is content-specific;
 current support is documented in [M8_ENGINE_EXHAUST.md](M8_ENGINE_EXHAUST.md). The native test
 scenes validate behavior and work bounds; they cannot replace target-hardware acceptance.
+
+## 15. Tank and vehicle ground tracks (planned)
+
+- [ ] Add tread imprints for tanks/tracked vehicles and tire marks for wheeled vehicles, using
+  their actual ground-contact positions and track/wheel width. Paths should follow turns,
+  reversing and separate left/right tread motion instead of stamping beneath the vehicle centre.
+- [ ] Match the surface: disturbed soil/sand, pressed snow and restrained scuffs on hard ground.
+  Respect slopes, slabs and terrain steps; stop at gaps, airborne contacts and submerged surfaces.
+- [ ] Keep the simple pixel-art style. Make turning/skid marks stronger where appropriate,
+  vary repeating segments, fade older marks gradually and remove them when their surface changes.
+- [ ] Use client-only cached geometry with bounded contact sampling, segment counts, draw
+  distance and lifetime. Coalesce/space samples while moving; shed distant or old marks under
+  load. Clear caches on world changes and avoid terrain queries during drawing.
+- [ ] Validate straight travel, tight turns, reversing, slopes, snow/water transitions and multiple
+  vehicles together. Profile with explosions and rotor wash against the existing 80 FPS target
+  on RTX 3060 8 GB / Ryzen 7 7800X3D at 1080p before raising any effect budget.
+
+This item is planned, not implemented. Marks are cosmetic; they do not change terrain blocks,
+traction, vehicle handling, damage or server simulation. Content with custom contact geometry
+needs a defined fallback or explicit attachment data.

@@ -24,9 +24,10 @@ import net.neoforged.neoforge.client.event.RenderFrameEvent;
 public final class BlastMotionProbe {
     private static final String[] NAMES = {"bomb", "rocket-east", "rocket-west", "incendiary", "ground-flash",
             "airburst", "water", "low", "marks-off", "stress", "tracer-day", "tracer-night", "tracer-classic", "agm158", "rocket-low", "agm158-low"};
-    private static final boolean MISSILES = Boolean.getBoolean("mcheli.probeMissiles");
+    private static final boolean PRIORITY = Boolean.getBoolean("mcheli.probeImpactPriority");
+    private static final boolean MISSILES = PRIORITY || Boolean.getBoolean("mcheli.probeMissiles");
     private static final int[] MISSILE_PHASES = {1, 13, 14, 15};
-    private static final int LENGTH = 150;
+    private static final int LENGTH = PRIORITY ? 300 : 150;
     private static final int OFFSET = Boolean.getBoolean("mcheli.probeMotionTracersOnly") ? 10 : 0;
     private static final List<HeldBullet> bullets = new ArrayList<>();
     private static final class HeldBullet extends BulletEntity {
@@ -60,19 +61,19 @@ public final class BlastMotionProbe {
             ClientConfig.EFFECT_QUALITY.set(phase == 12 ? EffectQuality.CLASSIC : EffectQuality.ENHANCED);
             mc.particleEngine.clearParticles(); BlastMarks.clear(); BlastGroundEffects.clear();
             peakFlash = peakFragments = peakParticles = 0;
-            ClientConfig.ADAPTIVE_EFFECTS.set(false);
-            ClientConfig.EFFECT_BUDGET.set(phase == 7 || phase >= 14 ? ClientConfig.EffectBudget.LOW : ClientConfig.EffectBudget.BALANCED);
+            ClientConfig.ADAPTIVE_EFFECTS.set(PRIORITY && phase >= 14);
+            ClientConfig.EFFECT_BUDGET.set(phase == 7 || phase >= 14 && !PRIORITY ? ClientConfig.EffectBudget.LOW : ClientConfig.EffectBudget.BALANCED);
             ClientConfig.BLAST_MARKS.set(phase != 8);
             commands(mc, "fill -24 -60 6 24 -58 48 air", "fill -24 -61 6 24 -61 48 grass_block",
                     phase == 3 || phase == 4 || phase == 8 || phase == 11 ? "time set midnight" : "time set noon",
-                    "tp @s -6 -54 7 -25 14");
+                    PRIORITY ? "tp @s 0 -58 13 0 10" : "tp @s -6 -54 7 -25 14");
             if (phase == 4) commands(mc, "fill -3 -60 20 3 -60 20 stone_slab[type=bottom]",
                     "fill -2 -60 22 2 -60 22 stone");
             if (phase == 6) commands(mc, "fill -24 -60 6 24 -59 48 water");
             if (phase == 0) checkParticles(mc);
             System.out.println("M8_MOTION phase=" + NAMES[phase]);
         }
-        if (age == 30) {
+        if (age == (PRIORITY ? 180 : 30)) {
             if (phase == 4 || phase == 8) BlastMarks.add(mc.level, 0, -59.4, 20, 12, BlastStyle.HEAVY);
             else if (phase < 10 || phase >= 13) blast(mc, phase);
             else bullets(mc, phase);
@@ -81,14 +82,16 @@ public final class BlastMotionProbe {
             for (int i = 0; i < 12; i++) ClientEffects.INSTANCE.explosionEffects(mc.level, (i % 4 - 1.5) * 4,
                     -59.5, 18 + i / 4 * 4, 12, false, List.of(), BlastStyle.HEAVY);
         }
-        if (age == 34 || age == 39 || age == 46 || age == 65) capture = NAMES[phase] + "-age" + (age - 30);
+        int onset = PRIORITY ? 180 : 30;
+        if (age == onset + 4 || age == onset + 9 || age == onset + 16 || age == onset + 35)
+            capture = (PRIORITY ? "priority-" : "") + NAMES[phase] + "-age" + (age - onset);
         peakFragments = Math.max(peakFragments, BlastGroundEffects.trackedFragments());
         peakParticles = Math.max(peakParticles, Integer.parseInt(mc.particleEngine.countParticles().replaceAll(".*T ", "")));
         if (BlastGroundEffects.surfaceReads() > 96 || BlastGroundEffects.emittedFragments() > 4
                 || BlastGroundEffects.trackedFragments() > 24) throw new IllegalStateException("Ground budget exceeded");
-        if (age == 130) {
+        if (age == (PRIORITY ? 280 : 130)) {
             if ((phase == 4 || phase == 8) && peakFlash == 0) throw new IllegalStateException("Terrain flash never rendered");
-            if ((phase == 5 || phase == 6 || phase == 7 || phase >= 14) && (peakFlash > 0 || peakFragments > 0))
+            if ((phase == 5 || phase == 6 || phase == 7 || phase >= 14 && !PRIORITY) && (peakFlash > 0 || peakFragments > 0))
                 throw new IllegalStateException("Airburst/water/Low ground effect leak");
             if (phase == 8 && BlastMarks.markCount() != 0) throw new IllegalStateException("Disabled scorch left a persistent mark");
             if (BlastMarks.flashQuadCount() != 0) throw new IllegalStateException("Flash outlived its initial impulse");
@@ -135,7 +138,15 @@ public final class BlastMotionProbe {
             power = info.explosion; style = BlastStyle.forWeapon(info, false);
             if (ExplosionSequence.smokeLed(power, style)) throw new IllegalStateException("AGM-158 lost its heavy warhead profile");
         }
-        ClientEffects.INSTANCE.explosionEffects(mc.level, 0, phase == 5 ? -42 : -59.5, 20,
+        if (PRIORITY) {
+            int pressure = EffectPerformance.pressure();
+            if (phase >= 14 && pressure != 3) throw new IllegalStateException("Close-up regression requires pressure 3, got " + pressure);
+            boolean core = ExplosionCloudEmitter.emit(mc.level, 0, -59.5, 20, power, style, direction);
+            if (!core) throw new IllegalStateException("Primary hot pocket lost its budget to support/glow");
+            BlastMarks.add(mc.level, 0, -59.5, 20, power, style);
+            System.out.println("M8_PRIORITY core=" + core + " phase=" + NAMES[phase] + " pressure=" + pressure
+                    + " requests=" + ExplosionSequence.lobes(power, style, ClientConfig.get(ClientConfig.EFFECT_BUDGET), pressure));
+        } else ClientEffects.INSTANCE.explosionEffects(mc.level, 0, phase == 5 ? -42 : -59.5, 20,
                 power, phase == 6, List.of(), style, direction);
     }
 
