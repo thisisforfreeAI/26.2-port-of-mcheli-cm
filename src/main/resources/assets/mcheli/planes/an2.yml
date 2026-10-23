@@ -99,3 +99,7 @@ Components:
       PartName: blade1
       BladeNum: 1
       BladeRot: 0
+Recepie:
+  isShaped: true
+  Pattern:
+  - "\" PI\",  \"FXI\",  \" W \",  X,iron_block, P,heavy_weighted_pressure_plate, I,iron_ingot, F,furnace, W,water_bucket"

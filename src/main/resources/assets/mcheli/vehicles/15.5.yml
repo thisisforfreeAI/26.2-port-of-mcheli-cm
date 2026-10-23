@@ -88,3 +88,7 @@ Components:
     CanPitch: true
     Type: RECOILS_WEAPON
     RecoilBuff: 1.0
+Recepie:
+  isShaped: true
+  Pattern:
+  - "\"XXX\",  \"DDD\",  \"XXX\",  X, iron_block, D, dispenser"

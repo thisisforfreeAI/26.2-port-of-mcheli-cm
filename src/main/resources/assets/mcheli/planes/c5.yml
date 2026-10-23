@@ -365,3 +365,7 @@ Components:
     Rotation: [1.0, 0.0, 0.0]
     PartName: wing6
     MaxRotation: -39.0
+Recepie:
+  isShaped: true
+  Pattern:
+  - "\"   \",  \"Y C\",  \"X X\",  X, iron_block, Y, diamond, C,chest"

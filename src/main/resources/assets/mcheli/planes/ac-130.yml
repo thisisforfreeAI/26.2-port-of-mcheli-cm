@@ -215,3 +215,7 @@ Components:
       PartName: blade3
       BladeNum: 4
       BladeRot: 90
+Recepie:
+  isShaped: true
+  Pattern:
+  - "\"ISI\",  \"GDC\",  \"IRI\",  I,iron_block, S,stone, G,gunpowder, D,diamond_block, C,chest, R,glass"

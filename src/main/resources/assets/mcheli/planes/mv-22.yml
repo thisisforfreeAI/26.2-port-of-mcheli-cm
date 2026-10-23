@@ -141,3 +141,7 @@ Components:
       PartName: blade1
       BladeNum: 1
       BladeRot: 0
+Recepie:
+  isShaped: true
+  Pattern:
+  - "\" Y \",  \"XXX\",  \"X X\",  X, iron_block, Y, glass"

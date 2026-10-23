@@ -112,3 +112,7 @@ Components:
       PartName: blade1
       BladeNum: 1
       BladeRot: 0
+Recepie:
+  isShaped: true
+  Pattern:
+  - "\"BXL\",\"XXG\",\"RXO\", X,iron_block, I,iron_ingot, G,log, R,dye,1, L,dye,10, B,dye,15, O,gold_Ingot"

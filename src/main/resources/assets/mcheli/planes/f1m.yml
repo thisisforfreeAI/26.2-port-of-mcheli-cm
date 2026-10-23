@@ -138,3 +138,7 @@ Components:
     Rotation: [0.0, -1.0, 0.0]
     PartName: wing1
     MaxRotation: -96.0
+Recepie:
+  isShaped: true
+  Pattern:
+  - "\"GIG\",  \"PIP\",  \"GIG\",  I,iron_block, G,dye,2, P,paper"

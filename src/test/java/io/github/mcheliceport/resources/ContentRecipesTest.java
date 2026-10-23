@@ -121,6 +121,26 @@ class ContentRecipesTest {
         }
     }
 
+    /** Exercise the shipped YAML, rather than only the legacy fixtures that retained recipes. */
+    @Test
+    void shippedStockRecipesArePresentAndDecode() {
+        ContentRegistries.Snapshot stock = ContentTestSupport.load(ContentTestSupport.stockPack());
+        assertEquals(List.of("ammo_box", "fuel_truck"), stock.aircraft().stream()
+                .filter(info -> info.recipeString.isEmpty()).map(AircraftInfo::getName).sorted().toList(),
+                "only the infinite supply props deliberately have no survival recipe");
+        assertTrue(stock.throwable().values().stream().allMatch(info -> !info.recipeString.isEmpty()));
+        Map<Identifier, byte[]> files = ContentRecipes.build(ModItems.contentItems(), stock, GAME_ITEMS);
+        assertEquals(119, files.size(), "115 vehicle recipes and four throwable recipes, with none skipped");
+        for (byte[] file : files.values()) {
+            assertDecodes(JsonParser.parseString(new String(file, StandardCharsets.UTF_8)));
+        }
+        JsonObject apache = JsonParser.parseString(new String(files.get(Identifier.fromNamespaceAndPath(
+                "mcheli_ce_port", "recipe/content/ah-64.json")), StandardCharsets.UTF_8)).getAsJsonObject();
+        assertEquals("minecraft:iron_block", apache.getAsJsonObject("key").get("X").getAsString());
+        assertEquals(List.of("X X", " X ", "X X"), apache.getAsJsonArray("pattern").asList().stream()
+                .map(JsonElement::getAsString).toList());
+    }
+
     private static void assertDecodes(JsonElement json) {
         // Ingredients name items, so decoding needs the item registry.
         RegistryOps<JsonElement> ops = RegistryOps.create(JsonOps.INSTANCE,

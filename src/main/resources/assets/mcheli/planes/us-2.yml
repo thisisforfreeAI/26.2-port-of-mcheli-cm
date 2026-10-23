@@ -199,3 +199,7 @@ Components:
       PartName: blade3
       BladeNum: 6
       BladeRot: 60
+Recepie:
+  isShaped: true
+  Pattern:
+  - "\"GPG\",  \"XIX\",  \"XXX\",  X,iron_block, G,dye,4, P,glass,  I,potion"

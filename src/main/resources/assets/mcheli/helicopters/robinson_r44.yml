@@ -54,3 +54,7 @@ Components:
     Rotation: [1.0, 0.0, 0.0]
     PartName: blade1
     BladeCount: 1
+Recepie:
+  isShaped: true
+  Pattern:
+  - "\"IRI\",  \" G \",  \"IFI\",  R, iron_block,  I, iron_ingot,  G, Glass,  F, boat"

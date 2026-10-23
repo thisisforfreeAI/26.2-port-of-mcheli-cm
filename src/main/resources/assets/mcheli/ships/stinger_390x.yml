@@ -112,3 +112,7 @@ AircraftFeatures:
   InventorySize: 27
   CanRotateOnGround: false
   ThrottleUpDown: 1.3
+Recepie:
+  isShaped: true
+  Pattern:
+  - "\"WRF\",  \"BXP\",  \"BBB\",   X, iron_block,  B, boat , P, piston, F,furnace,  R, redstone, W,planks"

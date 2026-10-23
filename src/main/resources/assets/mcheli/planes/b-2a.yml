@@ -207,3 +207,7 @@ Components:
   - Position: [-4.77, 3.34, -13.32]
     Rotation: [-1.0, 0.0, 0.0]
     PartName: nozzle1
+Recepie:
+  isShaped: true
+  Pattern:
+  - "\"DDG\",  \"DGT\",  \"GTI\",  I,iron_block, G,gold_block, D,diamond_block, T,tnt"

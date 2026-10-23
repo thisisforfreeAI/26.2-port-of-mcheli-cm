@@ -192,3 +192,7 @@ Components:
     Interval: 30
   - Position: [-1.64, 2.05, -2.3]
     Interval: 30
+Recepie:
+  isShaped: true
+  Pattern:
+  - "\" X \",  \"XTX\",  \"X X\",  X, iron_block, T, tnt"

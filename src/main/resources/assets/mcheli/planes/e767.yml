@@ -174,3 +174,7 @@ Components:
       PartName: blade1
       BladeNum: 1
       BladeRot: 0
+Recepie:
+  isShaped: true
+  Pattern:
+  - "\" R \",  \"DYD\",  \"III\",  Y,mcheli:uav_station, R,redstone_block, I,iron_block, D,diamond"

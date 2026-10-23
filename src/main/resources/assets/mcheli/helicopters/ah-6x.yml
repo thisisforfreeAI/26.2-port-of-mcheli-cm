@@ -95,3 +95,8 @@ Components:
     Rotation: [1.0, 0.0, 0.0]
     PartName: blade1
     BladeCount: 1
+Recepie:
+  isShaped: true
+  Pattern:
+  - "\" Y \",  \"YXY\",  \"RYR\",  X, iron_block, Y, iron_ingot, R, redstone"
+  - "\"RXR\",  X, mcheli:ah-6, R, redstone"

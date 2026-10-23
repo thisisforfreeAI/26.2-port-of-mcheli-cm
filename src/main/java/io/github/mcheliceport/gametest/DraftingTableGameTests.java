@@ -8,13 +8,18 @@ import io.github.mcheliceport.menu.DraftingTableMenu;
 import io.github.mcheliceport.net.DraftingTableRecipesPayload;
 import io.github.mcheliceport.registry.ModBlocks;
 import io.github.mcheliceport.registry.ModItems;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.crafting.CraftingInput;
+import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
@@ -37,6 +42,7 @@ final class DraftingTableGameTests {
         ModGameTests.test("drafting_table_creates_from_inventory", 20, DraftingTableGameTests::creates);
         ModGameTests.test("drafting_table_needs_every_ingredient", 20, DraftingTableGameTests::needsEveryIngredient);
         ModGameTests.test("drafting_table_output_and_closing", 20, DraftingTableGameTests::outputAndClosing);
+        ModGameTests.test("drafting_table_stock_vehicles_craft_in_survival", 20, DraftingTableGameTests::stockVehicles);
     }
 
     private static ServerPlayer player(GameTestHelper h, GameType mode) {
@@ -70,6 +76,8 @@ final class DraftingTableGameTests {
                 "the chain's grid keeps its gap: " + chain.grid());
         check(h, entries.stream().anyMatch(e -> e.result().is(ModItems.DRAFTING_TABLE.get())), "the table itself");
         check(h, entries.stream().noneMatch(e -> e.id().getPath().equals("charge_fuel")), "no special recipes");
+        check(h, entries.stream().map(DraftingTableRecipes.Entry::list).collect(Collectors.toSet())
+                .equals(Set.of(0, 1, 2, 3, 4, 5)), "all six recipe lists contain stock items");
         var buf = new net.minecraft.network.RegistryFriendlyByteBuf(io.netty.buffer.Unpooled.buffer(),
                 h.getLevel().registryAccess());
         var sent = new DraftingTableRecipesPayload(3, entries);
@@ -83,6 +91,35 @@ final class DraftingTableGameTests {
             boolean vehicle = e.result().getItem() instanceof AircraftItem;
             check(h, vehicle == (e.list() != DraftingTableRecipes.ITEM), "list of " + e.id());
         }
+        h.succeed();
+    }
+
+    /** The shipped pack must supply real recipes, not just creative vehicle registrations. */
+    private static void stockVehicles(GameTestHelper h) {
+        ServerPlayer p = player(h, GameType.SURVIVAL);
+        DraftingTableMenu menu = open(h, p);
+        var manager = h.getLevel().getServer().getRecipeManager();
+        int crafted = 0;
+        for (var entry : menu.recipes()) {
+            if (!(entry.result().getItem() instanceof AircraftItem)) continue;
+            p.getInventory().clearContent();
+            menu.getSlot(menu.outputSlotIndex).set(ItemStack.EMPTY);
+            List<ItemStack> grid = new ArrayList<>();
+            for (int i = 0; i < entry.grid().size(); i++) {
+                ItemStack ingredient = entry.grid().get(i).map(value -> new ItemStack(value.items()
+                        .findFirst().orElseThrow().value())).orElse(ItemStack.EMPTY);
+                grid.add(ingredient.copy());
+                p.getInventory().setItem(i, ingredient);
+            }
+            check(h, manager.getRecipeFor(RecipeType.CRAFTING, CraftingInput.of(3, 3, grid), h.getLevel()).isPresent(),
+                    "the crafting table can match " + entry.id());
+            check(h, menu.create(entry.id()), "survival crafting succeeds for " + entry.id());
+            check(h, ItemStack.matches(menu.getSlot(menu.outputSlotIndex).getItem(), entry.result()),
+                    "the selected vehicle is produced: " + entry.id());
+            check(h, p.getInventory().isEmpty(), "exactly one item per ingredient consumed: " + entry.id());
+            crafted++;
+        }
+        check(h, crafted == 115, "all 115 stock vehicle recipes craft, found " + crafted);
         h.succeed();
     }
 

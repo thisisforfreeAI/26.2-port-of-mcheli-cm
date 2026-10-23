@@ -122,3 +122,7 @@ Components:
       Rotation: [0.0, 1.0, 0.0]
       PartName: wing1_pylon1
       MaxRotation: 35.0
+Recepie:
+  isShaped: true
+  Pattern:
+  - "\" X \",  \"XXX\",  \"DXD\",  X, iron_block, D, dispenser"

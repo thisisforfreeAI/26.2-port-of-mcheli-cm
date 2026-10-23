@@ -193,3 +193,7 @@ Components:
     Rotation: [0.0, 0.0, 1.0]
     PartName: wing1
     MaxRotation: -90.0
+Recepie:
+  isShaped: true
+  Pattern:
+  - "\" XP\",  \"GXX\",  \" XP\",  X,iron_block, G,redstone_block, P,furnace"

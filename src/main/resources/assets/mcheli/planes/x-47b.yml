@@ -155,3 +155,7 @@ Components:
   - Position: [0.35, 2.23, -5.23]
     Rotation: [-1.0, 0.0, 0.0]
     PartName: nozzle1
+Recepie:
+  isShaped: true
+  Pattern:
+  - "\" I \",  \"IRI\",  \" I \", I, iron_block, R, redstone_block"

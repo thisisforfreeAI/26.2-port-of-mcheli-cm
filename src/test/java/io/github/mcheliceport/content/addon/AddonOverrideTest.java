@@ -128,6 +128,16 @@ class AddonOverrideTest {
         assertTrue(BuiltinAddonPack.ensureExtracted(addonDir, stockSource(), "0.5.1"));
         assertTrue(Files.readString(viper).contains("EngineOutlets:"));
         assertEquals("custom override", Files.readString(override));
+        // Revision two had the current vehicle models but no stock crafting recipes.
+        json = com.google.gson.JsonParser.parseString(Files.readString(meta)).getAsJsonObject();
+        json.getAsJsonObject("addon").addProperty("port_content_revision", 2);
+        Files.writeString(meta, json.toString());
+        Path apache = stock.resolve("assets/mcheli/helicopters/ah-64.yml");
+        Files.writeString(apache, "old stock without recipes");
+        assertTrue(BuiltinAddonPack.ensureExtracted(addonDir, stockSource(), "0.5.1"));
+        assertTrue(Files.readString(apache).contains("Recepie:"));
+        assertEquals("custom override", Files.readString(override));
+        assertFalse(BuiltinAddonPack.ensureExtracted(addonDir, stockSource(), "0.5.1"));
     }
 
     private static long countContentFiles(Path pack) throws IOException {

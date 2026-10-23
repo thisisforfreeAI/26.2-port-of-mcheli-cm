@@ -260,3 +260,7 @@ Components:
     ColorEnd: '#10FFFFC0'
     Height: 90.0
     Width: 30.0
+Recepie:
+  isShaped: true
+  Pattern:
+  - "\"II \",  \"AAA\",  \"BBP\",   I, iron_ingot,  B, boat , A, anvil, P,piston"

@@ -148,3 +148,7 @@ Components:
     Rotation: [0.0, 1.0, -1.73]
     PartName: throttle2
     SlidePos: [0.0, 0.0, 0.0]
+Recepie:
+  isShaped: true
+  Pattern:
+  - "\" G \",  \"I I\",  \"RIR\",   G, glass, I, iron_ingot, R, redstone"

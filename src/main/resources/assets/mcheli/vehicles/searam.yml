@@ -71,3 +71,7 @@ Components:
     CanYaw: true
     CanPitch: true
     Type: NORMAL
+Recepie:
+  isShaped: true
+  Pattern:
+  - "\" Y \",  \" X \",  \"XRX\",  X,iron_block, Y,glass, R,redstone_block"

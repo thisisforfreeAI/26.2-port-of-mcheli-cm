@@ -238,3 +238,7 @@ Components:
     PartName: throttle0
     SlidePos: [0.0, 0.0, 0.0]
     MaxAngle: -15.0
+Recepie:
+  isShaped: true
+  Pattern:
+  - "\" Y \",  \"TAT\",  \"XDX\",  X, iron_block, Y, glass, A, anvil, D, diamond, T, tnt"

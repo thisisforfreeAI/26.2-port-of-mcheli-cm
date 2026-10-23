@@ -377,3 +377,7 @@ Components:
       PartName: blade3
       BladeNum: 1
       BladeRot: 0
+Recepie:
+  isShaped: true
+  Pattern:
+  - "\"I I\",  \"TTT\",  \"I I\",  I,iron_block, T,tnt"

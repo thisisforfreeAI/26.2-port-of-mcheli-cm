@@ -148,3 +148,7 @@ Components:
     PartName: weapon3
     WeaponNames: r77-1
     IsMissile: true
+Recepie:
+  isShaped: true
+  Pattern:
+  - "\"BGB\",  \"CDC\",  \"IPI\",    G, glass,  D,diamond_block,  B, iron_block,  C, coal_block,  I, iron_ingot,  P, gunpowder"

@@ -294,3 +294,7 @@ Components:
     - [0.78, 4.12]
     - [1.12, 4.02]
     - [1.22, 3.73]
+Recepie:
+  isShaped: true
+  Pattern:
+  - "\"XXX\",  \" X \",  \"III\",  X, iron_block,  I, iron_ingot"

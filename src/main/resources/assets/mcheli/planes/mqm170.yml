@@ -46,3 +46,7 @@ Components:
       PartName: blade0
       BladeNum: 1
       BladeRot: 0
+Recepie:
+  isShaped: true
+  Pattern:
+  - "\"I \",  \" R\", I, iron_ingot, R, redstone"

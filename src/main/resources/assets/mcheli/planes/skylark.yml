@@ -58,3 +58,7 @@ Components:
       PartName: blade0
       BladeNum: 1
       BladeRot: 0
+Recepie:
+  isShaped: true
+  Pattern:
+  - "\" I \",  \" I \",  \" F \",  I,iron_ingot, F,furnace"

@@ -239,3 +239,7 @@ Components:
     WeaponNames: mk19_r
     Yaw: true
     Pitch: true
+Recepie:
+  isShaped: true
+  Pattern:
+  - "\"III\",  \"BBB\",  \"PIP\",   I, iron_ingot,  B, boat , P, piston"

@@ -110,3 +110,7 @@ Components:
     Rotation: [0.0, 0.0, 1.0]
     PartName: wing1
     MaxRotation: 100.0
+Recepie:
+  isShaped: true
+  Pattern:
+  - "\"I I\",  \"PGP\",  \" I \",  I,iron_block, G,dye,7, P,paper"

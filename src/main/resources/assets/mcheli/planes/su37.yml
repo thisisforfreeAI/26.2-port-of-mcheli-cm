@@ -163,3 +163,7 @@ Components:
     PartName: weapon9
     WeaponNames: fab500sh
     IsMissile: true
+Recepie:
+  isShaped: true
+  Pattern:
+  - "\"HGL\",  \"BCB\",  \"IPI\",  H, dye,3,  G, glass,  L, dye,14,  B, iron_block,  C, comparator,  I, iron_ingot,  P, gunpowder"

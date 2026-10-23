@@ -54,3 +54,7 @@ Components:
       CanYaw: false
       CanPitch: true
       Type: TYPE_3
+Recepie:
+  isShaped: true
+  Pattern:
+  - "\" T \",  \" X \",  \"XAX\",  X,iron_block, A,anvil, T,tnt"

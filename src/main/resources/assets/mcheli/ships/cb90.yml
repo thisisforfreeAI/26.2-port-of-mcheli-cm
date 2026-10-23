@@ -264,3 +264,7 @@ Components:
     - Position: [1.23, 2.28, -2.32]
       Rotation: [0.0, 0.0, 0.0]
       Pitch: true
+Recepie:
+  isShaped: false
+  Pattern:
+  - "iron_block,iron_block"

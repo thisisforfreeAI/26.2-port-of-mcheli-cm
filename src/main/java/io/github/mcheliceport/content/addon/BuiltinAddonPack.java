@@ -44,7 +44,7 @@ public final class BuiltinAddonPack {
     public static final String DOMAIN = "@builtin";
     private static final String ASSETS_FOLDER = "assets/mcheli";
     /** Increment for stock definition fixes made between milestone releases. */
-    private static final int CONTENT_REVISION = 2;
+    private static final int CONTENT_REVISION = 3;
     private static final Logger LOGGER = LogUtils.getLogger();
 
     private BuiltinAddonPack() {

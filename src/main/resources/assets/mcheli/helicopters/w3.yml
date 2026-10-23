@@ -133,3 +133,7 @@ Components:
   RepelHook:
   - Position: [1.47, 2.08, 1.28]
     Interval: 30
+Recepie:
+  isShaped: true
+  Pattern:
+  - "\"III\",  \" X \",  \"XTX\",  X, iron_block, T, tnt, I, iron_ingot"

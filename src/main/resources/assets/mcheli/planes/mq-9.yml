@@ -174,3 +174,7 @@ Components:
       PartName: blade0
       BladeNum: 3
       BladeRot: 120
+Recepie:
+  isShaped: true
+  Pattern:
+  - "\" II\",  \"RXI\",  \" II\",  X, iron_block, I, iron_ingot, R, redstone_block"

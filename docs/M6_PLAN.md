@@ -964,9 +964,8 @@ JEI compatibility is also required for the M6 crafting work:
   special recipes; the drafting table is a JEI crafting station for the port's recipes. A
   recheck after `/reload` remains pending.
 
-The earlier question about recipes and paint variants lost by upstream YAML has no recorded
-resolution in the supplied handoff. Keep that content-restoration question separate from the
-explicitly scheduled special crafting recipes; do not silently replace stock YAML definitions.
+The stock crafting follow-up below restores the recipes lost by upstream YAML. Paint variants
+remain a separate content-restoration question.
 
 - `AircraftEntity` already owns seats, fuel, damage, weapons, camera and shared state. Add sibling
   vehicle subclasses rather than making planes, tanks or ships inherit helicopter physics.
@@ -1592,3 +1591,37 @@ camera, and runs from `GameRenderer.renderLevel` before the screen is drawn. A s
 mean replacing that frame pipeline and rebuilding section visibility every frame, so the preview
 stays the NO SIGNAL and telemetry panel; the reason is now in KNOWN_ISSUES item 2 and the table
 row is closed.
+
+## Stock crafting and drafting-table recipe restoration
+
+The shipped YAML had lost every vehicle and throwable recipe during upstream's TXT conversion.
+The generated recipe pack therefore had no content recipes, and the drafting table correctly
+received only fixed-item recipes. Restore the legacy `Recepie` blocks in the stock definitions:
+115 recipes for 113 vehicles across all five vehicle categories and four throwable recipes.
+The infinite fuel truck and ammo supply box had deliberately commented-out recipes in TXT;
+they remain unavailable through survival crafting.
+
+Three invalid legacy recipes need explicit repairs: Robinson R44's unused boat key now binds
+its `F` pattern slot; PZL M-18's unused water-bucket key now binds `P`; and US-2 accepts any potion
+rather than removed 1.12 metadata `8193`. Legacy fixtures remain untouched, and the parity
+baseline now records only these three recipe differences instead of all missing recipe blocks.
+Addons continue to supply or override their own recipes through their content definitions.
+
+Stock content revision three refreshes `mcheli_addons/default` even when the mod version is
+unchanged, so existing installations receive the recipes after installing the updated JAR and
+restarting the client/server. Separate addon override packs are preserved. No manual deletion of
+the extracted stock directory is required.
+
+Regression coverage decodes all 119 generated stock recipes, verifies a revision-two install
+refreshes without touching overrides, checks that all six drafting-table categories are populated
+and crafts every vehicle recipe in survival through the server menu while checking inventory
+consumption and crafting-table recipe matching.
+
+Validation: 247 JUnit tests and all 253 required GameTests pass locally with the optional JEI
+integration excluded because its Maven host is unavailable in this environment. An OpenGL client
+received all 115 vehicle recipes, displayed the helicopter list, searched for the Apache and used
+the real Create button in survival: five iron blocks were consumed and one AH-64 item appeared
+in the output slot. This check uses the normal client/server menu and network handlers.
+
+![Restored helicopter recipes](screens/vehicle-recipes-helicopter-list.png)
+![AH-64 crafted in survival](screens/vehicle-recipes-crafted-apache.png)

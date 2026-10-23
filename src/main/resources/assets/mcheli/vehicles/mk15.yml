@@ -65,3 +65,7 @@ Components:
       CanYaw: false
       CanPitch: false
       Type: ROTATES_WEAPON
+Recepie:
+  isShaped: true
+  Pattern:
+  - "\" Y \",  \" X \",  \"XZX\",  X, iron_block, Y, glass, Z, iron_ingot"

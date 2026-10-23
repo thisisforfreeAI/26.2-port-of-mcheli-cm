@@ -589,11 +589,14 @@ These follow from how Minecraft 26.2 works or from decisions approved in PORTING
 
 ## Upstream content issues kept as they are
 
-Except for restoring searchlight alpha, the port preserves what upstream's conversion of
+Except for restoring searchlight alpha and stock crafting recipes, the port preserves what upstream's conversion of
 its stock content from TXT to YAML lost or changed (the full list, checked by a test, is in
 `src/test/resources/parity/known-differences.txt`):
 
-- Stock vehicles and throwables have no crafting recipes, and vehicles have no paint variants.
+- Stock vehicles have no paint variants. Crafting recipes lost by the YAML conversion have been
+  restored: 115 recipes for 113 vehicles, plus four throwable recipes. The infinite fuel truck and
+  ammo supply box retain their deliberate lack of survival recipes. The drafting table lists the
+  restored recipes. Existing installations refresh their extracted stock pack on restart.
 - Some weapons lost their damage factors, bomblet, fuel-air explosive, dispenser and targeting pod
   settings; some racks lost their fixed angles.
 - Stock YAML vehicles sit with the opposite pitch on the ground (`OnGroundPitch` was written with
@@ -613,8 +616,10 @@ its stock content from TXT to YAML lost or changed (the full list, checked by a 
   smoke dispensers' fire sounds), so they play nothing, as upstream.
 - Two stock plane files (`b29.yml`, `fuel_truck.yml`) name their `Author` twice; SnakeYAML logs a
   "duplicate keys found" warning while loading them, and the second name wins, as upstream.
-- Upstream's legacy TXT files (not shipped, used as test fixtures) contain three recipes that cannot
-  work: two use a pattern letter without a key, and one needs a 1.12 potion by metadata.
+- Upstream's legacy TXT fixtures contain three broken recipes, repaired in the shipped YAML:
+  Robinson R44's boat key is bound to `F`, PZL M-18's water-bucket key to `P`, and US-2 accepts
+  any potion instead of requiring a 1.12 potion metadata value. Other restored recipes retain
+  their legacy ingredients and patterns.
 
 - The stock `models/parachute2.mqo` has `[Exported] [Imported]` prefixes on every group name.
   Upstream's whitespace parser truncates those names, so neither `$seat` nor `$parachute` exists

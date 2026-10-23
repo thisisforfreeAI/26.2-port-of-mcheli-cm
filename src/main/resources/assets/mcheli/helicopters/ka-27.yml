@@ -101,3 +101,7 @@ Components:
   RepelHook:
   - Position: [1.97, 3.51, -6.12]
     Interval: 30
+Recepie:
+  isShaped: true
+  Pattern:
+  - "\"X X\",  \"X X\",  \" X \",  X, iron_block"

@@ -147,3 +147,7 @@ Components:
     PartName: weapon3
     WeaponNames: kh-25
     IsMissile: true
+Recepie:
+  isShaped: true
+  Pattern:
+  - "\"DRX\", \"XXF\", \"IIP\", D,dye,1, R,redstone, X,iron_block, F,furnace, I,iron_ingot, P,piston"
