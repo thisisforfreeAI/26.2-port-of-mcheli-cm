@@ -395,7 +395,7 @@ public abstract class WingedAircraftEntity extends AircraftEntity implements Pla
                     double mx, double my, double mz) {
                 McheliEffects.spawnTileCrack(level(), bx, by, bz, x, y, z, mx, my, mz);
             }
-        }, !enhancedExhaust);
+        }, !enhancedExhaust, !McheliEffects.damageSmoke(this));
     }
 
     @Override

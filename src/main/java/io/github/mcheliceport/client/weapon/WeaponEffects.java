@@ -44,6 +44,8 @@ public final class WeaponEffects {
     private static final List<Beam> BEAMS = new ArrayList<>();
     private static final List<Cartridge> CARTRIDGES = new ArrayList<>();
     private static final RandomSource RAND = RandomSource.create();
+    private static long casingTick = Long.MIN_VALUE;
+    private static int casingsThisTick;
 
     private WeaponEffects() {
     }
@@ -56,6 +58,14 @@ public final class WeaponEffects {
     /** Upstream {@code MCH_EntityCartridge#spawnCartridge}. */
     public static void spawnCartridge(Level level, CartridgeInfo info, double x, double y, double z, double mx,
             double my, double mz, float yaw, float pitch) {
+        if (level != Minecraft.getInstance().level || ClientConfig.get(ClientConfig.ALIVE_TIME_OF_CARTRIDGE) <= 0
+                || Minecraft.getInstance().gameRenderer.mainCamera().position().distanceToSqr(x, y, z) > 96 * 96) return;
+        if (casingTick != level.getGameTime()) { casingTick = level.getGameTime(); casingsThisTick = 0; }
+        var budget = ClientConfig.get(ClientConfig.EFFECT_BUDGET);
+        if (casingsThisTick >= io.github.mcheliceport.client.particle.VehicleAtmosphereLook.casingsPerTick(budget)) return;
+        casingsThisTick++;
+        int limit = io.github.mcheliceport.client.particle.VehicleAtmosphereLook.casingLimit(budget);
+        while (CARTRIDGES.size() >= limit) CARTRIDGES.removeFirst();
         Cartridge c = new Cartridge(level, info, x, y, z, mx + (RAND.nextFloat() - 0.5) * 0.07, my,
                 mz + (RAND.nextFloat() - 0.5) * 0.07);
         c.yaw = c.prevYaw = c.targetYaw = yaw;
@@ -77,6 +87,7 @@ public final class WeaponEffects {
     public static void clear() {
         BEAMS.clear();
         CARTRIDGES.clear();
+        casingTick = Long.MIN_VALUE; casingsThisTick = 0;
     }
 
     /** Upstream {@code MCH_RenderLaser#onClientTick} and {@code MCH_EntityCartridge#onUpdate}. */

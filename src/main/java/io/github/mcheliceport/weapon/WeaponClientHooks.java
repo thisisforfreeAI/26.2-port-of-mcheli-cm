@@ -18,6 +18,9 @@ public final class WeaponClientHooks {
 
     /** The client's side of the weapon code. Only called on the client thread. */
     public interface Hooks {
+        /** Cosmetic shot details; the existing client shot state supplies authority and timing. */
+        default void weaponShot(Level level, Vec3 position, Vec3 motion, io.github.mcheliceport.content.weapon.WeaponInfo info,
+                float yaw, float pitch) {}
         /** Upstream {@code MCH_PlayerViewHandler#applyRecoil}: kicks the local player's view. */
         void applyRecoil(float pitch, float yaw, float recoverFactor);
 
@@ -94,6 +97,12 @@ public final class WeaponClientHooks {
         if (h != null && cartridge != null && level.isClientSide()) {
             h.spawnCartridge(level, cartridge, x, y, z, mx, my, mz, yaw, pitch);
         }
+    }
+
+    public static void weaponShot(Level level, Vec3 position, Vec3 motion, io.github.mcheliceport.content.weapon.WeaponInfo info,
+            float yaw, float pitch) {
+        Hooks h = hooks;
+        if (h != null && level.isClientSide()) h.weaponShot(level, position, motion, info, yaw, pitch);
     }
 
     public static @Nullable Vec3 viewPosition() {

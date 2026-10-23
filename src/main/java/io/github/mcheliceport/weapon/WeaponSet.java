@@ -301,6 +301,10 @@ public class WeaponSet {
     /** Per-mount effects of a tick: the ejected cartridge (client) and the recoil buffer. */
     public void updateWeapon(Entity shooter, boolean isUsed, int index) {
         WeaponBase current = this.getWeapon(index);
+        if (isUsed && shooter.level().isClientSide() && current != null) {
+            WeaponClientHooks.weaponShot(shooter.level(), shooter.position().add(current.getShotPos(shooter)),
+                    shooter.getDeltaMovement(), current.getInfo(), shooter.getYRot() + this.yaw, shooter.getXRot() + this.pitch);
+        }
         if (isUsed && shooter.level().isClientSide() && current != null && current.cartridge != null) {
             Vec3 offset = current.getShotPos(shooter);
             Vec3 motion = shooter.getDeltaMovement();

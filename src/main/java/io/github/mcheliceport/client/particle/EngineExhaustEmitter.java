@@ -30,7 +30,7 @@ public final class EngineExhaustEmitter {
                 && (!p.nozzles.isEmpty() || !p.exhaustFlames.isEmpty() && Math.abs(nozzle) < 1);
         if (!supported) return false;
         // A supported enhanced plane owns its nozzle path even when distance/load/off rejects emission.
-        float strength = EngineExhaustLook.strength(aircraft.getCurrentThrottle());
+        float strength = VehicleAtmosphere.engineHeat(aircraft);
         if (strength <= 0 || aircraft.isDestroyed() || !aircraft.canUseFuel()
                 || !Float.isFinite(info.particlesScale) || info.particlesScale <= 0) return true;
         var quality = ClientConfig.get(ClientConfig.EFFECT_BUDGET);

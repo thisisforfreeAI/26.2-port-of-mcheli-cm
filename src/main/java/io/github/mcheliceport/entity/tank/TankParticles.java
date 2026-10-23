@@ -82,7 +82,7 @@ public final class TankParticles {
 
     public static void tick(TankEntity tank, TankInfo info, RandomSource random, float previousYaw) {
         ironCurtain(tank, info, random);
-        damage(info, tank.getHP(), tank.getMaxHP(), tank.position(), tank.getYaw(), tank.getPitch(), tank.getRoll(),
+        if (!McheliEffects.damageSmoke(tank)) damage(info, tank.getHP(), tank.getMaxHP(), tank.position(), tank.getYaw(), tank.getPitch(), tank.getRoll(),
                 random, p -> McheliEffects.spawnParticle(tank.level(), p));
         if (!info.wheels.isEmpty() && tank.getDeltaMovement().horizontalDistanceSqr() + Math.abs(previousYaw - tank.getYaw()) > 0.001) {
             for (int i = 0; i < 2; i++) {
