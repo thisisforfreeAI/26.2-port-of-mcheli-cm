@@ -183,3 +183,7 @@ Components:
     - Position: [-0.755, 3.167, 0.324]
       Rotation: [0.0, 0.0, 0.0]
       Pitch: true
+Recepie:
+  isShaped: true
+  Pattern:
+  - "\" I \",  \"XXX\",  \"III\",  X, iron_block,  I, iron_ingot"

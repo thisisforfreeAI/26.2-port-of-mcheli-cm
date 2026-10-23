@@ -121,3 +121,7 @@ Components:
     BladeCount: 3
     BladeRot: 120
     CanFold: true
+Recepie:
+  isShaped: true
+  Pattern:
+  - "\"X X\",  \"X X\",  \"GXG\",  X, iron_block, G, gunpowder"

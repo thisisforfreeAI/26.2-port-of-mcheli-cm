@@ -160,3 +160,7 @@ Components:
     Rotation: [0.0, 1.0, 0.0]
     PartName: wing1
     MaxRotation: 50.0
+Recepie:
+  isShaped: true
+  Pattern:
+  - "\" X \",  \"XDX\",  \"ZXZ\",  X, iron_block, D, diamond, Z, iron_ingot"

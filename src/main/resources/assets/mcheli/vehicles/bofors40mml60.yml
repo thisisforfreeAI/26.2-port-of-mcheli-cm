@@ -57,3 +57,7 @@ Components:
       CanPitch: true
       Type: RECOILS_WEAPON
       RecoilBuff: 0.4
+Recepie:
+  isShaped: true
+  Pattern:
+  - "\"  I\",  \"BIG\",  \"TTT\",  T, iron_block,  I, iron_ingot,  G, dye,2,  B, dye,3"

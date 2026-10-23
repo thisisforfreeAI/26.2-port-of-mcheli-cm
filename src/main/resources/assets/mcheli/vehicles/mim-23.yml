@@ -71,3 +71,7 @@ Components:
       CanYaw: false
       CanPitch: true
       Type: TYPE_3
+Recepie:
+  isShaped: true
+  Pattern:
+  - "\" G \",  \"GIG\",  \"XRX\",  X, iron_block, R, redstone_block, I,iron_ingot, G, gunpowder"

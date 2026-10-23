@@ -109,3 +109,7 @@ Components:
     Width: 0.25
     Yaw: -6.0
     FixedDirection: true
+Recepie:
+  isShaped: true
+  Pattern:
+  - "\" G \",  \"III\",  \"RIR\",   G, glass, I, iron_ingot, R, redstone"

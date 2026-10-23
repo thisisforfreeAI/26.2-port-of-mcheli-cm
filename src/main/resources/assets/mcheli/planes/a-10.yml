@@ -152,3 +152,7 @@ Components:
     PartName: weapon8
     WeaponNames: cbu-72
     IsMissile: true
+Recepie:
+  isShaped: true
+  Pattern:
+  - "\" Y \",  \"XDX\",  \"ZXZ\",  X, iron_block, Y, glass, Z, iron_ingot, D, diamond_block"

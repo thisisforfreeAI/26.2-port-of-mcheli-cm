@@ -68,3 +68,7 @@ Components:
     CanYaw: true
     CanPitch: true
     Type: NORMAL
+Recepie:
+  isShaped: true
+  Pattern:
+  - "\"III\",  \"DDD\",  \"XXX\",  X, iron_block, I, iron_ingot, D, dispenser"

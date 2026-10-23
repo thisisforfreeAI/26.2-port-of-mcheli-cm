@@ -146,3 +146,7 @@ Components:
     Rotation: [0.0, 0.0, -1.0]
     PartName: wing1
     MaxRotation: 77.91
+Recepie:
+  isShaped: true
+  Pattern:
+  - "\"ICI\",  \"BWB\",  \"FBF\",  B,iron_block, I,iron_ingot, F,furnace, W,wool, C,comparator"

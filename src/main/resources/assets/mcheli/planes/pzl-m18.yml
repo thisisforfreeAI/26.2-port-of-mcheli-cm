@@ -69,3 +69,7 @@ Components:
       PartName: blade0
       BladeNum: 1
       BladeRot: 0
+Recepie:
+  isShaped: true
+  Pattern:
+  - "\" PI\",  \"FXI\",  \"HSB\",  X,iron_block, I,iron_ingot, F,furnace, P,water_bucket, H,stone_hoe, S,wheat_seeds, B,dye,15"

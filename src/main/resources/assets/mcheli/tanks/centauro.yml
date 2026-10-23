@@ -218,3 +218,7 @@ Components:
     Yaw: true
     Pitch: true
     Turret: true
+Recepie:
+  isShaped: true
+  Pattern:
+  - "\"IXI\",  \" X \",  \"III\",  X, iron_block,  I, iron_ingot"

@@ -116,3 +116,7 @@ Components:
       PartName: blade0
       BladeNum: 1
       BladeRot: 0
+Recepie:
+  isShaped: true
+  Pattern:
+  - "\"GPG\",  \"IIP\",  \"GPG\",  I,iron_block, G,dye,2, P,paper"

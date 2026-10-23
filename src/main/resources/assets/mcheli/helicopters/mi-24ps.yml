@@ -139,3 +139,7 @@ Components:
     Interval: 30
   - Position: [-1.78, 2.19, 1.14]
     Interval: 30
+Recepie:
+  isShaped: true
+  Pattern:
+  - "\"XYX\", \"XGX\", \"DI \", X, iron_block, Y, glass, G, feather, I, iron_ingot, D, redstone_lamp"

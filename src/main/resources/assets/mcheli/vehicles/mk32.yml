@@ -44,3 +44,7 @@ Components:
     CanYaw: true
     CanPitch: false
     Type: NORMAL
+Recepie:
+  isShaped: true
+  Pattern:
+  - "\" F \",  \"FIF\",  \"IRI\",  I, iron_block, R, redstone_block, F, fish"

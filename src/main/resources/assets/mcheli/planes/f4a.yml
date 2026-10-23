@@ -214,3 +214,7 @@ Components:
     PartName: weapon8
     WeaponNames: mk82
     IsMissile: true
+Recepie:
+  isShaped: true
+  Pattern:
+  - "\" X \",  \"XZX\",  \"ZYZ\",  X, iron_block, Y, furnace, Z, iron_ingot, D, diamond_block"

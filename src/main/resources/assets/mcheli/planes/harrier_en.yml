@@ -147,3 +147,7 @@ Components:
   - Position: [-0.69, 1.7, -5.39]
     Rotation: [-1.0, 0.0, 0.0]
     PartName: nozzle3
+Recepie:
+  isShaped: true
+  Pattern:
+  - "\" X \",  \"XXX\",  \"ZXZ\",  X, iron_block, Z, iron_ingot"

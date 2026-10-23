@@ -59,3 +59,7 @@ Components:
       CanYaw: false
       CanPitch: true
       Type: NORMAL
+Recepie:
+  isShaped: true
+  Pattern:
+  - "\"T T\",  \" X \",  \"XAX\",  X,iron_block, T,tnt, A,iron_ingot"

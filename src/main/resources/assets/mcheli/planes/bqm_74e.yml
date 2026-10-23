@@ -43,3 +43,7 @@ Components:
   - Position: [0.0, 0.02, -1.59]
     Rotation: [-1.0, 0.0, 0.0]
     PartName: nozzle0
+Recepie:
+  isShaped: true
+  Pattern:
+  - "\"IRF\", I,iron_ingot, R,redstone,  F,furnace"

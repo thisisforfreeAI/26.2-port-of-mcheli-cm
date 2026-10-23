@@ -15,3 +15,7 @@ Smoke:
   Velocity:
     Vertical: 0.7
     Horizontal: 0.7
+Recepie:
+  isShaped: true
+  Pattern:
+  - "\"DY\",  Y, iron_ingot, D,dye,11"

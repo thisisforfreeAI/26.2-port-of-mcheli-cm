@@ -71,3 +71,7 @@ Components:
     PartName: steering_wheel0
     Direction: 30.0
     Pivot: [0.0, 0.0, -1.21]
+Recepie:
+  isShaped: true
+  Pattern:
+  - "\" W \",  \"W W\",  \" X \",  X, iron_ingot, W, wool"

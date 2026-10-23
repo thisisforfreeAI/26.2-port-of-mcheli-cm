@@ -163,3 +163,7 @@ Components:
     Rotation: [0.0, 0.0, 1.0]
     PartName: wing3
     MaxRotation: 110.0
+Recepie:
+  isShaped: true
+  Pattern:
+  - "\"HGL\",  \"BCB\",  \"IPI\",  H, dye,15,  G, glass,  L, dye,12,  B, iron_block,  C, comparator,  I, iron_ingot,  P, gunpowder"
