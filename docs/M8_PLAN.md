@@ -337,3 +337,10 @@ a bounded directional footprint; bomb spread and legacy small-rocket smoke remai
 All existing source/geometry/terrain limits remain. Original texture artwork is retained;
 vehicle-specific depth is authored from machinery data and baked to colors rather than
 requiring replacement textures. Final hardware 60 FPS acceptance is separate from code completion.
+
+## 19. Explosion contrast refinement
+
+[Blast contrast](M8_BLAST_CONTRAST.md) refines the opening flash, staged billow silhouette,
+separated rolling fire pockets and bounded distance-delayed audio. Existing weapon families,
+terrain-specific dust/debris and the 60 FPS target remain. Protocol 30 carries the independent
+sound event so silent explosions do not acquire sound through their visual packet.

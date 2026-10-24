@@ -54,6 +54,8 @@ public final class WeaponClientHooks {
 
         /** Upstream {@code PacketClientSound#onReceive}: a sound with distance delay and distortion. */
         void clientSound(ClientSoundPayload payload);
+
+        default void explosionSound(io.github.mcheliceport.net.ExplosionSoundPayload payload) {}
     }
 
     private static volatile @Nullable Hooks hooks;

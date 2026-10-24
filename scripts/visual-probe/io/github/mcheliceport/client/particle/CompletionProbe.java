@@ -59,7 +59,7 @@ public final class CompletionProbe {
             ClientConfig.VEHICLE_SURFACE_SHADE.set(true);ClientConfig.ENGINE_HEAT_HAZE.set(false);
             ClientConfig.ENGINE_STARTUP_EFFECTS.set(false);ClientConfig.VEHICLE_DAMAGE_DETAILS.set(false);
         }
-        if(tick<160)return;phase=(tick-160)/160;age=(tick-160)%160;
+        if(tick<160)return;phase=(tick-160)/160 + (Boolean.getBoolean("mcheli.probePunch") ? 4 : 0);age=(tick-160)%160;
         if(phase>=NAMES.length){mc.stop();return;}
         if(age==0){
             if(vehicle!=null){vehicle.discard();vehicle=null;}
@@ -100,10 +100,21 @@ public final class CompletionProbe {
             System.out.println("M8_COMPLETE weapon="+NAMES[phase]+" power="+weapon.explosion+" family="+style
                     +" lobes="+ExplosionSequence.lobes(weapon.explosion,style,ClientConfig.EffectBudget.BALANCED,0)
                     +" fire_ticks="+ExplosionSequence.fireTicks(weapon.explosion,style));
+            io.github.mcheliceport.client.sound.ExplosionAudio.play(new io.github.mcheliceport.net.ExplosionSoundPayload(0,-59.5,19,weapon.explosion));
             ClientEffects.INSTANCE.explosionEffects(mc.level,0,-59.5,19,weapon.explosion,false,List.of(),style,
                     BlastDirection.from(new Vec3(.75,-.45,1)));
         }
-        if(phase>=4&&(age==46||age==60||age==90))capture=NAMES[phase]+"-age"+(age-40);
+        if(phase>=4&&(age==41||age==43||age==46||age==60||age==90))capture=NAMES[phase]+"-age"+(age-40);
+        if(Boolean.getBoolean("mcheli.probePunch") && phase>=4) {
+            if(age==110) for(int i=0;i<80;i++) io.github.mcheliceport.client.sound.ExplosionAudio.play(
+                    new io.github.mcheliceport.net.ExplosionSoundPayload(0,-59.5,19,10));
+            try {
+                var field=io.github.mcheliceport.client.sound.ExplosionAudio.class.getDeclaredField("pending");
+                field.setAccessible(true);int queued=((java.util.Deque<?>)field.get(null)).size();
+                if(queued>32 || age==150 && queued!=0) throw new IllegalStateException("Audio queue did not stay bounded/drain: "+queued);
+                if(age==150)System.out.println("M8_PUNCH audio_drained="+NAMES[phase]);
+            } catch(ReflectiveOperationException e) { throw new IllegalStateException(e); }
+        }
         if(BlastGroundEffects.trackedFragments()>24||BlastGroundEffects.surfaceReads()>96)
             throw new IllegalStateException("Weapon comparison exceeded ground budgets");
     }

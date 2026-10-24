@@ -15,8 +15,6 @@ import java.util.Optional;
 import java.util.Set;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.damagesource.DamageSource;
@@ -364,8 +362,10 @@ public class McheliExplosion extends ServerExplosion {
     public void doExplosionB() {
         RandomSource rand = this.world.getRandom();
         if (this.isPlaySound) {
-            this.world.playSound(null, this.x, this.y, this.z, SoundEvents.GENERIC_EXPLODE, SoundSource.BLOCKS, 4.0F,
-                    (1.0F + (rand.nextFloat() - rand.nextFloat()) * 0.2F) * 0.7F);
+            // Consume the original pitch draws here: later fire/drop randomness must not shift.
+            float pitch = (1.0F + (rand.nextFloat() - rand.nextFloat()) * 0.2F) * 0.7F;
+            ModNetwork.sendToPlayersNear(this.world, null, this.x, this.y, this.z, 64,
+                    new io.github.mcheliceport.net.ExplosionSoundPayload(this.x, this.y, this.z, this.size, pitch));
         }
         if (this.damagesTerrain && this.isDestroyBlock && this.explosionSizeBlock > 0.0F
                 && CommonConfig.get(CommonConfig.EXPLOSION_DESTROY_BLOCK)) {

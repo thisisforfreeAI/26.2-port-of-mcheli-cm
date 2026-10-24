@@ -186,6 +186,11 @@ public final class WeaponClient implements WeaponClientHooks.Hooks {
     }
 
     @Override
+    public void explosionSound(io.github.mcheliceport.net.ExplosionSoundPayload p) {
+        io.github.mcheliceport.client.sound.ExplosionAudio.play(p);
+    }
+
+    @Override
     public void clientSound(ClientSoundPayload p) {
         // Upstream PacketClientSound#onReceive.
         RandomSource rand = RandomSource.create();

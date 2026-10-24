@@ -12,6 +12,11 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 
 ### Changed
 
+- M8 explosion contrast: later, uneven billows and smaller edge wisps leave room for a short
+  white-to-orange flash and separated rolling fire pockets. Distance-delayed, bounded stock
+  explosion audio adds a sharper onset and deeper tail; silent explosions remain silent.
+  Protocol 30 requires matching client/server builds. See `docs/M8_BLAST_CONTRAST.md`.
+
 - M8 realism: shared explosion/exhaust/damage-smoke wind, short impact flashes, earlier-fading
   wisps, local-material dust/chips, and a 60 FPS default adaptive goal. Existing configs keep
   saved values. Content-authored machinery masks and crease highlights bake to hull colors;
