@@ -40,6 +40,10 @@ public final class ClientConfig {
     public static final ModConfigSpec.BooleanValue VEHICLE_TRACKS;
     public static final ModConfigSpec.BooleanValue BLAST_DUST_RING;
     public static final ModConfigSpec.BooleanValue ENGINE_HEAT_HAZE;
+    public static final ModConfigSpec.BooleanValue ROTOR_WASH_DEBRIS;
+    public static final ModConfigSpec.BooleanValue ENGINE_STARTUP_EFFECTS;
+    public static final ModConfigSpec.BooleanValue VEHICLE_DAMAGE_DETAILS;
+    public static final ModConfigSpec.BooleanValue WEAPON_GROUND_EFFECTS;
     public static final ModConfigSpec.IntValue EFFECT_TARGET_FPS;
     public static final ModConfigSpec.IntValue ALIVE_TIME_OF_CARTRIDGE;
     public static final ModConfigSpec.EnumValue<EffectQuality> EFFECT_QUALITY;
@@ -149,6 +153,14 @@ public final class ClientConfig {
                 .define("blastDustRing", true);
         ENGINE_HEAT_HAZE = builder.comment("Local exhaust refraction using one shared scene copy; off on Low or adaptive pressure.")
                 .define("engineHeatHaze", true);
+        ROTOR_WASH_DEBRIS = builder.comment("Loose grass, sand, snow and water droplets in enhanced rotor wash.")
+                .define("rotorWashDebris", true);
+        ENGINE_STARTUP_EFFECTS = builder.comment("Enhanced engine startup puffs, spooling turbine whine and gradual heat buildup.")
+                .define("engineStartupEffects", true);
+        VEHICLE_DAMAGE_DETAILS = builder.comment("Cosmetic coolant leaks, electrical sparks and uneven damage smoke.")
+                .define("vehicleDamageDetails", true);
+        WEAPON_GROUND_EFFECTS = builder.comment("Brief muzzle illumination and ground dust beneath large guns.")
+                .define("weaponGroundEffects", true);
         ADAPTIVE_EFFECTS = builder
                 .comment("Reduce cosmetic smoke, dust and optional glows during sustained slow frames; restore detail gradually.",
                         "Respects lower FPS caps and VSync. Weapon flash cores keep their reserved budget.")

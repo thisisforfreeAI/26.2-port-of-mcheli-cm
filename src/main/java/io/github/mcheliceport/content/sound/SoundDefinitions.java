@@ -104,7 +104,7 @@ public final class SoundDefinitions {
                 "pi", "plane", "plane_cc", "plane_cv", "plastic_bomb_snd", "prop", "r44_heli", "radicon_heli",
                 "rocket", "rocket_snd", "rr_griffon", "rr_merlin", "sa-2_snd", "smoke_snd", "tank", "tank_gte",
                 "turboprop", "vehicle_drive", "vehicle_run", "xm301_snd", "zoom", "iron_curtain", "aps_activate",
-                "aps_deactivate"}) {
+                "aps_deactivate", "turbine_spool"}) {
             DEFINITIONS.put(name, new Explicit(List.of(Variant.of(name))));
         }
         DEFINITIONS.put("wrench",

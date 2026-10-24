@@ -120,6 +120,17 @@ public final class WeaponClient implements WeaponClientHooks.Hooks {
     }
 
     @Override
+    public void weaponShot(Level level, Vec3 position, Vec3 motion, io.github.mcheliceport.content.weapon.WeaponInfo info,
+            float yaw, float pitch) {
+        io.github.mcheliceport.client.particle.WeaponGroundEffects.shot(level, position, info, yaw, pitch);
+        if (io.github.mcheliceport.config.EffectQuality.enhanced() && info.cartridge == null
+                && ("machinegun1".equals(info.type) || "machinegun2".equals(info.type))) {
+            WeaponEffects.spawnCartridge(level, new CartridgeInfo("cartridge", 0.18F, 90, -15, 0.35F, -0.04F, 0.35F),
+                    position.x, position.y, position.z, motion.x, motion.y + 0.04, motion.z, yaw, pitch);
+        }
+    }
+
+    @Override
     public Vec3 viewPosition() {
         return Minecraft.getInstance().gameRenderer.mainCamera().position();
     }

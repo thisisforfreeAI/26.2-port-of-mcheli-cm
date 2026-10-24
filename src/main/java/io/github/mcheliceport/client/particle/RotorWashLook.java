@@ -34,6 +34,11 @@ public final class RotorWashLook {
     public static int range(EffectBudget budget) { return budget == EffectBudget.LOW ? 48 : budget == EffectBudget.BALANCED ? 72 : 96; }
     public static float radius(float scale, double height) { return (float) Math.clamp(scale * 4 + height * 0.12, 2, 10); }
     public static float puffRadius(float scale) { return Math.clamp(0.85F + scale * 0.5F, 1, 1.8F); }
+    public static int debrisCount(Surface surface, float strength, EffectBudget budget, int pressure) {
+        if (!Float.isFinite(strength) || strength < 0.15F || pressure >= 2
+                || surface == Surface.SOLID || surface == Surface.SOIL) return 0;
+        return budget != EffectBudget.LOW && strength > 0.65F ? 2 : 1;
+    }
     public static float fade(float age, int lifetime) {
         return smooth(Math.clamp(age / 4, 0, 1)) * smooth(Math.clamp((lifetime - age) / 10, 0, 1));
     }

@@ -1,0 +1,8 @@
+// Opt-in cosmetic scene. Run only in a disposable copy of the M6Smoke world.
+gradle.projectsEvaluated {
+    def project = gradle.rootProject
+    project.sourceSets.main.java.srcDir(project.file('scripts/atmosphere-probe'))
+    project.neoForge.runs.client.gameDirectory = project.file(System.getProperty('mcheli.atmosphereDir', '.run/atmosphere-opengl'))
+    project.neoForge.runs.client.programArguments.addAll('--quickPlaySingleplayer', 'M6Smoke',
+            '--graphicsBackend', System.getProperty('mcheli.atmosphereBackend', 'OPENGL'), '--width', '1280', '--height', '720')
+}

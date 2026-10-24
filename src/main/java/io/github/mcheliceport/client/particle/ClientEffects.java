@@ -37,6 +37,10 @@ public final class ClientEffects implements McheliEffects.Sink {
     private ClientEffects() {
     }
 
+    @Override public boolean damageSmoke(io.github.mcheliceport.entity.aircraft.AircraftEntity aircraft) {
+        return VehicleAtmosphere.handlesDamage(aircraft);
+    }
+
     @Override public boolean engineExhaust(io.github.mcheliceport.entity.aircraft.AircraftEntity aircraft) {
         return EffectQuality.enhanced() && EngineExhaustEmitter.emit(aircraft);
     }

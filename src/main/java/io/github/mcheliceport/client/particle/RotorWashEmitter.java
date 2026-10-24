@@ -102,6 +102,23 @@ public final class RotorWashEmitter {
                     puffRadius, material.opacity * localStrength, tint[0], tint[1], tint[2],
                     24 + random.nextInt(11), swirl * 0.08));
             emitted++;
+            if (ClientConfig.get(ClientConfig.ROTOR_WASH_DEBRIS)) {
+                int count = RotorWashLook.debrisCount(material, localStrength, budget, EffectPerformance.pressure());
+                for (int n = 0; n < count; n++) {
+                    if (!EffectAdmission.admit(level, px, surface.y + 0.35, pz, false, 0.12F)) continue;
+                    float r = tint[0], g = tint[1], b = tint[2];
+                    if (material == RotorWashLook.Surface.GRASS) {
+                        int color = net.minecraft.client.renderer.BiomeColors.getAverageGrassColor(level,
+                                BlockPos.containing(px, surface.y - 0.01, pz));
+                        if (color != -1) { r = (color >> 16 & 255) / 255F; g = (color >> 8 & 255) / 255F; b = (color & 255) / 255F; }
+                    }
+                    Minecraft.getInstance().particleEngine.add(new SurfaceDebrisParticle(level,
+                            px, surface.y + 0.35, pz, dx * speed * 1.5, 0.1 + localStrength * 0.14,
+                            dz * speed * 1.5, material == RotorWashLook.Surface.WATER ? 0.07F : 0.11F,
+                            r, g, b, surface.y, 18 + random.nextInt(7), (float) (swirl * 2)));
+                    emitted++;
+                }
+            }
             if (material == RotorWashLook.Surface.WATER && i == 0 && now % 8 == Math.floorMod(id, 8)
                     && budget != ClientConfig.EffectBudget.LOW && EffectPerformance.pressure() == 0
                     && EffectAdmission.admit(level, px, surface.y, pz, false, 2.5F)) {

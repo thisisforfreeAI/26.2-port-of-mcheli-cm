@@ -138,6 +138,7 @@ class ContentAssetsTest {
                 .getAsJsonObject();
         assertTrue(sounds.size() > 60, "built-in and content sound events: " + sounds.keySet());
         assertFalse(sounds.has("railgun"), "stock content names sounds that have no file");
+        assertTrue(sounds.has("turbine_spool"), "the original startup tone is included in generated sounds.json");
         assertEquals(3, sounds.getAsJsonObject("wrench").getAsJsonArray("sounds").size());
         List<String> missing = new ArrayList<>();
         for (Map.Entry<String, JsonElement> event : sounds.entrySet()) {
