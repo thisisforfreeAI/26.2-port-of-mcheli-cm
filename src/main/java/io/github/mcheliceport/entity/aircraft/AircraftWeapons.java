@@ -1149,6 +1149,36 @@ public final class AircraftWeapons {
         }
     }
 
+    /** Writes exact magazine and reserve counts; no reload or supply occurs on pickup. */
+    void writeAmmoToItem(ItemStack stack) {
+        java.util.List<Integer> ammo = new java.util.ArrayList<>(this.getWeaponNum() * 2);
+        for (int i = 0; i < this.getWeaponNum(); i++) {
+            WeaponSet weapon = this.getWeapon(i);
+            ammo.add(weapon.getAmmo());
+            ammo.add(weapon.getRestAllAmmoNum());
+        }
+        stack.set(io.github.mcheliceport.registry.ModDataComponents.AIRCRAFT_AMMO.get(),
+                java.util.List.copyOf(ammo));
+    }
+
+    /** Old and newly crafted items keep their default ammo; saved zeroes remain empty. */
+    void readAmmoFromItem(ItemStack stack) {
+        java.util.List<Integer> ammo = stack.get(
+                io.github.mcheliceport.registry.ModDataComponents.AIRCRAFT_AMMO.get());
+        if (ammo == null) {
+            return;
+        }
+        int count = Math.min(this.getWeaponNum(), ammo.size() / 2);
+        for (int i = 0; i < count; i++) {
+            WeaponSet weapon = this.getWeapon(i);
+            int capacity = Math.max(0, weapon.getMaxAmmo());
+            int loaded = Math.max(0, Math.min(ammo.get(i * 2), Math.min(weapon.getMagSize(), capacity)));
+            // Reserve capacity depends on the restored magazine.
+            weapon.setAmmo(loaded);
+            weapon.setReserveAmmo(Math.max(0, Math.min(ammo.get(i * 2 + 1), capacity - loaded)));
+        }
+    }
+
     /** The ammunition saved as {@code AcWeaponsAmmo}: magazine plus reserve per weapon set. */
     int[] saveAmmo() {
         int[] list = new int[this.getWeaponNum()];

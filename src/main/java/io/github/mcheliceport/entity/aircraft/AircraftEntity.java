@@ -3070,14 +3070,16 @@ public abstract class AircraftEntity extends Entity
 
     // ---- item data ----
 
-    /** Upstream {@code setAcDataToItem}: the vehicle's command, fuel and damage go to its item. */
+    /** The vehicle item keeps its command, fuel, damage and exact ammunition counts. */
     public void writeDataToItem(ItemStack stack) {
         AircraftItemData.write(stack, this.getCommand(), this.getFuel(), this.getDamageTaken(),
                 CommonConfig.ITEM_FUEL.get(), CommonConfig.ITEM_DAMAGE.get());
+        this.weapons.writeAmmoToItem(stack);
     }
 
     /** Upstream {@code getAcDataFromItem}. */
     public void readDataFromItem(ItemStack stack) {
+        this.weapons.readAmmoFromItem(stack);
         AircraftItemData.Values values = AircraftItemData.read(stack, CommonConfig.ITEM_FUEL.get(),
                 CommonConfig.ITEM_DAMAGE.get());
         if (values == null) {

@@ -1,6 +1,7 @@
 package io.github.mcheliceport.registry;
 
 import com.mojang.serialization.Codec;
+import java.util.List;
 import java.util.function.Supplier;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.network.codec.ByteBufCodecs;
@@ -27,6 +28,12 @@ public final class ModDataComponents {
     public static final Supplier<DataComponentType<String>> AIRCRAFT_COMMAND =
             ModRegistries.DATA_COMPONENT_TYPES.registerComponentType("aircraft_command",
                     b -> b.persistent(Codec.STRING).networkSynchronized(ByteBufCodecs.STRING_UTF8));
+
+    /** Loaded and reserve ammunition pairs, in vehicle weapon-set order. */
+    public static final Supplier<DataComponentType<List<Integer>>> AIRCRAFT_AMMO =
+            ModRegistries.DATA_COMPONENT_TYPES.registerComponentType("aircraft_ammo",
+                    b -> b.persistent(Codec.INT.listOf())
+                            .networkSynchronized(ByteBufCodecs.VAR_INT.apply(ByteBufCodecs.list())));
 
     private ModDataComponents() {
     }
