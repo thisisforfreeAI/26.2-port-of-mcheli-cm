@@ -1,0 +1,41 @@
+{
+  "backend": "VULKAN",
+  "renderer": "Mesa software rendering",
+  "audio": "OpenAL null output; no subjective listening acceptance",
+  "resolution": [
+    1920,
+    1080
+  ],
+  "effects_target_fps": 60,
+  "weapons": [
+    "m230 power=1 family=CANNON lobes=4 fire_ticks=4",
+    "hydra70 power=3 family=BLAST lobes=10 fire_ticks=7",
+    "agm114 power=4 family=PENETRATOR lobes=11 fire_ticks=8",
+    "agm158 power=10 family=BLAST lobes=12 fire_ticks=18",
+    "mk82 power=4 family=HEAVY lobes=7 fire_ticks=12",
+    "gbu57 power=15 family=PENETRATOR lobes=12 fire_ticks=13",
+    "s-8dm power=5 family=INCENDIARY lobes=8 fire_ticks=45"
+  ],
+  "sustained_enhanced_burst": {
+    "ticks_per_weapon": 16,
+    "requests_per_tick": 80
+  },
+  "classic_burst": {
+    "ticks": 8,
+    "requests_per_tick": 80
+  },
+  "queue_limit_checked": 32,
+  "audio_drained": [
+    "m230",
+    "hydra70",
+    "agm114",
+    "agm158",
+    "mk82",
+    "gbu57",
+    "s-8dm"
+  ],
+  "playback_limit": 4,
+  "playback_limit_validation": "JUnit repeated-drain and sustained-volley assertions",
+  "unit_tests": 272,
+  "target_hardware_fps_certified": false
+}

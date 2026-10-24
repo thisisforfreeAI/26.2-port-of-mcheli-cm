@@ -106,11 +106,17 @@ public final class CompletionProbe {
         }
         if(phase>=4&&(age==41||age==43||age==46||age==60||age==90))capture=NAMES[phase]+"-age"+(age-40);
         if(Boolean.getBoolean("mcheli.probePunch") && phase>=4) {
-            if(age==110) for(int i=0;i<80;i++) io.github.mcheliceport.client.sound.ExplosionAudio.play(
+            if(age>=110 && age<=125) for(int i=0;i<80;i++) io.github.mcheliceport.client.sound.ExplosionAudio.play(
                     new io.github.mcheliceport.net.ExplosionSoundPayload(0,-59.5,19,10));
+            if(phase==NAMES.length-1) {
+                if(age==130) ClientConfig.EFFECT_STYLE.set(ClientConfig.EffectStyle.CLASSIC);
+                if(age>=130 && age<=137) for(int i=0;i<80;i++) io.github.mcheliceport.client.sound.ExplosionAudio.play(
+                        new io.github.mcheliceport.net.ExplosionSoundPayload(0,-59.5,19,10));
+                if(age==140) ClientConfig.EFFECT_STYLE.set(ClientConfig.EffectStyle.POLISHED);
+            }
             try {
                 var field=io.github.mcheliceport.client.sound.ExplosionAudio.class.getDeclaredField("pending");
-                field.setAccessible(true);int queued=((java.util.Deque<?>)field.get(null)).size();
+                field.setAccessible(true);int queued=((io.github.mcheliceport.client.sound.ExplosionAudioQueue<?>)field.get(null)).size();
                 if(queued>32 || age==150 && queued!=0) throw new IllegalStateException("Audio queue did not stay bounded/drain: "+queued);
                 if(age==150)System.out.println("M8_PUNCH audio_drained="+NAMES[phase]);
             } catch(ReflectiveOperationException e) { throw new IllegalStateException(e); }
