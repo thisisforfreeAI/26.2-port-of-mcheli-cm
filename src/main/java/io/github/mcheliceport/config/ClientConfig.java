@@ -38,6 +38,7 @@ public final class ClientConfig {
     public static final ModConfigSpec.BooleanValue ADAPTIVE_EFFECTS;
     public static final ModConfigSpec.BooleanValue BLAST_MARKS;
     public static final ModConfigSpec.BooleanValue VEHICLE_TRACKS;
+    public static final ModConfigSpec.BooleanValue VEHICLE_SURFACE_SHADE;
     public static final ModConfigSpec.BooleanValue BLAST_DUST_RING;
     public static final ModConfigSpec.BooleanValue ENGINE_HEAT_HAZE;
     public static final ModConfigSpec.BooleanValue ROTOR_WASH_DEBRIS;
@@ -147,6 +148,8 @@ public final class ClientConfig {
         BLAST_MARKS = builder
                 .comment("Weapon-scaled soot and disturbed-ground textures on surviving block surfaces; client-only and bounded.")
                 .define("blastMarks", true);
+        VEHICLE_SURFACE_SHADE = builder.comment("Subtle model-space crease shadows and edge highlights on enhanced vehicles.")
+                .define("vehicleSurfaceShade", true);
         VEHICLE_TRACKS = builder.comment("Temporary tank tread/tire imprints on surviving terrain; client-only and bounded.")
                 .define("vehicleTracks", true);
         BLAST_DUST_RING = builder.comment("Broken ground-hugging dust fronts on substantial ground explosions; Low/load shed this layer.")

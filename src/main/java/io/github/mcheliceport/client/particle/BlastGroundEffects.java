@@ -115,11 +115,15 @@ final class BlastGroundEffects {
             if (!ground.getFluidState().isEmpty() || ground.is(BlockTags.LEAVES)) continue;
             double height = surfaceHeight(level, at, ground);
             if (height <= 0 || Math.abs(at.getY() + height - y) > 0.6) continue;
+            // Each sector already sampled its own supporting block. Reuse it for color and
+            // motion so fronts crossing sand/grass/stone do not carry the origin's material.
+            var sectorMaterial = material(ground);
+            float[] sectorTint = tint(level, at, ground, sectorMaterial);
             double py = at.getY() + height + radius * 0.3;
             if (!EffectAdmission.admit(level, px, py, pz, false, radius)) continue;
             Minecraft.getInstance().particleEngine.add(new BlastRingParticle(level, px, py, pz, dx, dz,
-                    BlastRingLook.reach(power) * material.speedScale, radius, tint,
-                    material.opacity * (0.75F + random.nextFloat() * 0.1F)));
+                    BlastRingLook.reach(power) * sectorMaterial.speedScale, radius, sectorTint,
+                    sectorMaterial.opacity * (0.75F + random.nextFloat() * 0.1F)));
             ringEmitted++;
         }
     }

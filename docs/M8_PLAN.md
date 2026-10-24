@@ -254,3 +254,15 @@ set that key to 60 on existing installations. Particle/admission caps are unchan
 - Next: review daylight/shade response and amber smoke backlighting; retain tracer-only bullet glow.
 - Acceptance pending: Vulkan/OpenGL visual comparison, heavy-combat timing on the target PC.
   Software rendering cannot certify 60 FPS. Historical captures retain their original targets.
+
+### Realism slice 2: geometry shading and local dust fronts
+
+- Added [vehicle surface shading](M8_VEHICLE_SHADING.md), baked during vehicle model loading:
+  neutral flat panels, up to 12% recessed shading, up to 3% edge highlights. Toggle with
+  `effects.vehicleSurfaceShade`; Enhanced intact vehicle draws only. Thermal, destroyed,
+  iron-curtain and emissive rendering bypass it. Texture-only detail still needs authored art.
+- Dust-front sectors now reuse their sampled support block for local material color and speed,
+  instead of using the blast center's material across sand/soil/stone transitions. Read caps
+  and particle request counts remain unchanged.
+- Pending: individual texture art, ground-contact shadows/continuity, further material and
+  lighting review, and target-PC 60 FPS acceptance. No FPS certification from software rendering.

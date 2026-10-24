@@ -1,0 +1,61 @@
+package io.github.mcheliceport.client.model;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.WeakHashMap;
+
+/** Model-space crease shading, baked on the model loader rather than ray traced per frame. */
+public final class VehicleSurfaceShade {
+    private VehicleSurfaceShade() {}
+    private static final Map<McheliModel.Group, float[]> CACHE = new WeakHashMap<>();
+    private record Position(float x, float y, float z) {}
+    private static final class Neighbours {
+        double x, y, z, distance;
+    }
+    public static void prepare(McheliModel model) {
+        for (var group : model.groups) {
+            float[] shade = bake(group.data());
+            synchronized (CACHE) { CACHE.put(group, shade); }
+        }
+    }
+    /** No lazy bake on the render thread. Oversized addon groups use ordinary lighting. */
+    public static float[] get(McheliModel.Group group) {
+        synchronized (CACHE) { return CACHE.get(group); }
+    }
+    static float[] bake(float[] data) {
+        int count = data.length / McheliModel.STRIDE;
+        if (count > 60000) return null;
+        var neighbours = new HashMap<Position, Neighbours>();
+        for (int t = 0; t + 24 <= data.length; t += 24) {
+            for (int corner = 0; corner < 3; corner++) {
+                int i = t + corner * 8;
+                var n = neighbours.computeIfAbsent(position(data, i), ignored -> new Neighbours());
+                for (int other = 1; other <= 2; other++) {
+                    int j = t + ((corner + other) % 3) * 8;
+                    double x = data[j] - data[i], y = data[j + 1] - data[i + 1], z = data[j + 2] - data[i + 2];
+                    n.x += x; n.y += y; n.z += z;
+                    n.distance += Math.sqrt(x * x + y * y + z * z);
+                }
+            }
+        }
+        float[] result = new float[count];
+        for (int v = 0; v < count; v++) {
+            int i = v * 8;
+            var n = neighbours.get(position(data, i));
+            double normalLength = Math.sqrt(data[i + 5] * data[i + 5] + data[i + 6] * data[i + 6] + data[i + 7] * data[i + 7]);
+            double crease = n == null || n.distance < 1e-9 || normalLength < 1e-9 ? 0
+                    : (n.x * data[i + 5] + n.y * data[i + 6] + n.z * data[i + 7]) / (n.distance * normalLength);
+            result[v] = Float.isFinite((float) crease) ? (float) Math.clamp(1 - crease * (crease > 0 ? 0.18 : 0.04), 0.88, 1.03) : 1;
+        }
+        return result;
+    }
+    private static Position position(float[] d, int i) {
+        return new Position(d[i] == 0 ? 0 : d[i], d[i + 1] == 0 ? 0 : d[i + 1], d[i + 2] == 0 ? 0 : d[i + 2]);
+    }
+    public static int tint(int color, float shade) {
+        int r = Math.clamp(Math.round(((color >>> 16) & 255) * shade), 0, 255);
+        int g = Math.clamp(Math.round(((color >>> 8) & 255) * shade), 0, 255);
+        int b = Math.clamp(Math.round((color & 255) * shade), 0, 255);
+        return (color & 0xFF000000) | r << 16 | g << 8 | b;
+    }
+}
