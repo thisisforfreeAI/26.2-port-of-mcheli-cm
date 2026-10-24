@@ -36,8 +36,9 @@ jobs:
       - name: Create disposable test world with NTM installed
         run: |
           ./gradlew -I scripts/visual-probe.init.gradle -Dmcheli.probeNtm=true --no-configuration-cache runGameTestServer -PwithHbm
-          mkdir -p .run/m8-preview/saves
+          mkdir -p .run/m8-preview/saves .run/m8-preview/config
           cp -a run/gametestserver/gametestworld .run/m8-preview/saves/M6Smoke
+          printf 'earlyWindowControl = false\n' > .run/m8-preview/config/fml.toml
           printf 'onboardAccessibility:false\nrenderDistance:2\nsimulationDistance:2\nguiScale:3\n' > .run/m8-preview/options.txt
       - name: Native particles, ESC menu, burst bounds and cleanup
         env:
