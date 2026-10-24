@@ -20,12 +20,12 @@ public final class EffectsSettingsScreen extends Screen {
     @Override protected void init() {
         int x=width/2-110,y=Math.max(44,height/2-68);
         boolean available=EffectQuality.enhanced() && !ClientConfig.get(ClientConfig.DEFAULT_EXPLOSION_PARTICLE);
-        var modern=addRenderableWidget(Button.builder(modernLabel(),b->{
+        var mode=addRenderableWidget(Button.builder(modeLabel(),b->{
             var modes=ClientConfig.ExplosionMode.values();
             ExplosionModes.select(modes[(ExplosionModes.selected().ordinal()+1)%modes.length]);
-            save();b.setMessage(modernLabel());
+            save();b.setMessage(modeLabel());
         }).bounds(x,y,220,20).build());
-        modern.setTooltip(Tooltip.create(Component.translatable(available?"mcheli.effects.explosionMode.tip":"mcheli.effects.modern.requires")));
+        mode.setTooltip(Tooltip.create(Component.translatable(available?"mcheli.effects.explosionMode.tip":"mcheli.effects.modern.requires")));
         addRenderableWidget(Button.builder(detailLabel(),b->{
             var values=ClientConfig.EffectBudget.values();
             ClientConfig.EFFECT_BUDGET.set(values[(ClientConfig.get(ClientConfig.EFFECT_BUDGET).ordinal()+1)%values.length]);
@@ -44,7 +44,7 @@ public final class EffectsSettingsScreen extends Screen {
         }).bounds(x,y+102,220,20).build());
         addRenderableWidget(Button.builder(Component.translatable("gui.done"),b->onClose()).bounds(x,y+126,220,20).build());
     }
-    private static Component modernLabel() {
+    private static Component modeLabel() {
         return Component.translatable("mcheli.effects.explosionMode",Component.translatable(
                 "mcheli.effects.explosionMode."+ExplosionModes.selected().name().toLowerCase(java.util.Locale.ROOT)));
     }

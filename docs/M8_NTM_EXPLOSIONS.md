@@ -5,8 +5,8 @@ The choice saves immediately and affects new explosions. Existing particles fini
 original style. Existing `effects.modernExplosions=true` configs retain Modern until the user
 changes the selector. The new `effects.explosionMode` defaults to `CURRENT`.
 
-NTM Next must be installed on the client to supply its native particle classes, groups and
-art. This optional adapter targets NTM Next 1.0.3 for NeoForge 26.2, already used by the weapon
+NTM Next must be installed to supply its native particle classes, groups and artwork.
+Use matching NTM modpack versions on server and clients, as required by NTM itself. This optional adapter targets NTM Next 1.0.3 for NeoForge 26.2, already used by the weapon
 addon bridge. Missing or incompatible NTM is reported in the menu and falls back to Current M8.
 Enhanced + Polished effects and disabled vanilla explosion particles remain authoritative.
 Underwater impacts retain their separate splash effects.

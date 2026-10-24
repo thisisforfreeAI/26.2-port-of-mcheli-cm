@@ -85,6 +85,7 @@ public final class NtmExplosionProbe {
         }
         if(!running)switch(++frame) {
             case 1 -> {
+                mc.getWindow().setWindowed(1920,1080);
                 ClientConfig.EFFECT_QUALITY.set(EffectQuality.ENHANCED);ClientConfig.EFFECT_STYLE.set(ClientConfig.EffectStyle.POLISHED);
                 ClientConfig.DEFAULT_EXPLOSION_PARTICLE.set(false);ClientConfig.ADAPTIVE_EFFECTS.set(false);
                 ClientConfig.EFFECT_BUDGET.set(ClientConfig.EffectBudget.BALANCED);ClientConfig.EFFECT_TARGET_FPS.set(60);
@@ -97,14 +98,17 @@ public final class NtmExplosionProbe {
             case 20 -> mc.gui.setScreen(new PauseScreen(true));
             case 24 -> {click("MC Heli Effects");bounds();}
             case 28 -> {click("Explosions:");require(ModernExplosionLook.enabled(),"Modern choice inactive");}
-            case 32 -> {click("Explosions:");require(ExplosionModes.selected()==ClientConfig.ExplosionMode.NTM_NEXT,"Native choice inactive");require(!ModernExplosionLook.enabled(),"Native and Modern active together");capture="menu";}
+            case 32 -> {click("Explosions:");require(ExplosionModes.selected()==ClientConfig.ExplosionMode.NTM_NEXT,"Native choice inactive");require(!ModernExplosionLook.enabled(),"Native and Modern active together");}
+            case 34 -> capture="menu";
             case 36 -> {click("Explosions:");require(ExplosionModes.selected()==ClientConfig.ExplosionMode.CURRENT,"Current choice inactive");click("Explosions:");click("Explosions:");}
             case 40 -> {ClientConfig.EFFECT_QUALITY.set(EffectQuality.CLASSIC);require(!ExplosionModes.customEnabled(),"Classic gate failed");ClientConfig.EFFECT_QUALITY.set(EffectQuality.ENHANCED);}
             case 44 -> {click("Done");require(mc.gui.screen() instanceof PauseScreen,"Done did not return to pause");}
-            case 48 -> {click("MC Heli Effects");require(ExplosionModes.selected()==ClientConfig.ExplosionMode.NTM_NEXT,"Reopening lost selection");}
+            case 46 -> {mc.getWindow().setWindowed(960,720);mc.options.guiScale().set(3);mc.resizeGui();}
+            case 48 -> {click("MC Heli Effects");bounds();require(mc.gui.screen().width==320,"Minimum GUI not exercised");require(ExplosionModes.selected()==ClientConfig.ExplosionMode.NTM_NEXT,"Reopening lost selection");}
+            case 50 -> capture="menu-small";
             case 52 -> {mc.gui.screen().keyPressed(new KeyEvent(256,0,0));require(mc.gui.screen() instanceof PauseScreen,"ESC did not return to pause");}
-            case 56 -> {mc.gui.screen().onClose();mc.options.guiScale().set(3);mc.resizeGui();
-                origin=mc.gameRenderer.mainCamera().position().add(new Vec3(mc.gameRenderer.mainCamera().forwardVector()).scale(20));running=true;
+            case 56 -> {mc.gui.screen().onClose();mc.getWindow().setWindowed(1920,1080);mc.options.guiScale().set(3);mc.resizeGui();
+                origin=mc.gameRenderer.mainCamera().position().add(new Vec3(mc.gameRenderer.mainCamera().forwardVector()).scale(20)).add(0,2,0);running=true;
                 System.out.println("M8_NTM menu_cycle=true classic_gate=true done=true esc=true");}
             default -> {}
         }
