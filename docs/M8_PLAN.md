@@ -266,3 +266,13 @@ set that key to 60 on existing installations. Particle/admission caps are unchan
   and particle request counts remain unchanged.
 - Pending: individual texture art, ground-contact shadows/continuity, further material and
   lighting review, and target-PC 60 FPS acceptance. No FPS certification from software rendering.
+
+### Realism slice 3: ground contact
+
+- Footprint-aware nearby vanilla vehicle shadows, controlled by `effects.vehicleContactShadows`.
+  Balanced/High radius caps 2.5/3; Low/load restores the original 2. No new render pass, but
+  wider shadows increase bounded vanilla support sampling. See [ground contact](M8_GROUND_CONTACT.md).
+- Rotor-wash density now uses each candidate's local surface/height, not the rotor center's
+  material. Per-rotor sample slots no longer overlap. Existing read/cache/admission caps remain.
+- Existing track/mark surface fitting retained. Further texture art, mixed-surface visual
+  acceptance, lighting review and real-hardware performance remain pending.

@@ -42,12 +42,30 @@ public abstract class AircraftRenderer<T extends AircraftEntity> extends EntityR
     }
 
     @Override
+    protected float getShadowRadius(AircraftRenderState state) {
+        return state.contactShadowRadius;
+    }
+
+    @Override
     public AircraftRenderState createRenderState() {
         return new AircraftRenderState();
     }
 
     @Override
     public void extractRenderState(T entity, AircraftRenderState state, float partialTicks) {
+        state.contactShadowRadius = 2;
+        if (io.github.mcheliceport.config.EffectQuality.enhanced()
+                && ClientConfig.get(ClientConfig.VEHICLE_CONTACT_SHADOWS)) {
+            double wheelReach = 0;
+            var contactInfo = entity.getAcInfo();
+            if (contactInfo != null) for (int i = 0; i < Math.min(16, contactInfo.wheels.size()); i++) {
+                var wheel = contactInfo.wheels.get(i);
+                wheelReach = Math.max(wheelReach, Math.hypot(wheel.pos().x, wheel.pos().z));
+            }
+            state.contactShadowRadius = VehicleContactLook.radius(entity.getBbWidth(), wheelReach,
+                    ClientConfig.get(ClientConfig.EFFECT_BUDGET),
+                    io.github.mcheliceport.client.particle.EffectPerformance.pressure());
+        }
         super.extractRenderState(entity, state, partialTicks);
         state.draws.clear();
         state.emissiveDraws.clear();
