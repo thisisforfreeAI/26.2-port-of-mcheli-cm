@@ -167,7 +167,7 @@ public final class ClientConfig {
                 .define("adaptiveDetail", true);
         EFFECT_TARGET_FPS = builder
                 .comment("Frame-rate goal for adaptive effects. This cannot guarantee FPS when terrain or other mods dominate.")
-                .defineInRange("targetFps", 80, 30, 240);
+                .defineInRange("targetFps", 60, 30, 240);
         ALIVE_TIME_OF_CARTRIDGE = builder
                 .comment("Ticks an ejected cartridge stays on the ground. Upstream: AliveTimeOfCartridge.")
                 .defineInRange("aliveTimeOfCartridge", 200, 0, 1000);

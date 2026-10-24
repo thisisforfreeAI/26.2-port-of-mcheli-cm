@@ -1,3 +1,8 @@
+> Current acceptance target: **60 FPS / 16.67 ms** at 1080p on RTX 3060 8 GB / Ryzen 7
+> 7800X3D. Set `effects.targetFps=60` in existing configs. The measurements below are historical
+> 80 FPS experiments, not certification of the revised target. The frame summary tool now
+> defaults to 60; use `--target-fps 80` to reproduce the original reports.
+
 # M8 performance target: 80 FPS
 
 Target supplied by the user: **RTX 3060 8 GB, Ryzen 7 7800X3D, 1920×1080**. The frame

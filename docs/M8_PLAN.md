@@ -92,9 +92,9 @@ or `style = "CLASSIC"` selects upstream presentation; budgets still apply. Polis
 one small pixel halo instead of two glow discs, and Low disables optional particle glows/halos.
 The follow-up document records its earlier isolated captures separately from integration checks.
 
-## 7. 80 FPS performance follow-up
+## 7. 60 FPS performance follow-up
 
-The target is RTX 3060 8 GB / Ryzen 7 7800X3D at 1080p (12.5 ms per frame).
+The target is RTX 3060 8 GB / Ryzen 7 7800X3D at 1080p (16.67 ms per frame).
 [M8_PERFORMANCE.md](M8_PERFORMANCE.md) documents adaptive cosmetic detail, coverage-weighted
 admission, dust/spray budgets and repeatable frame-interval capture. Hardware acceptance remains
 open; software-renderer checks cannot certify this PC's FPS.
@@ -103,7 +103,7 @@ open; software-renderer checks cannot certify this PC's FPS.
 
 [M8_LIGHTING_FIRE.md](M8_LIGHTING_FIRE.md) records cached local smoke lighting, heat hints on
 existing damage puffs and tiny explosion sparks with quality/load caps. Classic remains
-available; the 80 FPS hardware target and real battle/flight checks remain open.
+available; the 60 FPS hardware target and real battle/flight checks remain open.
 
 ## 9. Weapon-specific ground appearance
 
@@ -128,9 +128,9 @@ native scene and measured software-renderer frame intervals.
   outer disc with restrained per-entity flicker. Weighted view/distance/load admission bounds
   the halos. Chaff keeps its unlit appearance and existing physics.
 - [x] **Native validation:** Vulkan/OpenGL captures, 187 JUnit tests and overlapping-effects
-  frame samples pass their functional/budget checks; software timings remain above 12.5 ms.
+  frame samples pass their functional/budget checks; software timings remain above 16.67 ms.
 - [ ] **Hardware acceptance:** representative combat on RTX 3060 8 GB + 7800X3D at 1080p,
-  targeting 80 FPS / 12.5 ms. Software-renderer checks cannot certify this target.
+  targeting 60 FPS / 16.67 ms. Software-renderer checks cannot certify this target.
 
 These impact/flare layers use existing vanilla shader/pipeline families and pixel artwork,
 without extra scene copies or dynamic world lighting. The later optional engine heat layer
@@ -159,7 +159,7 @@ pass on both Vulkan and OpenGL, including thin snow/powder snow. Hardware FPS re
   heavy smoke remains a damage cue. Use content-defined outlets, existing pipelines and
   distance/adaptive caps. Optional heat refraction is added in §16.
 
-These requests follow the rotor-wash work. The 80 FPS target on the specified PC
+These requests follow the rotor-wash work. The 60 FPS target on the specified PC
 remains the acceptance goal; each added layer needs native captures and measured cost.
 
 ## 13. Engine exhaust implementation
@@ -188,7 +188,7 @@ target-PC acceptance remains open.
 - [x] Improve tracer readability with narrow bright cores, tapered tails and visible burning
   bases along the firing view. See [M8_TRACERS.md](M8_TRACERS.md).
 - [ ] Hardware acceptance at 1080p on RTX 3060 8 GB / Ryzen 7 7800X3D: representative sustained
-  firing, overlapping explosions and mixed vehicles, targeting 80 FPS / 12.5 ms.
+  firing, overlapping explosions and mixed vehicles, targeting 60 FPS / 16.67 ms.
 - [ ] Final visual acceptance in actual flight and battles, including addon/content combinations.
 
 The user has requested the optional heat distortion, ground dust front and further exhaust
@@ -214,7 +214,7 @@ scenes validate behavior and work bounds; they cannot replace target-hardware ac
   rejection, changed surfaces, multiple stock vehicles and combined explosions/rotor wash,
   including Low and maximum adaptive pressure on Vulkan and OpenGL.
 - [ ] Final player-driven slope/transition and addon visual acceptance. Profile against the
-  existing 80 FPS target on RTX 3060 8 GB / Ryzen 7 7800X3D at 1080p before raising budgets.
+  existing 60 FPS target on RTX 3060 8 GB / Ryzen 7 7800X3D at 1080p before raising budgets.
 
 Implemented in the requested order: fitting/bounds, materials, then contact paths. See
 [M8_VEHICLE_TRACKS.md](M8_VEHICLE_TRACKS.md) for limits and reproduction. Marks are cosmetic;
@@ -236,3 +236,21 @@ addon vehicles require explicit wheel data; unsupported placed weapons leave no 
   combat remain required, especially for the optional scene copy.
 
 See [M8_FOLLOWUPS.md](M8_FOLLOWUPS.md) for appearance, limits, verification and remaining acceptance.
+
+## 17. Realism follow-up (60 FPS target)
+
+The user changed acceptance to **60 FPS / 16.67 ms**, RTX 3060 8 GB, Ryzen 7 7800X3D,
+1080p. New configs default to `effects.targetFps=60`; existing configured values remain user-owned:
+set that key to 60 on existing installations. Particle/admission caps are unchanged.
+
+- Implemented first slice: shared slow cosmetic wind for enhanced explosion smoke; initial
+  outward ejection and curling lift settle into drift. Small support wisps disperse sooner than
+  dense cores. Flash shortened to 2 ticks (3 for broad blasts); existing delayed support clouds,
+  immediate dirt/debris and large-blast scale/persistence retained. Classic/trails unchanged.
+- Next: review and refine existing sand/soil/stone/water impacts and surface-colored debris.
+- Next: authored vehicle texture shading around panels, vents, tracks and rotor hubs;
+  restrained edge highlights, requiring in-game review across stock models.
+- Next: ground-contact shadows and continuity of tracks/wash/exhaust/scorch with movement.
+- Next: review daylight/shade response and amber smoke backlighting; retain tracer-only bullet glow.
+- Acceptance pending: Vulkan/OpenGL visual comparison, heavy-combat timing on the target PC.
+  Software rendering cannot certify 60 FPS. Historical captures retain their original targets.

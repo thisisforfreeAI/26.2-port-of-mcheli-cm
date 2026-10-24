@@ -22,6 +22,8 @@ public class SmokeParticle extends McheliParticle {
     boolean enhanced;
     /** M8: heat at birth, 0 to 1; a hot puff starts as fire and cools to its own colour. */
     float heat;
+    /** Enabled only for enhanced explosion puffs, never trails or Classic smoke. */
+    boolean blastMotion;
     float coolingShare = EffectLook.COOL_SHARE;
     /** Scale at the previous tick, for smooth growth between ticks; 0 until the first growth. */
     private float prevScale;
@@ -72,12 +74,17 @@ public class SmokeParticle extends McheliParticle {
             } else {
                 this.yd = this.yd + this.gravityFactor;
             }
+            if (this.blastMotion) {
+                this.xd = BlastSmokeMotion.advect(this.xd, BlastSmokeMotion.windX(this.level.getGameTime()), 0.96, this.age);
+                this.zd = BlastSmokeMotion.advect(this.zd, BlastSmokeMotion.windZ(this.level.getGameTime()), 0.96, this.age);
+                this.yd = this.yd * 0.96 + 0.002;
+            }
             this.move(this.xd, this.yd, this.zd);
-            if (this.diffusible) {
+            if (this.diffusible && !this.blastMotion) {
                 this.xd *= 0.96;
                 this.zd *= 0.96;
                 this.yd *= 0.96;
-            } else {
+            } else if (!this.blastMotion) {
                 this.xd *= 0.9;
                 this.zd *= 0.9;
             }

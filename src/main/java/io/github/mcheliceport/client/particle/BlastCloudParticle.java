@@ -19,7 +19,6 @@ final class BlastCloudParticle extends SmokeParticle {
     private final boolean base;
     private final double turnSin, turnCos;
     private final int fadeTicks;
-    private final double driftX, driftZ;
 
     BlastCloudParticle(ClientLevel level, double x, double y, double z, double mx, double my, double mz,
             float radius, int life, int fireTicks, float opacity) {
@@ -51,9 +50,6 @@ final class BlastCloudParticle extends SmokeParticle {
         this.turnSin = Math.sin(turn);
         this.turnCos = Math.cos(turn);
         this.fadeTicks = 24 + this.random.nextInt(24);
-        double drift = radius * (base ? 0.0002 : 0.0008);
-        this.driftX = (this.random.nextDouble() * 2 - 1) * drift;
-        this.driftZ = (this.random.nextDouble() * 2 - 1) * drift;
     }
 
     @Override public void tick() {
@@ -65,12 +61,13 @@ final class BlastCloudParticle extends SmokeParticle {
         // joining every other puff in a detached rising ball.
         double drag = this.fireTicks > 0 ? 0.82 : this.base ? 0.91 : 0.95;
         double dx = this.xd * this.turnCos - this.zd * this.turnSin;
-        this.zd = (this.xd * this.turnSin + this.zd * this.turnCos) * drag;
-        this.xd = dx * drag;
+        this.zd = (this.xd * this.turnSin + this.zd * this.turnCos);
+        this.xd = dx;
         this.yd = this.yd * (this.base ? 0.90 : 0.97) + (this.base ? 0.001 : 0.002);
-        double breakup = Math.clamp((this.age / (double) this.lifetime - 0.6) / 0.4, 0, 1);
-        this.xd += this.driftX * breakup;
-        this.zd += this.driftZ * breakup;
+        this.xd = BlastSmokeMotion.advect(this.xd, BlastSmokeMotion.windX(this.level.getGameTime()),
+                drag, this.age - this.delay);
+        this.zd = BlastSmokeMotion.advect(this.zd, BlastSmokeMotion.windZ(this.level.getGameTime()),
+                drag, this.age - this.delay);
     }
 
     @Override public void extract(QuadParticleRenderState state, Camera camera, float partialTick) {
