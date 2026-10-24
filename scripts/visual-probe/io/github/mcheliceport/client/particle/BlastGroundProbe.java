@@ -80,6 +80,7 @@ public final class BlastGroundProbe {
             if (!mc.gui.hud.isHidden()) mc.gui.hud.toggle();
             mc.getWindow().setWindowed(1920, 1080);
             mc.options.enableVsync().set(false); mc.options.framerateLimit().set(120);
+            ClientConfig.MODERN_EXPLOSIONS.set(Boolean.getBoolean("mcheli.probeModernStyle"));
             ClientConfig.EFFECT_QUALITY.set(EffectQuality.ENHANCED);
             ClientConfig.EFFECT_STYLE.set(ClientConfig.EffectStyle.POLISHED);
             ClientConfig.DEFAULT_EXPLOSION_PARTICLE.set(false);

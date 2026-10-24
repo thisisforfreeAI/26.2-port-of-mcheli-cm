@@ -8,6 +8,8 @@ import net.minecraft.resources.Identifier;
 /** A cohesive fire lobe becomes a shaded cloud; no block collision or entity wind scans. */
 final class BlastCloudParticle extends SmokeParticle {
     static final Identifier TEXTURE = Identifier.fromNamespaceAndPath("mcheli_ce_port", "m8_blast_cloud");
+    static final Identifier MODERN_TEXTURE = Identifier.fromNamespaceAndPath("mcheli_ce_port", "m8_modern_blast_cloud");
+    private final boolean modern;
     private final float radius;
     private final int cards;
     private final int fireTicks;
@@ -38,9 +40,16 @@ final class BlastCloudParticle extends SmokeParticle {
 
     BlastCloudParticle(ClientLevel level, double x, double y, double z, double mx, double my, double mz,
             float radius, int life, int fireTicks, float opacity, int delay, boolean base, int backlightTicks, int cards) {
+        this(level,x,y,z,mx,my,mz,radius,life,fireTicks,opacity,delay,base,backlightTicks,cards,false);
+    }
+
+    BlastCloudParticle(ClientLevel level,double x,double y,double z,double mx,double my,double mz,
+            float radius,int life,int fireTicks,float opacity,int delay,boolean base,int backlightTicks,int cards,boolean modern) {
         super(level, x, y, z, mx, my, mz);
+        var art=modern?sprite(MODERN_TEXTURE):sprite(TEXTURE);
+        this.modern=modern && art.contents().name().equals(MODERN_TEXTURE);
         this.cards = Math.clamp(cards, 1, 3);
-        this.setSprite(sprite(TEXTURE));
+        this.setSprite(modern && !this.modern ? sprite(TEXTURE) : art);
         this.radius = radius;
         this.delay = Math.clamp(delay, 0, 12);
         this.base = base;
@@ -49,7 +58,7 @@ final class BlastCloudParticle extends SmokeParticle {
         this.backlightTicks = Math.clamp(backlightTicks, 0, 56);
         this.opacity = opacity;
         this.hasPhysics = false;
-        this.angle = this.random.nextInt(4) * (float) (Math.PI / 2);
+        this.angle = this.modern ? (this.random.nextFloat()-.5F)*.5F : this.random.nextInt(4) * (float) (Math.PI / 2);
         this.smokeShade = 0.78F + this.random.nextFloat() * 0.22F;
         // The dedicated heat curve below controls fire lighting; inherited sampling stays ambient.
         this.heat = 0;
@@ -90,6 +99,7 @@ final class BlastCloudParticle extends SmokeParticle {
         else this.frame = 12 + Math.min(3, (int) ((localAge - this.fireTicks) * 4
                 / Math.max(1, this.lifetime - this.delay - this.fireTicks)));
         this.alpha = this.opacity * ExplosionSequence.cloudAlpha(age, this.lifetime, this.delay, this.fireTicks > 0, this.fadeTicks);
+        if (this.modern) this.alpha *= this.fireTicks>0 ? 0.92F : 0.84F;
         float shade = localAge >= this.fireTicks ? this.smokeShade : 1;
         this.setColor(shade, shade, shade);
         // Skip SmokeParticle's fire tint/fade; the dedicated sheet contains that transition.
