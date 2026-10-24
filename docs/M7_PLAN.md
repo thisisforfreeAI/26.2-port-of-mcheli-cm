@@ -293,6 +293,10 @@ Path B (`client.render.baked`) uploads each model group once, as upstream's disp
   (`McheliPart`: transform, normal matrix, colour, light, flat flag) while the frame is prepared,
   and draws one render pass per group, one draw per part, with `core/baked_vehicle.vsh` and
   vanilla's entity fragment shader, lighting, fog and lightmap.
+- M8's surface shading (`VehicleSurfaceShade`) is baked into the buffers: each vertex's shade
+  grey, less 128, sits in the spare fourth byte of its normal, and the shader uses it where path A
+  would (Enhanced look, `effects.vehicleSurfaceShade` on, untinted vehicle). A group is baked again
+  if the model loader replaces its shades.
 - Thermal vision, far vehicles, glowing outlines and the emissive exhaust flames stay on path A,
   as does everything when `render.gpuModelBuffers` is off or the path fails once (it then logs and
   turns itself off).
@@ -301,7 +305,9 @@ Validation: JUnit covers the vertex and uniform layouts and normal packing; all 
 GameTests pass. In game, screenshots with the option on and off match to within the frame-to-frame
 noise of moving clouds and rotors, by day, by night, for a wreck, with a search light's beam in
 front of the body and after a resource reload (`docs/screens/m7-gpu-models.png`,
-`docs/screens/m7-gpu-models-night.png`). JFR on
+`docs/screens/m7-gpu-models-night.png`). With `/tick freeze` and surface shading on, paths A
+and B differ by at most 2 of 255 in any channel, while turning the shading off changes the same
+image by up to 4. JFR on
 the render thread over 20 seconds with 28 vehicles in view (software rendering): 374 samples with
 path A, 274 of them drawing vehicles; 140 with path B, 42 drawing vehicles. Frame rate is bound by
 software rasterisation here and did not change; on a graphics card the saving is CPU time per frame.
