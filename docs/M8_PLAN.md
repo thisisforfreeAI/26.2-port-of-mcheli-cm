@@ -363,3 +363,11 @@ admission costs and shed under load.
 User constraint: preserve the existing explosion crater algorithm and weapon destruction
 rules. The primary goal is VFX that look proportionate to those original craters. Round
 craters in native comparison scenes are disposable test fixtures, never gameplay changes.
+
+## 21. Toggleable modern explosion style (planned)
+
+[Modern explosion plan](M8_MODERN_EXPLOSIONS_PLAN.md) specifies an ESC → MC Heli Effects panel
+with a persisted, explosion-only Modern On/Off preference. Off keeps current M8 presentation;
+On enables new billow/fire art and volumetric-looking depth within the existing adaptive budget
+system. Preserve original crater formation and size VFX to its reported footprint. Default Off
+until player acceptance; implementation and target-PC 60 FPS acceptance remain outstanding.
