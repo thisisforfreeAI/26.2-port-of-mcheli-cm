@@ -8,7 +8,7 @@ import io.github.mcheliceport.effect.BlastStyle;
 public final class ModernExplosionLook {
     private ModernExplosionLook() {}
     public static boolean enabled() {
-        return active(ClientConfig.get(ClientConfig.MODERN_EXPLOSIONS), EffectQuality.enhanced(),
+        return active(ExplosionModes.selected() == ClientConfig.ExplosionMode.MODERN, EffectQuality.enhanced(),
                 ClientConfig.get(ClientConfig.DEFAULT_EXPLOSION_PARTICLE));
     }
     public static boolean active(boolean requested, boolean enhanced, boolean vanilla) {

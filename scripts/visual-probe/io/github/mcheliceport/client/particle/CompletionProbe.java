@@ -55,6 +55,7 @@ public final class CompletionProbe {
                     "gamerule minecraft:advance_time false","fill -16 -60 4 16 -40 40 air","fill -16 -61 4 16 -61 40 stone");
             mc.getWindow().setWindowed(1920,1080);mc.options.enableVsync().set(false);mc.options.framerateLimit().set(120);
             if(!mc.gui.hud.isHidden())mc.gui.hud.toggle();
+            ClientConfig.EXPLOSION_MODE.set(ClientConfig.ExplosionMode.CURRENT);
             ClientConfig.MODERN_EXPLOSIONS.set(Boolean.getBoolean("mcheli.probeModernStyle"));
             ClientConfig.EFFECT_TARGET_FPS.set(60);ClientConfig.ADAPTIVE_EFFECTS.set(false);
             ClientConfig.EFFECT_QUALITY.set(EffectQuality.ENHANCED);ClientConfig.EFFECT_STYLE.set(ClientConfig.EffectStyle.POLISHED);

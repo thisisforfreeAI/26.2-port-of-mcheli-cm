@@ -372,3 +372,12 @@ On enables new billow/fire art and volumetric-looking depth within the existing 
 system. Preserve original crater formation and size VFX to its reported footprint. Default Off
 until player acceptance. [Implementation](M8_MODERN_EXPLOSIONS.md) adds the saved menu toggle,
 modern atlas and per-weapon rendering path. Target-PC 60 FPS/artistic acceptance remains open.
+
+## 22. Native NTM Next explosion mode
+
+[NTM explosion mode](M8_NTM_EXPLOSIONS.md) expands the existing ESC panel to three choices.
+Use installed NTM Next native small clouds, rolling fire/smoke and shockwaves, with bounded
+face admission and crater-aware scale. Keep M8 ground contact, terrain debris and audio; no
+NTM gameplay handlers, damage, radiation or crater algorithms are invoked. Default Current M8;
+existing saved Modern settings retain their look. Vulkan/OpenGL native compatibility and
+missing-mod fallback are validated separately; target-PC 60 FPS acceptance remains manual.

@@ -1,0 +1,61 @@
+name: NTM explosion client
+
+on:
+  push:
+    branches: [codex/m8-ntm-explosions]
+  pull_request:
+    paths:
+      - 'src/main/java/io/github/mcheliceport/client/particle/Ntm*'
+      - 'src/main/java/io/github/mcheliceport/client/particle/ExplosionModes.java'
+      - 'scripts/visual-probe/io/github/mcheliceport/client/particle/NtmExplosionProbe.java'
+      - '.github/workflows/ntm-explosion-client.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  native-client:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        backend: [VULKAN, OPENGL]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '25'
+          distribution: 'temurin'
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Install software graphics
+        run: sudo apt-get update -qq && sudo apt-get install -y xvfb mesa-vulkan-drivers libgl1-mesa-dri libopenal1
+      - name: Create disposable test world with NTM installed
+        run: |
+          ./gradlew runGameTestServer -PwithHbm
+          mkdir -p .run/m8-preview/saves
+          cp -a run/gametestserver/gametestworld .run/m8-preview/saves/M6Smoke
+          printf 'onboardAccessibility:false\nrenderDistance:2\nsimulationDistance:2\nguiScale:3\n' > .run/m8-preview/options.txt
+      - name: Native particles, ESC menu, burst bounds and cleanup
+        env:
+          ALSOFT_DRIVERS: 'null'
+          LIBGL_ALWAYS_SOFTWARE: '1'
+        run: |
+          xvfb-run -a -s '-screen 0 1920x1080x24' timeout 15m ./gradlew -PwithHbm -I scripts/visual-probe.init.gradle --no-configuration-cache -Dmcheli.probeNtm=true -Dmcheli.probeNtmExpectPresent=true -Dmcheli.probeBackend=${{ matrix.backend }} runClient
+          grep -qi 'Using graphics backend: ${{ matrix.backend }}' .run/m8-preview/logs/latest.log
+          grep -q 'bounded=true drained=true' .run/m8-preview/logs/latest.log
+      - name: Persist choice across a new JVM
+        env:
+          ALSOFT_DRIVERS: 'null'
+          LIBGL_ALWAYS_SOFTWARE: '1'
+        run: xvfb-run -a -s '-screen 0 1920x1080x24' timeout 10m ./gradlew -PwithHbm -I scripts/visual-probe.init.gradle --no-configuration-cache -Dmcheli.probeNtm=true -Dmcheli.probeNtmExpectPresent=true -Dmcheli.probeNtmRestart=true -Dmcheli.probeBackend=${{ matrix.backend }} runClient
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ntm-explosion-${{ matrix.backend }}-${{ github.sha }}
+          path: |
+            .run/m8-preview/screenshots/m8-ntm-*.png
+            .run/m8-preview/logs/
+            .run/m8-preview/crash-reports/
+          if-no-files-found: warn

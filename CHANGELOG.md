@@ -11,6 +11,9 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 ## [Unreleased] - M6 in progress
 
 ### Changed
+- The ESC effects panel cycles Current M8, Modern and an optional NTM Next explosion mode.
+  NTM mode uses the installed mod's actual fire/smoke/shockwave particles, with crater-aware
+  sizing and bounded admission; unavailable NTM falls back to Current M8. Original craters remain.
 - Vehicle models stay on the graphics card and are drawn from there instead of being sent again
   every frame; with 28 vehicles in view the render thread spent about 85% less time on them. The
   client config's `render.gpuModelBuffers` turns it off.
