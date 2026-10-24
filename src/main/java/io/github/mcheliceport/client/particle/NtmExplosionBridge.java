@@ -17,8 +17,7 @@ import net.neoforged.fml.ModList;
 public final class NtmExplosionBridge {
     public enum Availability { AVAILABLE, NOT_INSTALLED, INCOMPATIBLE }
     private record Tracked(WeakReference<Particle> particle, int faces, long expires) {}
-    private record Api(Constructor<?> small, Constructor<?> cloud, Constructor<?> wave,
-            Method scale, Method life, Method noClip, Method setupWave) {
+    private record Api(Constructor<?> small, Constructor<?> wave, Method spawnCloud, Method setupWave) {
         static Api load() throws ReflectiveOperationException {
             Class<?> small = Class.forName("com.hbm.particle.ParticleExplosionSmall");
             Class<?> cloud = Class.forName("com.hbm.particle.ParticleRocketFlame");
@@ -26,10 +25,10 @@ public final class NtmExplosionBridge {
             for (Class<?> type : new Class<?>[]{small, cloud, wave})
                 if (!Particle.class.isAssignableFrom(type)) throw new ClassCastException(type.getName());
             return new Api(small.getConstructor(ClientLevel.class,double.class,double.class,double.class,float.class,float.class),
-                    cloud.getConstructor(ClientLevel.class,double.class,double.class,double.class),
                     wave.getConstructor(ClientLevel.class,double.class,double.class,double.class),
-                    cloud.getMethod("setScale",float.class), cloud.getMethod("setMaxAge",int.class),
-                    cloud.getMethod("noClip"), wave.getMethod("setup",float.class,int.class));
+                    Class.forName("com.hbm.client.ClientEffects").getMethod("spawnRocketFlame",net.minecraft.world.level.Level.class,
+                            double.class,double.class,double.class,float.class,double.class,double.class,double.class,int.class),
+                    wave.getMethod("setup",float.class,int.class));
         }
     }
     private static boolean checked;
@@ -60,7 +59,11 @@ public final class NtmExplosionBridge {
             active.clear(); world = new WeakReference<>(level); tick = Long.MIN_VALUE;
         }
         if (tick != level.getGameTime()) {tick = level.getGameTime(); emittedFaces = 0;}
-        active.removeIf(t -> {var p=t.particle.get(); return p==null || !p.isAlive() || t.expires<=level.getGameTime();});
+        active.removeIf(t -> {
+            if(t.expires<=level.getGameTime())return true;
+            if(t.particle==null)return false; // Native instanced clouds are owned/ticked by NTM.
+            var p=t.particle.get();return p==null || !p.isAlive();
+        });
         int faces = 0;
         for (var tracked : active) faces += tracked.faces;
         return faces;
@@ -88,24 +91,15 @@ public final class NtmExplosionBridge {
         int count = Math.min(remaining/profile.faces(), NtmExplosionLook.clouds(profile,quality,pressure,
                 mc.gameRenderer.mainCamera().position().distanceToSqr(x,y,z), mc.options.particles().get().ordinal()));
         if (count <= 0) return true;
-        // Prepare the complete batch before submitting anything. A changed NTM API cannot leave
-        // half a native explosion followed by an M8 fallback. No server or payload handlers are called.
+        // Stage constructed particles first. Large clouds use NTM's normal helper, preserving
+        // its accelerated renderer rather than forcing the particle-group fallback.
         var particles = new ArrayList<Tracked>(count+1);
         var batch = new ArrayList<Particle>(count+1);
+        int submitted=0;
         try {
-            var random = level.getRandom();
-            for (int i=0; i<count; i++) {
-                Particle p;
-                if (profile.small()) p = (Particle)api.small.newInstance(level,x,y,z,profile.scale(),profile.speed());
-                else {
-                    p = (Particle)api.cloud.newInstance(level,x,y,z);
-                    api.scale.invoke(p,profile.scale());
-                    api.life.invoke(p,70+random.nextInt(20));
-                    api.noClip.invoke(p);
-                    p.setParticleSpeed(random.nextGaussian()*0.5*profile.speed(),
-                            random.nextDouble()*3*profile.speed(), random.nextGaussian()*0.5*profile.speed());
-                }
-                batch.add(p); particles.add(new Tracked(new WeakReference<>(p),profile.faces(),level.getGameTime()+profile.life()+1));
+            if(profile.small())for(int i=0;i<count;i++) {
+                Particle p=(Particle)api.small.newInstance(level,x,y,z,profile.scale(),profile.speed());
+                batch.add(p);particles.add(new Tracked(new WeakReference<>(p),1,level.getGameTime()+36));
             }
             int cost = count * profile.faces();
             if (!profile.small() && pressure < 2 && quality != ClientConfig.EffectBudget.LOW && cost < remaining) {
@@ -113,11 +107,24 @@ public final class NtmExplosionBridge {
                 api.setupWave.invoke(wave,profile.wave(),(int)(25F*profile.wave()/45F));
                 batch.add(wave); particles.add(new Tracked(new WeakReference<>(wave),1,level.getGameTime()+38)); cost++;
             }
+            if(!profile.small()) {
+                var random=level.getRandom();
+                for(int i=0;i<count;i++) {
+                    int life=70+random.nextInt(20);
+                    api.spawnCloud.invoke(null,level,x,y,z,profile.scale(),random.nextGaussian()*0.5*profile.speed(),
+                            random.nextDouble()*3*profile.speed(),random.nextGaussian()*0.5*profile.speed(),life);
+                    active.add(new Tracked(null,10,level.getGameTime()+life+1));
+                    emittedFaces+=10;submitted++;
+                }
+                cost-=count*10;
+            }
             for (Particle p : batch) mc.particleEngine.add(p);
             active.addAll(particles); emittedFaces += cost;
             return true;
         } catch (ReflectiveOperationException | LinkageError | RuntimeException e) {
-            unavailable(e); return false;
+            unavailable(e);
+            // A helper failure after some submissions must not double the impact with a fallback.
+            return submitted>0;
         }
     }
 }

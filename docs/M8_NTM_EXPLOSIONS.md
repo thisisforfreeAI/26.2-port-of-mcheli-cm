@@ -16,7 +16,9 @@ Underwater impacts retain their separate splash effects.
 ## What matches NTM
 
 This is native particle integration, not a newly painted imitation. The adapter constructs
-NTM's public `ParticleExplosionSmall`, `ParticleRocketFlame` and `ParticleMukeWave`. NTM owns
+NTM's public `ParticleExplosionSmall` and `ParticleMukeWave`, and calls its public
+`ClientEffects.spawnRocketFlame` helper for large clouds. That preserves NTM's accelerated
+cloud rendering where supported, with NTM choosing its own particle fallback. NTM owns
 their motion, rolling cloud layers, fire-to-smoke colors, alpha curves, textures, group
 rendering and wave growth. Reflection is resolved once, only when HBM is installed. No NTM
 source, artwork or binaries are copied or redistributed in McHeli.
@@ -47,9 +49,10 @@ Each native large cloud pays ten faces; a small cloud or wave pays one. Shared p
 
 Distance, Minecraft particles and adaptive pressure thin the requested cloud count. Pressure
 also reduces the tick allowance. Low omits waves; pressure 2+ omits waves. No deferred native
-emission queue accumulates. Live weak references are reaped on removal/expiry/world change,
-and disconnect clears tracking. Construction finishes before submission, allowing a failed
-public API check to fall back without a partial native batch. The bridge has no native mods
+emission queue accumulates. Particle weak references and conservative face leases for NTM-owned instanced clouds are
+reaped on removal/expiry/world change,
+and disconnect clears tracking. Constructed particles are staged before submission. A failure after the native cloud helper
+has submitted some clouds disables future native effects without doubling that partial batch. The bridge has no native mods
 on its compile classpath; ordinary clients and dedicated servers remain independent of NTM.
 
 The 60 FPS target is unchanged. Native NTM rendering can cost more than Current M8; these

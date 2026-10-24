@@ -34,7 +34,7 @@
     "release_build": "passed; native bridge included; all opt-in visual-probe classes excluded"
   },
   "native_runtime_ci": {
-    "status": "passed Vulkan and OpenGL",
+    "status": "Fallback-particle path passed; validating preferred accelerated helper",
     "validated_production_commit": "e52dfff12dfd87b23aa8181e194ca5b47183aee6",
     "workflow": ".github/workflows/ntm-explosion-client.yml",
     "run": "https://github.com/thisisforfreeAI/26.2-port-of-mcheli-cm/actions/runs/40143646236",
@@ -60,7 +60,7 @@
       "medium_power_5": 151,
       "large_power_12": 301
     },
-    "notes": "The following change enables hidden .run screenshot/log files in workflow artifacts; production effect code is unchanged."
+    "notes": "The final adapter now calls NTM ClientEffects.spawnRocketFlame to preserve its preferred accelerated renderer. The native fixture camera is moved away from GameTest structures for readable captures."
   },
   "bounds": {
     "live_faces": {

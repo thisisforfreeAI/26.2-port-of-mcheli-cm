@@ -68,7 +68,14 @@ public final class NtmExplosionProbe {
         ClientEffects.INSTANCE.explosionEffects(mc.level,origin.x,origin.y,origin.z,power,false,blocks,BlastStyle.HEAVY);
         String expected=PRESENT?(power<4?"com.hbm.particle.ParticleExplosionSmall":"com.hbm.particle.ParticleRocketFlame")
                 :"io.github.mcheliceport.client.particle.BlastCloudParticle";
-        require(queued().stream().anyMatch(p->p.getClass().getName().equals(expected)),"Missing native/fallback class "+expected);
+        boolean present=queued().stream().anyMatch(p->p.getClass().getName().equals(expected));
+        int instanced=0;
+        if(PRESENT && power>=4) {
+            var field=Class.forName("com.hbm.client.particle.RocketFlameVisuals").getDeclaredField("ACTIVE");field.setAccessible(true);
+            instanced=((java.util.List<?>)field.get(null)).size();
+        }
+        require(present || instanced>0,"Missing native/fallback class "+expected);
+        if(PRESENT && power>=4)System.out.println("M8_NTM accelerated_clouds="+instanced+" fallback_clouds="+present);
         if(PRESENT && power>=4)require(queued().stream().anyMatch(p->p.getClass().getName().equals("com.hbm.particle.ParticleMukeWave")),"Missing native wave");
         require(!PRESENT || queued().stream().noneMatch(p->p.getClass().getSimpleName().equals("BlastCloudParticle")),"Mixed native and M8 clouds");
         System.out.println("M8_NTM power="+power+" footprint="+footprint+" class="+expected+" faces="+liveFaces());
@@ -103,6 +110,17 @@ public final class NtmExplosionProbe {
         if(!running)switch(++frame) {
             case 1 -> {
                 mc.getWindow().setWindowed(1920,1080);
+                if(!mc.gui.hud.isHidden())mc.gui.hud.toggle();
+                mc.getTutorial().setStep(net.minecraft.client.tutorial.TutorialSteps.NONE);
+                var server=mc.getSingleplayerServer();
+                require(server!=null,"Native probe requires its disposable integrated world");
+                server.execute(()->{
+                    var source=server.createCommandSourceStack();
+                    server.getCommands().performPrefixedCommand(source,"gamemode spectator @a");
+                    server.getCommands().performPrefixedCommand(source,"tp @a 0 -50 -128 0 12");
+                    server.getCommands().performPrefixedCommand(source,"time set noon");
+                    server.getCommands().performPrefixedCommand(source,"weather clear");
+                });
                 ClientConfig.EFFECT_QUALITY.set(EffectQuality.ENHANCED);ClientConfig.EFFECT_STYLE.set(ClientConfig.EffectStyle.POLISHED);
                 ClientConfig.DEFAULT_EXPLOSION_PARTICLE.set(false);ClientConfig.ADAPTIVE_EFFECTS.set(false);
                 ClientConfig.EFFECT_BUDGET.set(ClientConfig.EffectBudget.BALANCED);ClientConfig.EFFECT_TARGET_FPS.set(60);
@@ -125,7 +143,7 @@ public final class NtmExplosionProbe {
             case 50 -> capture="menu-small";
             case 52 -> {mc.gui.screen().keyPressed(new KeyEvent(256,0,0));require(mc.gui.screen() instanceof PauseScreen,"ESC did not return to pause");}
             case 56 -> {mc.gui.screen().onClose();mc.getWindow().setWindowed(1920,1080);mc.options.guiScale().set(3);mc.resizeGui();
-                origin=mc.gameRenderer.mainCamera().position().add(new Vec3(mc.gameRenderer.mainCamera().forwardVector()).scale(20)).add(0,2,0);running=true;
+                origin=new Vec3(0,-59.5,-88);running=true;
                 System.out.println("M8_NTM menu_cycle=true classic_gate=true done=true esc=true");}
             default -> {}
         }
@@ -139,7 +157,11 @@ public final class NtmExplosionProbe {
         if(!Boolean.getBoolean("mcheli.probeNtm") || !running)return;
         var mc=Minecraft.getInstance();if(mc.level==null||mc.isPaused())return;
         tick++;
-        if(tick==1)emit(2,4);
+        if(tick==1) {
+            var camera=mc.gameRenderer.mainCamera().position();
+            require(Math.abs(camera.x)<1 && Math.abs(camera.z+128)<1,"Probe camera did not leave the GameTest structures");
+            emit(2,4);
+        }
         if(tick==2||tick==15)capture="small-"+tick;
         if(!PRESENT && tick==35) {ClientConfig.SPEC.save();System.out.println("M8_NTM missing_fallback=true saved_native=true");mc.stop();return;}
         if(tick==40)emit(5,10);
