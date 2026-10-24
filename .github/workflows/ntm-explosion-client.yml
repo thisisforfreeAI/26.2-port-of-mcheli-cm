@@ -3,6 +3,8 @@ name: NTM explosion client
 on:
   pull_request:
     paths:
+      - 'build.gradle'
+      - 'gradle.properties'
       - 'src/main/java/io/github/mcheliceport/client/particle/Ntm*'
       - 'src/main/java/io/github/mcheliceport/client/particle/ExplosionModes.java'
       - 'scripts/visual-probe/io/github/mcheliceport/client/particle/NtmExplosionProbe.java'

@@ -6,7 +6,9 @@ original style. Existing `effects.modernExplosions=true` configs retain Modern u
 changes the selector. The new `effects.explosionMode` defaults to `CURRENT`.
 
 NTM Next must be installed to supply its native particle classes, groups and artwork.
-Use matching NTM modpack versions on server and clients, as required by NTM itself. This optional adapter targets NTM Next 1.0.3 for NeoForge 26.2, already used by the weapon
+Use matching NTM modpack versions on server and clients, as required by NTM itself.
+NTM also requires **Crankshaft 1.6.0+mc26.2 or newer on clients**; install its dependencies
+through the mod manager. The optional `-PwithHbm` dev runtime now includes that dependency. This optional adapter targets NTM Next 1.0.3 for NeoForge 26.2, already used by the weapon
 addon bridge. Missing or incompatible NTM is reported in the menu and falls back to Current M8.
 Enhanced + Polished effects and disabled vanilla explosion particles remain authoritative.
 Underwater impacts retain their separate splash effects.
