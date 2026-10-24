@@ -1,8 +1,6 @@
 name: NTM explosion client
 
 on:
-  push:
-    branches: [codex/m8-ntm-explosions]
   pull_request:
     paths:
       - 'src/main/java/io/github/mcheliceport/client/particle/Ntm*'
@@ -43,7 +41,7 @@ jobs:
           LIBGL_ALWAYS_SOFTWARE: '1'
         run: |
           xvfb-run -a -s '-screen 0 1920x1080x24' timeout 15m ./gradlew -PwithHbm -I scripts/visual-probe.init.gradle --no-configuration-cache -Dmcheli.probeNtm=true -Dmcheli.probeNtmExpectPresent=true -Dmcheli.probeBackend=${{ matrix.backend }} runClient
-          grep -qi 'Using graphics backend: ${{ matrix.backend }}' .run/m8-preview/logs/latest.log
+          grep -qi 'Using graphics backend ${{ matrix.backend }}' .run/m8-preview/logs/latest.log
           grep -q 'bounded=true drained=true' .run/m8-preview/logs/latest.log
       - name: Persist choice across a new JVM
         env:
