@@ -7,17 +7,23 @@ import net.minecraft.resources.Identifier;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
-/** One narrow, camera-facing dust stream replacing a fan request; no trail emitter or block scans. */
+/** A dust stream with optional tapered world-space segments; no trail emitter or block scans. */
 final class BlastDirtJetParticle extends SmokeParticle {
     static final Identifier TEXTURE = Identifier.fromNamespaceAndPath("mcheli_ce_port", "m8_dirt_jet");
     private final float radius;
+    private final boolean column;
     private final float opacity;
     private final Quaternionf rotation = new Quaternionf();
     private final Vector3f axis;
 
     BlastDirtJetParticle(ClientLevel level, double x, double y, double z, double mx, double my, double mz,
             float radius, float r, float g, float b, int life, float opacity) {
-        super(level, x, y, z, mx, my, mz);
+        this(level,x,y,z,mx,my,mz,radius,r,g,b,life,opacity,false);
+    }
+    BlastDirtJetParticle(ClientLevel level,double x,double y,double z,double mx,double my,double mz,
+            float radius,float r,float g,float b,int life,float opacity,boolean column) {
+        super(level,x,y,z,mx,my,mz);
+        this.column=column;
         this.setSprite(sprite(TEXTURE));
         this.radius = radius;
         this.opacity = opacity;
@@ -45,7 +51,23 @@ final class BlastDirtJetParticle extends SmokeParticle {
         float angle = (float) Math.atan2(-this.axis.x, this.axis.y);
         this.axis.set(ax, ay, az);
         this.rotation.rotateZ(angle);
-        this.extractRotatedQuad(state, camera, this.rotation, partialTick);
+        if (!column || !EffectAdmission.depthDetail(level,x,y,z)) {
+            this.extractRotatedQuad(state, camera, this.rotation, partialTick);
+            return;
+        }
+        var pos=camera.position();
+        float px=(float)(net.minecraft.util.Mth.lerp(partialTick,xo,x)-pos.x);
+        float py=(float)(net.minecraft.util.Mth.lerp(partialTick,yo,y)-pos.y);
+        float pz=(float)(net.minecraft.util.Mth.lerp(partialTick,zo,z)-pos.z);
+        float r=this.getQuadSize(partialTick);
+        int color=net.minecraft.util.ARGB.colorFromFloat(alpha,rCol,gCol,bCol), light=getLightCoords(partialTick);
+        for(int i=0;i<3;i++) {
+            rotation.rotationY(i*(float)Math.PI/3).rotateZ(angle*.3F);
+            float offset=i*.55F*r;
+            state.add(getLayer(),px+axis.x*offset,py+axis.y*offset,pz+axis.z*offset,
+                    rotation.x,rotation.y,rotation.z,rotation.w,r*BlastDepthLook.columnScale(i),
+                    getU0(),getU1(),getV0(),getV1(),color,light);
+        }
     }
 
     @Override public float getQuadSize(float partialTick) {

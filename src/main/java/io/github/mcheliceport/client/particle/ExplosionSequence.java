@@ -26,10 +26,10 @@ public final class ExplosionSequence {
 
     public static int lobes(float power, BlastStyle style, EffectBudget budget, int pressure) {
         if (!Float.isFinite(power) || power <= 0) return 0;
-        int cap = switch (budget) { case LOW -> 6; case BALANCED -> 12; case HIGH -> 18; };
+        int cap = switch (budget) { case LOW -> 6; case BALANCED -> 18; case HIGH -> 28; };
         if (style == BlastStyle.CANNON) cap = Math.min(cap, 4);
         int count = Math.min(cap, 3 + (int) Math.min(power, cap));
-        if (power >= 2 && (style == BlastStyle.BLAST || style == BlastStyle.PENETRATOR))
+        if (power >= 2 && (style == BlastStyle.BLAST || style == BlastStyle.PENETRATOR || power >= 4 && ExplosionLook.broad(style)))
             count = Math.min(cap, 5 + (int) Math.ceil(Math.min(power, cap) * 1.5F));
         int divisor = 1 + Math.clamp(pressure, 0, 3);
         boolean missile = style == BlastStyle.BLAST || style == BlastStyle.PENETRATOR;

@@ -1,6 +1,8 @@
 // Opt-in, development-only scene. Never included by a normal build or run.
 gradle.projectsEvaluated {
     def project = gradle.rootProject
+    project.neoForge.runs.client.systemProperty('mcheli.probeDepthOnly', System.getProperty('mcheli.probeDepthOnly', 'false'))
+    project.neoForge.runs.client.systemProperty('mcheli.probeCraterScale', System.getProperty('mcheli.probeCraterScale', 'false'))
     project.neoForge.runs.client.systemProperty('mcheli.probePunch', System.getProperty('mcheli.probePunch', 'false'))
     project.neoForge.runs.client.systemProperty('mcheli.probeTargetFps', System.getProperty('mcheli.probeTargetFps', '60'))
     project.sourceSets.main.java.srcDir(project.file('scripts/visual-probe'))

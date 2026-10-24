@@ -97,7 +97,7 @@ class EffectTuningTest {
             distance = EffectTuning.distance(quality);
             live = EffectTuning.smokeLimit(quality);
         }
-        assertEquals(768, EffectTuning.smokeLimit(EffectBudget.BALANCED));
-        assertEquals(96, EffectTuning.perTick(EffectBudget.BALANCED, false));
+        assertEquals(1536, EffectTuning.smokeLimit(EffectBudget.BALANCED));
+        assertEquals(256, EffectTuning.perTick(EffectBudget.BALANCED, false));
     }
 }

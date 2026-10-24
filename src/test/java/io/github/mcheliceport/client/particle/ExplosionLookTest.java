@@ -21,9 +21,9 @@ class ExplosionLookTest {
         assertEquals(0, ExplosionLook.dustCount(12, BlastStyle.HEAVY, EffectBudget.LOW, 0));
         assertEquals(0, ExplosionLook.dustCount(12, BlastStyle.HEAVY, EffectBudget.HIGH, 2));
         assertEquals(0, ExplosionLook.dustCount(12, BlastStyle.BLAST, EffectBudget.HIGH, 0));
-        assertEquals(6, ExplosionLook.dustCount(12, BlastStyle.HEAVY, EffectBudget.BALANCED, 0));
-        assertEquals(3, ExplosionLook.dustCount(12, BlastStyle.HEAVY, EffectBudget.BALANCED, 1));
-        assertEquals(10, ExplosionLook.dustCount(Float.MAX_VALUE, BlastStyle.INCENDIARY, EffectBudget.HIGH, 0));
+        assertEquals(10, ExplosionLook.dustCount(12, BlastStyle.HEAVY, EffectBudget.BALANCED, 0));
+        assertEquals(5, ExplosionLook.dustCount(12, BlastStyle.HEAVY, EffectBudget.BALANCED, 1));
+        assertEquals(16, ExplosionLook.dustCount(Float.MAX_VALUE, BlastStyle.INCENDIARY, EffectBudget.HIGH, 0));
     }
     @Test
     void bombsStartBroaderAndKeepGrowingWithPowerWithinQualityCaps() {

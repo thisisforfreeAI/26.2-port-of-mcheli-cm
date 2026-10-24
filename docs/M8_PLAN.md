@@ -348,3 +348,18 @@ sound event so silent explosions do not acquire sound through their visual packe
 The overlapping-audio follow-up prioritizes opening impacts over optional rumble, bounds
 actual playback to four voices/tick, and expires stale queue entries after client stalls.
 See the blast-contrast document for the sustained-volley validation.
+
+## 20. Larger explosions and crater-aware coverage
+
+[Crater-scale effects](M8_CRATER_SCALE.md) deliberately relax Balanced/High particle allowances
+and use reported affected blocks to size the smoke footprint. Rim dust samples local height
+within the existing terrain-read budget. Adaptive feedback retains the 60 FPS target; actual
+target-PC performance remains an acceptance check.
+
+The same pass adds selected larger bouncing chunks, tapered dirt columns, layered fire,
+nearby crossed smoke cards and actual low dust-wedge geometry. Optional extra faces pay
+admission costs and shed under load.
+
+User constraint: preserve the existing explosion crater algorithm and weapon destruction
+rules. The primary goal is VFX that look proportionate to those original craters. Round
+craters in native comparison scenes are disposable test fixtures, never gameplay changes.

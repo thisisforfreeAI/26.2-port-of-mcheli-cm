@@ -12,6 +12,12 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 
 ### Changed
 
+- M8 larger explosions: raise Balanced/High smoke, blast-lobe, debris and dust-front limits.
+  Scale smoke to the reported affected footprint and place dust near the crater rim, while
+  retaining the 60 FPS adaptive target. Add selected larger bouncing chunks, tapered dirt
+  columns, layered fire, crossed smoke cards and nearby dust-wedge meshes. See
+  `docs/M8_CRATER_SCALE.md` for budgets and geometry limits.
+
 - M8 overlapping explosions: prioritize opening impacts over optional rumble tails, cap
   actual playback at four voices/tick, and discard stale audio after client stalls.
 

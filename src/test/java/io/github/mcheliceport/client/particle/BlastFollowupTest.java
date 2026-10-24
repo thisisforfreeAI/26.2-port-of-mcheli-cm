@@ -12,7 +12,7 @@ class BlastFollowupTest {
         for (var quality : EffectBudget.values()) for (var style : new BlastStyle[]{BlastStyle.BLAST, BlastStyle.PENETRATOR})
             for (int pressure = 0; pressure <= 3; pressure++) for (int power = 2; power <= 32; power++) {
                 int count = ExplosionSequence.lobes(power, style, quality, pressure);
-                assertTrue(count <= (quality == EffectBudget.LOW ? 6 : quality == EffectBudget.HIGH ? 18 : 12));
+                assertTrue(count <= (quality == EffectBudget.LOW ? 6 : quality == EffectBudget.HIGH ? 28 : 18));
                 int fire = ExplosionSequence.smokeFireLobes(power, style, count);
                 assertTrue(fire > 0 && count - fire > 0);
                 assertTrue(ExplosionLook.startScale(power, style, quality) < 2);

@@ -7,7 +7,7 @@ public final class EffectTuning {
     private EffectTuning() {}
 
     public static int smokeLimit(EffectBudget quality) {
-        return switch (quality) { case LOW -> 384; case BALANCED -> 768; case HIGH -> 1536; };
+        return switch (quality) { case LOW -> 384; case BALANCED -> 1536; case HIGH -> 3072; };
     }
 
     public static int flashLimit(EffectBudget quality) {
@@ -15,8 +15,8 @@ public final class EffectTuning {
     }
 
     public static int perTick(EffectBudget quality, boolean flash) {
-        int smoke = smokeLimit(quality) / 8;
-        return flash ? smoke / 2 : smoke;
+        int smoke = smokeLimit(quality) / (quality == EffectBudget.LOW ? 8 : 6);
+        return flash ? flashLimit(quality) / 2 : smoke;
     }
 
     public static int distance(EffectBudget quality) {

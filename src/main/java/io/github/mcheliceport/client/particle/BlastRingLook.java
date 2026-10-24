@@ -9,9 +9,13 @@ public final class BlastRingLook {
     public static int sectors(float power, BlastStyle style, EffectBudget quality, int pressure) {
         if (!Float.isFinite(power) || power < 4 || style == BlastStyle.CANNON
                 || style == BlastStyle.PENETRATOR || quality == EffectBudget.LOW || pressure >= 1) return 0;
-        return quality == EffectBudget.HIGH ? 14 : 10;
+        return quality == EffectBudget.HIGH ? 20 : 14;
     }
-    public static int tickCap(EffectBudget quality) { return quality == EffectBudget.HIGH ? 20 : 12; }
+    public static int sectors(float power, BlastStyle style, EffectBudget quality, int pressure, float footprint) {
+        return sectors(power, style == BlastStyle.PENETRATOR && Float.isFinite(footprint) && footprint >= 8
+                ? BlastStyle.HEAVY : style, quality, pressure);
+    }
+    public static int tickCap(EffectBudget quality) { return quality == EffectBudget.HIGH ? 28 : 20; }
     public static float reach(float power) { return Float.isFinite(power) ? Math.clamp(power * 0.65F, 2.5F, 10) : 0; }
     public static float width(float power) { return Math.min(1.5F, 0.5F + reach(power) * 0.08F); }
     public static float travel(float age) {

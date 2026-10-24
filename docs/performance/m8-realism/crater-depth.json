@@ -1,0 +1,158 @@
+{
+  "purpose": "VFX proportional to original craters; no production crater/destruction changes",
+  "unit_tests": 279,
+  "target_fps": 60,
+  "target_hardware_certified": false,
+  "comparisons": {
+    "vulkan": {
+      "backend": "Vulkan, using drivers: 1.4.305 llvmpipe Mesa 25.0.7-2+deb13u1 (LLVM 19.1.7)",
+      "fixtures": [
+        "weapon=m230 fixture_radius=0 reported=0.0",
+        "weapon=hydra70 fixture_radius=4 reported=4.0",
+        "weapon=agm114 fixture_radius=6 reported=6.0",
+        "weapon=agm158 fixture_radius=12 reported=11.5",
+        "weapon=mk82 fixture_radius=8 reported=8.0",
+        "weapon=gbu57 fixture_radius=18 reported=17.0",
+        "weapon=s-8dm fixture_radius=10 reported=10.0",
+        "weapon=heavy12 fixture_radius=16 reported=15.5"
+      ],
+      "screenshots": [
+        "m8-complete-m230-age1.png",
+        "m8-complete-m230-age3.png",
+        "m8-complete-m230-age6.png",
+        "m8-complete-m230-age20.png",
+        "m8-complete-m230-age50.png",
+        "m8-complete-hydra70-age1.png",
+        "m8-complete-hydra70-age3.png",
+        "m8-complete-hydra70-age6.png",
+        "m8-complete-hydra70-age20.png",
+        "m8-complete-hydra70-age50.png",
+        "m8-complete-agm114-age1.png",
+        "m8-complete-agm114-age3.png",
+        "m8-complete-agm114-age6.png",
+        "m8-complete-agm114-age20.png",
+        "m8-complete-agm114-age50.png",
+        "m8-complete-agm158-age1.png",
+        "m8-complete-agm158-age3.png",
+        "m8-complete-agm158-age6.png",
+        "m8-complete-agm158-age20.png",
+        "m8-complete-agm158-age50.png",
+        "m8-complete-mk82-age1.png",
+        "m8-complete-mk82-age3.png",
+        "m8-complete-mk82-age6.png",
+        "m8-complete-mk82-age20.png",
+        "m8-complete-mk82-age50.png",
+        "m8-complete-gbu57-age1.png",
+        "m8-complete-gbu57-age6.png",
+        "m8-complete-gbu57-age3.png",
+        "m8-complete-gbu57-age20.png",
+        "m8-complete-gbu57-age50.png",
+        "m8-complete-s-8dm-age1.png",
+        "m8-complete-s-8dm-age3.png",
+        "m8-complete-s-8dm-age6.png",
+        "m8-complete-s-8dm-age20.png",
+        "m8-complete-s-8dm-age50.png",
+        "m8-complete-heavy12-age1.png",
+        "m8-complete-heavy12-age3.png",
+        "m8-complete-heavy12-age6.png",
+        "m8-complete-heavy12-age20.png",
+        "m8-complete-heavy12-age50.png"
+      ],
+      "depth": [
+        "bounced=3 settled=2"
+      ]
+    },
+    "opengl": {
+      "backend": "OpenGL, using drivers: 4.5 (Core Profile) Mesa 25.0.7-2+deb13u1",
+      "fixtures": [
+        "weapon=m230 fixture_radius=0 reported=0.0",
+        "weapon=hydra70 fixture_radius=4 reported=4.0",
+        "weapon=agm114 fixture_radius=6 reported=6.0",
+        "weapon=agm158 fixture_radius=12 reported=11.5",
+        "weapon=mk82 fixture_radius=8 reported=8.0",
+        "weapon=gbu57 fixture_radius=18 reported=17.0",
+        "weapon=s-8dm fixture_radius=10 reported=10.0",
+        "weapon=heavy12 fixture_radius=16 reported=15.5"
+      ],
+      "screenshots": [
+        "m8-complete-m230-age1.png",
+        "m8-complete-m230-age6.png",
+        "m8-complete-m230-age20.png",
+        "m8-complete-m230-age50.png",
+        "m8-complete-hydra70-age3.png",
+        "m8-complete-hydra70-age1.png",
+        "m8-complete-hydra70-age6.png",
+        "m8-complete-hydra70-age20.png",
+        "m8-complete-hydra70-age50.png",
+        "m8-complete-agm114-age1.png",
+        "m8-complete-agm114-age3.png",
+        "m8-complete-agm114-age6.png",
+        "m8-complete-agm114-age20.png",
+        "m8-complete-agm114-age50.png",
+        "m8-complete-agm158-age1.png",
+        "m8-complete-agm158-age3.png",
+        "m8-complete-agm158-age6.png",
+        "m8-complete-agm158-age20.png",
+        "m8-complete-agm158-age50.png",
+        "m8-complete-mk82-age3.png",
+        "m8-complete-mk82-age1.png",
+        "m8-complete-mk82-age6.png",
+        "m8-complete-mk82-age20.png",
+        "m8-complete-mk82-age50.png",
+        "m8-complete-gbu57-age1.png",
+        "m8-complete-gbu57-age3.png",
+        "m8-complete-gbu57-age6.png",
+        "m8-complete-gbu57-age20.png",
+        "m8-complete-gbu57-age50.png",
+        "m8-complete-s-8dm-age1.png",
+        "m8-complete-s-8dm-age3.png",
+        "m8-complete-s-8dm-age6.png",
+        "m8-complete-s-8dm-age20.png",
+        "m8-complete-s-8dm-age50.png",
+        "m8-complete-heavy12-age1.png",
+        "m8-complete-heavy12-age3.png",
+        "m8-complete-heavy12-age6.png",
+        "m8-complete-heavy12-age20.png",
+        "m8-complete-heavy12-age50.png"
+      ],
+      "depth": [
+        "crossed=2 layered=1 columns=3 wedges=4",
+        "bounced=3 settled=2"
+      ]
+    }
+  },
+  "views": {
+    "backend": "Vulkan",
+    "asserted_camera_poses": [
+      "heavy12-side position=(21.0, -48.0, 19.0) pitch=22.0 yaw=90.0",
+      "heavy12-overhead position=(0.0, -28.0, 19.0) pitch=90.0 yaw=0.0"
+    ],
+    "depth": [
+      "crossed=2 layered=1 columns=3 wedges=4",
+      "view=heavy12-side position=(21.0, -48.0, 19.0) pitch=22.0 yaw=90.0",
+      "bounced=2 settled=2",
+      "view=heavy12-overhead position=(0.0, -28.0, 19.0) pitch=90.0 yaw=0.0"
+    ],
+    "screenshots": [
+      "m8-complete-heavy12-age1.png",
+      "m8-complete-heavy12-age6.png",
+      "m8-complete-heavy12-side.png",
+      "m8-complete-heavy12-overhead.png"
+    ]
+  },
+  "combat": {
+    "backend": "Vulkan",
+    "drains": [
+      "empty tiles=0",
+      "models tiles=0",
+      "fixed tiles=244",
+      "adaptive tiles=244"
+    ],
+    "results": [
+      "empty fragments=0 reads=0 halos=0 exhaust=0 wash=0 pressure=0 particles=T 0",
+      "models fragments=0 reads=0 halos=0 exhaust=0 wash=0 pressure=0 particles=T 0",
+      "fixed fragments=14 reads=26 halos=24 exhaust=4 wash=2 pressure=0 particles=SQ 0 m8dw 0 T 0",
+      "adaptive fragments=6 reads=26 halos=12 exhaust=4 wash=2 pressure=3 particles=SQ 0 m8dw 0 T 0"
+    ]
+  }
+}

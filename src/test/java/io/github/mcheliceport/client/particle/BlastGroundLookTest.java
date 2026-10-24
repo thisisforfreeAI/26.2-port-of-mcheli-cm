@@ -11,19 +11,19 @@ class BlastGroundLookTest {
             int previous = Integer.MAX_VALUE;
             for (int pressure = 0; pressure <= 3; pressure++) {
                 int requests = BlastGroundLook.requests(Float.MAX_VALUE, style, quality, pressure);
-                assertTrue(requests <= previous && requests <= 10);
+                assertTrue(requests <= previous && requests <= 16);
                 if (pressure >= 2 || quality == EffectBudget.LOW || style == BlastStyle.CANNON) assertEquals(0, requests);
                 previous = requests;
             }
             assertEquals(0, BlastGroundLook.requests(Float.NaN, style, quality, 0));
             assertEquals(0, BlastGroundLook.requests(-1, style, quality, 0));
         }
-        assertEquals(6, BlastGroundLook.requests(12, BlastStyle.HEAVY, EffectBudget.BALANCED, 0));
-        assertEquals(2, BlastGroundLook.requests(4, BlastStyle.BLAST, EffectBudget.BALANCED, 0));
+        assertEquals(10, BlastGroundLook.requests(12, BlastStyle.HEAVY, EffectBudget.BALANCED, 0));
+        assertEquals(3, BlastGroundLook.requests(4, BlastStyle.BLAST, EffectBudget.BALANCED, 0));
         assertEquals(0, BlastGroundLook.fragmentTickCap(EffectBudget.HIGH, 2));
         assertEquals(0, BlastGroundLook.fragmentLiveCap(EffectBudget.LOW));
-        assertEquals(24, BlastGroundLook.fragmentLiveCap(EffectBudget.BALANCED));
-        assertEquals(48, BlastGroundLook.fragmentLiveCap(EffectBudget.HIGH));
+        assertEquals(36, BlastGroundLook.fragmentLiveCap(EffectBudget.BALANCED));
+        assertEquals(72, BlastGroundLook.fragmentLiveCap(EffectBudget.HIGH));
         assertEquals(0, BlastGroundLook.surfaceReadCap(EffectBudget.LOW));
         assertEquals(96, BlastGroundLook.surfaceReadCap(EffectBudget.BALANCED));
         assertEquals(192, BlastGroundLook.surfaceReadCap(EffectBudget.HIGH));

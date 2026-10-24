@@ -30,7 +30,7 @@ public final class ExplosionLook {
 
     public static int dustCount(float power, BlastStyle style, EffectBudget budget, int pressure) {
         if (!Float.isFinite(power) || power < 3 || !broad(style) || budget == EffectBudget.LOW || pressure >= 2) return 0;
-        int cap = budget == EffectBudget.HIGH ? 10 : 6;
+        int cap = budget == EffectBudget.HIGH ? 16 : 10;
         return Math.min(cap, (int) Math.min(power * 1.5F, cap)) / (1 + Math.clamp(pressure, 0, 1));
     }
 

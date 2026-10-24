@@ -54,7 +54,8 @@ public final class ExplosionEffects {
         }
         boolean vanilla = ClientConfig.get(ClientConfig.DEFAULT_EXPLOSION_PARTICLE);
         if (!vanilla && EffectQuality.enhanced()) {
-            ExplosionCloudEmitter.emit(level, x, y, z, size, style, direction);
+            ExplosionCloudEmitter.emit(level, x, y, z, size, style, direction,
+                    ExplosionCraterScale.footprint(x, z, affected));
             return;
         }
         List<BlockPos> blocks = new ArrayList<>(affected);
