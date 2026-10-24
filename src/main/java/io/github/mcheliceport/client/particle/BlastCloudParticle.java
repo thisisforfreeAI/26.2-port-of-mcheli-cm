@@ -92,7 +92,8 @@ final class BlastCloudParticle extends SmokeParticle {
     }
 
     @Override public float getQuadSize(float partialTick) {
-        return this.radius * ExplosionSequence.cloudGrowth(this.age + partialTick, this.delay, this.fireTicks > 0, this.base);
+        return this.radius * ExplosionSequence.cloudGrowth(this.age + partialTick, this.delay, this.fireTicks > 0, this.base)
+                * ExplosionSequence.fireRoll(this.age + partialTick - this.delay, this.fireTicks, this.angle);
     }
 
     @Override protected float getU0() { return this.frameU(this.frame % 4, 4, false); }

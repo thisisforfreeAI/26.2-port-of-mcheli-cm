@@ -90,20 +90,20 @@ final class ExplosionCloudEmitter {
         int tier = i - baseCount;
         double angle = i * 2.3999632297 + random.nextDouble() * 0.6;
         double dx = Math.cos(angle), dz = Math.sin(angle);
-        double spread = radius * (base ? 0.43 : 0.12 + random.nextDouble() * 0.16);
+        double spread = radius * (base ? 0.27 + random.nextDouble() * 0.16 : 0.12 + random.nextDouble() * 0.20);
         Vec3 footprint = ExplosionFootprint.cloudOffset(power, style, axis, dx * spread, dz * spread, radius);
         double px = x + footprint.x, pz = z + footprint.z;
         double py = y + radius * (base ? 0.07 : 0.22 + tier * 0.12);
         boolean wisp = i % 3 == 2;
-        float r = (wisp ? 0.7F : 1F) * radius * (base ? 0.78F + random.nextFloat() * 0.18F : 0.70F + random.nextFloat() * 0.20F);
+        float r = radius * ExplosionSequence.smokeScale(wisp, random.nextFloat());
         if (!EffectAdmission.admitBlastLobe(level, px, py, pz, r)) return;
         double speed = radius * (base ? 0.055 : 0.009) * (0.8 + random.nextDouble() * 0.4);
-        int delay = base ? i % 3 : 3 + Math.min(7, tier * 2);
+        int delay = ExplosionSequence.smokeDelay(base, base ? i : tier);
         int life = BlastSmokeMotion.lifetime(Math.min(116, ExplosionSequence.life(power, style)
                 + (base ? 12 : 20) + random.nextInt(8)), wisp);
         Minecraft.getInstance().particleEngine.add(new BlastCloudParticle(level, px, py, pz,
                 dx * speed, base ? 0.01 : 0.045 + Math.min(3, tier) * 0.018, dz * speed,
-                r, life, 0, base ? 0.94F : 0.9F, delay, base,
+                r, life, 0, wisp ? 0.62F : base ? 0.94F : 0.9F, delay, base,
                 base || tier < 2 ? ExplosionSequence.fireTicks(power, style) : 0));
     }
 
@@ -113,11 +113,11 @@ final class ExplosionCloudEmitter {
         double dx = Math.cos(angle), dz = Math.sin(angle);
         // Overlapping pockets punch through the developing smoke, rather than flying away
         // as a ring of identical fireballs. Each one leaves its own cooling smoke behind.
-        double spread = i == 0 ? 0 : radius * (0.12 + random.nextDouble() * 0.12);
+        double spread = i == 0 ? 0 : radius * (0.18 + random.nextDouble() * 0.18);
         double px = x + dx * spread, pz = z + dz * spread;
         boolean lingering = style == BlastStyle.INCENDIARY;
         double py = y + radius * (lingering ? 0.07 : 0.10 + random.nextDouble() * 0.10);
-        float r = radius * (i == 0 ? 1.05F : 0.60F + random.nextFloat() * 0.25F);
+        float r = radius * (i == 0 ? 0.82F : 0.48F + random.nextFloat() * 0.27F);
         if (!EffectAdmission.admitBlastLobe(level, px, py, pz, r)) return false;
         double speed = i == 0 ? 0 : Math.min(0.7, radius * 0.07) * (0.7 + random.nextDouble() * 0.3);
         int duration = ExplosionSequence.fireTicks(power, style);

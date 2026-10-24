@@ -6,6 +6,24 @@ import io.github.mcheliceport.effect.BlastStyle;
 import org.junit.jupiter.api.Test;
 
 class ExplosionSequenceTest {
+    @Test void impactOpensBeforeSmokeAndFireNeverExceedsChargedCoverage() {
+        for (int i = 0; i < 18; i++) {
+            assertTrue(ExplosionSequence.smokeDelay(true, i) >= 2);
+            assertTrue(ExplosionSequence.smokeDelay(false, i) >= 5);
+            assertTrue(ExplosionSequence.smokeDelay(false, i) <= 11);
+        }
+        for (int duration = 4; duration <= 56; duration++) for (int age = 0; age <= 140; age++) {
+            float roll = ExplosionSequence.fireRoll(age, duration, 1.4F);
+            assertTrue(roll >= 0.84F && roll <= 1);
+            if (age >= duration) assertEquals(1, roll);
+            assertTrue(roll * ExplosionSequence.cloudGrowth(age, 0, true, false) <= 1);
+        }
+        for (int i = 0; i <= 100; i++) {
+            float variation = i / 100F;
+            assertTrue(ExplosionSequence.smokeScale(true, variation) < ExplosionSequence.smokeScale(false, variation));
+            assertTrue(ExplosionSequence.smokeScale(false, variation) <= 1);
+        }
+    }
     @Test void largeMissileWarheadsGetVolumeAndRollingFireWithoutChangingSmallSmokeProfiles() {
         assertTrue(ExplosionSequence.smokeLed(4, BlastStyle.BLAST));
         assertFalse(ExplosionSequence.smokeLed(10, BlastStyle.BLAST));

@@ -54,6 +54,24 @@ public final class ExplosionSequence {
                 : (style == BlastStyle.CANNON ? 4 : 6) + (int) (p * 0.5F);
     }
 
+    /** Open the impact before the surrounding billows fill in; no deferred spawning. */
+    public static int smokeDelay(boolean base, int index) {
+        return base ? 2 + Math.floorMod(index, 3) : 5 + Math.min(6, Math.max(0, index) * 2);
+    }
+
+    /** A few dominant billows and smaller edge wisps, within the existing charged radius. */
+    public static float smokeScale(boolean wisp, float variation) {
+        float t = Float.isFinite(variation) ? Math.clamp(variation, 0, 1) : 0;
+        return wisp ? 0.42F + 0.12F * t : 0.72F + 0.20F * t;
+    }
+
+    /** Contraction between hot pockets gives rolling fire breathing room, never extra coverage. */
+    public static float fireRoll(float age, int duration, float phase) {
+        if (duration <= 0 || age >= duration || age < 0) return 1;
+        float envelope = (float) Math.sin(Math.PI * Math.clamp(age / duration, 0, 1));
+        return 1 - 0.16F * envelope * (0.5F + 0.5F * (float) Math.sin(age * 0.7F + phase));
+    }
+
     public static float flashRadius(float power, BlastStyle style) {
         return radius(power, style) * 1.5F;
     }

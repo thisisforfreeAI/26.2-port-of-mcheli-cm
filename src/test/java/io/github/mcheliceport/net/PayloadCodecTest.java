@@ -24,6 +24,11 @@ class PayloadCodecTest {
         }
     }
 
+    @Test void explosionAudioRoundTripsIndependentlyOfVisualEffects() {
+        var p = new ExplosionSoundPayload(-1024.25, 63.5, 250000.75, 15, 0.63F);
+        assertEquals(p, roundTrip(ExplosionSoundPayload.CODEC, p));
+    }
+
     private static <T> T roundTrip(StreamCodec<FriendlyByteBuf, T> codec, T value) {
         RegistryFriendlyByteBuf buf = new RegistryFriendlyByteBuf(Unpooled.buffer(), RegistryAccess.EMPTY);
         codec.encode(buf, value);

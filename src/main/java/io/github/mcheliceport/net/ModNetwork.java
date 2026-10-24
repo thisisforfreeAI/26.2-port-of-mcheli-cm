@@ -46,8 +46,8 @@ public final class ModNetwork {
 
     private static final Logger LOGGER = LogUtils.getLogger();
     /** Bump when payload encoding, menu layout or synchronized entity data changes. */
-    // /mcheli sendss and modlist: the command request, screenshot and mod list payloads.
-    public static final String VERSION = "29";
+    // M8: independent, optional explosion audio with distance-delayed client playback.
+    public static final String VERSION = "30";
 
     private ModNetwork() {
     }
@@ -98,6 +98,8 @@ public final class ModNetwork {
                 ModNetwork::handleStatusRequest);
         registrar.playToClient(AircraftStatusResponsePayload.TYPE, AircraftStatusResponsePayload.CODEC,
                 ModNetwork::handleStatusResponse);
+        registrar.playToClient(ExplosionSoundPayload.TYPE, ExplosionSoundPayload.CODEC,
+                (p, context) -> { var hooks = WeaponClientHooks.get(); if (hooks != null) hooks.explosionSound(p); });
         registrar.playToClient(ExplosionEffectPayload.TYPE, ExplosionEffectPayload.CODEC,
                 (p, context) -> McheliEffects.explosionEffects(context.player().level(), p.x(), p.y(), p.z(),
                         p.size(), p.inWater(), p.affectedBlocks(), p.blastStyle(), p.direction()));
