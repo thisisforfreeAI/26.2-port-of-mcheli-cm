@@ -273,7 +273,8 @@ set that key to 60 on existing installations. Particle/admission caps are unchan
   Balanced/High radius caps 2.5/3; Low/load restores the original 2. No new render pass, but
   wider shadows increase bounded vanilla support sampling. See [ground contact](M8_GROUND_CONTACT.md).
 - Rotor-wash density now uses each candidate's local surface/height, not the rotor center's
-  material. Per-rotor sample slots no longer overlap. Existing read/cache/admission caps remain.
+  material. Original per-rotor sample slots retained; review confirmed they do not overlap
+  with the existing two-candidate maximum. Read/cache/admission caps remain.
 - Existing track/mark surface fitting retained. Further texture art, mixed-surface visual
   acceptance, lighting review and real-hardware performance remain pending.
 
@@ -285,3 +286,19 @@ set that key to 60 on existing installations. Particle/admission caps are unchan
 - Delayed smoke amber lighting now uses the same local age as its sprite animation.
 - A dedicated opt-in realism fixture renders M1A2 shadow/shading toggles and captures night,
   roof shade and sand/grass-boundary explosions. No changes to weapon gameplay or tracer glow.
+
+### Material refinement
+
+Hard surfaces replace dirt-jet slots with block-textured chips, while sand and soil retain
+loose jets. Same request count and shared fragment caps. A six-slot Balanced broad response
+requests four chips on rock versus two on sand/soil; isolated native scenes check the result
+without a primary cloud obscuring ground admission. Boundary capture occurs at age six.
+
+### Cross-effect wind and Classic cleanup
+
+Engine wisps and enhanced damage smoke now use the same slow wind field as explosion smoke,
+after their existing launch/vehicle-motion impulse. Lifetimes, emission rates and source caps
+remain unchanged. Trails, water spray and Classic smoke retain their existing motion.
+Vehicle surface shading now uses the combined quality/style Enhanced gate: either Classic
+switch restores original colors. The atmosphere fixture checks rendered vehicle states after
+switching style to Classic, in addition to its existing emission/audio/state cleanup assertions.

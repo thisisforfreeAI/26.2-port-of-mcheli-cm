@@ -82,6 +82,7 @@ public final class ClientEffects implements McheliEffects.Sink {
                 && !clientLevel.getFluidState(BlockPos.containing(p.posX, p.posY, p.posZ))
                         .is(net.minecraft.tags.FluidTags.WATER)) {
             fx.heat = Math.clamp(p.damageHeat, 0, 1);
+            fx.coherentDrift = true;
         }
         fx.setAlphaF(p.a);
         if (p.age > 0) {

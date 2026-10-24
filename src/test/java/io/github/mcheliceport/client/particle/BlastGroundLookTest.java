@@ -34,6 +34,20 @@ class BlastGroundLookTest {
         assertFalse(BlastGroundLook.hotFragment(Float.NaN, BlastStyle.INCENDIARY, BlastGroundLook.Surface.SOLID, 2));
     }
 
+    @Test void hardImpactsTradeDirtJetsForBoundedChipsInsteadOfAddingEffects() {
+        for (int count : new int[]{6, 10}) {
+            int solid = 0, soil = 0;
+            for (int i = 0; i < count; i++) {
+                boolean jet = i % 3 == 1;
+                if (BlastGroundLook.fragmentSlot(i, count, true, jet, BlastGroundLook.Surface.SOLID)) solid++;
+                if (BlastGroundLook.fragmentSlot(i, count, true, jet, BlastGroundLook.Surface.SOIL)) soil++;
+            }
+            assertTrue(solid > soil);
+            assertTrue(solid <= BlastGroundLook.fragmentTickCap(count == 6 ? EffectBudget.BALANCED : EffectBudget.HIGH, 0));
+            assertTrue(solid <= count);
+        }
+        assertFalse(BlastGroundLook.fragmentSlot(0, 1, true, true, BlastGroundLook.Surface.SOLID));
+    }
     @Test void materialVolumeIsFiniteAndSmallImpactsStaySmallerThanBombs() {
         for (var surface : BlastGroundLook.Surface.values()) for (var style : BlastStyle.values()) {
             assertTrue(BlastGroundLook.dustRadius(Float.MAX_VALUE, style, surface) <= 4);

@@ -4,7 +4,7 @@ package io.github.mcheliceport.client.particle;
 final class BlastSmokeMotion {
     private BlastSmokeMotion() {}
 
-    // One slowly changing weather vector for every explosion in this client world.
+    // One slowly changing weather vector for explosion, engine and damage smoke in this client world.
     private static long sampledTick = Long.MIN_VALUE;
     private static double windX, windZ;
     static double windX(long tick) { sample(tick); return windX; }

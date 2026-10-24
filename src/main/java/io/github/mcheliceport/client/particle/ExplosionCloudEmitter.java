@@ -146,7 +146,7 @@ final class ExplosionCloudEmitter {
         float colour = 0.3F + random.nextFloat() * 0.4F;
         puff.setColor(colour + 0.1F, colour + 0.05F, colour);
         puff.diffusible = true;
-        puff.blastMotion = puff.enhanced;
+        puff.coherentDrift = puff.enhanced;
         puff.disableCollision();
         puff.particleScale = nominal * ExplosionLook.startScale(power, style, quality);
         puff.particleMaxScale = nominal * 2;

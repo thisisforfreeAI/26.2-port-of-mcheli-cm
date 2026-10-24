@@ -1,0 +1,64 @@
+{
+  "vulkan": {
+    "scenes": [
+      "shadow-balanced",
+      "shadow-high",
+      "shadow-disabled",
+      "classic",
+      "shade-disabled",
+      "night-blast",
+      "roof-blast",
+      "split-ground",
+      "rock-fragments",
+      "sand-jets"
+    ],
+    "ground_checks": [
+      {
+        "fragments": 2,
+        "ring": 10,
+        "direct_reads": 12
+      },
+      {
+        "fragments": 4,
+        "ring": 10,
+        "direct_reads": 12
+      },
+      {
+        "fragments": 2,
+        "ring": 10,
+        "direct_reads": 12
+      }
+    ]
+  },
+  "opengl": {
+    "scenes": [
+      "shadow-balanced",
+      "shadow-high",
+      "shadow-disabled",
+      "classic",
+      "shade-disabled",
+      "night-blast",
+      "roof-blast",
+      "split-ground",
+      "rock-fragments",
+      "sand-jets"
+    ],
+    "ground_checks": [
+      {
+        "fragments": 2,
+        "ring": 10,
+        "direct_reads": 12
+      },
+      {
+        "fragments": 4,
+        "ring": 10,
+        "direct_reads": 12
+      },
+      {
+        "fragments": 2,
+        "ring": 10,
+        "direct_reads": 12
+      }
+    ]
+  }
+}

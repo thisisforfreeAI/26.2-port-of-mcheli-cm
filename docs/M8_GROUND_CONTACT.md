@@ -26,9 +26,10 @@ candidate. It now applies density after sampling the candidate's own surface and
 its local height/strength. Sparse pavement wash and denser sand/snow/spray therefore follow the
 puff's supporting terrain rather than the terrain directly beneath the helicopter.
 
-Cache slots now reserve four entries per rotor (center plus candidate slots), preventing the
-second edge candidate of one rotor from aliasing the next rotor's center. Existing source,
-cache (128 entries), block-read (256/tick), range, period and particle-admission caps remain.
+The original three cache slots per rotor (center plus up to two candidates) are retained.
+An initial diagnosis of slot aliasing was incorrect: candidate count never exceeds two.
+Existing source, cache (128 entries), block-read (256/tick), range, period and particle-admission
+caps remain.
 Candidates now reach the local sample before the material probability test, so sparse surfaces
 can require more reads than before; the shared read cap is unchanged. Repeated game times
 still cannot duplicate a burst. Existing motion, surface tint, shallow
@@ -57,3 +58,29 @@ plus the shading toggle and populated baked-color groups. It also captures night
 and sand/grass boundary blasts and asserts delayed amber illumination. Broader stock/addon,
 sloped-ground and moving-vehicle artistic acceptance remains open. The fixture changes the
 disposable M6Smoke world and config; do not run it on a valued save.
+
+## Material refinement
+
+Hard-surface impacts now replace dirt-jet slots with block-textured chips. For a six-request
+Balanced broad blast, this changes two fragment requests to four, with the same total six
+requests. The shared per-tick fragment cap remains four (High: six); admission and the live
+fragment cap can still suppress requests under load. Sand/soil retain their narrow dust jets.
+This does not add particles beyond the ground response's existing request count.
+
+The focused fixture includes isolated boundary, rock and sand bursts, checks four versus two
+admitted fragments in the quiet Balanced scenes, and captures age-six dust/chips before the
+front fades. These are cosmetic responses on surviving terrain; no damage or block behavior
+changes. Water continues through the separate splash path.
+
+The expanded 10-scene realism fixture passed on both backends at 1080p, checking admitted
+fragment counts 2/4/2 on boundary-soil/rock/sand, 10 ring sectors and 12 direct reads in each
+quiet isolated scene. See [material summary](performance/m8-realism/material-summary.json).
+
+Shared wind now also affects Enhanced engine wisps and damage smoke after their initial
+impulse. Source counts, admission, lifetimes, rotor flow, projectile trails and Classic motion
+remain unchanged. The existing combined atmosphere fixture passed on both backends at its
+native 1280x720 size, exercising four AH-64s, an M1A2, startup, material wash, damage, night
+firing and Classic cleanup. Five rendered vehicle states restored original shading/shadow
+settings on the style switch. Audio checks used OpenAL's null output device. The
+[atmosphere summary](performance/m8-realism/atmosphere-summary.json) retains frame-sample
+accumulators as diagnostics; they are not distinct particle counts or performance rates.

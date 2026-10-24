@@ -55,7 +55,7 @@ final class BlastGroundEffects {
                 double dx = Math.cos(angle), dz = Math.sin(angle);
                 if (!ExplosionLook.broad(style)) { dx = dx * 0.4 + axis.x; dz = dz * 0.4 + axis.z; }
                 boolean broad = ExplosionLook.broad(style);
-                boolean fragment = count > 1 && (broad ? i % 3 == 2 : i == count - 1);
+                boolean fragment = BlastGroundLook.fragmentSlot(i, count, broad, jet, material);
                 if (fragment) {
                     if (emitted >= BlastGroundLook.fragmentTickCap(quality, pressure)
                             || fragments.size() >= BlastGroundLook.fragmentLiveCap(quality)) continue;

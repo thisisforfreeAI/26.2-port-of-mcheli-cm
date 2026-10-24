@@ -159,6 +159,7 @@ public final class VehicleAtmosphere {
                 SmokeParticle smoke = new SmokeParticle(level, position.x, position.y, position.z,
                         motion.x + 0.01, motion.y + 0.065, motion.z - 0.01);
                 smoke.enhanced = true;
+                smoke.coherentDrift = true;
                 smoke.disableCollision();
                 smoke.setColor(gray, gray, gray);
                 smoke.setAlphaF(0.35F + severity * 0.4F);

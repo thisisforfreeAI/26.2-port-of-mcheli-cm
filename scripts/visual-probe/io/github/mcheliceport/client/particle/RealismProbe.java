@@ -22,7 +22,7 @@ import net.neoforged.neoforge.client.event.RenderFrameEvent;
 @EventBusSubscriber(modid = "mcheli_ce_port", value = Dist.CLIENT)
 public final class RealismProbe {
     private static final String[] NAMES = {"shadow-balanced", "shadow-high", "shadow-disabled", "classic",
-            "shade-disabled", "night-blast", "roof-blast", "split-ground"};
+            "shade-disabled", "night-blast", "roof-blast", "split-ground", "rock-fragments", "sand-jets"};
     private static int tick, phase = -1, age;
     private static String capture;
     private static HeldTank tank;
@@ -72,12 +72,22 @@ public final class RealismProbe {
             } else {
                 commands(mc, "tp @s 0 -56 5 0 8");
                 if (phase == 6) commands(mc, "fill -7 -52 10 7 -52 24 stone");
+                if (phase == 9) commands(mc, "fill -16 -61 4 16 -61 32 sand");
                 if (phase == 7) commands(mc, "fill -16 -61 4 -1 -61 32 sand", "fill 0 -61 4 16 -61 32 grass_block");
             }
             System.out.println("M8_REALISM phase=" + NAMES[phase]);
         }
-        if (age == 50 && phase >= 5)
-            ClientEffects.INSTANCE.explosionEffects(mc.level, 0, -59.5, 17, 12, false, List.of(), BlastStyle.HEAVY);
+        if (age == 50 && phase >= 5) {
+            if (phase >= 7) {
+                BlastGroundEffects.emit(mc.level, 0, -59.5, 17, 12, BlastStyle.HEAVY);
+                int expected = phase == 8 ? 4 : 2;
+                if (BlastGroundEffects.emittedFragments() != expected)
+                    throw new IllegalStateException("Wrong material fragments: " + BlastGroundEffects.emittedFragments());
+                System.out.println("M8_REALISM fragments=" + BlastGroundEffects.emittedFragments()
+                        + " ring=" + BlastGroundEffects.ringEmitted() + " reads=" + BlastGroundEffects.surfaceReads());
+            } else ClientEffects.INSTANCE.explosionEffects(mc.level, 0, -59.5, 17, 12, false, List.of(), BlastStyle.HEAVY);
+        }
+        if (age == 56 && phase >= 7) capture = NAMES[phase] + "-early";
         if (age == 75) {
             if (phase < 5) checkTank(mc);
             else {

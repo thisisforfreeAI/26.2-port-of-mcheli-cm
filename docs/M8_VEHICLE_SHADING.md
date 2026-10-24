@@ -51,3 +51,7 @@ check, not certification of every stock/addon texture or the hardware frame-rate
 Billow curling now decays between ages 8 and 40, allowing late smoke lobes to converge on
 the shared wind instead of maintaining divergent curl headings. A trajectory test covers
 opposing curl directions and their convergence; particle requests and lifetimes are unchanged.
+
+Both Classic switches are respected: `effectQuality=CLASSIC` or `effectStyle=CLASSIC`
+disables the new vertex shading. The combined atmosphere fixture now checks rendered
+vehicle states after changing style, rather than only checking the effects' state caches.
