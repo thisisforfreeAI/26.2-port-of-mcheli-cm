@@ -34,7 +34,7 @@ public abstract class AircraftRenderer<T extends AircraftEntity> extends EntityR
     /** Upstream's colour for a destroyed vehicle. */
     private static final int DESTROYED_COLOR = 0xFF262626;
     /** Upstream's colour for a vehicle ({@code 0.75} grey; {@code __TextureAlpha} is 1). */
-    private static final int COLOR = 0xFFBFBFBF;
+    private static final int COLOR = io.github.mcheliceport.client.model.VehicleSurfaceShade.BASE_COLOR;
 
     public AircraftRenderer(EntityRendererProvider.Context context) {
         super(context);

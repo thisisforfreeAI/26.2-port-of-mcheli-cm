@@ -50,7 +50,10 @@ Enhanced load and adaptive load. It checks duplicate-tick suppression, terrain/c
 water ripple removal and altitude/load shedding. Both backends peaked at 96 direct block
 reads/tick in the eight-helicopter load scenes and reached adaptive pressure 3. The
 [summary](performance/m8-realism/ground-contact-summary.json) records peak work counts and
-final particle counts; it is not a target-GPU timing certificate. Native fixture helicopters
-are unrendered, so this run does not establish visual acceptance of the new vehicle shadows.
-Shadow tests cover finite sizing, quality/load fallback and the radius caps; shadow visuals
-and mixed-material transitions remain gameplay acceptance items.
+final particle counts; it is not a target-GPU timing certificate. That wash fixture uses unrendered helicopters. A separate opt-in `mcheli.probeRealism`
+fixture now renders a held stock M1A2 and checks the complete vanilla render-state path:
+Balanced radius 2.5, High 3, disabled/Classic 2, nonempty fitted shadow pieces and model draws,
+plus the shading toggle and populated baked-color groups. It also captures night, roof-shaded
+and sand/grass boundary blasts and asserts delayed amber illumination. Broader stock/addon,
+sloped-ground and moving-vehicle artistic acceptance remains open. The fixture changes the
+disposable M6Smoke world and config; do not run it on a valued save.

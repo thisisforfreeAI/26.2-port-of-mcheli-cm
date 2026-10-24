@@ -7,7 +7,8 @@ import java.util.WeakHashMap;
 /** Model-space crease shading, baked on the model loader rather than ray traced per frame. */
 public final class VehicleSurfaceShade {
     private VehicleSurfaceShade() {}
-    private static final Map<McheliModel.Group, float[]> CACHE = new WeakHashMap<>();
+    public static final int BASE_COLOR = 0xFFBFBFBF;
+    private static final Map<McheliModel.Group, int[]> CACHE = new WeakHashMap<>();
     private record Position(float x, float y, float z) {}
     private static final class Neighbours {
         double x, y, z, distance;
@@ -15,11 +16,13 @@ public final class VehicleSurfaceShade {
     public static void prepare(McheliModel model) {
         for (var group : model.groups) {
             float[] shade = bake(group.data());
-            synchronized (CACHE) { CACHE.put(group, shade); }
+            int[] colors = shade == null ? null : new int[shade.length];
+            if (colors != null) for (int i = 0; i < shade.length; i++) colors[i] = tint(BASE_COLOR, shade[i]);
+            synchronized (CACHE) { CACHE.put(group, colors); }
         }
     }
     /** No lazy bake on the render thread. Oversized addon groups use ordinary lighting. */
-    public static float[] get(McheliModel.Group group) {
+    public static int[] get(McheliModel.Group group) {
         synchronized (CACHE) { return CACHE.get(group); }
     }
     static float[] bake(float[] data) {

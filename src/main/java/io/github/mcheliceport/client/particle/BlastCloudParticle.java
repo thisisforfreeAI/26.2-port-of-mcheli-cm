@@ -60,9 +60,11 @@ final class BlastCloudParticle extends SmokeParticle {
         // A fast impulse settles into a slow curl. Base smoke stays at the impact instead of
         // joining every other puff in a detached rising ball.
         double drag = this.fireTicks > 0 ? 0.82 : this.base ? 0.91 : 0.95;
+        double curl = BlastSmokeMotion.curlShare(this.age - this.delay);
         double dx = this.xd * this.turnCos - this.zd * this.turnSin;
-        this.zd = (this.xd * this.turnSin + this.zd * this.turnCos);
-        this.xd = dx;
+        double dz = this.xd * this.turnSin + this.zd * this.turnCos;
+        this.xd += (dx - this.xd) * curl;
+        this.zd += (dz - this.zd) * curl;
         this.yd = this.yd * (this.base ? 0.90 : 0.97) + (this.base ? 0.001 : 0.002);
         this.xd = BlastSmokeMotion.advect(this.xd, BlastSmokeMotion.windX(this.level.getGameTime()),
                 drag, this.age - this.delay);
@@ -101,7 +103,7 @@ final class BlastCloudParticle extends SmokeParticle {
     @Override protected int getLightCoords(float partialTick) {
         return EffectLook.smokeLight(super.getLightCoords(partialTick),
                 Math.max(ExplosionSequence.fireHeat(this.age + partialTick - this.delay, this.fireTicks),
-                        ExplosionSequence.backlight(this.age + partialTick, this.backlightTicks)));
+                        ExplosionSequence.backlight(this.age + partialTick - this.delay, this.backlightTicks)));
     }
 
 }

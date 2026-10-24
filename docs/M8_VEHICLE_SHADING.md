@@ -18,9 +18,9 @@ sits above it. No rays, new textures, shaders, draw calls, or world reads are ad
 
 The bake runs on the existing model-loading path, before models are published for rendering.
 A weak-key cache releases shading when its model group is evicted/reloaded. Groups over
-60,000 vertices fall back to ordinary lighting. Cached data costs four bytes per vertex
-(12.5% of the existing eight-float vertex data); rendering adds a lookup per group and color
-scaling per submitted vertex. Hardware cost and visual acceptance still require measurement.
+60,000 vertices fall back to ordinary lighting. Cached packed colors cost four bytes per vertex
+(12.5% of the existing eight-float vertex data); rendering adds a lookup per group and reads ready vertex colors. Tint rounding/clamping
+runs at model load, rather than per vertex per frame. Hardware cost and visual acceptance still require measurement.
 
 Tests cover neutral flat panels, concave/convex bounds, degenerate geometry, oversized addon
 fallback, alpha preservation and channel clamping. Native checks use the existing follow-up
@@ -37,3 +37,17 @@ Low/disabled/adaptive/cooldown and isolated dust fronts. Its work-limit assertio
 These are functional software-renderer checks, not target-GPU performance results or a
 full artistic review of all stock/addon vehicles. The new geometry tests validate shade
 bounds; the native fixture confirms the integrated render path loads and draws.
+
+Delayed blast-smoke amber lighting now uses the same local age as its animated sheet, so
+lighting does not expire while the lobe is still hidden by its stagger delay.
+
+The focused rendered-vehicle fixture also passed on Vulkan and OpenGL: stock M1A2
+Balanced/High/disabled/Classic shadows fit 36/49/25/25 support pieces; shading toggles
+and 142 baked-color groups were checked. Night, roof shade and boundary blast captures
+completed, with delayed amber block light 7 after the lobe's stagger delay. See the
+[focused summary](performance/m8-realism/focused-summary.json). This is a focused integration
+check, not certification of every stock/addon texture or the hardware frame-rate goal.
+
+Billow curling now decays between ages 8 and 40, allowing late smoke lobes to converge on
+the shared wind instead of maintaining divergent curl headings. A trajectory test covers
+opposing curl directions and their convergence; particle requests and lifetimes are unchanged.

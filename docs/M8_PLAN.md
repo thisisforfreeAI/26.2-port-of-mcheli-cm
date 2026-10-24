@@ -276,3 +276,12 @@ set that key to 60 on existing installations. Particle/admission caps are unchan
   material. Per-rotor sample slots no longer overlap. Existing read/cache/admission caps remain.
 - Existing track/mark surface fitting retained. Further texture art, mixed-surface visual
   acceptance, lighting review and real-hardware performance remain pending.
+
+### Refinement after ground-contact slice
+
+- Surface tint is now baked to packed vertex colors during model loading. The render loop
+  reads colors directly instead of rounding/clamping three channels for every vertex every frame.
+  Cache storage remains four bytes per vertex; nonstandard tint paths continue to bypass it.
+- Delayed smoke amber lighting now uses the same local age as its sprite animation.
+- A dedicated opt-in realism fixture renders M1A2 shadow/shading toggles and captures night,
+  roof shade and sand/grass-boundary explosions. No changes to weapon gameplay or tracer glow.

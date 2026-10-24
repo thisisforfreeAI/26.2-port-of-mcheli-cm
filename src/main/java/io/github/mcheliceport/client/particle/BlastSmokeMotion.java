@@ -23,6 +23,11 @@ final class BlastSmokeMotion {
         return velocity * drag + wind * (1 - drag) * coupling;
     }
 
+    /** Initial billows curl; mature smoke travels together with the prevailing wind. */
+    static double curlShare(int age) {
+        return 1 - Math.clamp((age - 8) / 32.0, 0, 1);
+    }
+
     /** Wisps disperse first; cores keep the original bounded lifetime. */
     static int lifetime(int coreLife, boolean wisp) {
         return wisp ? Math.max(16, coreLife * 2 / 3) : coreLife;
