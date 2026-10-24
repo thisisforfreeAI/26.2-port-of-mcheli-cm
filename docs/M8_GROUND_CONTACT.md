@@ -84,3 +84,21 @@ firing and Classic cleanup. Five rendered vehicle states restored original shadi
 settings on the style switch. Audio checks used OpenAL's null output device. The
 [atmosphere summary](performance/m8-realism/atmosphere-summary.json) retains frame-sample
 accumulators as diagnostics; they are not distinct particle counts or performance rates.
+
+## Avoiding hidden work
+
+The footprint calculation now runs only inside vanilla's 16-block shadow range, on a budget
+that permits a wider shadow and with no adaptive pressure. Distant vehicles, Low and load
+fallbacks skip wheel-distance calculations entirely. The default radius remains 2 for those
+states; distant states naturally produce no vanilla shadow pieces. The focused fixture has
+an additional far-shadow scene to check that model draws/shading remain active while the
+shadow has no fitted pieces. Dust-front tint construction is deferred until sector admission,
+avoiding temporary arrays and material-color work for rejected sectors.
+
+Both backends passed the expanded 11-scene focused fixture, including the far-shadow case:
+body draws and 142 baked groups remained active, radius fell back to 2, and shadow pieces
+were zero. See [work-skip summary](performance/m8-realism/work-skip-summary.json).
+New realism, atmosphere and combat drivers explicitly set their adaptive goal from
+`-Dmcheli.probeTargetFps=60` (default 60), so old saved preview configs cannot silently retain
+80. This is the effects controller's goal, not a frame-rate cap or a measured hardware result.
+Use an explicit value of 80 when reproducing historical adaptive runs.

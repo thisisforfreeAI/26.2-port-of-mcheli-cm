@@ -55,16 +55,20 @@ public abstract class AircraftRenderer<T extends AircraftEntity> extends EntityR
     public void extractRenderState(T entity, AircraftRenderState state, float partialTicks) {
         state.contactShadowRadius = 2;
         if (io.github.mcheliceport.config.EffectQuality.enhanced()
-                && ClientConfig.get(ClientConfig.VEHICLE_CONTACT_SHADOWS)) {
-            double wheelReach = 0;
-            var contactInfo = entity.getAcInfo();
-            if (contactInfo != null) for (int i = 0; i < Math.min(16, contactInfo.wheels.size()); i++) {
-                var wheel = contactInfo.wheels.get(i);
-                wheelReach = Math.max(wheelReach, Math.hypot(wheel.pos().x, wheel.pos().z));
+                && ClientConfig.get(ClientConfig.VEHICLE_CONTACT_SHADOWS)
+                && this.entityRenderDispatcher.camera != null
+                && this.entityRenderDispatcher.distanceToSqr(entity) < 256) {
+            var budget = ClientConfig.get(ClientConfig.EFFECT_BUDGET);
+            int pressure = io.github.mcheliceport.client.particle.EffectPerformance.pressure();
+            if (budget != ClientConfig.EffectBudget.LOW && pressure == 0) {
+                double wheelReach = 0;
+                var contactInfo = entity.getAcInfo();
+                if (contactInfo != null) for (int i = 0; i < Math.min(16, contactInfo.wheels.size()); i++) {
+                    var wheel = contactInfo.wheels.get(i);
+                    wheelReach = Math.max(wheelReach, Math.hypot(wheel.pos().x, wheel.pos().z));
+                }
+                state.contactShadowRadius = VehicleContactLook.radius(entity.getBbWidth(), wheelReach, budget, pressure);
             }
-            state.contactShadowRadius = VehicleContactLook.radius(entity.getBbWidth(), wheelReach,
-                    ClientConfig.get(ClientConfig.EFFECT_BUDGET),
-                    io.github.mcheliceport.client.particle.EffectPerformance.pressure());
         }
         super.extractRenderState(entity, state, partialTicks);
         state.draws.clear();

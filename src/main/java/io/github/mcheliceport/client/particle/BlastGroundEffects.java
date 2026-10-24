@@ -91,13 +91,13 @@ final class BlastGroundEffects {
                 }
             }
             if (y - surfaceY <= Math.min(3, power * 0.4F))
-                ring(level, x, surfaceY, z, power, style, tint, material, random);
+                ring(level, x, surfaceY, z, power, style, random);
             return;
         }
     }
 
     private static void ring(ClientLevel level, double x, double y, double z, float power, BlastStyle style,
-            float[] tint, BlastGroundLook.Surface material, Random random) {
+            Random random) {
         if (!ClientConfig.get(ClientConfig.BLAST_DUST_RING)) return;
         var quality = ClientConfig.get(ClientConfig.EFFECT_BUDGET);
         int sectors = BlastRingLook.sectors(power, style, quality, EffectPerformance.pressure());
@@ -117,10 +117,10 @@ final class BlastGroundEffects {
             if (height <= 0 || Math.abs(at.getY() + height - y) > 0.6) continue;
             // Each sector already sampled its own supporting block. Reuse it for color and
             // motion so fronts crossing sand/grass/stone do not carry the origin's material.
-            var sectorMaterial = material(ground);
-            float[] sectorTint = tint(level, at, ground, sectorMaterial);
             double py = at.getY() + height + radius * 0.3;
             if (!EffectAdmission.admit(level, px, py, pz, false, radius)) continue;
+            var sectorMaterial = material(ground);
+            float[] sectorTint = tint(level, at, ground, sectorMaterial);
             Minecraft.getInstance().particleEngine.add(new BlastRingParticle(level, px, py, pz, dx, dz,
                     BlastRingLook.reach(power) * sectorMaterial.speedScale, radius, sectorTint,
                     sectorMaterial.opacity * (0.75F + random.nextFloat() * 0.1F)));

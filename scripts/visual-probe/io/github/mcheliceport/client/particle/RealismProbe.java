@@ -22,7 +22,7 @@ import net.neoforged.neoforge.client.event.RenderFrameEvent;
 @EventBusSubscriber(modid = "mcheli_ce_port", value = Dist.CLIENT)
 public final class RealismProbe {
     private static final String[] NAMES = {"shadow-balanced", "shadow-high", "shadow-disabled", "classic",
-            "shade-disabled", "night-blast", "roof-blast", "split-ground", "rock-fragments", "sand-jets"};
+            "shade-disabled", "night-blast", "roof-blast", "split-ground", "rock-fragments", "sand-jets", "far-shadow"};
     private static int tick, phase = -1, age;
     private static String capture;
     private static HeldTank tank;
@@ -45,6 +45,7 @@ public final class RealismProbe {
             mc.getWindow().setWindowed(1920, 1080);
             mc.options.enableVsync().set(false); mc.options.framerateLimit().set(120);
             mc.options.entityShadows().set(true);
+            ClientConfig.EFFECT_TARGET_FPS.set(Integer.getInteger("mcheli.probeTargetFps", 60));
             if (!mc.gui.hud.isHidden()) mc.gui.hud.toggle();
         }
         if (tick < 160) return;
@@ -64,10 +65,11 @@ public final class RealismProbe {
             commands(mc, "time set " + (phase == 5 ? "midnight" : "noon"),
                     "fill -16 -60 4 16 -40 32 air", "fill -16 -61 4 16 -61 32 stone",
                     "tp @s 8 -55 7 45 24");
-            if (phase < 5) {
+            if (phase < 5 || phase == 10) {
                 tank = new HeldTank(mc); tank.setId(-950000 - phase);
                 tank.setAircraftTypeName("m1a2"); tank.setTextureName("m1a2"); tank.setPos(0, -60, 15);
                 var parts = tank.getParts(); for (int i = 0; i < parts.length; i++) parts[i].setId(-960000 - phase * 100 - i);
+                if (phase == 10) commands(mc, "tp @s 8 -55 -10 16 12");
                 mc.level.addEntity(tank);
             } else {
                 commands(mc, "tp @s 0 -56 5 0 8");
@@ -77,7 +79,7 @@ public final class RealismProbe {
             }
             System.out.println("M8_REALISM phase=" + NAMES[phase]);
         }
-        if (age == 50 && phase >= 5) {
+        if (age == 50 && phase >= 5 && phase < 10) {
             if (phase >= 7) {
                 BlastGroundEffects.emit(mc.level, 0, -59.5, 17, 12, BlastStyle.HEAVY);
                 int expected = phase == 8 ? 4 : 2;
@@ -87,9 +89,9 @@ public final class RealismProbe {
                         + " ring=" + BlastGroundEffects.ringEmitted() + " reads=" + BlastGroundEffects.surfaceReads());
             } else ClientEffects.INSTANCE.explosionEffects(mc.level, 0, -59.5, 17, 12, false, List.of(), BlastStyle.HEAVY);
         }
-        if (age == 56 && phase >= 7) capture = NAMES[phase] + "-early";
+        if (age == 56 && phase >= 7 && phase < 10) capture = NAMES[phase] + "-early";
         if (age == 75) {
-            if (phase < 5) checkTank(mc);
+            if (phase < 5 || phase == 10) checkTank(mc);
             else {
                 // A delayed lobe still has amber block illumination after its hidden stagger.
                 var puff = new BlastCloudParticle(mc.level, 0, -59, 17, 0, 0, 0, 1, 60, 0, 0.9F, 8, false, 12);
@@ -104,8 +106,8 @@ public final class RealismProbe {
     @SuppressWarnings("unchecked") private static void checkTank(Minecraft mc) {
         var renderer = (AircraftRenderer<AircraftEntity>) (Object) mc.getEntityRenderDispatcher().getRenderer(tank);
         AircraftRenderState state = renderer.createRenderState(tank, 1);
-        float expected = phase == 1 ? 3 : phase == 2 || phase == 3 ? 2 : 2.5F;
-        if (state.shadowRadius != expected || state.shadowPieces.isEmpty() || state.draws.isEmpty())
+        float expected = phase == 1 ? 3 : phase == 2 || phase == 3 || phase == 10 ? 2 : 2.5F;
+        if (state.shadowRadius != expected || (phase == 10 ? !state.shadowPieces.isEmpty() : state.shadowPieces.isEmpty()) || state.draws.isEmpty())
             throw new IllegalStateException("Missing tank/shadow: " + state.shadowRadius + "/" + state.shadowPieces.size());
         if (state.surfaceShade != (phase != 3 && phase != 4)) throw new IllegalStateException("Shade toggle failed");
         long baked = state.draws.stream().flatMap(d -> d.groups().stream()).filter(g -> VehicleSurfaceShade.get(g) != null).count();

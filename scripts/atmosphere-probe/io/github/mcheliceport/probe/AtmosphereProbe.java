@@ -36,6 +36,7 @@ public final class AtmosphereProbe {
         tick++;
         if(tick==20){
             mc.getWindow().setWindowed(1280,720); mc.options.enableVsync().set(false); mc.options.framerateLimit().set(60);
+            ClientConfig.EFFECT_TARGET_FPS.set(Integer.getInteger("mcheli.probeTargetFps",60));
             mc.options.getSoundSourceOptionInstance(net.minecraft.sounds.SoundSource.MASTER).set(1.0);
             ClientConfig.EFFECT_QUALITY.set(EffectQuality.ENHANCED); ClientConfig.EFFECT_STYLE.set(ClientConfig.EffectStyle.POLISHED);
             ClientConfig.ADAPTIVE_EFFECTS.set(false); ClientConfig.EFFECT_BUDGET.set(ClientConfig.EffectBudget.HIGH);

@@ -302,3 +302,10 @@ remain unchanged. Trails, water spray and Classic smoke retain their existing mo
 Vehicle surface shading now uses the combined quality/style Enhanced gate: either Classic
 switch restores original colors. The atmosphere fixture checks rendered vehicle states after
 switching style to Classic, in addition to its existing emission/audio/state cleanup assertions.
+
+### Work-budget refinement
+
+Skip footprint calculations beyond vanilla's nearby shadow range and on Low/adaptive fallback;
+only eligible nearby vehicles inspect their wheel footprint. Build dust-sector tint only after
+particle admission. Added a far-shadow native scene: body rendering/shading still works, with
+no shadow pieces and the original fallback radius. No density/quality caps raised.
