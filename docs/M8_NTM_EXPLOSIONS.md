@@ -66,3 +66,8 @@ and OpenGL using Mesa/Xvfb, creates a disposable world through GameTests, verifi
 backend log, restarts the JVM to verify persistence, and uploads native screenshots/logs.
 Local missing-mod checks use the same probe without NTM. These are functional/cleanup checks;
 performance acceptance needs the target PC. Native validation results are recorded with the PR.
+
+Local release and all 292 unit tests pass. Vulkan/OpenGL missing-mod UI/fallback and separate
+JVM persistence pass, as does the complete existing Modern-menu regression. A newly copied
+GameTest world also passes the Vulkan bootstrap and missing-mod path. Native-runtime results
+are recorded in [the evidence file](performance/m8-realism/ntm-explosions.json).

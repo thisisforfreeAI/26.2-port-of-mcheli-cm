@@ -1,0 +1,61 @@
+{
+  "feature": "Native NTM Next explosion mode",
+  "target": {
+    "fps": 60,
+    "gpu": "RTX 3060 8GB",
+    "cpu": "Ryzen 7 7800X3D",
+    "resolution": "1920x1080",
+    "hardware_fps_verified": false
+  },
+  "unchanged": [
+    "original crater algorithm",
+    "server weapon damage/ignition/destruction",
+    "protocol 30"
+  ],
+  "native_api": [
+    "com.hbm.particle.ParticleExplosionSmall",
+    "com.hbm.particle.ParticleRocketFlame",
+    "com.hbm.particle.ParticleMukeWave"
+  ],
+  "unit_tests": {
+    "tests": 292,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "local_checks": {
+    "environment": "Mesa llvmpipe, JDK 25; optional uncached JEI excluded locally only",
+    "missing_mod_vulkan": "passed: menu cycling, gates, fallback, saved preference",
+    "missing_mod_opengl": "passed: same plus minimum 320x240 GUI",
+    "restart_vulkan": "passed: NTM selection persisted; restored Current M8",
+    "restart_opengl": "passed: NTM selection persisted; restored Current M8",
+    "modern_regression_opengl": "passed: controls, GUI bounds, birth art, Classic gate, full config, reload",
+    "fresh_gametest_world_vulkan": "passed: first load, actual menu, native-unavailable fallback",
+    "release_build": "passed; native bridge included; all opt-in visual-probe classes excluded"
+  },
+  "native_runtime_ci": {
+    "status": "pending",
+    "workflow": ".github/workflows/ntm-explosion-client.yml",
+    "pr": "https://github.com/thisisforfreeAI/26.2-port-of-mcheli-cm/pull/87"
+  },
+  "bounds": {
+    "live_faces": {
+      "low": 240,
+      "balanced": 1920,
+      "high": 3840
+    },
+    "tick_faces_pressure_zero": {
+      "low": 80,
+      "balanced": 400,
+      "high": 800
+    },
+    "large_cloud_cost": 10,
+    "small_cloud_or_wave_cost": 1,
+    "maximum_cloud_life_ticks": 89
+  },
+  "notes": [
+    "Native artwork/motion come from installed NTM; composition/scale adapt to MC Heli.",
+    "M8 ground effects and sound remain; no NTM explosion/gameplay/payload handlers run.",
+    "Software rendering checks do not certify target-PC FPS."
+  ]
+}

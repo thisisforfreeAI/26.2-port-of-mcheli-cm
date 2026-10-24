@@ -367,8 +367,8 @@ craters in native comparison scenes are disposable test fixtures, never gameplay
 ## 21. Toggleable modern explosion style
 
 [Modern explosion plan](M8_MODERN_EXPLOSIONS_PLAN.md) specifies an ESC → MC Heli Effects panel
-with a persisted, explosion-only Modern On/Off preference. Off keeps current M8 presentation;
-On enables new billow/fire art and volumetric-looking depth within the existing adaptive budget
+with a persisted, explosion-only Modern preference (now a three-choice selector; see section 22).
+Current M8 keeps the existing presentation; Modern enables new billow/fire art and volumetric-looking depth within the adaptive budget
 system. Preserve original crater formation and size VFX to its reported footprint. Default Off
 until player acceptance. [Implementation](M8_MODERN_EXPLOSIONS.md) adds the saved menu toggle,
 modern atlas and per-weapon rendering path. Target-PC 60 FPS/artistic acceptance remains open.
