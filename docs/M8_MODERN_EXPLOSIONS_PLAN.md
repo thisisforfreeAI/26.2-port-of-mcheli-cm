@@ -1,6 +1,8 @@
 # Toggleable modern explosion style — implementation plan
 
-Status: planned, not implemented. The current M8 crater-scale/3D effects remain the baseline.
+Status: software implemented; see [implementation and validation](M8_MODERN_EXPLOSIONS.md).
+The current M8 crater-scale/3D effects remain the Off baseline. This document retains the
+original plan; target-PC performance and player artistic acceptance remain separate checks.
 
 ## Goal and fixed constraints
 

@@ -32,6 +32,20 @@ public class ModLanguageProvider extends LanguageProvider {
     }
 
     private void english() {
+        add("mcheli.effects.menu", "MC Heli Effects…");
+        add("mcheli.effects.modern", "Modern explosions: %s");
+        add("mcheli.effects.modern.tip", "Modern billows and layered depth. Original craters stay unchanged. New explosions use this choice immediately.");
+        add("mcheli.effects.modern.requires", "Requires Enhanced effects, Polished artwork and Minecraft explosion particles disabled. Open Full mod settings to adjust them.");
+        add("mcheli.effects.inactive", "Modern saved; check full mod settings.");
+        add("mcheli.effects.detail", "Detail: %s");
+        add("mcheli.effects.detail.low", "Low");
+        add("mcheli.effects.detail.balanced", "Balanced");
+        add("mcheli.effects.detail.high", "High");
+        add("mcheli.effects.adaptive", "Adaptive detail: %s");
+        add("mcheli.effects.fps", "Frame-rate goal: %s FPS");
+        add("mcheli.effects.full", "Full mod settings…");
+        add("mcheli_ce_port.configuration.modernExplosions", "Modern explosions");
+
         configScreen();
         advancements(new String[] {"Welcome to MC Helicopter MOD", "Put the helicopter", "Refueling", "Refuel aircraft",
                 "Supply ammo", "Supply ammo to the aircraft", "Relief supplies", "Drop a container",

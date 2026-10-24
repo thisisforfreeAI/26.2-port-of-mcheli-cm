@@ -12,6 +12,11 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 
 ### Changed
 
+- M8 modern explosions: add ESC → MC Heli Effects with a saved, opt-in Modern toggle,
+  independent of global style. Add separate shaded billow/fire art and crater-fitted missile
+  smoke; preserve existing crater formation and the current M8 look when Off. See
+  `docs/M8_MODERN_EXPLOSIONS.md` for controls and validation.
+
 - M8 larger explosions: raise Balanced/High smoke, blast-lobe, debris and dust-front limits.
   Scale smoke to the reported affected footprint and place dust near the crater rim, while
   retaining the 60 FPS adaptive target. Add selected larger bouncing chunks, tapered dirt
