@@ -12,7 +12,7 @@ import net.minecraft.world.level.Level;
  *
  * <p>Upstream also read "Tracking" and "LockOn" flags from the entity's custom data to send lock
  * warnings ({@code PacketNotifyLock}); nothing in upstream ever set them, so that path is not
- * ported. The UAV branch (an alert heard only on the operator's client) comes with UAVs (M6).
+ * ported. A UAV's alert is heard only on its operator's client.
  */
 public final class AircraftMissileDetector {
 
@@ -53,11 +53,21 @@ public final class AircraftMissileDetector {
                 this.alertCount = 20;
                 McheliSounds.playAt(this.ac, "alert", 1.0F, 1.0F);
             }
+        } else if (this.ac.isUAV() && this.world.isClientSide() && this.alertCount == 0 && this.isLockedByMissile()) {
+            this.alertCount = 20;
+            if (rider instanceof net.minecraft.world.entity.player.Player player && player.isLocalPlayer()) {
+                io.github.mcheliceport.weapon.WeaponClientHooks.playSound("alert", 1.0F, 1.0F);
+            }
         }
     }
 
     private boolean targetsUs(BaseBulletEntity msl) {
-        return msl.targetEntity != null && (this.ac.isMountedEntity(msl.targetEntity) || msl.targetEntity.equals(this.ac));
+        // A client knows only the synced target id (0 for none).
+        Entity target = msl.targetEntity;
+        if (target == null && this.world.isClientSide() && msl.getTargetEntityID() != 0) {
+            target = this.world.getEntity(msl.getTargetEntityID());
+        }
+        return target != null && (this.ac.isMountedEntity(target) || target.equals(this.ac));
     }
 
     /** Upstream {@code destroyMissile}: missiles homing on the vehicle lose their target and vanish. */

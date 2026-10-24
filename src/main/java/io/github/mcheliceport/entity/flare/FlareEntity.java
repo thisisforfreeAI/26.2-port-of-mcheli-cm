@@ -28,6 +28,11 @@ public class FlareEntity extends net.minecraft.world.entity.Entity implements IE
     public double airResistance = 0.992;
     public float size;
     public int fuseCount;
+    /**
+     * Debris a client spawned for an explosion, with no server copy. Not in upstream, where such a
+     * flare never went out on the client; it now goes out where a server flare would.
+     */
+    public boolean clientOnly;
 
     public FlareEntity(EntityType<? extends FlareEntity> type, Level level) {
         super(type, level);
@@ -106,16 +111,17 @@ public class FlareEntity extends net.minecraft.world.entity.Entity implements IE
             this.discard();
             return;
         }
-        if (!level.isClientSide() && !level.isLoaded(BlockPos.containing(this.position()))) {
+        boolean authority = !level.isClientSide() || this.clientOnly;
+        if (authority && !level.isLoaded(BlockPos.containing(this.position()))) {
             this.discard();
             return;
         }
-        if (this.tickCount > 300 && !level.isClientSide()) {
+        if (this.tickCount > 300 && authority) {
             this.discard();
             return;
         }
         super.tick();
-        if (!level.isClientSide()) {
+        if (authority) {
             this.onUpdateCollided();
             if (this.isRemoved()) {
                 return;
@@ -145,7 +151,7 @@ public class FlareEntity extends net.minecraft.world.entity.Entity implements IE
             }
         }
         this.setDeltaMovement(m.x * this.airResistance, m.y + this.gravity, m.z * this.airResistance);
-        if ((this.isInWater() || this.onGround()) && !level.isClientSide()) {
+        if ((this.isInWater() || this.onGround()) && authority) {
             this.discard();
         }
         this.setPos(nx, ny, nz);

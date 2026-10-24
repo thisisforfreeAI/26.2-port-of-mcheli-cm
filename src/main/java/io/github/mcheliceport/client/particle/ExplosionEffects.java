@@ -24,16 +24,31 @@ import net.minecraft.world.level.block.Blocks;
  */
 public final class ExplosionEffects {
 
-    /** Hook for the flares that large explosions throw (set once the flare entity exists). */
+    /** Hook for the burning debris (flares) that large explosions throw; tests replace it. */
     public interface FlareSpawner {
         void spawn(ClientLevel level, double x, double y, double z, double mx, double my, double mz, float size,
                 int type);
     }
 
-    static volatile FlareSpawner flareSpawner = (level, x, y, z, mx, my, mz, size, type) -> {
-    };
+    static volatile FlareSpawner flareSpawner = ExplosionEffects::spawnDebris;
+
+    /** Ids for client-only entities, counting down from below any id a server hands out. */
+    private static int nextDebrisId = -1_000_000;
 
     private ExplosionEffects() {
+    }
+
+    /**
+     * Upstream spawned an {@code MCH_EntityFlare} into the client world. It lives on this client
+     * only, with an id no server entity uses, and goes out as a server-side flare would.
+     */
+    static void spawnDebris(ClientLevel level, double x, double y, double z, double mx, double my, double mz,
+            float size, int type) {
+        io.github.mcheliceport.entity.flare.FlareEntity flare =
+                new io.github.mcheliceport.entity.flare.FlareEntity(level, x, y, z, mx, my, mz, size, type);
+        flare.clientOnly = true;
+        flare.setId(nextDebrisId--);
+        level.addEntity(flare);
     }
 
     public static void setFlareSpawner(FlareSpawner spawner) {

@@ -148,6 +148,10 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
   supported (see Added); JEI shows the drafting table as a crafting station for them.
 
 ### Added
+- Smoke generators (the T-4's airshow smoke) trail coloured smoke while selected with the
+  throttle open, as upstream.
+- Large explosions throw burning debris with the `CLASSIC` effect look.
+- A UAV's operator hears the missile alert; hitting a UAV station plays upstream's hit sound.
 - Long-distance tracking, as upstream: vehicles are sent to players up to 1,200 blocks away
   (600 for placed guns), past the server's view distance, and drawn without fog past the render
   distance. The server config's `tracking.longDistance` turns it off.

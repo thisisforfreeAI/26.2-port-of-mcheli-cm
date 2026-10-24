@@ -1928,6 +1928,7 @@ public abstract class AircraftEntity extends Entity
             this.updateRecoil(1.0F);
         }
 
+        this.onUpdateParticleSmoke();
         this.updateHitBoxPosition();
         this.onUpdateCollisionGroundDamage();
         this.lastPilot = this.getPilot();
@@ -2911,6 +2912,51 @@ public abstract class AircraftEntity extends Entity
     @Override
     public boolean hurtClient(DamageSource source) {
         return true;
+    }
+
+    /**
+     * Upstream {@code onUpdate_ParticleSmoke}: while the pilot's selected weapon is a smoke generator
+     * and the throttle is open, each of its positions trails coloured smoke. Client only.
+     */
+    private void onUpdateParticleSmoke() {
+        if (!this.level().isClientSide() || this.getCurrentThrottle() <= 0.1F) {
+            return;
+        }
+        WeaponSet ws = this.getCurrentWeapon(this.getPilot());
+        if (!(ws.getFirstWeapon() instanceof io.github.mcheliceport.weapon.types.SmokeWeapon)) {
+            return;
+        }
+        float yaw = this.getYaw();
+        float pitch = this.getPitch();
+        float roll = this.getRoll();
+        for (int i = 0; i < ws.getWeaponsCount(); i++) {
+            io.github.mcheliceport.weapon.WeaponBase wb = ws.getWeapon(i);
+            if (wb == null || wb.getInfo() == null) {
+                continue;
+            }
+            io.github.mcheliceport.content.weapon.WeaponInfo wi = wb.getInfo();
+            Vec3 rot = McheliMath.rotVec3(0.0, 0.0, 1.0, -yaw - 180.0F + wb.fixRotationYaw, pitch - wb.fixRotationPitch, roll);
+            if (this.random.nextFloat() > this.getCurrentThrottle() * 1.5) {
+                continue;
+            }
+            Vec3 pos = McheliMath.rotVec3(wb.position, -yaw, -pitch, -roll);
+            double x = this.getX() + pos.x + rot.x;
+            double y = this.getY() + pos.y + rot.y;
+            double z = this.getZ() + pos.z + rot.z;
+            for (int smk = 0; smk < wi.smokeNum; smk++) {
+                float c = this.random.nextFloat() * 0.05F;
+                io.github.mcheliceport.effect.ParticleParam prm = new io.github.mcheliceport.effect.ParticleParam("smoke", x, y, z);
+                prm.setMotion(rot.x * wi.acceleration + (this.random.nextDouble() - 0.5) * 0.2,
+                        rot.y * wi.acceleration + (this.random.nextDouble() - 0.5) * 0.2,
+                        rot.z * wi.acceleration + (this.random.nextDouble() - 0.5) * 0.2);
+                prm.size = (this.random.nextInt(5) + 5.0F) * wi.smokeSize;
+                prm.setColor(wi.color.a + this.random.nextFloat() * 0.05F, wi.color.r + c, wi.color.g + c, wi.color.b + c);
+                prm.age = (int) (this.random.nextDouble() * wi.smokeMaxAge);
+                prm.toWhite = true;
+                prm.diffusible = true;
+                io.github.mcheliceport.effect.McheliEffects.spawnParticle(this.level(), prm);
+            }
+        }
     }
 
     /**
