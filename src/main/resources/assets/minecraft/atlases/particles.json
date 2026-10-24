@@ -11,6 +11,11 @@
     {
       "type": "minecraft:single",
       "resource": "mcheli_ce_port:particle/glow"
+    },
+    {
+      "type": "minecraft:single",
+      "resource": "mcheli_ce_port:particle/m8_modern_blast_cloud",
+      "sprite": "mcheli_ce_port:m8_modern_blast_cloud"
     }
   ]
 }

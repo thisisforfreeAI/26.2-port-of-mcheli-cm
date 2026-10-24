@@ -36,6 +36,7 @@ public final class ClientConfig {
     public static final ModConfigSpec.EnumValue<EffectStyle> EFFECT_STYLE;
     public static final ModConfigSpec.EnumValue<EffectBudget> EFFECT_BUDGET;
     public static final ModConfigSpec.BooleanValue ADAPTIVE_EFFECTS;
+    public static final ModConfigSpec.BooleanValue MODERN_EXPLOSIONS;
     public static final ModConfigSpec.BooleanValue BLAST_MARKS;
     public static final ModConfigSpec.BooleanValue VEHICLE_TRACKS;
     public static final ModConfigSpec.BooleanValue VEHICLE_SURFACE_SHADE;
@@ -137,6 +138,8 @@ public final class ClientConfig {
         DEFAULT_EXPLOSION_PARTICLE = builder
                 .comment("Draw McHeli's explosions with vanilla's explosion particles. Upstream: DefaultExplosionParticle.")
                 .define("defaultExplosionParticle", false);
+        MODERN_EXPLOSIONS = builder.comment("Modern volumetric-looking explosion art and layered billows; client-only, opt-in.")
+                .define("modernExplosions", false);
         EFFECT_STYLE = builder
                 .comment("POLISHED adds shaded pixel smoke, warm flashes and flare glow. CLASSIC uses upstream sprites.",
                         "Both styles use Minecraft's supported Vulkan/OpenGL rendering pipelines.")
