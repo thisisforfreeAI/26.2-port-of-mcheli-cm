@@ -32,14 +32,16 @@ not a newly recorded crack/rumble sample or an acoustic occlusion simulation.
 
 Arrival is rounded to ticks using 343 blocks per second, capped at four ticks within the
 64-block radius. Classic retains one immediate voice with the original pitch distribution.
-All modes admit at most four voices per client tick; the waiting queue holds at most 32.
+All modes admit at most four opening impacts per client tick and play at most four total
+voices per client tick; the waiting queue holds at most 32. Opening impacts take priority over
+optional rumble tails, which can be displaced or expire during sustained combat.
 Pending sounds clear on world changes/disconnect and pause with the client world.
 
 Network protocol is **30**: clients and servers need the same updated build. The visual
 explosion payload format, damage, terrain destruction, projectile physics and bullet glow
 are unchanged.
 
-## Validation
+## Original contrast validation
 
 267 JUnit tests pass, including staged smoke/coverage, size/phase bounds, audio timing and
 sound-packet round trips. Both native backends passed the seven-weapon comparisons and every audio queue drain
@@ -49,3 +51,25 @@ Per-tick ground reads stayed <=96 and fragment tracking <=24. Captures and exact
 profiles are indexed in [the compact results](performance/m8-realism/blast-contrast.json).
 Audio ran through OpenAL null output: scheduling/drain is verified, subjective listening is not. Local builds exclude the optional uncached JEI API; repository dependencies remain
 unchanged. Software rendering cannot certify the RTX 3060 / 7800X3D / 1080p 60 FPS goal.
+
+## Overlapping explosion audio refinement
+
+The original combined admission counter could spend all four slots on two opening impacts
+and their two tails, dropping the third impact. Birth-time caps also did not bound the number
+of voices whose different propagation delays converged on one playback tick.
+
+The bounded scheduler now reserves admission for four opening impacts per tick and gives
+those due impacts priority over optional tails at playback. An incoming impact can replace
+a tail in a full queue. Four voices is the playback ceiling, including repeated drains in
+the same tick. Tails more than two ticks late and impacts more than four ticks late expire
+to prevent an audible backlog after a client stall. World changes clear both entries and
+credits. Sound instances are constructed only when actually played. Queue scans are bounded
+by 32 entries and four playback choices per client tick.
+
+Five additional tests cover four-impact volleys, saturated tail eviction, primary-only
+saturation, sustained bursts, stale expiration and reset behavior. Total: 272 JUnit tests
+with zero failures, errors or skips. Native Vulkan 1080p passed seven weapon scenes, sixteen consecutive ticks of 80 audio
+requests per weapon, and an eight-tick Classic burst. All queue bounds and drain assertions
+passed. [Compact results](performance/m8-realism/audio-priority.json) record this runtime check;
+OpenAL null output does not establish subjective listening acceptance.
+This refinement retains protocol 30, sound assets/pitches, visual effects and the 60 FPS goal.

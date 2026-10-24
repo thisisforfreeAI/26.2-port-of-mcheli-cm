@@ -12,6 +12,9 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 
 ### Changed
 
+- M8 overlapping explosions: prioritize opening impacts over optional rumble tails, cap
+  actual playback at four voices/tick, and discard stale audio after client stalls.
+
 - M8 explosion contrast: later, uneven billows and smaller edge wisps leave room for a short
   white-to-orange flash and separated rolling fire pockets. Distance-delayed, bounded stock
   explosion audio adds a sharper onset and deeper tail; silent explosions remain silent.

@@ -344,3 +344,7 @@ requiring replacement textures. Final hardware 60 FPS acceptance is separate fro
 separated rolling fire pockets and bounded distance-delayed audio. Existing weapon families,
 terrain-specific dust/debris and the 60 FPS target remain. Protocol 30 carries the independent
 sound event so silent explosions do not acquire sound through their visual packet.
+
+The overlapping-audio follow-up prioritizes opening impacts over optional rumble, bounds
+actual playback to four voices/tick, and expires stale queue entries after client stalls.
+See the blast-contrast document for the sustained-volley validation.
