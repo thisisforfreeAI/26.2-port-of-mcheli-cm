@@ -11,6 +11,8 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 ## [Unreleased] - M6 in progress
 
 ### Changed
+- Parked tanks cost the server about a third less: wheel probes check cheap collisions first and
+  make no step sounds or game events (as upstream's wheels), and block lists cache their answers.
 
 - M8 modern explosions: add ESC → MC Heli Effects with a saved, opt-in Modern toggle,
   independent of global style. Add separate shaded billow/fire art and crater-fitted missile

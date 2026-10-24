@@ -65,6 +65,8 @@ public final class McheliCePort {
         io.github.mcheliceport.wingman.handler.ProjectileChunkLoader.register(modBus);
         ModGameTests.register(modBus);
         io.github.mcheliceport.item.ChainItem.register();
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(
+                (net.neoforged.neoforge.event.TagsUpdatedEvent event) -> io.github.mcheliceport.weapon.BlockList.clearCaches());
         io.github.mcheliceport.radar.EntityInfoFeed.register();
         io.github.mcheliceport.wingman.handler.WingmanTickHandler.register();
     }
