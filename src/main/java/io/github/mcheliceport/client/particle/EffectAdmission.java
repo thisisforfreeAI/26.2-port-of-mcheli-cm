@@ -54,6 +54,20 @@ final class EffectAdmission {
         return admit(level, x, y, z, false, radius, true, 1);
     }
 
+    static boolean depthDetail(ClientLevel level, double x, double y, double z) {
+        return io.github.mcheliceport.config.EffectQuality.enhanced()
+                && BlastDepthLook.detail(ClientConfig.get(ClientConfig.EFFECT_BUDGET), EffectPerformance.pressure(),
+                Minecraft.getInstance().gameRenderer.mainCamera().position().distanceToSqr(x, y, z));
+    }
+
+    static boolean admitBlastLobe(ClientLevel level, double x, double y, double z, float radius, int cards) {
+        return admit(level, x, y, z, false, radius, true, cards);
+    }
+
+    static boolean admitGeometry(ClientLevel level, double x, double y, double z, float radius, int quads) {
+        return admit(level, x, y, z, false, radius, false, quads);
+    }
+
     static boolean admitFragment(ClientLevel level, double x, double y, double z, float radius) {
         // A cube contributes three visible faces and pays for its full bounding radius.
         return admit(level, x, y, z, false, radius * 1.733F, false, 3);

@@ -75,7 +75,7 @@ class ExplosionSequenceTest {
             int previous = Integer.MAX_VALUE;
             for (int pressure = 0; pressure <= 3; pressure++) {
                 int count = ExplosionSequence.lobes(Float.MAX_VALUE, style, quality, pressure);
-                assertTrue(count >= 2 && count <= 18 && count <= previous);
+                assertTrue(count >= 2 && count <= 28 && count <= previous);
                 previous = count;
             }
             assertEquals(0, ExplosionSequence.lobes(Float.NaN, style, quality, 0));

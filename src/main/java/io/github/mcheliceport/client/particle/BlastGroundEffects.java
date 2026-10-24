@@ -27,6 +27,11 @@ final class BlastGroundEffects {
     }
 
     static void emit(ClientLevel level, double x, double y, double z, float power, BlastStyle style, BlastDirection direction) {
+        emit(level, x, y, z, power, style, direction, 0);
+    }
+
+    static void emit(ClientLevel level, double x, double y, double z, float power, BlastStyle style,
+            BlastDirection direction, float footprint) {
         var axis = direction.burstAxis();
         var quality = ClientConfig.get(ClientConfig.EFFECT_BUDGET);
         int pressure = EffectPerformance.pressure();
@@ -59,7 +64,9 @@ final class BlastGroundEffects {
                 if (fragment) {
                     if (emitted >= BlastGroundLook.fragmentTickCap(quality, pressure)
                             || fragments.size() >= BlastGroundLook.fragmentLiveCap(quality)) continue;
-                    float radius = BlastGroundLook.fragmentRadius(power, style, material) * (0.75F + random.nextFloat() * 0.25F);
+                    boolean largeChunk = BlastDepthLook.chunkScale(power,broad,i)>1;
+                    float radius = BlastGroundLook.fragmentRadius(power, style, material) * (0.75F + random.nextFloat() * 0.25F)
+                            * BlastDepthLook.chunkScale(power, broad, i);
                     double py = surfaceY + radius + 0.15;
                     if (!EffectAdmission.admitFragment(level, x, py, z, radius)) continue;
                     double speed = Math.min(0.9, 0.15 + power * 0.045) * (0.65 + random.nextDouble() * 0.35) * (broad ? 1 : 0.65);
@@ -67,18 +74,23 @@ final class BlastGroundEffects {
                             : material == BlastGroundLook.Surface.SNOW ? Blocks.SNOW_BLOCK.defaultBlockState() : ground;
                     boolean hot = BlastGroundLook.hotFragment(power, style, material, i);
                     var particle = new BlastFragmentParticle(level, x, py, z, dx * speed,
-                            0.25 + speed * (0.5 + random.nextDouble() * 0.5), dz * speed,
-                            block, pos.immutable(), surfaceY, radius, 26 + random.nextInt(10), hot);
+                            (0.25 + speed * (0.5 + random.nextDouble() * 0.5)) * (largeChunk ? 0.65 : 1), dz * speed,
+                            block, pos.immutable(), surfaceY, radius,
+                            largeChunk ? 48 + random.nextInt(12) : 26 + random.nextInt(10), hot);
                     Minecraft.getInstance().particleEngine.add(particle);
                     fragments.add(new WeakReference<>(particle)); emitted++;
                 } else if (jet) {
                     float radius = Math.min(3, 0.7F + power * 0.15F) * (0.75F + random.nextFloat() * 0.25F);
                     double py = surfaceY + radius * 0.6;
-                    if (!EffectAdmission.admit(level, x, py, z, false, radius)) continue;
+                    boolean column = EffectAdmission.depthDetail(level,x,py,z);
+                    if (!EffectAdmission.admitGeometry(level,x,py,z,radius*(column?2.2F:1),column?3:1)) {
+                        if (!column || !EffectAdmission.admit(level,x,py,z,false,radius)) continue;
+                        column=false;
+                    }
                     double speed = Math.min(0.85, 0.2 + power * 0.05) * (0.65 + random.nextDouble() * 0.35);
                     Minecraft.getInstance().particleEngine.add(new BlastDirtJetParticle(level, x, py, z,
                             dx * speed, speed * (0.6 + random.nextDouble() * 0.8), dz * speed, radius,
-                            tint[0], tint[1], tint[2], 18 + random.nextInt(10), material.opacity));
+                            tint[0], tint[1], tint[2], 18 + random.nextInt(10), material.opacity, column));
                 } else {
                     float radius = BlastGroundLook.dustRadius(power, style, material);
                     double px = x + dx * 0.6, pz = z + dz * 0.6;
@@ -90,40 +102,52 @@ final class BlastGroundEffects {
                             tint[0], tint[1], tint[2], material.life + random.nextInt(8), material.opacity));
                 }
             }
-            if (y - surfaceY <= Math.min(3, power * 0.4F))
-                ring(level, x, surfaceY, z, power, style, random);
+            if (y - surfaceY <= Math.max(Math.min(3, power * 0.4F), Math.min(12, footprint * 0.5F)))
+                ring(level, x, footprint > 0 ? y : surfaceY, z, power, style, random, footprint);
             return;
         }
     }
 
     private static void ring(ClientLevel level, double x, double y, double z, float power, BlastStyle style,
-            Random random) {
+            Random random, float footprint) {
         if (!ClientConfig.get(ClientConfig.BLAST_DUST_RING)) return;
         var quality = ClientConfig.get(ClientConfig.EFFECT_BUDGET);
-        int sectors = BlastRingLook.sectors(power, style, quality, EffectPerformance.pressure());
-        float radius = BlastRingLook.width(power);
+        int sectors = BlastRingLook.sectors(power, style, quality, EffectPerformance.pressure(), footprint);
+        float reach = ExplosionCraterScale.groundReach(BlastRingLook.reach(power), footprint);
+        float radius = Math.min(2.5F, Math.max(BlastRingLook.width(power), 0.6F + reach * 0.09F));
         double phase = random.nextDouble() * Math.PI * 2;
         for (int i = 0; i < sectors && ringEmitted < BlastRingLook.tickCap(quality); i++) {
             double angle = phase + (i + random.nextDouble() * 0.35) * Math.PI * 2 / sectors;
             double dx = Math.cos(angle), dz = Math.sin(angle);
-            double startRadius = Math.min(2, BlastRingLook.reach(power) * 0.25);
+            double startRadius = footprint > 0 ? Math.min(reach * 0.95, footprint * 1.05) : Math.min(2, reach * 0.25);
             double px = x + dx * startRadius, pz = z + dz * startRadius;
-            BlockPos at = BlockPos.containing(px, y - 0.01, pz);
-            if (!level.hasChunkAt(at) || sampled >= BlastGroundLook.surfaceReadCap(quality)) continue;
-            sampled++;
-            BlockState ground = level.getBlockState(at);
-            if (!ground.getFluidState().isEmpty() || ground.is(BlockTags.LEAVES)) continue;
-            double height = surfaceHeight(level, at, ground);
-            if (height <= 0 || Math.abs(at.getY() + height - y) > 0.6) continue;
+            BlockPos.MutableBlockPos at = BlockPos.containing(px, y + (footprint > 0 ? 0.25 : -0.01), pz).mutable();
+            BlockState ground = Blocks.AIR.defaultBlockState();
+            double height = 0;
+            for (int depth = 0; depth <= (footprint > 0 ? 8 : 0); depth++, at.move(0, -1, 0)) {
+                if (!level.hasChunkAt(at) || at.getY() < level.getMinY()
+                        || sampled >= BlastGroundLook.surfaceReadCap(quality)) break;
+                sampled++;
+                ground = level.getBlockState(at);
+                if (!ground.getFluidState().isEmpty() || ground.is(BlockTags.LEAVES)) break;
+                height = surfaceHeight(level, at, ground);
+                if (height > 0) break;
+            }
+            if (height <= 0 || !ground.getFluidState().isEmpty() || ground.is(BlockTags.LEAVES)) continue;
+            if (footprint <= 0 && Math.abs(at.getY() + height - y) > 0.6) continue;
             // Each sector already sampled its own supporting block. Reuse it for color and
             // motion so fronts crossing sand/grass/stone do not carry the origin's material.
-            double py = at.getY() + height + radius * 0.3;
-            if (!EffectAdmission.admit(level, px, py, pz, false, radius)) continue;
+            boolean mesh = i%2==0 && EffectAdmission.depthDetail(level,px,y,pz);
+            double py = at.getY() + height + (mesh ? 0.035 : radius * 0.3);
+            if (!EffectAdmission.admitGeometry(level,px,py,pz,radius*(mesh?1.6F:1),mesh?3:1)) {
+                if (!mesh || !EffectAdmission.admit(level,px,py,pz,false,radius)) continue;
+                mesh=false; py=at.getY()+height+radius*.3;
+            }
             var sectorMaterial = material(ground);
             float[] sectorTint = tint(level, at, ground, sectorMaterial);
             Minecraft.getInstance().particleEngine.add(new BlastRingParticle(level, px, py, pz, dx, dz,
-                    BlastRingLook.reach(power) * sectorMaterial.speedScale, radius, sectorTint,
-                    sectorMaterial.opacity * (0.75F + random.nextFloat() * 0.1F)));
+                    (float) (footprint > 0 ? Math.max(0.5, reach - startRadius) : reach) * sectorMaterial.speedScale, radius, sectorTint,
+                    sectorMaterial.opacity * (0.75F + random.nextFloat() * 0.1F), mesh));
             ringEmitted++;
         }
     }

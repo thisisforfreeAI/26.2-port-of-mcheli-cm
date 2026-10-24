@@ -10,11 +10,13 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
-/** Three visible block-textured faces, short ballistic motion and no collision search. */
+/** Three block-textured faces, one damped bounce on the sampled birth plane, then a settled fade. */
 final class BlastFragmentParticle extends BlockDustParticle {
     private final float radius, spinX, spinY, spinZ, phase;
     private final double floor;
     private final boolean hot;
+    private boolean bounced, settled;
+    private int settledAge;
     private final Quaternionf body = new Quaternionf(), face = new Quaternionf();
     private final Vector3f view = new Vector3f(), normal = new Vector3f();
     private final BlockPos.MutableBlockPos lightPos = new BlockPos.MutableBlockPos();
@@ -26,7 +28,7 @@ final class BlastFragmentParticle extends BlockDustParticle {
         super(level, x, y, z, mx, my, mz, block, pos);
         this.floor = floor;
         this.radius = radius;
-        this.lifetime = Math.clamp(life, 8, 40);
+        this.lifetime = Math.clamp(life, 8, 60);
         this.hot = hot;
         this.hasPhysics = false;
         this.rCol *= 1.3F; this.gCol *= 1.3F; this.bCol *= 1.3F;
@@ -38,8 +40,18 @@ final class BlastFragmentParticle extends BlockDustParticle {
 
     @Override public void tick() {
         this.xo = this.x; this.yo = this.y; this.zo = this.z;
-        if (++this.age >= this.lifetime || this.yd < 0 && this.y + this.yd <= this.floor + this.radius) {
-            this.remove(); return;
+        if (++this.age >= this.lifetime) { this.remove(); return; }
+        if (this.settled) return;
+        if (this.yd < 0 && this.y + this.yd <= this.floor + this.radius) {
+            this.setPos(this.x, this.floor + this.radius, this.z);
+            if (!this.bounced) {
+                this.bounced = true; this.yd = -this.yd * 0.28;
+                this.xd *= 0.45; this.zd *= 0.45;
+            } else {
+                this.settled = true; this.settledAge = this.age;
+                this.xd = this.yd = this.zd = 0;
+            }
+            return;
         }
         this.move(this.xd, this.yd, this.zd);
         this.xd *= 0.98; this.zd *= 0.98;
@@ -54,7 +66,8 @@ final class BlastFragmentParticle extends BlockDustParticle {
         float x = (float) (Mth.lerp(partialTick, this.xo, this.x) - cameraPos.x);
         float y = (float) (Mth.lerp(partialTick, this.yo, this.y) - cameraPos.y);
         float z = (float) (Mth.lerp(partialTick, this.zo, this.z) - cameraPos.z);
-        this.body.rotationXYZ(this.phase + age * this.spinX, age * this.spinY, age * this.spinZ);
+        float spinAge = this.settled ? this.settledAge : age;
+        this.body.rotationXYZ(this.phase + spinAge * this.spinX, spinAge * this.spinY, spinAge * this.spinZ);
         this.body.transformInverse(this.view.set(-x, -y, -z));
         int light = this.getLightCoords(partialTick);
         float heat = this.hot ? ExplosionSequence.fireHeat(age, 8) : 0;

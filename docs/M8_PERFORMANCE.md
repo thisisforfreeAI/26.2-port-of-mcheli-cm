@@ -1,3 +1,6 @@
+> Balanced/High particle allowances are now higher: see [crater-scale budgets](M8_CRATER_SCALE.md).
+> Historical measurements below predate that increase.
+
 > Current acceptance target: **60 FPS / 16.67 ms** at 1080p on RTX 3060 8 GB / Ryzen 7
 > 7800X3D. Set `effects.targetFps=60` in existing configs. The measurements below are historical
 > 80 FPS experiments, not certification of the revised target. The frame summary tool now

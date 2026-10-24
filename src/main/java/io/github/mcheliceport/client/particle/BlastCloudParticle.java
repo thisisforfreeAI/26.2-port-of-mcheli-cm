@@ -9,6 +9,7 @@ import net.minecraft.resources.Identifier;
 final class BlastCloudParticle extends SmokeParticle {
     static final Identifier TEXTURE = Identifier.fromNamespaceAndPath("mcheli_ce_port", "m8_blast_cloud");
     private final float radius;
+    private final int cards;
     private final int fireTicks;
     private final float opacity;
     private final int backlightTicks;
@@ -32,7 +33,13 @@ final class BlastCloudParticle extends SmokeParticle {
 
     BlastCloudParticle(ClientLevel level, double x, double y, double z, double mx, double my, double mz,
             float radius, int life, int fireTicks, float opacity, int delay, boolean base, int backlightTicks) {
+        this(level, x, y, z, mx, my, mz, radius, life, fireTicks, opacity, delay, base, backlightTicks, 1);
+    }
+
+    BlastCloudParticle(ClientLevel level, double x, double y, double z, double mx, double my, double mz,
+            float radius, int life, int fireTicks, float opacity, int delay, boolean base, int backlightTicks, int cards) {
         super(level, x, y, z, mx, my, mz);
+        this.cards = Math.clamp(cards, 1, 3);
         this.setSprite(sprite(TEXTURE));
         this.radius = radius;
         this.delay = Math.clamp(delay, 0, 12);
@@ -88,7 +95,27 @@ final class BlastCloudParticle extends SmokeParticle {
         // Skip SmokeParticle's fire tint/fade; the dedicated sheet contains that transition.
         this.getFacingCameraMode().setRotation(this.rotation, camera, partialTick);
         this.rotation.rotateZ(this.angle + (this.fireTicks > 0 ? localAge * 0.018F : 0));
+        boolean depth = this.cards > 1 && EffectAdmission.depthDetail(this.level, this.x, this.y, this.z);
+        float alpha = this.alpha;
+        if (depth && this.cards == 3) this.alpha *= 0.85F;
         this.extractRotatedQuad(state, camera, this.rotation, partialTick);
+        if (depth && this.cards == 3) {
+            this.alpha = alpha * 0.25F;
+            this.rotation.rotationY(this.angle).rotateX(0.12F);
+            this.extractRotatedQuad(state, camera, this.rotation, partialTick);
+            this.rotation.rotateY((float) Math.PI / 2);
+            this.extractRotatedQuad(state, camera, this.rotation, partialTick);
+        } else if (depth && localAge < this.fireTicks) {
+            var pos = camera.position();
+            float r = this.getQuadSize(partialTick);
+            this.alpha = alpha * 0.65F;
+            this.extractRotatedQuad(state, this.rotation,
+                    (float)(net.minecraft.util.Mth.lerp(partialTick,this.xo,this.x)-pos.x) + (float)Math.cos(this.angle)*r*0.18F,
+                    (float)(net.minecraft.util.Mth.lerp(partialTick,this.yo,this.y)-pos.y) + r*0.16F,
+                    (float)(net.minecraft.util.Mth.lerp(partialTick,this.zo,this.z)-pos.z) + (float)Math.sin(this.angle)*r*0.18F,
+                    partialTick);
+        }
+        this.alpha = alpha;
     }
 
     @Override public float getQuadSize(float partialTick) {

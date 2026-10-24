@@ -23,7 +23,7 @@ public final class BlastGroundLook {
         if (!Float.isFinite(power) || power < 2 || style == BlastStyle.CANNON
                 || budget == EffectBudget.LOW || pressure >= 2) return 0;
         if (ExplosionLook.broad(style) && power >= 3) return ExplosionLook.dustCount(power, style, budget, pressure);
-        return (budget == EffectBudget.HIGH ? 3 : 2) / (1 + Math.clamp(pressure, 0, 1));
+        return (budget == EffectBudget.HIGH ? 5 : 3) / (1 + Math.clamp(pressure, 0, 1));
     }
 
     /** Replace soil-jet slots with chips on hard surfaces, without adding requests. */
@@ -46,11 +46,11 @@ public final class BlastGroundLook {
 
     public static int fragmentTickCap(EffectBudget budget, int pressure) {
         if (budget == EffectBudget.LOW || pressure >= 2) return 0;
-        return (budget == EffectBudget.HIGH ? 6 : 4) / (1 + Math.clamp(pressure, 0, 1));
+        return (budget == EffectBudget.HIGH ? 10 : 6) / (1 + Math.clamp(pressure, 0, 1));
     }
 
     public static int fragmentLiveCap(EffectBudget budget) {
-        return budget == EffectBudget.LOW ? 0 : budget == EffectBudget.HIGH ? 48 : 24;
+        return budget == EffectBudget.LOW ? 0 : budget == EffectBudget.HIGH ? 72 : 36;
     }
 
     public static int surfaceReadCap(EffectBudget budget) {
