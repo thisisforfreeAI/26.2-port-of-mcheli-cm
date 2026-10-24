@@ -26,7 +26,7 @@ broader gameplay and hardware checks remain pending.
 | Area | Planned milestone |
 |---|---|
 | Remaining plane/ground equipment | M6 |
-| GPU-buffer model rendering, NTM Next client validation, performance work | M7 |
+| NTM Next client validation | M7 |
 
 Until then:
 
@@ -93,8 +93,9 @@ These follow from how Minecraft 26.2 works or from decisions approved in PORTING
    validation remain pending; see `docs/M7_PLAN.md`. Chemical clouds use their native NTM types,
    counts and initial velocities; `EffectOnly` creates none because the entities themselves cause
    damage. Addon configuration is documented in `docs/NTM_NEXT_ADDONS.md`.
-8. Vehicles beyond the far plane are drawn as scaled stand-ins instead of in a second far-plane render
-   pass.
+8. Vehicles past the render distance are drawn full size and without fog in the normal entity pass,
+   not in a second pass with upstream's own 3,000-block projection, so they disappear past vanilla's
+   far plane (four times the render distance or the cloud range, whichever is larger).
 9. The pilot's client simulates its own vehicle (decision D2). Servers can switch back to upstream's
    server-authoritative model with `vehicles.serverAuthoritativeMovement`. UAV motion always runs
    on the server because its pilot remains physically seated at the station.
@@ -594,6 +595,13 @@ These follow from how Minecraft 26.2 works or from decisions approved in PORTING
     explosion, and goes out when it lands, hits a block or after 15 seconds; upstream's client copy
     never went out. Only the `CLASSIC` effect look throws it: the `ENHANCED` look (M8) draws its own
     explosions.
+108. Vehicle models are drawn from GPU buffers (client config `render.gpuModelBuffers`, on by
+    default), as upstream drew them from display lists. They are drawn with the solid entities, so their
+    see-through texels (canopies) are unsorted and do not show translucent things behind them, as
+    upstream's were; the per-frame path the option turns back on sorts them. Vehicles in thermal
+    vision, past the render distance or glowing always take the per-frame path. M8's surface shading
+    is baked into the GPU buffers too. If the GPU path fails once, it turns itself off for the
+    session and logs why.
 
 ## Upstream content issues kept as they are
 

@@ -11,6 +11,9 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 ## [Unreleased] - M6 in progress
 
 ### Changed
+- Vehicle models stay on the graphics card and are drawn from there instead of being sent again
+  every frame; with 28 vehicles in view the render thread spent about 85% less time on them. The
+  client config's `render.gpuModelBuffers` turns it off.
 - Parked tanks cost the server about a third less: wheel probes check cheap collisions first and
   make no step sounds or game events (as upstream's wheels), and block lists cache their answers.
 

@@ -50,6 +50,7 @@ public final class ClientConfig {
     public static final ModConfigSpec.IntValue EFFECT_TARGET_FPS;
     public static final ModConfigSpec.IntValue ALIVE_TIME_OF_CARTRIDGE;
     public static final ModConfigSpec.EnumValue<EffectQuality> EFFECT_QUALITY;
+    public static final ModConfigSpec.BooleanValue GPU_MODEL_BUFFERS;
     public static final ModConfigSpec.BooleanValue SWITCH_WEAPON_WITH_MOUSE_WHEEL;
     public static final ModConfigSpec.BooleanValue DISPLAY_ENTITY_MARKER;
     public static final ModConfigSpec.DoubleValue ENTITY_MARKER_SIZE;
@@ -105,6 +106,10 @@ public final class ClientConfig {
                 .comment("Unload a model loaded on demand after this many seconds without being drawn; -1 keeps it.",
                         "Upstream: ExperimentalOnDemandModelLifetimeSeconds.")
                 .defineInRange("onDemandModelLifetimeSeconds", 720, -1, 86400);
+        GPU_MODEL_BUFFERS = builder
+                .comment("Keep vehicle models on the graphics card and draw them from there, instead of sending every",
+                        "triangle again each frame. Turn off if vehicles look wrong with your graphics driver. Not in upstream.")
+                .define("gpuModelBuffers", true);
         builder.pop();
 
         builder.comment("The vehicle HUD (upstream's lines of the same names in mcheli.cfg).").push("hud");
