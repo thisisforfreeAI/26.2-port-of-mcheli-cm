@@ -2,6 +2,9 @@
 
 The realism follow-up starts with restrained model-space crease shading. Flat panels stay
 neutral, recessed geometry darkens by at most 12%, and convex edges gain at most 3%.
+Static hulls also receive the content-authored machinery masks described in
+[M8_COMPLETION.md](M8_COMPLETION.md): at most 6% local darkening and a combined shade floor
+of 0.84. Animated groups keep geometry shading without these fixed machinery masks.
 Existing textures, normals, sky/block lighting and animated part transforms remain in use.
 This is baked geometry shading, not ambient occlusion from surrounding terrain, specular
 reflection, or newly painted texture detail. Flat texture-only panel lines need authored art.

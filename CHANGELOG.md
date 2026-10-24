@@ -12,6 +12,15 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 
 ### Changed
 
+- M8 realism: shared explosion/exhaust/damage-smoke wind, short impact flashes, earlier-fading
+  wisps, local-material dust/chips, and a 60 FPS default adaptive goal. Existing configs keep
+  saved values. Content-authored machinery masks and crease highlights bake to hull colors;
+  nearby shadows use bounded footprints. Treads retain a stable origin across ramp support
+  changes. Conventional ground-igniting weapons use their HE/penetrator family, with explicit
+  fire/FAE payloads kept distinct; large shallow missile clouds follow their impact heading.
+  Gameplay and global effect caps are unchanged. See `docs/M8_COMPLETION.md` for validation
+  and target-hardware acceptance limits.
+
 - M7 NTM Next follow-up: add configurable native chlorine, standard, pink and orange chemical
   clouds with count/speed controls and EffectOnly suppression. Preserve every NTM setting during
   YAML export/reload, including nested VNT processors, mini-nuke presets and legacy attributes.

@@ -364,7 +364,11 @@ These follow from how Minecraft 26.2 works or from decisions approved in PORTING
     still apply. Enhanced emitters can change cosmetic counts/timing but do not change gameplay.
     Optional exhaust heat refraction uses one shared scene copy, is disabled on Low/adaptive
     pressure, and respects opaque depth; translucent surfaces may not hide it. See
-    docs/M8_PLAN.md and docs/M8_FOLLOWUPS.md. Target-PC 80 FPS acceptance remains open.
+    Static hull detail is baked from geometry and authored machinery anchors; it is not a new
+    texture pack or real-time ambient occlusion. Known conventional weapons keep their HE or
+    penetrator look even when they ignite blocks; explicit fire/FAE payloads remain distinct.
+    See docs/M8_PLAN.md, docs/M8_FOLLOWUPS.md and docs/M8_COMPLETION.md.
+    Target-PC 60 FPS acceptance remains open.
 81. Only players who may use game-master commands (permission level 2) can set a vehicle's
     command in the aircraft menu; for others the field is read-only. Upstream let any player set
     it, and it runs with full permissions when the vehicle is destroyed by anything but a player,

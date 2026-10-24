@@ -99,3 +99,10 @@ Release build: 264 unit tests, zero failures/errors/skips. Release packaging was
 both probe classes and their inner classes. Implementation and software validation are complete;
 60 FPS certification still requires the specified physical PC. Existing saved configs retain
 their chosen value; set `effects.targetFps=60` when adopting this performance target.
+
+The assembled implementation also passed a final mixed-combat soak on both backends with
+an explicit 60 FPS effects goal: 2,400 tick samples per backend, shared work limits held,
+adaptive pressure reached 3, and every transient-drain assertion passed. Persistent scorch
+marks were allowed to remain. See [final combat results](performance/m8-realism/closure-combat.json)
+and the compressed `*-closure-combat.csv.gz` raw telemetry beside it. These are functional
+software acceptance results; no physical-GPU FPS is inferred.
