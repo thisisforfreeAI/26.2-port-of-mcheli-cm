@@ -1,0 +1,152 @@
+{
+  "vulkan": {
+    "vehicle_detail": [
+      {
+        "name": "m1a2",
+        "zones": 2,
+        "affected_static_vertices": 49
+      },
+      {
+        "name": "ah-64",
+        "zones": 3,
+        "affected_static_vertices": 63
+      },
+      {
+        "name": "ch47",
+        "zones": 4,
+        "affected_static_vertices": 254
+      },
+      {
+        "name": "f-35a",
+        "zones": 1,
+        "affected_static_vertices": 247
+      }
+    ],
+    "weapons": [
+      {
+        "name": "m230",
+        "power": 1,
+        "family": "CANNON",
+        "lobes": 4,
+        "fire_ticks": 4
+      },
+      {
+        "name": "hydra70",
+        "power": 3,
+        "family": "BLAST",
+        "lobes": 10,
+        "fire_ticks": 7
+      },
+      {
+        "name": "agm114",
+        "power": 4,
+        "family": "PENETRATOR",
+        "lobes": 11,
+        "fire_ticks": 8
+      },
+      {
+        "name": "agm158",
+        "power": 10,
+        "family": "BLAST",
+        "lobes": 12,
+        "fire_ticks": 18
+      },
+      {
+        "name": "mk82",
+        "power": 4,
+        "family": "HEAVY",
+        "lobes": 7,
+        "fire_ticks": 12
+      },
+      {
+        "name": "gbu57",
+        "power": 15,
+        "family": "PENETRATOR",
+        "lobes": 12,
+        "fire_ticks": 13
+      },
+      {
+        "name": "s-8dm",
+        "power": 5,
+        "family": "INCENDIARY",
+        "lobes": 8,
+        "fire_ticks": 45
+      }
+    ]
+  },
+  "opengl": {
+    "vehicle_detail": [
+      {
+        "name": "m1a2",
+        "zones": 2,
+        "affected_static_vertices": 49
+      },
+      {
+        "name": "ah-64",
+        "zones": 3,
+        "affected_static_vertices": 63
+      },
+      {
+        "name": "ch47",
+        "zones": 4,
+        "affected_static_vertices": 254
+      },
+      {
+        "name": "f-35a",
+        "zones": 1,
+        "affected_static_vertices": 247
+      }
+    ],
+    "weapons": [
+      {
+        "name": "m230",
+        "power": 1,
+        "family": "CANNON",
+        "lobes": 4,
+        "fire_ticks": 4
+      },
+      {
+        "name": "hydra70",
+        "power": 3,
+        "family": "BLAST",
+        "lobes": 10,
+        "fire_ticks": 7
+      },
+      {
+        "name": "agm114",
+        "power": 4,
+        "family": "PENETRATOR",
+        "lobes": 11,
+        "fire_ticks": 8
+      },
+      {
+        "name": "agm158",
+        "power": 10,
+        "family": "BLAST",
+        "lobes": 12,
+        "fire_ticks": 18
+      },
+      {
+        "name": "mk82",
+        "power": 4,
+        "family": "HEAVY",
+        "lobes": 7,
+        "fire_ticks": 12
+      },
+      {
+        "name": "gbu57",
+        "power": 15,
+        "family": "PENETRATOR",
+        "lobes": 12,
+        "fire_ticks": 13
+      },
+      {
+        "name": "s-8dm",
+        "power": 5,
+        "family": "INCENDIARY",
+        "lobes": 8,
+        "fire_ticks": 45
+      }
+    ]
+  }
+}

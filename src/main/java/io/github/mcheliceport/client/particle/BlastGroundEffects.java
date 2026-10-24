@@ -55,7 +55,7 @@ final class BlastGroundEffects {
                 double dx = Math.cos(angle), dz = Math.sin(angle);
                 if (!ExplosionLook.broad(style)) { dx = dx * 0.4 + axis.x; dz = dz * 0.4 + axis.z; }
                 boolean broad = ExplosionLook.broad(style);
-                boolean fragment = count > 1 && (broad ? i % 3 == 2 : i == count - 1);
+                boolean fragment = BlastGroundLook.fragmentSlot(i, count, broad, jet, material);
                 if (fragment) {
                     if (emitted >= BlastGroundLook.fragmentTickCap(quality, pressure)
                             || fragments.size() >= BlastGroundLook.fragmentLiveCap(quality)) continue;
@@ -91,13 +91,13 @@ final class BlastGroundEffects {
                 }
             }
             if (y - surfaceY <= Math.min(3, power * 0.4F))
-                ring(level, x, surfaceY, z, power, style, tint, material, random);
+                ring(level, x, surfaceY, z, power, style, random);
             return;
         }
     }
 
     private static void ring(ClientLevel level, double x, double y, double z, float power, BlastStyle style,
-            float[] tint, BlastGroundLook.Surface material, Random random) {
+            Random random) {
         if (!ClientConfig.get(ClientConfig.BLAST_DUST_RING)) return;
         var quality = ClientConfig.get(ClientConfig.EFFECT_BUDGET);
         int sectors = BlastRingLook.sectors(power, style, quality, EffectPerformance.pressure());
@@ -115,11 +115,15 @@ final class BlastGroundEffects {
             if (!ground.getFluidState().isEmpty() || ground.is(BlockTags.LEAVES)) continue;
             double height = surfaceHeight(level, at, ground);
             if (height <= 0 || Math.abs(at.getY() + height - y) > 0.6) continue;
+            // Each sector already sampled its own supporting block. Reuse it for color and
+            // motion so fronts crossing sand/grass/stone do not carry the origin's material.
             double py = at.getY() + height + radius * 0.3;
             if (!EffectAdmission.admit(level, px, py, pz, false, radius)) continue;
+            var sectorMaterial = material(ground);
+            float[] sectorTint = tint(level, at, ground, sectorMaterial);
             Minecraft.getInstance().particleEngine.add(new BlastRingParticle(level, px, py, pz, dx, dz,
-                    BlastRingLook.reach(power) * material.speedScale, radius, tint,
-                    material.opacity * (0.75F + random.nextFloat() * 0.1F)));
+                    BlastRingLook.reach(power) * sectorMaterial.speedScale, radius, sectorTint,
+                    sectorMaterial.opacity * (0.75F + random.nextFloat() * 0.1F)));
             ringEmitted++;
         }
     }

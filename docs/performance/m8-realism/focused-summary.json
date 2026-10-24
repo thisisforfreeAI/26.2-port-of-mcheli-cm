@@ -1,0 +1,100 @@
+{
+  "vulkan": {
+    "scenes": [
+      "shadow-balanced",
+      "shadow-high",
+      "shadow-disabled",
+      "classic",
+      "shade-disabled",
+      "night-blast",
+      "roof-blast",
+      "split-ground"
+    ],
+    "vehicle_checks": [
+      {
+        "radius": 2.5,
+        "pieces": 36,
+        "shade": true,
+        "baked_groups": 142
+      },
+      {
+        "radius": 3.0,
+        "pieces": 49,
+        "shade": true,
+        "baked_groups": 142
+      },
+      {
+        "radius": 2.0,
+        "pieces": 25,
+        "shade": true,
+        "baked_groups": 142
+      },
+      {
+        "radius": 2.0,
+        "pieces": 25,
+        "shade": false,
+        "baked_groups": 142
+      },
+      {
+        "radius": 2.5,
+        "pieces": 36,
+        "shade": false,
+        "baked_groups": 142
+      }
+    ],
+    "delayed_amber_block_light": [
+      7,
+      7,
+      7
+    ]
+  },
+  "opengl": {
+    "scenes": [
+      "shadow-balanced",
+      "shadow-high",
+      "shadow-disabled",
+      "classic",
+      "shade-disabled",
+      "night-blast",
+      "roof-blast",
+      "split-ground"
+    ],
+    "vehicle_checks": [
+      {
+        "radius": 2.5,
+        "pieces": 36,
+        "shade": true,
+        "baked_groups": 142
+      },
+      {
+        "radius": 3.0,
+        "pieces": 49,
+        "shade": true,
+        "baked_groups": 142
+      },
+      {
+        "radius": 2.0,
+        "pieces": 25,
+        "shade": true,
+        "baked_groups": 142
+      },
+      {
+        "radius": 2.0,
+        "pieces": 25,
+        "shade": false,
+        "baked_groups": 142
+      },
+      {
+        "radius": 2.5,
+        "pieces": 36,
+        "shade": false,
+        "baked_groups": 142
+      }
+    ],
+    "delayed_amber_block_light": [
+      7,
+      7,
+      7
+    ]
+  }
+}

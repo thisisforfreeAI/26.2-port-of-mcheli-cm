@@ -1,0 +1,268 @@
+{
+  "vulkan": {
+    "rows": 1920,
+    "scenes": {
+      "rocket-small": {
+        "ticks": 120,
+        "ring_emitted": 0,
+        "ground_reads": 2,
+        "heat_drawn": 0,
+        "scene_copies": 0,
+        "pressure": 0
+      },
+      "rocket": {
+        "ticks": 120,
+        "ring_emitted": 10,
+        "ground_reads": 12,
+        "heat_drawn": 0,
+        "scene_copies": 0,
+        "pressure": 0
+      },
+      "penetrator": {
+        "ticks": 120,
+        "ring_emitted": 0,
+        "ground_reads": 2,
+        "heat_drawn": 0,
+        "scene_copies": 0,
+        "pressure": 0
+      },
+      "cruise": {
+        "ticks": 120,
+        "ring_emitted": 1,
+        "ground_reads": 12,
+        "heat_drawn": 0,
+        "scene_copies": 0,
+        "pressure": 0
+      },
+      "dust-front": {
+        "ticks": 120,
+        "ring_emitted": 10,
+        "ground_reads": 12,
+        "heat_drawn": 0,
+        "scene_copies": 0,
+        "pressure": 0
+      },
+      "water": {
+        "ticks": 120,
+        "ring_emitted": 0,
+        "ground_reads": 0,
+        "heat_drawn": 0,
+        "scene_copies": 0,
+        "pressure": 0
+      },
+      "heat": {
+        "ticks": 120,
+        "ring_emitted": 0,
+        "ground_reads": 0,
+        "heat_drawn": 4,
+        "scene_copies": 1,
+        "pressure": 0
+      },
+      "occlusion": {
+        "ticks": 120,
+        "ring_emitted": 0,
+        "ground_reads": 0,
+        "heat_drawn": 4,
+        "scene_copies": 1,
+        "pressure": 0
+      },
+      "viper": {
+        "ticks": 120,
+        "ring_emitted": 0,
+        "ground_reads": 0,
+        "heat_drawn": 2,
+        "scene_copies": 1,
+        "pressure": 0
+      },
+      "chinook": {
+        "ticks": 120,
+        "ring_emitted": 0,
+        "ground_reads": 0,
+        "heat_drawn": 2,
+        "scene_copies": 1,
+        "pressure": 0
+      },
+      "jet": {
+        "ticks": 120,
+        "ring_emitted": 0,
+        "ground_reads": 0,
+        "heat_drawn": 1,
+        "scene_copies": 1,
+        "pressure": 0
+      },
+      "low": {
+        "ticks": 120,
+        "ring_emitted": 0,
+        "ground_reads": 0,
+        "heat_drawn": 0,
+        "scene_copies": 0,
+        "pressure": 0
+      },
+      "disabled": {
+        "ticks": 120,
+        "ring_emitted": 0,
+        "ground_reads": 0,
+        "heat_drawn": 0,
+        "scene_copies": 0,
+        "pressure": 0
+      },
+      "adaptive": {
+        "ticks": 120,
+        "ring_emitted": 0,
+        "ground_reads": 0,
+        "heat_drawn": 4,
+        "scene_copies": 1,
+        "pressure": 3
+      },
+      "cooldown": {
+        "ticks": 120,
+        "ring_emitted": 0,
+        "ground_reads": 0,
+        "heat_drawn": 0,
+        "scene_copies": 0,
+        "pressure": 0
+      },
+      "ring-isolated": {
+        "ticks": 120,
+        "ring_emitted": 10,
+        "ground_reads": 12,
+        "heat_drawn": 0,
+        "scene_copies": 0,
+        "pressure": 0
+      }
+    }
+  },
+  "opengl": {
+    "rows": 1920,
+    "scenes": {
+      "rocket-small": {
+        "ticks": 120,
+        "ring_emitted": 0,
+        "ground_reads": 2,
+        "heat_drawn": 0,
+        "scene_copies": 0,
+        "pressure": 0
+      },
+      "rocket": {
+        "ticks": 120,
+        "ring_emitted": 10,
+        "ground_reads": 12,
+        "heat_drawn": 0,
+        "scene_copies": 0,
+        "pressure": 0
+      },
+      "penetrator": {
+        "ticks": 120,
+        "ring_emitted": 0,
+        "ground_reads": 2,
+        "heat_drawn": 0,
+        "scene_copies": 0,
+        "pressure": 0
+      },
+      "cruise": {
+        "ticks": 120,
+        "ring_emitted": 1,
+        "ground_reads": 12,
+        "heat_drawn": 0,
+        "scene_copies": 0,
+        "pressure": 0
+      },
+      "dust-front": {
+        "ticks": 120,
+        "ring_emitted": 10,
+        "ground_reads": 12,
+        "heat_drawn": 0,
+        "scene_copies": 0,
+        "pressure": 0
+      },
+      "water": {
+        "ticks": 120,
+        "ring_emitted": 0,
+        "ground_reads": 0,
+        "heat_drawn": 0,
+        "scene_copies": 0,
+        "pressure": 0
+      },
+      "heat": {
+        "ticks": 120,
+        "ring_emitted": 0,
+        "ground_reads": 0,
+        "heat_drawn": 4,
+        "scene_copies": 1,
+        "pressure": 0
+      },
+      "occlusion": {
+        "ticks": 120,
+        "ring_emitted": 0,
+        "ground_reads": 0,
+        "heat_drawn": 4,
+        "scene_copies": 1,
+        "pressure": 0
+      },
+      "viper": {
+        "ticks": 120,
+        "ring_emitted": 0,
+        "ground_reads": 0,
+        "heat_drawn": 2,
+        "scene_copies": 1,
+        "pressure": 0
+      },
+      "chinook": {
+        "ticks": 120,
+        "ring_emitted": 0,
+        "ground_reads": 0,
+        "heat_drawn": 2,
+        "scene_copies": 1,
+        "pressure": 0
+      },
+      "jet": {
+        "ticks": 120,
+        "ring_emitted": 0,
+        "ground_reads": 0,
+        "heat_drawn": 1,
+        "scene_copies": 1,
+        "pressure": 0
+      },
+      "low": {
+        "ticks": 120,
+        "ring_emitted": 0,
+        "ground_reads": 0,
+        "heat_drawn": 0,
+        "scene_copies": 0,
+        "pressure": 0
+      },
+      "disabled": {
+        "ticks": 120,
+        "ring_emitted": 0,
+        "ground_reads": 0,
+        "heat_drawn": 0,
+        "scene_copies": 0,
+        "pressure": 0
+      },
+      "adaptive": {
+        "ticks": 120,
+        "ring_emitted": 0,
+        "ground_reads": 0,
+        "heat_drawn": 4,
+        "scene_copies": 1,
+        "pressure": 3
+      },
+      "cooldown": {
+        "ticks": 120,
+        "ring_emitted": 0,
+        "ground_reads": 0,
+        "heat_drawn": 0,
+        "scene_copies": 0,
+        "pressure": 0
+      },
+      "ring-isolated": {
+        "ticks": 120,
+        "ring_emitted": 10,
+        "ground_reads": 12,
+        "heat_drawn": 0,
+        "scene_copies": 0,
+        "pressure": 0
+      }
+    }
+  }
+}

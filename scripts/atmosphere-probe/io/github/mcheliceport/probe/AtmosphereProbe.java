@@ -29,12 +29,14 @@ public final class AtmosphereProbe {
     static { GUN.type = "machinegun2"; GUN.explosion = 6; }
 
     @SubscribeEvent(priority=EventPriority.HIGHEST)
+    @SuppressWarnings("unchecked")
     public static void tick(ClientTickEvent.Post event) {
         Minecraft mc = Minecraft.getInstance();
         if(mc.level==null||mc.player==null||mc.isPaused())return;
         tick++;
         if(tick==20){
             mc.getWindow().setWindowed(1280,720); mc.options.enableVsync().set(false); mc.options.framerateLimit().set(60);
+            ClientConfig.EFFECT_TARGET_FPS.set(Integer.getInteger("mcheli.probeTargetFps",60));
             mc.options.getSoundSourceOptionInstance(net.minecraft.sounds.SoundSource.MASTER).set(1.0);
             ClientConfig.EFFECT_QUALITY.set(EffectQuality.ENHANCED); ClientConfig.EFFECT_STYLE.set(ClientConfig.EffectStyle.POLISHED);
             ClientConfig.ADAPTIVE_EFFECTS.set(false); ClientConfig.EFFECT_BUDGET.set(ClientConfig.EffectBudget.HIGH);
@@ -79,6 +81,18 @@ public final class AtmosphereProbe {
         if(tick==550){
             if(VehicleAtmosphere.stateCount()!=0||WeaponGroundEffects.flashes()!=0||EngineHeat.sourceCount()!=0)
                 throw new IllegalStateException("Classic retained enhanced atmosphere state");
+            int checked = 0;
+            for (var entity : mc.level.entitiesForRendering()) {
+                if (!(entity instanceof io.github.mcheliceport.entity.aircraft.AircraftEntity aircraft)) continue;
+                var renderer = (io.github.mcheliceport.client.render.AircraftRenderer<io.github.mcheliceport.entity.aircraft.AircraftEntity>)
+                        (Object) mc.getEntityRenderDispatcher().getRenderer(aircraft);
+                var state = renderer.createRenderState(aircraft, 1);
+                if (state.surfaceShade || state.contactShadowRadius != 2)
+                    throw new IllegalStateException("Classic style retained vehicle shading/shadow sizing");
+                checked++;
+            }
+            if (checked == 0) throw new IllegalStateException("No Classic vehicle render checks");
+            System.out.println("ATMOSPHERE classic-render-checks=" + checked);
             System.out.println("ATMOSPHERE classic-cleanup=passed");mc.stop();
         }
     }

@@ -24,7 +24,9 @@ final class EnginePlumeParticle extends SmokeParticle {
         this.xo = this.x; this.yo = this.y; this.zo = this.z;
         if (++this.age >= this.lifetime) { this.remove(); return; }
         this.move(this.xd, this.yd, this.zd);
-        this.xd *= 0.92; this.zd *= 0.92; this.yd = this.yd * 0.92 + 0.002;
+        this.xd = BlastSmokeMotion.advect(this.xd, BlastSmokeMotion.windX(this.level.getGameTime()), 0.92, this.age);
+        this.zd = BlastSmokeMotion.advect(this.zd, BlastSmokeMotion.windZ(this.level.getGameTime()), 0.92, this.age);
+        this.yd = this.yd * 0.92 + 0.002;
     }
     @Override public void extract(net.minecraft.client.renderer.state.level.QuadParticleRenderState state,
             net.minecraft.client.Camera camera, float partialTick) {

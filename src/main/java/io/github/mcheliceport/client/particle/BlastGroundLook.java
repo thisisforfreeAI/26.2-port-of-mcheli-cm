@@ -26,6 +26,12 @@ public final class BlastGroundLook {
         return (budget == EffectBudget.HIGH ? 3 : 2) / (1 + Math.clamp(pressure, 0, 1));
     }
 
+    /** Replace soil-jet slots with chips on hard surfaces, without adding requests. */
+    public static boolean fragmentSlot(int slot, int count, boolean broad, boolean jet, Surface surface) {
+        return count > 1 && (broad ? slot % 3 == 2 || surface == Surface.SOLID && jet
+                : slot == count - 1 || surface == Surface.SOLID && jet);
+    }
+
     public static float dustRadius(float power, BlastStyle style, Surface surface) {
         float p = Float.isFinite(power) ? Math.clamp(power, 0, 16) : 0;
         float scale = ExplosionLook.broad(style) ? 1 : 0.45F;

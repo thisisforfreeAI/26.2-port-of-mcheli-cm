@@ -1,5 +1,8 @@
 # M8 plan: effects polish for Vulkan
 
+Current requested realism implementation: complete; native software validation is recorded in
+[M8_COMPLETION.md](M8_COMPLETION.md). Target-PC 60 FPS acceptance remains open.
+
 Status: started early, by the user's request, for the vehicles already ported in M6 (helicopters,
 planes, ships, tanks and vehicles). This expands the M8 row of [PORTING_PLAN.md](../PORTING_PLAN.md)
 §6. PORTING_PLAN.md places M8 after M6, M6b and M7; slices that need M7's sound/particle parity
@@ -92,9 +95,9 @@ or `style = "CLASSIC"` selects upstream presentation; budgets still apply. Polis
 one small pixel halo instead of two glow discs, and Low disables optional particle glows/halos.
 The follow-up document records its earlier isolated captures separately from integration checks.
 
-## 7. 80 FPS performance follow-up
+## 7. 60 FPS performance follow-up
 
-The target is RTX 3060 8 GB / Ryzen 7 7800X3D at 1080p (12.5 ms per frame).
+The target is RTX 3060 8 GB / Ryzen 7 7800X3D at 1080p (16.67 ms per frame).
 [M8_PERFORMANCE.md](M8_PERFORMANCE.md) documents adaptive cosmetic detail, coverage-weighted
 admission, dust/spray budgets and repeatable frame-interval capture. Hardware acceptance remains
 open; software-renderer checks cannot certify this PC's FPS.
@@ -103,7 +106,7 @@ open; software-renderer checks cannot certify this PC's FPS.
 
 [M8_LIGHTING_FIRE.md](M8_LIGHTING_FIRE.md) records cached local smoke lighting, heat hints on
 existing damage puffs and tiny explosion sparks with quality/load caps. Classic remains
-available; the 80 FPS hardware target and real battle/flight checks remain open.
+available; the 60 FPS hardware target and real battle/flight checks remain open.
 
 ## 9. Weapon-specific ground appearance
 
@@ -128,9 +131,9 @@ native scene and measured software-renderer frame intervals.
   outer disc with restrained per-entity flicker. Weighted view/distance/load admission bounds
   the halos. Chaff keeps its unlit appearance and existing physics.
 - [x] **Native validation:** Vulkan/OpenGL captures, 187 JUnit tests and overlapping-effects
-  frame samples pass their functional/budget checks; software timings remain above 12.5 ms.
+  frame samples pass their functional/budget checks; software timings remain above 16.67 ms.
 - [ ] **Hardware acceptance:** representative combat on RTX 3060 8 GB + 7800X3D at 1080p,
-  targeting 80 FPS / 12.5 ms. Software-renderer checks cannot certify this target.
+  targeting 60 FPS / 16.67 ms. Software-renderer checks cannot certify this target.
 
 These impact/flare layers use existing vanilla shader/pipeline families and pixel artwork,
 without extra scene copies or dynamic world lighting. The later optional engine heat layer
@@ -159,7 +162,7 @@ pass on both Vulkan and OpenGL, including thin snow/powder snow. Hardware FPS re
   heavy smoke remains a damage cue. Use content-defined outlets, existing pipelines and
   distance/adaptive caps. Optional heat refraction is added in §16.
 
-These requests follow the rotor-wash work. The 80 FPS target on the specified PC
+These requests follow the rotor-wash work. The 60 FPS target on the specified PC
 remains the acceptance goal; each added layer needs native captures and measured cost.
 
 ## 13. Engine exhaust implementation
@@ -188,7 +191,7 @@ target-PC acceptance remains open.
 - [x] Improve tracer readability with narrow bright cores, tapered tails and visible burning
   bases along the firing view. See [M8_TRACERS.md](M8_TRACERS.md).
 - [ ] Hardware acceptance at 1080p on RTX 3060 8 GB / Ryzen 7 7800X3D: representative sustained
-  firing, overlapping explosions and mixed vehicles, targeting 80 FPS / 12.5 ms.
+  firing, overlapping explosions and mixed vehicles, targeting 60 FPS / 16.67 ms.
 - [ ] Final visual acceptance in actual flight and battles, including addon/content combinations.
 
 The user has requested the optional heat distortion, ground dust front and further exhaust
@@ -214,7 +217,7 @@ scenes validate behavior and work bounds; they cannot replace target-hardware ac
   rejection, changed surfaces, multiple stock vehicles and combined explosions/rotor wash,
   including Low and maximum adaptive pressure on Vulkan and OpenGL.
 - [ ] Final player-driven slope/transition and addon visual acceptance. Profile against the
-  existing 80 FPS target on RTX 3060 8 GB / Ryzen 7 7800X3D at 1080p before raising budgets.
+  existing 60 FPS target on RTX 3060 8 GB / Ryzen 7 7800X3D at 1080p before raising budgets.
 
 Implemented in the requested order: fitting/bounds, materials, then contact paths. See
 [M8_VEHICLE_TRACKS.md](M8_VEHICLE_TRACKS.md) for limits and reproduction. Marks are cosmetic;
@@ -236,3 +239,101 @@ addon vehicles require explicit wheel data; unsupported placed weapons leave no 
   combat remain required, especially for the optional scene copy.
 
 See [M8_FOLLOWUPS.md](M8_FOLLOWUPS.md) for appearance, limits, verification and remaining acceptance.
+
+## 17. Realism follow-up (60 FPS target)
+
+The user changed acceptance to **60 FPS / 16.67 ms**, RTX 3060 8 GB, Ryzen 7 7800X3D,
+1080p. New configs default to `effects.targetFps=60`; existing configured values remain user-owned:
+set that key to 60 on existing installations. Particle/admission caps are unchanged.
+
+- Implemented: shared slow wind for enhanced explosion, engine and damage smoke; initial
+  ejection/curl settles into drift, with smaller wisps fading sooner than dense cores.
+- Implemented: 2–3 tick flashes, retained delayed cloud development and prompt ground debris.
+- Implemented: local-material dust fronts and wash density; hard surfaces trade dirt jets for
+  block-textured chips. Existing sand/soil/snow profiles and separate water spray retained.
+- Implemented: bounded geometry crease shadows/edge highlights, baked to ready vertex colors
+  at model load. This preserves stock textures; texture-only detail still needs authored art.
+- Implemented: nearby footprint-aware vanilla shadows, retaining existing track/scorch surface
+  fitting. Distant/Low/adaptive fallbacks avoid unnecessary footprint work.
+- Checked: daylight/night/roof shade and delayed amber illumination in native fixtures;
+  corrected local-age lighting and both Classic switches. Tracer-only bullet glow unchanged.
+- Checked: Vulkan/OpenGL functional scenarios and mixed-combat work/drain checks with the
+  adaptive target explicitly set to 60. Software rendering does not certify target-PC FPS.
+- Remaining acceptance: player-driven stock/addon visual checks and sustained 60 FPS on the
+  specified PC. Content-authored machinery shading and ramp/transition software checks are
+  completed in §18. Additional hand-repainted skins would be a separate optional art pass.
+  Historical captures retain their original targets.
+
+### Realism slice 2: geometry shading and local dust fronts
+
+- Added [vehicle surface shading](M8_VEHICLE_SHADING.md), baked during vehicle model loading:
+  neutral flat panels, up to 12% recessed shading, up to 3% edge highlights. Toggle with
+  `effects.vehicleSurfaceShade`; Enhanced intact vehicle draws only. Thermal, destroyed,
+  iron-curtain and emissive rendering bypass it. Texture-only detail still needs authored art.
+- Dust-front sectors now reuse their sampled support block for local material color and speed,
+  instead of using the blast center's material across sand/soil/stone transitions. Read caps
+  and particle request counts remain unchanged.
+- Further content-aware shading is completed in §18. Broader stock/addon gameplay review and
+  target-PC 60 FPS measurement remain acceptance items.
+
+### Realism slice 3: ground contact
+
+- Footprint-aware nearby vanilla vehicle shadows, controlled by `effects.vehicleContactShadows`.
+  Balanced/High radius caps 2.5/3; Low/load restores the original 2. No new render pass, but
+  wider shadows increase bounded vanilla support sampling. See [ground contact](M8_GROUND_CONTACT.md).
+- Rotor-wash density now uses each candidate's local surface/height, not the rotor center's
+  material. Original per-rotor sample slots retained; review confirmed they do not overlap
+  with the existing two-candidate maximum. Read/cache/admission caps remain.
+- Existing track/mark surface fitting retained. Moving ramp/transition software checks are completed in §18. Player-driven visual acceptance
+  and real-hardware performance remain open; controlled lighting checks are below.
+
+### Refinement after ground-contact slice
+
+- Surface tint is now baked to packed vertex colors during model loading. The render loop
+  reads colors directly instead of rounding/clamping three channels for every vertex every frame.
+  Cache storage remains four bytes per vertex; nonstandard tint paths continue to bypass it.
+- Delayed smoke amber lighting now uses the same local age as its sprite animation.
+- A dedicated opt-in realism fixture renders M1A2 shadow/shading toggles and captures night,
+  roof shade and sand/grass-boundary explosions. No changes to weapon gameplay or tracer glow.
+
+### Material refinement
+
+Hard surfaces replace dirt-jet slots with block-textured chips, while sand and soil retain
+loose jets. Same request count and shared fragment caps. A six-slot Balanced broad response
+requests four chips on rock versus two on sand/soil; isolated native scenes check the result
+without a primary cloud obscuring ground admission. Boundary capture occurs at age six.
+
+### Cross-effect wind and Classic cleanup
+
+Engine wisps and enhanced damage smoke now use the same slow wind field as explosion smoke,
+after their existing launch/vehicle-motion impulse. Lifetimes, emission rates and source caps
+remain unchanged. Trails, water spray and Classic smoke retain their existing motion.
+Vehicle surface shading now uses the combined quality/style Enhanced gate: either Classic
+switch restores original colors. The atmosphere fixture checks rendered vehicle states after
+switching style to Classic, in addition to its existing emission/audio/state cleanup assertions.
+
+### Work-budget refinement
+
+Skip footprint calculations beyond vanilla's nearby shadow range and on Low/adaptive fallback;
+only eligible nearby vehicles inspect their wheel footprint. Build dust-sector tint only after
+particle admission. Added a far-shadow native scene: body rendering/shading still works, with
+no shadow pieces and the original fallback radius. No density/quality caps raised.
+
+### Explicit 60-target combat acceptance
+
+Both Mesa backends passed the mixed-combat soak with `effects.targetFps=60`: empty/model
+baselines plus fixed/adaptive overlapping weapon VFX, 600 tick samples per phase. Bounds
+and transient drain checks passed; adaptive pressure reached 3. This is functional software
+acceptance, not RTX 3060 performance acceptance. Compressed raw CSVs and frame-interval
+summaries are in [combat-60fps](performance/m8-realism/combat-60fps/README.md).
+
+## 18. Remaining realism work closure
+
+[Completion implementation](M8_COMPLETION.md) adds content-authored machinery masks to static
+hull vertex colors, stable interpolated tread origins across supporting wheel changes, and
+weapon comparisons from actual definitions. Ground ignition no longer makes conventional
+Hellfires/bunker-busters use the long-burning profile. Large shallow HE missile clouds gain
+a bounded directional footprint; bomb spread and legacy small-rocket smoke remain distinct.
+All existing source/geometry/terrain limits remain. Original texture artwork is retained;
+vehicle-specific depth is authored from machinery data and baked to colors rather than
+requiring replacement textures. Final hardware 60 FPS acceptance is separate from code completion.

@@ -1,0 +1,108 @@
+{
+  "vulkan": {
+    "scenes": [
+      "shadow-balanced",
+      "shadow-high",
+      "shadow-disabled",
+      "classic",
+      "shade-disabled",
+      "night-blast",
+      "roof-blast",
+      "split-ground",
+      "rock-fragments",
+      "sand-jets",
+      "far-shadow"
+    ],
+    "render_checks": [
+      {
+        "radius": "2.5",
+        "shadow_pieces": "36",
+        "shade_enabled": "true",
+        "baked_groups": "142"
+      },
+      {
+        "radius": "3.0",
+        "shadow_pieces": "49",
+        "shade_enabled": "true",
+        "baked_groups": "142"
+      },
+      {
+        "radius": "2.0",
+        "shadow_pieces": "25",
+        "shade_enabled": "true",
+        "baked_groups": "142"
+      },
+      {
+        "radius": "2.0",
+        "shadow_pieces": "25",
+        "shade_enabled": "false",
+        "baked_groups": "142"
+      },
+      {
+        "radius": "2.5",
+        "shadow_pieces": "36",
+        "shade_enabled": "false",
+        "baked_groups": "142"
+      },
+      {
+        "radius": "2.0",
+        "shadow_pieces": "0",
+        "shade_enabled": "true",
+        "baked_groups": "142"
+      }
+    ]
+  },
+  "opengl": {
+    "scenes": [
+      "shadow-balanced",
+      "shadow-high",
+      "shadow-disabled",
+      "classic",
+      "shade-disabled",
+      "night-blast",
+      "roof-blast",
+      "split-ground",
+      "rock-fragments",
+      "sand-jets",
+      "far-shadow"
+    ],
+    "render_checks": [
+      {
+        "radius": "2.5",
+        "shadow_pieces": "36",
+        "shade_enabled": "true",
+        "baked_groups": "142"
+      },
+      {
+        "radius": "3.0",
+        "shadow_pieces": "49",
+        "shade_enabled": "true",
+        "baked_groups": "142"
+      },
+      {
+        "radius": "2.0",
+        "shadow_pieces": "25",
+        "shade_enabled": "true",
+        "baked_groups": "142"
+      },
+      {
+        "radius": "2.0",
+        "shadow_pieces": "25",
+        "shade_enabled": "false",
+        "baked_groups": "142"
+      },
+      {
+        "radius": "2.5",
+        "shadow_pieces": "36",
+        "shade_enabled": "false",
+        "baked_groups": "142"
+      },
+      {
+        "radius": "2.0",
+        "shadow_pieces": "0",
+        "shade_enabled": "true",
+        "baked_groups": "142"
+      }
+    ]
+  }
+}

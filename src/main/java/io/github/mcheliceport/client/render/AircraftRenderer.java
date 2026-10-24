@@ -34,11 +34,16 @@ public abstract class AircraftRenderer<T extends AircraftEntity> extends EntityR
     /** Upstream's colour for a destroyed vehicle. */
     private static final int DESTROYED_COLOR = 0xFF262626;
     /** Upstream's colour for a vehicle ({@code 0.75} grey; {@code __TextureAlpha} is 1). */
-    private static final int COLOR = 0xFFBFBFBF;
+    private static final int COLOR = io.github.mcheliceport.client.model.VehicleSurfaceShade.BASE_COLOR;
 
     public AircraftRenderer(EntityRendererProvider.Context context) {
         super(context);
         this.shadowRadius = 2.0F;
+    }
+
+    @Override
+    protected float getShadowRadius(AircraftRenderState state) {
+        return state.contactShadowRadius;
     }
 
     @Override
@@ -48,6 +53,23 @@ public abstract class AircraftRenderer<T extends AircraftEntity> extends EntityR
 
     @Override
     public void extractRenderState(T entity, AircraftRenderState state, float partialTicks) {
+        state.contactShadowRadius = 2;
+        if (io.github.mcheliceport.config.EffectQuality.enhanced()
+                && ClientConfig.get(ClientConfig.VEHICLE_CONTACT_SHADOWS)
+                && this.entityRenderDispatcher.camera != null
+                && this.entityRenderDispatcher.distanceToSqr(entity) < 256) {
+            var budget = ClientConfig.get(ClientConfig.EFFECT_BUDGET);
+            int pressure = io.github.mcheliceport.client.particle.EffectPerformance.pressure();
+            if (budget != ClientConfig.EffectBudget.LOW && pressure == 0) {
+                double wheelReach = 0;
+                var contactInfo = entity.getAcInfo();
+                if (contactInfo != null) for (int i = 0; i < Math.min(16, contactInfo.wheels.size()); i++) {
+                    var wheel = contactInfo.wheels.get(i);
+                    wheelReach = Math.max(wheelReach, Math.hypot(wheel.pos().x, wheel.pos().z));
+                }
+                state.contactShadowRadius = VehicleContactLook.radius(entity.getBbWidth(), wheelReach, budget, pressure);
+            }
+        }
         super.extractRenderState(entity, state, partialTicks);
         state.draws.clear();
         state.emissiveDraws.clear();
@@ -101,6 +123,9 @@ public abstract class AircraftRenderer<T extends AircraftEntity> extends EntityR
         } else {
             state.color = COLOR;
         }
+        state.surfaceShade = !state.thermal && state.color == COLOR
+                && ClientConfig.get(ClientConfig.VEHICLE_SURFACE_SHADE)
+                && io.github.mcheliceport.config.EffectQuality.enhanced();
         state.flat = !(info.smoothShading && ClientConfig.get(ClientConfig.SMOOTH_SHADING));
         this.drawParts(entity, info, models, input(entity, ypr, partialTicks), partialTicks, state.draws);
         GlMatrixStack eraPose = AircraftPartPoses.bodyStack(input(entity, ypr, partialTicks));
@@ -235,11 +260,12 @@ public abstract class AircraftRenderer<T extends AircraftEntity> extends EntityR
             int color = state.color;
             int light = state.lightCoords;
             boolean flat = state.flat;
+            boolean surfaceShade = state.surfaceShade;
             collector.submitCustomGeometry(poseStack, type, (pose, buffer) -> {
                 for (AircraftPartPoses.Draw draw : draws) {
                     PoseStack.Pose p = pose.copy();
                     p.mulPose(draw.pose());
-                    ModelVertices.emit(buffer, p, draw.groups(), color, light, flat);
+                    ModelVertices.emit(buffer, p, draw.groups(), color, light, flat, surfaceShade);
                 }
             });
         }

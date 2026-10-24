@@ -38,6 +38,8 @@ public final class ClientConfig {
     public static final ModConfigSpec.BooleanValue ADAPTIVE_EFFECTS;
     public static final ModConfigSpec.BooleanValue BLAST_MARKS;
     public static final ModConfigSpec.BooleanValue VEHICLE_TRACKS;
+    public static final ModConfigSpec.BooleanValue VEHICLE_SURFACE_SHADE;
+    public static final ModConfigSpec.BooleanValue VEHICLE_CONTACT_SHADOWS;
     public static final ModConfigSpec.BooleanValue BLAST_DUST_RING;
     public static final ModConfigSpec.BooleanValue ENGINE_HEAT_HAZE;
     public static final ModConfigSpec.BooleanValue ROTOR_WASH_DEBRIS;
@@ -147,6 +149,10 @@ public final class ClientConfig {
         BLAST_MARKS = builder
                 .comment("Weapon-scaled soot and disturbed-ground textures on surviving block surfaces; client-only and bounded.")
                 .define("blastMarks", true);
+        VEHICLE_CONTACT_SHADOWS = builder.comment("Size nearby vanilla vehicle shadows from wheel/body footprint; bounded by quality.")
+                .define("vehicleContactShadows", true);
+        VEHICLE_SURFACE_SHADE = builder.comment("Subtle model-space crease shadows and edge highlights on enhanced vehicles.")
+                .define("vehicleSurfaceShade", true);
         VEHICLE_TRACKS = builder.comment("Temporary tank tread/tire imprints on surviving terrain; client-only and bounded.")
                 .define("vehicleTracks", true);
         BLAST_DUST_RING = builder.comment("Broken ground-hugging dust fronts on substantial ground explosions; Low/load shed this layer.")
@@ -167,7 +173,7 @@ public final class ClientConfig {
                 .define("adaptiveDetail", true);
         EFFECT_TARGET_FPS = builder
                 .comment("Frame-rate goal for adaptive effects. This cannot guarantee FPS when terrain or other mods dominate.")
-                .defineInRange("targetFps", 80, 30, 240);
+                .defineInRange("targetFps", 60, 30, 240);
         ALIVE_TIME_OF_CARTRIDGE = builder
                 .comment("Ticks an ejected cartridge stays on the ground. Upstream: AliveTimeOfCartridge.")
                 .defineInRange("aliveTimeOfCartridge", 200, 0, 1000);

@@ -83,7 +83,11 @@ public final class BlastGroundProbe {
             ClientConfig.EFFECT_QUALITY.set(EffectQuality.ENHANCED);
             ClientConfig.EFFECT_STYLE.set(ClientConfig.EffectStyle.POLISHED);
             ClientConfig.DEFAULT_EXPLOSION_PARTICLE.set(false);
-            if (COMBAT) ClientConfig.BLAST_MARKS.set(true);
+            ClientConfig.EFFECT_TARGET_FPS.set(Integer.getInteger("mcheli.probeTargetFps", 60));
+            if (COMBAT) {
+                ClientConfig.BLAST_MARKS.set(true);
+                System.out.println("M8_COMBAT target_fps=" + ClientConfig.get(ClientConfig.EFFECT_TARGET_FPS));
+            }
         }
         if (tick < 160) return;
         int phase = (tick - 160) / LENGTH + OFFSET, age = (tick - 160) % LENGTH;

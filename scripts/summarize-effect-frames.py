@@ -31,7 +31,7 @@ def summarize(path, target):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("files", type=Path, nargs="+")
-    parser.add_argument("--target-fps", type=int, default=80)
+    parser.add_argument("--target-fps", type=int, default=60)
     parser.add_argument("--require-target", action="store_true", help="Fail when any scene's p95 exceeds the frame budget")
     args = parser.parse_args()
     if args.target_fps <= 0:

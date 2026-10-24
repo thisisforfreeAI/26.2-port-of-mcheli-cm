@@ -70,14 +70,30 @@ public final class VehicleTracks {
             boolean tread = tank.getTankInfo().weightType != 1;
             if (tread) {
                 for (int side = 0; side < 2; side++) {
-                    int chosen = -1;
+                    int rear = -1, front = -1;
                     for (int i = side; i < Math.min(terrain.wheelCount(), 32); i += 2) {
-                        if (terrain.contactGrounded(i) && (chosen < 0 || Math.abs(terrain.contactLocal(i).z) < Math.abs(terrain.contactLocal(chosen).z))) chosen = i;
+                        if (!terrain.contactGrounded(i)) continue;
+                        double z = terrain.contactLocal(i).z;
+                        if (z <= 0 && (rear < 0 || z > terrain.contactLocal(rear).z)) rear = i;
+                        if (z >= 0 && (front < 0 || z < terrain.contactLocal(front).z)) front = i;
                     }
-                    if (chosen < 0) { state.lane(side).clear(); state.heading[side] = null; state.anchors[side] = -1; continue; }
-                    if (state.anchors[side] != chosen) { state.lane(side).clear(); state.heading[side] = null; state.anchors[side] = chosen; }
+                    int chosen = rear < 0 ? front : front < 0 ? rear
+                            : Math.abs(terrain.contactLocal(rear).z) < terrain.contactLocal(front).z ? rear : front;
+                    Vec3 contact = chosen < 0 ? null : terrain.contactPosition(chosen);
+                    boolean bracket = rear >= 0 && front >= 0;
+                    if (bracket && rear != front) {
+                        Vec3 blended = TreadContact.center(terrain.contactPosition(rear), terrain.contactLocal(rear).z,
+                                terrain.contactPosition(front), terrain.contactLocal(front).z);
+                        if (blended != null) contact = blended;
+                        else bracket = false; // Unusual addon spans retain the original nearest-contact fallback.
+                    }
+                    if (contact == null) { state.lane(side).clear(); state.heading[side] = null; state.anchors[side] = -1; continue; }
+                    // Bracket pairs may change without moving the stamp origin. Single-wheel support
+                    // still resets on an anchor change, avoiding bridges across airborne gaps.
+                    int anchor = bracket ? -2 : chosen;
+                    if (state.anchors[side] != anchor) { state.lane(side).clear(); state.heading[side] = null; state.anchors[side] = anchor; }
                     float width = info.wheels.get(chosen / 2).size() * 0.7F;
-                    emit(level, state, side, terrain.contactPosition(chosen), true, width, TrackMarks.Kind.TREAD, now, cap);
+                    emit(level, state, side, contact, true, width, TrackMarks.Kind.TREAD, now, cap);
                 }
             } else {
                 int count = Math.min(8, terrain.wheelCount());

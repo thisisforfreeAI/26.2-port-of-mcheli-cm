@@ -65,7 +65,7 @@ final class ExplosionCloudEmitter {
         float radius = ExplosionSequence.flashRadius(power, style);
         if (EffectPerformance.optionalGlows() && EffectAdmission.admit(level, x, y, z, false, radius)) {
             Minecraft.getInstance().particleEngine.add(new ImpactCoreParticle(level, x, y + 0.3, z, radius,
-                    ExplosionLook.broad(style) ? 6 : 3));
+                    ExplosionLook.broad(style) ? 3 : 2));
         }
     }
 
@@ -76,7 +76,7 @@ final class ExplosionCloudEmitter {
             double angle = i * 2.3999632297;
             oldSmoke(level, x + Math.cos(angle) * radius * 0.25, y + radius * 0.15,
                     z + Math.sin(angle) * radius * 0.25, power, style, random, axis);
-        } else smoke(level, x, y, z, power, style, radius, i, baseCount, random);
+        } else smoke(level, x, y, z, power, style, radius, i, baseCount, random, axis);
     }
 
     private static int smokeIndex(int slot, int baseCount, int total) {
@@ -85,19 +85,22 @@ final class ExplosionCloudEmitter {
     }
 
     private static void smoke(ClientLevel level, double x, double y, double z, float power, BlastStyle style,
-            float radius, int i, int baseCount, Random random) {
+            float radius, int i, int baseCount, Random random, Vec3 axis) {
         boolean base = i < baseCount;
         int tier = i - baseCount;
         double angle = i * 2.3999632297 + random.nextDouble() * 0.6;
         double dx = Math.cos(angle), dz = Math.sin(angle);
         double spread = radius * (base ? 0.43 : 0.12 + random.nextDouble() * 0.16);
-        double px = x + dx * spread, pz = z + dz * spread;
+        Vec3 footprint = ExplosionFootprint.cloudOffset(power, style, axis, dx * spread, dz * spread, radius);
+        double px = x + footprint.x, pz = z + footprint.z;
         double py = y + radius * (base ? 0.07 : 0.22 + tier * 0.12);
-        float r = radius * (base ? 0.78F + random.nextFloat() * 0.18F : 0.70F + random.nextFloat() * 0.20F);
+        boolean wisp = i % 3 == 2;
+        float r = (wisp ? 0.7F : 1F) * radius * (base ? 0.78F + random.nextFloat() * 0.18F : 0.70F + random.nextFloat() * 0.20F);
         if (!EffectAdmission.admitBlastLobe(level, px, py, pz, r)) return;
         double speed = radius * (base ? 0.055 : 0.009) * (0.8 + random.nextDouble() * 0.4);
         int delay = base ? i % 3 : 3 + Math.min(7, tier * 2);
-        int life = Math.min(116, ExplosionSequence.life(power, style) + (base ? 12 : 20) + random.nextInt(8));
+        int life = BlastSmokeMotion.lifetime(Math.min(116, ExplosionSequence.life(power, style)
+                + (base ? 12 : 20) + random.nextInt(8)), wisp);
         Minecraft.getInstance().particleEngine.add(new BlastCloudParticle(level, px, py, pz,
                 dx * speed, base ? 0.01 : 0.045 + Math.min(3, tier) * 0.018, dz * speed,
                 r, life, 0, base ? 0.94F : 0.9F, delay, base,
@@ -130,7 +133,8 @@ final class ExplosionCloudEmitter {
     private static void oldSmoke(ClientLevel level, double x, double y, double z, float power, BlastStyle style, Random random, Vec3 axis) {
         float nominal = power < 8 ? power * 2 : 16;
         var quality = ClientConfig.get(ClientConfig.EFFECT_BUDGET);
-        nominal = ExplosionLook.puffSize(nominal, power, style, quality);
+        boolean wisp = random.nextInt(3) == 0;
+        nominal = ExplosionLook.puffSize(nominal, power, style, quality) * (wisp ? 0.7F : 1F);
         if (!EffectAdmission.admitBlastLobe(level, x, y, z, nominal * 0.2F)) return;
         double angle = random.nextDouble() * Math.PI * 2;
         double speed = Math.min(0.7, power * 0.09) * (0.5 + random.nextDouble() * 0.5);
@@ -143,6 +147,7 @@ final class ExplosionCloudEmitter {
         float colour = 0.3F + random.nextFloat() * 0.4F;
         puff.setColor(colour + 0.1F, colour + 0.05F, colour);
         puff.diffusible = true;
+        puff.coherentDrift = puff.enhanced;
         puff.disableCollision();
         puff.particleScale = nominal * ExplosionLook.startScale(power, style, quality);
         puff.particleMaxScale = nominal * 2;
@@ -150,7 +155,7 @@ final class ExplosionCloudEmitter {
         puff.coolingShare = ExplosionLook.coolingShare(style);
         puff.motionYUpAge = 2;
         int minimumLife = style == BlastStyle.BLAST || style == BlastStyle.PENETRATOR ? 44 + (int) Math.min(power, 12) * 3 : 8;
-        puff.setParticleMaxAge(Math.clamp((int) ((10 + random.nextInt(30)) * Math.min(power, 6) * 2 / 3), minimumLife, 100));
+        puff.setParticleMaxAge(BlastSmokeMotion.lifetime(Math.clamp((int) ((10 + random.nextInt(30)) * Math.min(power, 6) * 2 / 3), minimumLife, 100), wisp));
         Minecraft.getInstance().particleEngine.add(puff);
     }
 }
