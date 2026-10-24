@@ -25,6 +25,7 @@ import net.neoforged.neoforge.client.event.RenderFrameEvent;
 public final class NtmExplosionProbe {
     private static final boolean PRESENT=Boolean.getBoolean("mcheli.probeNtmExpectPresent");
     private static int frame,tick;
+    private static long loadingSince,loadingLog;
     private static boolean running;
     private static String capture;
     private static Vec3 origin;
@@ -74,7 +75,23 @@ public final class NtmExplosionProbe {
     }
     @SubscribeEvent public static void frame(RenderFrameEvent.Post event) throws Exception {
         if(!Boolean.getBoolean("mcheli.probeNtm"))return;
-        var mc=Minecraft.getInstance();if(mc.level==null || mc.player==null || mc.gui.overlay()!=null)return;
+        var mc=Minecraft.getInstance();
+        if(mc.level==null || mc.player==null) {
+            long now=System.currentTimeMillis();if(loadingSince==0)loadingSince=now;
+            // Only the disposable GameTest fixture: vanilla asks before opening its experimental generator.
+            if(mc.gui.screen() instanceof net.minecraft.client.gui.screens.BackupConfirmScreen) {
+                click(net.minecraft.network.chat.Component.translatable("selectWorld.backupJoinSkipButton").getString());
+                com.mojang.logging.LogUtils.getLogger().info("M8_NTM accepted disposable-world experimental-generator prompt");
+            }
+            if(now-loadingLog>10000) {
+                loadingLog=now;com.mojang.logging.LogUtils.getLogger().info("M8_NTM loading screen={} overlay={}",
+                        mc.gui.screen()==null?"none":mc.gui.screen().getClass().getName(),
+                        mc.gui.overlay()==null?"none":mc.gui.overlay().getClass().getName());
+            }
+            require(now-loadingSince<180000,"Disposable NTM fixture did not open within 180 seconds");
+            return;
+        }
+        if(mc.gui.overlay()!=null)return;
         if(Boolean.getBoolean("mcheli.probeNtmRestart")) {
             if(++frame==20) {
                 require(ExplosionModes.selected()==ClientConfig.ExplosionMode.NTM_NEXT,"Mode did not survive restart");

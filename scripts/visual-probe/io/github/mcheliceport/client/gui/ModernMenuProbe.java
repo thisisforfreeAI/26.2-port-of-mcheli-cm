@@ -87,6 +87,7 @@ public final class ModernMenuProbe {
                 ClientConfig.EFFECT_QUALITY.set(EffectQuality.ENHANCED);ClientConfig.EFFECT_STYLE.set(ClientConfig.EffectStyle.POLISHED);
                 ClientConfig.DEFAULT_EXPLOSION_PARTICLE.set(false);io.github.mcheliceport.client.particle.ExplosionModes.select(ClientConfig.ExplosionMode.CURRENT);
                 ClientConfig.EFFECT_BUDGET.set(ClientConfig.EffectBudget.BALANCED);ClientConfig.EFFECT_TARGET_FPS.set(60);
+                ClientConfig.ADAPTIVE_EFFECTS.set(true);
             }
             case 10 -> {pause=new PauseScreen(true);mc.gui.setScreen(pause);}
             case 14 -> {bounds();capture("pause");}
