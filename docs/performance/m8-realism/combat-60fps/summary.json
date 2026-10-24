@@ -1,0 +1,250 @@
+{
+  "target_fps": 60,
+  "frame_budget_ms": 16.666666666666668,
+  "hardware_acceptance": false,
+  "renderer": "Mesa software",
+  "backends": {
+    "vulkan": {
+      "tick_rows": 2400,
+      "phases": {
+        "empty": {
+          "tick_rows": 600,
+          "peak_counters": {
+            "particles": 1,
+            "bullets": 0,
+            "fragment_slots": 0,
+            "terrain_reads": 0,
+            "terrain_rays": 0,
+            "maintenance": 0,
+            "pending": 0,
+            "active": 0,
+            "tiles": 0,
+            "exhaust": 0,
+            "wash": 0,
+            "pressure": 0
+          },
+          "transient_drain_check_passed": true,
+          "software_frame_intervals": {
+            "scene": "combat-empty",
+            "frames": 201,
+            "mean_ms": 74.483,
+            "median_ms": 72.446,
+            "p95_ms": 91.452,
+            "p99_ms": 121.938,
+            "average_fps": 13.43,
+            "within_budget_percent": 0.0,
+            "p95_within_target": false
+          }
+        },
+        "models": {
+          "tick_rows": 600,
+          "peak_counters": {
+            "particles": 1,
+            "bullets": 0,
+            "fragment_slots": 0,
+            "terrain_reads": 0,
+            "terrain_rays": 0,
+            "maintenance": 0,
+            "pending": 0,
+            "active": 0,
+            "tiles": 0,
+            "exhaust": 0,
+            "wash": 0,
+            "pressure": 0
+          },
+          "transient_drain_check_passed": true,
+          "software_frame_intervals": {
+            "scene": "combat-models",
+            "frames": 189,
+            "mean_ms": 79.192,
+            "median_ms": 74.859,
+            "p95_ms": 100.124,
+            "p99_ms": 139.325,
+            "average_fps": 12.63,
+            "within_budget_percent": 0.0,
+            "p95_within_target": false
+          }
+        },
+        "fixed": {
+          "tick_rows": 600,
+          "peak_counters": {
+            "particles": 755,
+            "bullets": 64,
+            "fragment_slots": 23,
+            "terrain_reads": 189,
+            "terrain_rays": 32,
+            "maintenance": 40,
+            "pending": 3,
+            "active": 2,
+            "tiles": 244,
+            "exhaust": 4,
+            "wash": 2,
+            "pressure": 0
+          },
+          "transient_drain_check_passed": true,
+          "software_frame_intervals": {
+            "scene": "combat-fixed",
+            "frames": 148,
+            "mean_ms": 101.374,
+            "median_ms": 97.952,
+            "p95_ms": 125.9,
+            "p99_ms": 157.245,
+            "average_fps": 9.86,
+            "within_budget_percent": 0.0,
+            "p95_within_target": false
+          }
+        },
+        "adaptive": {
+          "tick_rows": 600,
+          "peak_counters": {
+            "particles": 753,
+            "bullets": 64,
+            "fragment_slots": 4,
+            "terrain_reads": 186,
+            "terrain_rays": 32,
+            "maintenance": 40,
+            "pending": 3,
+            "active": 2,
+            "tiles": 244,
+            "exhaust": 4,
+            "wash": 2,
+            "pressure": 3
+          },
+          "transient_drain_check_passed": true,
+          "software_frame_intervals": {
+            "scene": "combat-adaptive",
+            "frames": 163,
+            "mean_ms": 92.621,
+            "median_ms": 88.814,
+            "p95_ms": 123.448,
+            "p99_ms": 156.717,
+            "average_fps": 10.8,
+            "within_budget_percent": 0.0,
+            "p95_within_target": false
+          }
+        }
+      }
+    },
+    "opengl": {
+      "tick_rows": 2400,
+      "phases": {
+        "empty": {
+          "tick_rows": 600,
+          "peak_counters": {
+            "particles": 2,
+            "bullets": 0,
+            "fragment_slots": 0,
+            "terrain_reads": 0,
+            "terrain_rays": 0,
+            "maintenance": 0,
+            "pending": 0,
+            "active": 0,
+            "tiles": 0,
+            "exhaust": 0,
+            "wash": 0,
+            "pressure": 0
+          },
+          "transient_drain_check_passed": true,
+          "software_frame_intervals": {
+            "scene": "combat-empty",
+            "frames": 220,
+            "mean_ms": 68.391,
+            "median_ms": 68.566,
+            "p95_ms": 88.009,
+            "p99_ms": 96.433,
+            "average_fps": 14.62,
+            "within_budget_percent": 0.0,
+            "p95_within_target": false
+          }
+        },
+        "models": {
+          "tick_rows": 600,
+          "peak_counters": {
+            "particles": 1,
+            "bullets": 0,
+            "fragment_slots": 0,
+            "terrain_reads": 0,
+            "terrain_rays": 0,
+            "maintenance": 0,
+            "pending": 0,
+            "active": 0,
+            "tiles": 0,
+            "exhaust": 0,
+            "wash": 0,
+            "pressure": 0
+          },
+          "transient_drain_check_passed": true,
+          "software_frame_intervals": {
+            "scene": "combat-models",
+            "frames": 209,
+            "mean_ms": 71.908,
+            "median_ms": 71.779,
+            "p95_ms": 92.414,
+            "p99_ms": 112.73,
+            "average_fps": 13.91,
+            "within_budget_percent": 0.0,
+            "p95_within_target": false
+          }
+        },
+        "fixed": {
+          "tick_rows": 600,
+          "peak_counters": {
+            "particles": 758,
+            "bullets": 64,
+            "fragment_slots": 24,
+            "terrain_reads": 186,
+            "terrain_rays": 32,
+            "maintenance": 40,
+            "pending": 3,
+            "active": 2,
+            "tiles": 244,
+            "exhaust": 4,
+            "wash": 2,
+            "pressure": 0
+          },
+          "transient_drain_check_passed": true,
+          "software_frame_intervals": {
+            "scene": "combat-fixed",
+            "frames": 161,
+            "mean_ms": 93.438,
+            "median_ms": 91.38,
+            "p95_ms": 113.562,
+            "p99_ms": 181.07,
+            "average_fps": 10.7,
+            "within_budget_percent": 0.0,
+            "p95_within_target": false
+          }
+        },
+        "adaptive": {
+          "tick_rows": 600,
+          "peak_counters": {
+            "particles": 754,
+            "bullets": 64,
+            "fragment_slots": 4,
+            "terrain_reads": 186,
+            "terrain_rays": 32,
+            "maintenance": 40,
+            "pending": 3,
+            "active": 2,
+            "tiles": 244,
+            "exhaust": 4,
+            "wash": 1,
+            "pressure": 3
+          },
+          "transient_drain_check_passed": true,
+          "software_frame_intervals": {
+            "scene": "combat-adaptive",
+            "frames": 184,
+            "mean_ms": 81.776,
+            "median_ms": 81.59,
+            "p95_ms": 100.341,
+            "p99_ms": 113.983,
+            "average_fps": 12.23,
+            "within_budget_percent": 0.0,
+            "p95_within_target": false
+          }
+        }
+      }
+    }
+  }
+}

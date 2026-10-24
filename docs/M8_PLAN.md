@@ -243,17 +243,22 @@ The user changed acceptance to **60 FPS / 16.67 ms**, RTX 3060 8 GB, Ryzen 7 780
 1080p. New configs default to `effects.targetFps=60`; existing configured values remain user-owned:
 set that key to 60 on existing installations. Particle/admission caps are unchanged.
 
-- Implemented first slice: shared slow cosmetic wind for enhanced explosion smoke; initial
-  outward ejection and curling lift settle into drift. Small support wisps disperse sooner than
-  dense cores. Flash shortened to 2 ticks (3 for broad blasts); existing delayed support clouds,
-  immediate dirt/debris and large-blast scale/persistence retained. Classic/trails unchanged.
-- Next: review and refine existing sand/soil/stone/water impacts and surface-colored debris.
-- Next: authored vehicle texture shading around panels, vents, tracks and rotor hubs;
-  restrained edge highlights, requiring in-game review across stock models.
-- Next: ground-contact shadows and continuity of tracks/wash/exhaust/scorch with movement.
-- Next: review daylight/shade response and amber smoke backlighting; retain tracer-only bullet glow.
-- Acceptance pending: Vulkan/OpenGL visual comparison, heavy-combat timing on the target PC.
-  Software rendering cannot certify 60 FPS. Historical captures retain their original targets.
+- Implemented: shared slow wind for enhanced explosion, engine and damage smoke; initial
+  ejection/curl settles into drift, with smaller wisps fading sooner than dense cores.
+- Implemented: 2–3 tick flashes, retained delayed cloud development and prompt ground debris.
+- Implemented: local-material dust fronts and wash density; hard surfaces trade dirt jets for
+  block-textured chips. Existing sand/soil/snow profiles and separate water spray retained.
+- Implemented: bounded geometry crease shadows/edge highlights, baked to ready vertex colors
+  at model load. This preserves stock textures; texture-only detail still needs authored art.
+- Implemented: nearby footprint-aware vanilla shadows, retaining existing track/scorch surface
+  fitting. Distant/Low/adaptive fallbacks avoid unnecessary footprint work.
+- Checked: daylight/night/roof shade and delayed amber illumination in native fixtures;
+  corrected local-age lighting and both Classic switches. Tracer-only bullet glow unchanged.
+- Checked: Vulkan/OpenGL functional scenarios and mixed-combat work/drain checks with the
+  adaptive target explicitly set to 60. Software rendering does not certify target-PC FPS.
+- Remaining: further authored texture detail, player-driven stock/addon and slope/transition
+  visual acceptance, and sustained 60 FPS hardware acceptance on the specified PC.
+  Historical captures retain their original targets.
 
 ### Realism slice 2: geometry shading and local dust fronts
 
@@ -264,8 +269,8 @@ set that key to 60 on existing installations. Particle/admission caps are unchan
 - Dust-front sectors now reuse their sampled support block for local material color and speed,
   instead of using the blast center's material across sand/soil/stone transitions. Read caps
   and particle request counts remain unchanged.
-- Pending: individual texture art, ground-contact shadows/continuity, further material and
-  lighting review, and target-PC 60 FPS acceptance. No FPS certification from software rendering.
+- Remaining acceptance: individual texture art, broader stock/addon gameplay review and
+  target-PC 60 FPS measurement. Later slices below add ground-contact and lighting refinements.
 
 ### Realism slice 3: ground contact
 
@@ -276,7 +281,7 @@ set that key to 60 on existing installations. Particle/admission caps are unchan
   material. Original per-rotor sample slots retained; review confirmed they do not overlap
   with the existing two-candidate maximum. Read/cache/admission caps remain.
 - Existing track/mark surface fitting retained. Further texture art, mixed-surface visual
-  acceptance, lighting review and real-hardware performance remain pending.
+  acceptance and real-hardware performance remain pending; controlled lighting checks are below.
 
 ### Refinement after ground-contact slice
 
@@ -309,3 +314,11 @@ Skip footprint calculations beyond vanilla's nearby shadow range and on Low/adap
 only eligible nearby vehicles inspect their wheel footprint. Build dust-sector tint only after
 particle admission. Added a far-shadow native scene: body rendering/shading still works, with
 no shadow pieces and the original fallback radius. No density/quality caps raised.
+
+### Explicit 60-target combat acceptance
+
+Both Mesa backends passed the mixed-combat soak with `effects.targetFps=60`: empty/model
+baselines plus fixed/adaptive overlapping weapon VFX, 600 tick samples per phase. Bounds
+and transient drain checks passed; adaptive pressure reached 3. This is functional software
+acceptance, not RTX 3060 performance acceptance. Compressed raw CSVs and frame-interval
+summaries are in [combat-60fps](performance/m8-realism/combat-60fps/README.md).
