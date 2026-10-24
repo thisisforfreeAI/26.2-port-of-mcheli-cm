@@ -34,9 +34,33 @@
     "release_build": "passed; native bridge included; all opt-in visual-probe classes excluded"
   },
   "native_runtime_ci": {
-    "status": "pending",
+    "status": "passed Vulkan and OpenGL",
+    "validated_production_commit": "e52dfff12dfd87b23aa8181e194ca5b47183aee6",
     "workflow": ".github/workflows/ntm-explosion-client.yml",
-    "pr": "https://github.com/thisisforfreeAI/26.2-port-of-mcheli-cm/pull/87"
+    "run": "https://github.com/thisisforfreeAI/26.2-port-of-mcheli-cm/actions/runs/40143646236",
+    "ntm_version": "1.0.3",
+    "crankshaft_version": "1.6.0+mc26.2",
+    "backends": [
+      "Vulkan Mesa llvmpipe",
+      "OpenGL Mesa llvmpipe"
+    ],
+    "native_small": true,
+    "native_large": true,
+    "native_wave": true,
+    "menu_cycle": true,
+    "minimum_gui": "320x240",
+    "classic_gate": true,
+    "done_and_escape": true,
+    "overlap_requests": 2048,
+    "live_face_bound_checked": 1920,
+    "drained": true,
+    "separate_jvm_persistence": true,
+    "isolated_spawn_faces": {
+      "small_power_2": 6,
+      "medium_power_5": 151,
+      "large_power_12": 301
+    },
+    "notes": "The following change enables hidden .run screenshot/log files in workflow artifacts; production effect code is unchanged."
   },
   "bounds": {
     "live_faces": {

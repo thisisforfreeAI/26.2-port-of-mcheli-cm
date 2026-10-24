@@ -70,4 +70,5 @@ jobs:
             .run/m8-preview/screenshots/m8-ntm-*.png
             .run/m8-preview/logs/
             .run/m8-preview/crash-reports/
+          include-hidden-files: true
           if-no-files-found: warn

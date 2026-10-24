@@ -71,5 +71,6 @@ performance acceptance needs the target PC. Native validation results are record
 
 Local release and all 292 unit tests pass. Vulkan/OpenGL missing-mod UI/fallback and separate
 JVM persistence pass, as does the complete existing Modern-menu regression. A newly copied
-GameTest world also passes the Vulkan bootstrap and missing-mod path. Native-runtime results
-are recorded in [the evidence file](performance/m8-realism/ntm-explosions.json).
+GameTest world also passes the Vulkan bootstrap and missing-mod path. Native NTM 1.0.3 + Crankshaft 1.6.0+mc26.2 passed on both Vulkan and OpenGL: actual
+native classes/waves, 2048 overlapping requests, face bounds, final drain, ESC controls and
+a separate JVM persistence check. Native-runtime results are recorded in [the evidence file](performance/m8-realism/ntm-explosions.json).
