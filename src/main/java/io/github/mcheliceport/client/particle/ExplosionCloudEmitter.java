@@ -76,7 +76,7 @@ final class ExplosionCloudEmitter {
             double angle = i * 2.3999632297;
             oldSmoke(level, x + Math.cos(angle) * radius * 0.25, y + radius * 0.15,
                     z + Math.sin(angle) * radius * 0.25, power, style, random, axis);
-        } else smoke(level, x, y, z, power, style, radius, i, baseCount, random);
+        } else smoke(level, x, y, z, power, style, radius, i, baseCount, random, axis);
     }
 
     private static int smokeIndex(int slot, int baseCount, int total) {
@@ -85,13 +85,14 @@ final class ExplosionCloudEmitter {
     }
 
     private static void smoke(ClientLevel level, double x, double y, double z, float power, BlastStyle style,
-            float radius, int i, int baseCount, Random random) {
+            float radius, int i, int baseCount, Random random, Vec3 axis) {
         boolean base = i < baseCount;
         int tier = i - baseCount;
         double angle = i * 2.3999632297 + random.nextDouble() * 0.6;
         double dx = Math.cos(angle), dz = Math.sin(angle);
         double spread = radius * (base ? 0.43 : 0.12 + random.nextDouble() * 0.16);
-        double px = x + dx * spread, pz = z + dz * spread;
+        Vec3 footprint = ExplosionFootprint.cloudOffset(power, style, axis, dx * spread, dz * spread, radius);
+        double px = x + footprint.x, pz = z + footprint.z;
         double py = y + radius * (base ? 0.07 : 0.22 + tier * 0.12);
         boolean wisp = i % 3 == 2;
         float r = (wisp ? 0.7F : 1F) * radius * (base ? 0.78F + random.nextFloat() * 0.18F : 0.70F + random.nextFloat() * 0.20F);

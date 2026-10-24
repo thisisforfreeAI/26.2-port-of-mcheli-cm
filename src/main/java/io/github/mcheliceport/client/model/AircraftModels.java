@@ -145,7 +145,7 @@ public final class AircraftModels {
         if (CommonConfig.SPEC.isLoaded() && CommonConfig.DEBUG_LOG.get()) {
             LOGGER.info("Loaded {} with {} part models", body, parts.size());
         }
-        VehicleSurfaceShade.prepare(body);
+        VehicleSurfaceShade.prepare(body, VehicleDetailShade.zones(info));
         for (McheliModel part : parts.values()) VehicleSurfaceShade.prepare(part);
         return new VehicleModels(body, Map.copyOf(parts));
     }

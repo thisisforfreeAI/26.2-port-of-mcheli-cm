@@ -13,11 +13,21 @@ public final class VehicleSurfaceShade {
     private static final class Neighbours {
         double x, y, z, distance;
     }
-    public static void prepare(McheliModel model) {
+    public static void prepare(McheliModel model) { prepare(model, java.util.List.of()); }
+    public static void prepare(McheliModel model, java.util.List<VehicleDetailShade.Zone> zones) {
+        boolean hasBody = model.containsPart("$body");
         for (var group : model.groups) {
             float[] shade = bake(group.data());
             int[] colors = shade == null ? null : new int[shade.length];
-            if (colors != null) for (int i = 0; i < shade.length; i++) colors[i] = tint(BASE_COLOR, shade[i]);
+            if (colors != null) for (int i = 0; i < shade.length; i++) {
+                float value = shade[i];
+                if (!zones.isEmpty() && (!hasBody || group.name().equalsIgnoreCase("$body"))) {
+                    int at = i * McheliModel.STRIDE;
+                    value = Math.max(0.84F, value * VehicleDetailShade.factor(zones,
+                            group.data()[at], group.data()[at + 1], group.data()[at + 2]));
+                }
+                colors[i] = tint(BASE_COLOR, value);
+            }
             synchronized (CACHE) { CACHE.put(group, colors); }
         }
     }

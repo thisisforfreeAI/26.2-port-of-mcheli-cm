@@ -1,5 +1,8 @@
 # M8 plan: effects polish for Vulkan
 
+Current requested realism implementation: complete; native software validation is recorded in
+[M8_COMPLETION.md](M8_COMPLETION.md). Target-PC 60 FPS acceptance remains open.
+
 Status: started early, by the user's request, for the vehicles already ported in M6 (helicopters,
 planes, ships, tanks and vehicles). This expands the M8 row of [PORTING_PLAN.md](../PORTING_PLAN.md)
 §6. PORTING_PLAN.md places M8 after M6, M6b and M7; slices that need M7's sound/particle parity
@@ -256,8 +259,9 @@ set that key to 60 on existing installations. Particle/admission caps are unchan
   corrected local-age lighting and both Classic switches. Tracer-only bullet glow unchanged.
 - Checked: Vulkan/OpenGL functional scenarios and mixed-combat work/drain checks with the
   adaptive target explicitly set to 60. Software rendering does not certify target-PC FPS.
-- Remaining: further authored texture detail, player-driven stock/addon and slope/transition
-  visual acceptance, and sustained 60 FPS hardware acceptance on the specified PC.
+- Remaining acceptance: player-driven stock/addon visual checks and sustained 60 FPS on the
+  specified PC. Content-authored machinery shading and ramp/transition software checks are
+  completed in §18. Additional hand-repainted skins would be a separate optional art pass.
   Historical captures retain their original targets.
 
 ### Realism slice 2: geometry shading and local dust fronts
@@ -269,8 +273,8 @@ set that key to 60 on existing installations. Particle/admission caps are unchan
 - Dust-front sectors now reuse their sampled support block for local material color and speed,
   instead of using the blast center's material across sand/soil/stone transitions. Read caps
   and particle request counts remain unchanged.
-- Remaining acceptance: individual texture art, broader stock/addon gameplay review and
-  target-PC 60 FPS measurement. Later slices below add ground-contact and lighting refinements.
+- Further content-aware shading is completed in §18. Broader stock/addon gameplay review and
+  target-PC 60 FPS measurement remain acceptance items.
 
 ### Realism slice 3: ground contact
 
@@ -280,8 +284,8 @@ set that key to 60 on existing installations. Particle/admission caps are unchan
 - Rotor-wash density now uses each candidate's local surface/height, not the rotor center's
   material. Original per-rotor sample slots retained; review confirmed they do not overlap
   with the existing two-candidate maximum. Read/cache/admission caps remain.
-- Existing track/mark surface fitting retained. Further texture art, mixed-surface visual
-  acceptance and real-hardware performance remain pending; controlled lighting checks are below.
+- Existing track/mark surface fitting retained. Moving ramp/transition software checks are completed in §18. Player-driven visual acceptance
+  and real-hardware performance remain open; controlled lighting checks are below.
 
 ### Refinement after ground-contact slice
 
@@ -322,3 +326,14 @@ baselines plus fixed/adaptive overlapping weapon VFX, 600 tick samples per phase
 and transient drain checks passed; adaptive pressure reached 3. This is functional software
 acceptance, not RTX 3060 performance acceptance. Compressed raw CSVs and frame-interval
 summaries are in [combat-60fps](performance/m8-realism/combat-60fps/README.md).
+
+## 18. Remaining realism work closure
+
+[Completion implementation](M8_COMPLETION.md) adds content-authored machinery masks to static
+hull vertex colors, stable interpolated tread origins across supporting wheel changes, and
+weapon comparisons from actual definitions. Ground ignition no longer makes conventional
+Hellfires/bunker-busters use the long-burning profile. Large shallow HE missile clouds gain
+a bounded directional footprint; bomb spread and legacy small-rocket smoke remain distinct.
+All existing source/geometry/terrain limits remain. Original texture artwork is retained;
+vehicle-specific depth is authored from machinery data and baked to colors rather than
+requiring replacement textures. Final hardware 60 FPS acceptance is separate from code completion.
