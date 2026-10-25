@@ -10,7 +10,7 @@ public final class VehicleSurfaceFinish {
         String s=name.toLowerCase(Locale.ROOT).replace("$", "");
         if(s.startsWith("wheel")||s.startsWith("track")||s.startsWith("tread")||s.startsWith("tire")||s.startsWith("tyre"))return Material.RUBBER;
         if(s.startsWith("vent")||s.startsWith("exhaust")||s.startsWith("intake")||s.startsWith("nozzle"))return Material.VENT;
-        if(s.startsWith("glass")||s.startsWith("window")||s.startsWith("windscreen"))return Material.GLASS;
+        if(s.startsWith("glass")||s.startsWith("window")||s.startsWith("windscreen")||s.startsWith("windshield"))return Material.GLASS;
         return Material.PAINT;
     }
     public static float shade(Material material,float crease) {

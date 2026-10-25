@@ -15,6 +15,14 @@ import org.junit.jupiter.api.Test;
 
 /** Exit criterion E8: every M3 payload survives its codec, and the control bits are CE's. */
 class PayloadCodecTest {
+    @Test void vehicleImpactRoundTripsAndRejectsInvalidGeometry(){
+        var id=java.util.UUID.randomUUID();
+        var p=new VehicleImpactPayload(52,id,.5F,1,-3,0,0,-1,.3F,true,123);
+        assertEquals(p,roundTrip(VehicleImpactPayload.CODEC,p));assertTrue(p.valid());
+        assertFalse(new VehicleImpactPayload(52,id,Float.NaN,1,-3,0,0,-1,.3F,true,123).valid());
+        assertFalse(new VehicleImpactPayload(52,id,0,0,0,0,0,0,.3F,false,0).valid());
+        assertFalse(new VehicleImpactPayload(52,id,0,0,0,0,0,-1,100,false,0).valid());
+    }
 
     @Test void groundBrakeAndCommonControlsRoundTrip() {
         for (boolean brake : new boolean[] {false, true}) {

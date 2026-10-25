@@ -53,6 +53,7 @@ public final class WeaponClient implements WeaponClientHooks.Hooks {
         }
         updateRecoil(mc.player);
         WeaponEffects.tick(mc.level);
+        io.github.mcheliceport.client.render.VehicleImpactMarks.tick(mc.level);
     }
 
     /** Upstream {@code MCH_PlayerViewHandler#onUpdate}. */
@@ -92,6 +93,7 @@ public final class WeaponClient implements WeaponClientHooks.Hooks {
         playerRecoilPitch = playerRecoilYaw = antiRecoilPitch = antiRecoilYaw = 0.0F;
         hitCount = 0;
         WeaponEffects.clear();
+        io.github.mcheliceport.client.render.VehicleImpactMarks.clear();
     }
 
     @Override
@@ -99,6 +101,10 @@ public final class WeaponClient implements WeaponClientHooks.Hooks {
         playerRecoilPitch += pitch;
         playerRecoilYaw += yaw;
         recoilControl = recoverFactor;
+    }
+
+    @Override public void vehicleImpact(io.github.mcheliceport.net.VehicleImpactPayload payload) {
+        io.github.mcheliceport.client.render.VehicleImpactMarks.receive(payload);
     }
 
     @Override

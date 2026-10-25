@@ -1164,6 +1164,7 @@ public abstract class BaseBulletEntity extends Entity implements WeaponTargets.P
                 return;
             }
             this.onImpactEntity(hitEntity, damageFactor);
+            io.github.mcheliceport.effect.VehicleImpactEmitter.hit(this, hitEntity);
             this.piercing--;
         }
         if (hitBlock != null) {

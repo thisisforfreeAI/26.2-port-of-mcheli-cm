@@ -1,6 +1,8 @@
 // Opt-in, development-only scene. Never included by a normal build or run.
 gradle.projectsEvaluated {
     def project = gradle.rootProject
+    if(Boolean.getBoolean('mcheli.probeVehicleImpacts')) project.sourceSets.main.java.exclude('io/github/mcheliceport/probe/EffectsProbe.java')
+    project.neoForge.runs.client.systemProperty('mcheli.probeVehicleImpacts',System.getProperty('mcheli.probeVehicleImpacts','false'))
     if (Boolean.getBoolean('mcheli.probeModernMenu')) project.sourceSets.main.java.exclude('io/github/mcheliceport/probe/EffectsProbe.java')
     project.neoForge.runs.client.systemProperty('mcheli.probeModernMenu', System.getProperty('mcheli.probeModernMenu','false'))
     project.neoForge.runs.client.systemProperty('mcheli.probeModernMenuStage', System.getProperty('mcheli.probeModernMenuStage','0'))

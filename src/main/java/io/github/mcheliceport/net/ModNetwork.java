@@ -60,6 +60,9 @@ public final class ModNetwork {
 
     private static void registerPayloads(RegisterPayloadHandlersEvent event) {
         PayloadRegistrar registrar = event.registrar(VERSION);
+        // Optional addition: older clients keep the existing protocol and simply receive no marks.
+        event.registrar(VERSION).optional().playToClient(VehicleImpactPayload.TYPE,VehicleImpactPayload.CODEC,
+                (p,context)->{var hooks=WeaponClientHooks.get();if(hooks!=null)hooks.vehicleImpact(p);});
         registrar.playToServer(UavRosterActionPayload.TYPE, UavRosterActionPayload.CODEC, (p, context) -> {
             if (context.player().containerMenu instanceof io.github.mcheliceport.menu.UavStationMenu menu) { menu.rosterAction(context.player(), p); }
         });

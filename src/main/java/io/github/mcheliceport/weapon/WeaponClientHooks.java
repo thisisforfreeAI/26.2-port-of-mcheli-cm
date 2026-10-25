@@ -18,6 +18,7 @@ public final class WeaponClientHooks {
 
     /** The client's side of the weapon code. Only called on the client thread. */
     public interface Hooks {
+        default void vehicleImpact(io.github.mcheliceport.net.VehicleImpactPayload payload) {}
         /** Cosmetic shot details; the existing client shot state supplies authority and timing. */
         default void weaponShot(Level level, Vec3 position, Vec3 motion, io.github.mcheliceport.content.weapon.WeaponInfo info,
                 float yaw, float pitch) {}

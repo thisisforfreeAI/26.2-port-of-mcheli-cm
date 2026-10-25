@@ -1,0 +1,70 @@
+{
+  "feature": "Localized vehicle impact marks",
+  "base_commit": "add5868",
+  "unit_tests": 299,
+  "unit_test_failures": 0,
+  "target": {
+    "fps": 60,
+    "gpu": "RTX 3060 8GB",
+    "cpu": "Ryzen 7 7800X3D",
+    "resolution": "1920x1080",
+    "hardware_fps_certified": false
+  },
+  "native": {
+    "vulkan": {
+      "driver": "Mesa software renderer",
+      "build_successful": true,
+      "checks": [
+        "M8_IMPACTS real_hits stored=10 pending=0",
+        "M8_IMPACTS rotation=true stored=10",
+        "M8_IMPACTS marked_turret_rotates=true",
+        "M8_IMPACTS partial_repair_fades=true",
+        "M8_IMPACTS cache_recovered=true stored=11",
+        "M8_IMPACTS repair_cleared=true",
+        "M8_IMPACTS disabled=true",
+        "M8_IMPACTS burst_bounds=true stored=16 pending=0",
+        "M8_IMPACTS burst_cleanup=true"
+      ]
+    },
+    "opengl": {
+      "driver": "Mesa software renderer",
+      "build_successful": true,
+      "checks": [
+        "M8_IMPACTS real_hits stored=10 pending=0",
+        "M8_IMPACTS rotation=true stored=10",
+        "M8_IMPACTS cache_recovered=true stored=11",
+        "M8_IMPACTS repair_cleared=true",
+        "M8_IMPACTS disabled=true"
+      ]
+    }
+  },
+  "limits": {
+    "vehicle_states": 64,
+    "stored_marks": 512,
+    "marks_per_vehicle": [
+      8,
+      16,
+      24
+    ],
+    "visible_marks": [
+      32,
+      96,
+      128
+    ],
+    "pending_hits_per_vehicle": 4,
+    "fits_per_frame": 2,
+    "clipped_triangles_per_mark": 32,
+    "async_index_jobs": 8,
+    "cached_triangles": 262144,
+    "triangles_per_group": 65536,
+    "server_notifications_per_vehicle_per_4_ticks": 4,
+    "server_notifications_per_level_per_tick": 32
+  },
+  "notes": [
+    "Gunfire uses real stock projectiles and the optional server-to-client notification path.",
+    "The Vulkan burst separately exercises 11520 client cosmetic notifications; 16 marks remain and disabling clears them.",
+    "Moving-part ownership and named-glass selection also have unit coverage. Merged unidentified glass uses the paint fallback.",
+    "Local M8 builds use isolated compile-only signatures for unavailable optional NTM bridge/GameTests and exclude unavailable JEI. Signatures are not shipped; full GitHub CI checks normal integrations.",
+    "No changes to damage, armour, legacy explosion positions, craters or NTM integration. Marks are session-local."
+  ]
+}

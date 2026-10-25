@@ -379,3 +379,10 @@ modern atlas and per-weapon rendering path. Target-PC 60 FPS/artistic acceptance
 localized fire/smoke contrast, baked vehicle material cues, terrain scars, ground contact
 and distance transitions within the existing budgets. Keep the Modern on/off toggle,
 original craters and 60 FPS target. NTM work remains owned by Claude and is untouched.
+
+## Localized vehicle damage
+
+[Vehicle impact marks](M8_VEHICLE_IMPACT_MARKS.md): gun-hit paint/metal chips, explosive
+cannon soot, cracks on named glazing, part-local attachments and gradual repair fading.
+Use bounded optional cosmetic notifications, clipped overlays and the existing damage-details
+setting. Keep gameplay damage, craters and NTM unchanged. Mesh deformation is separate work.
