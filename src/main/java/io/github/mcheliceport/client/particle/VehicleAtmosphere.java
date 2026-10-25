@@ -154,19 +154,26 @@ public final class VehicleAtmosphere {
         int period = 3 * (1 + EffectPerformance.pressure());
         if (Math.floorMod(now + aircraft.getId(), period) == 0
                 && VehicleAtmosphereLook.smokePulse(now, aircraft.getId(), severity)) {
-            if (admit(level, position, 1.3F)) {
-                float gray = 0.7F - severity * 0.55F;
+            boolean wisp=DamageTrailLook.wisp(now,aircraft.getId());
+            double speed=aircraft.getDeltaMovement().length();
+            float radius=DamageTrailLook.radius(severity,speed);
+            if (admit(level, position, radius)) {
+                float gray = DamageTrailLook.gray(severity,wisp);
+                Vec3 shed=aircraft.getDeltaMovement();
                 SmokeParticle smoke = new SmokeParticle(level, position.x, position.y, position.z,
-                        motion.x + 0.01, motion.y + 0.065, motion.z - 0.01);
+                        DamageTrailLook.inherited(shed.x)+Math.sin(now*.37+aircraft.getId())*.012,
+                        DamageTrailLook.inherited(shed.y)+.025+severity*.02,
+                        DamageTrailLook.inherited(shed.z)+Math.cos(now*.29+aircraft.getId())*.012);
                 smoke.enhanced = true;
                 smoke.coherentDrift = true;
                 smoke.disableCollision();
                 smoke.setColor(gray, gray, gray);
-                smoke.setAlphaF(0.35F + severity * 0.4F);
-                smoke.setParticleMaxAge(32);
+                smoke.setAlphaF((0.4F + severity * 0.35F)*(wisp?.62F:1));
+                smoke.setParticleMaxAge(DamageTrailLook.lifetime(severity,wisp));
+                smoke.motionYUpAge=wisp?.45F:.7F;
                 smoke.diffusible = true;
-                smoke.particleScale = 3 + severity * 3;
-                smoke.particleMaxScale = 7 + severity * 6;
+                smoke.particleScale = (3+severity*3)*(wisp?.7F:1);
+                smoke.particleMaxScale = radius*10*(wisp?.78F:1);
                 Minecraft.getInstance().particleEngine.add(smoke);
             }
         }
