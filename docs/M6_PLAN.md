@@ -1,6 +1,7 @@
 # M6 plan: remaining vehicles and support systems
 
-Status: in progress; shared integration, planes, ships and the ground-vehicle increment are implemented. This expands PORTING_PLAN.md §6.
+Status: all eight stages are implemented; the milestone closes after a hands-on OpenGL gameplay
+pass across vehicle types (see "Validation and completion"). This expands PORTING_PLAN.md §6.
 The starting checkout is 0.5.1. Preserve decisions D1–D23 and compare
 behaviour with McHeli CE 1.5.1 at `cbaff7f30e549ff75e485388c24c74a4316c2228`.
 
@@ -1008,7 +1009,8 @@ cases alongside successful control cases. Keep current-run results and actual te
 
 The milestone also requires client world-load and dedicated-server startup/shutdown checks,
 OpenGL/Vulkan rendering checks, and a two-client movement check. Report checks unavailable in
-the current machine as unrun. Update CHANGELOG.md, README.md and KNOWN_ISSUES.md only for
+the current machine as unrun. Vulkan checks are now a documented caveat only: validation runs
+on OpenGL. Update CHANGELOG.md, README.md and KNOWN_ISSUES.md only for
 implemented behaviour; do not remove the M6 missing-feature list merely because a plan exists.
 
 ## Development environment

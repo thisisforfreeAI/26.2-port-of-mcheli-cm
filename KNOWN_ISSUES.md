@@ -6,26 +6,27 @@ McHeli CE 1.5.1. This file is updated with every milestone (PORTING_PLAN.md, sec
 ## Not ported yet
 
 The 0.5.1 baseline (M5) supports helicopters with flight, models, HUD, cameras and weapons.
-The current M6 development work also adds initial plane entities, placement, flight, VTOL,
-wing switches and model submission. M6 remains incomplete; see `docs/M6_PLAN.md` for validation
-and remaining work. Plane effects and destroyed-plane visual motion are now implemented;
+The current M6 development work also adds planes, ships, tanks and ground vehicles, and every
+M6 stage in `docs/M6_PLAN.md` is now implemented; what remains is the broader hands-on gameplay
+pass below. Plane effects and destroyed-plane visual motion are now implemented;
 plane camera-position switching and the shared gunner camera are connected. Parachutes, plane
 ejection and transport-seat bailout are implemented, with the stock model limitation below.
 Ship placement, water movement, steering, crew weapons and model submission are implemented.
 Tank/ground-vehicle placement, driving, wheel contacts, tracks, rollers, independent weapons
 and reactive armor state are implemented. Ground crushing/ramming, nearby fuel/ammunition supply,
 vehicle repair and medical crew effects are implemented. Cargo containers also place, float,
-save items and open a 54-slot inventory. Remaining equipment
-work is listed below. Rack loading/release, vehicle self-boarding, tow chains, ropes and rappelling
+save items and open a 54-slot inventory. Rack loading/release, vehicle self-boarding, tow chains, ropes and rappelling
 and searchlights are implemented. UAV stations and portable controllers deploy stock UAVs and
 provide nearby remote piloting, saved pairing lists and station inventory. Pairing devices transfer
-idle UAVs between controllers, and handheld tablets control paired UAVs. Remaining equipment is pending.
+idle UAVs between controllers, and handheld tablets control paired UAVs. Gunner NPCs, mobs in
+seats, the GLTD, hand-held Stinger and Javelin, the wrench, rangefinder, drafting table, aircraft
+charger, teams and the stage 8 combat systems are implemented too.
 Automated conventional/VTOL flight sequences and plane weapons in both authority modes pass;
 broader gameplay and hardware checks remain pending.
 
 | Area | Planned milestone |
 |---|---|
-| Remaining plane/ground equipment | M6 |
+| Hands-on gameplay pass across vehicle types (OpenGL) | M6 |
 
 Until then:
 
