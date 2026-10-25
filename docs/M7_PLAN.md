@@ -60,7 +60,8 @@ Run the normal `./gradlew build runGameTestServer` without HBM, and
 `./gradlew runGameTestServer -PwithHbm` for the pinned official release. `-PhbmFile=<file ID>`
 selects another published NeoForge file. HBM is a test runtime dependency only and remains
 optional for users. `-PwithHbm` also adds NTM Next's required client dependency, CrankShaft
-(crankshaft-neoforge 1.6.0+mc26.2 from the Engine Room maven), so `runClient` starts with HBM too. The default GameTest checks normal blast/EffectOnly behavior
+(neoforge-1.6.1+mc26.2 from Modrinth; `-PcrankshaftVersion=<Modrinth version ID>` selects
+another), so `runClient` starts with HBM too. The default GameTest checks normal blast/EffectOnly behavior
 without HBM; the additional installed-mod test checks actual fire/mist entities, safe mini-nuke
 parameters, visual-only packets, VNT calls and nuclear entity factories (discarded before their
 first tick). The chemical test verifies all four real cloud types, count, motion, zero count and

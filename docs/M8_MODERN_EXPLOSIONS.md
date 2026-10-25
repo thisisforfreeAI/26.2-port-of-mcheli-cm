@@ -1,11 +1,10 @@
 # Modern explosions from the ESC menu
 
-Open **ESC → MC Heli Effects… → Explosions: Modern**. The selector now cycles Current M8,
-Modern and the optional [native NTM Next mode](M8_NTM_EXPLOSIONS.md). New configs start at
-Current M8; existing `effects.modernExplosions=true` configs retain Modern. Changes apply to
-new explosions immediately and save to `effects.explosionMode`, retaining the legacy boolean
-for compatibility. Already visible particles retain their birth art and finish naturally.
-No restart or resource reload is required for the switch.
+Open **ESC → MC Heli Effects… → Modern explosions: ON**. The new client preference starts
+Off; Off retains the current M8 art and explosion path. Changes apply to new explosions
+immediately and save to `effects.modernExplosions` in the existing client config. Already
+visible particles retain their birth art and finish naturally. No restart or resource reload
+is required for the switch.
 
 The panel also exposes existing Low/Balanced/High detail, adaptive detail, frame-rate goal
 and a link to the full NeoForge mod settings. ESC/Done returns to the originating pause
@@ -16,7 +15,7 @@ available. The hidden F3+ESC pause variant is left alone.
 Global Classic settings and Minecraft explosion-particle mode remain authoritative. A saved
 Modern On preference is inactive in those modes; the panel explains this and links to the
 full settings. Toggling Modern never silently changes global style or vehicle/flare/tracer
-presentation. The selector can still return to Current M8 while inactive.
+presentation. The preference can still be switched Off while inactive.
 
 ## Rendering
 
