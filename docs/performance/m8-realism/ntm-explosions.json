@@ -1,0 +1,89 @@
+{
+  "feature": "Native NTM Next explosion mode",
+  "target": {
+    "fps": 60,
+    "gpu": "RTX 3060 8GB",
+    "cpu": "Ryzen 7 7800X3D",
+    "resolution": "1920x1080",
+    "hardware_fps_verified": false
+  },
+  "unchanged": [
+    "original crater algorithm",
+    "server weapon damage/ignition/destruction",
+    "protocol 30"
+  ],
+  "native_api": [
+    "com.hbm.particle.ParticleExplosionSmall",
+    "com.hbm.particle.ParticleRocketFlame",
+    "com.hbm.particle.ParticleMukeWave"
+  ],
+  "unit_tests": {
+    "tests": 293,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "local_checks": {
+    "environment": "Mesa llvmpipe, JDK 25; optional uncached JEI excluded locally only",
+    "missing_mod_vulkan": "passed: menu cycling, gates, fallback, saved preference",
+    "missing_mod_opengl": "passed: same plus minimum 320x240 GUI",
+    "restart_vulkan": "passed: NTM selection persisted; restored Current M8",
+    "restart_opengl": "passed: NTM selection persisted; restored Current M8",
+    "modern_regression_opengl": "passed: controls, GUI bounds, birth art, Classic gate, full config, reload",
+    "fresh_gametest_world_vulkan": "passed: first load, actual menu, native-unavailable fallback",
+    "release_build": "passed; native bridge included; all opt-in visual-probe classes excluded"
+  },
+  "native_runtime_ci": {
+    "status": "passed Vulkan portable path and OpenGL preferred helper",
+    "validated_production_commit": "b15fd597e56f1375d69931daf0a244d29721f204",
+    "workflow": ".github/workflows/ntm-explosion-client.yml",
+    "run": "https://github.com/thisisforfreeAI/26.2-port-of-mcheli-cm/actions/runs/40145049227",
+    "ntm_version": "1.0.3",
+    "crankshaft_version": "1.6.0+mc26.2",
+    "backends": [
+      "Vulkan Mesa llvmpipe",
+      "OpenGL Mesa llvmpipe"
+    ],
+    "native_small": true,
+    "native_large": true,
+    "native_wave": true,
+    "menu_cycle": true,
+    "minimum_gui": "320x240",
+    "classic_gate": true,
+    "done_and_escape": true,
+    "overlap_requests": 2048,
+    "live_face_bound_checked": 1920,
+    "drained": true,
+    "separate_jvm_persistence": true,
+    "isolated_spawn_faces": {
+      "small_power_2": 6,
+      "medium_power_5": 151,
+      "large_power_12": 301
+    },
+    "notes": "The accelerated Vulkan helper crashed Mesa natively in 18abdb5; regression policy prevents that path. Both final backend paths passed native render/burst/drain/restart checks. Capture-only follow-up raises view distance to eight chunks so fog does not hide a small impact forty blocks away.",
+    "paths": {
+      "vulkan": "NTM ParticleRocketFlame group; accelerated clouds asserted zero",
+      "opengl": "NTM ClientEffects.spawnRocketFlame helper; accelerated clouds present"
+    }
+  },
+  "bounds": {
+    "live_faces": {
+      "low": 240,
+      "balanced": 1920,
+      "high": 3840
+    },
+    "tick_faces_pressure_zero": {
+      "low": 80,
+      "balanced": 400,
+      "high": 800
+    },
+    "large_cloud_cost": 10,
+    "small_cloud_or_wave_cost": 1,
+    "maximum_cloud_life_ticks": 89
+  },
+  "notes": [
+    "Native artwork/motion come from installed NTM; composition/scale adapt to MC Heli.",
+    "M8 ground effects and sound remain; no NTM explosion/gameplay/payload handlers run.",
+    "Software rendering checks do not certify target-PC FPS."
+  ]
+}

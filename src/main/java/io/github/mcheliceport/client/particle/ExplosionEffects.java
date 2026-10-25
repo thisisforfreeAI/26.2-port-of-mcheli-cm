@@ -69,8 +69,13 @@ public final class ExplosionEffects {
         }
         boolean vanilla = ClientConfig.get(ClientConfig.DEFAULT_EXPLOSION_PARTICLE);
         if (!vanilla && EffectQuality.enhanced()) {
-            ExplosionCloudEmitter.emit(level, x, y, z, size, style, direction,
-                    ExplosionCraterScale.footprint(x, z, affected));
+            float footprint = ExplosionCraterScale.footprint(x, z, affected);
+            if (ExplosionModes.selected() == ClientConfig.ExplosionMode.NTM_NEXT
+                    && NtmExplosionBridge.emit(level, x, y, z, size, footprint)) {
+                BlastGroundEffects.emit(level, x, y, z, size, style, direction, footprint);
+                return;
+            }
+            ExplosionCloudEmitter.emit(level, x, y, z, size, style, direction, footprint);
             return;
         }
         List<BlockPos> blocks = new ArrayList<>(affected);
