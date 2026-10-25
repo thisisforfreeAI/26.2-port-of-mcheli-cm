@@ -39,6 +39,13 @@ public final class RotorWashLook {
                 || surface == Surface.SOLID || surface == Surface.SOIL) return 0;
         return budget != EffectBudget.LOW && strength > 0.65F ? 2 : 1;
     }
+    /** Stable loose patches, with a slow gust: no extra samples or complete dust ring. */
+    public static float patch(double x,double z,int id,long tick) {
+        double phase=x*.73+z*.47+id*.61;
+        double islands=.5+.5*Math.sin(phase)*Math.cos(x*.29-z*.83+id);
+        double gust=.86+.14*Math.sin(Math.floorMod(tick,24000L)*.065+id*.37);
+        return (float)((.48+.52*islands)*gust);
+    }
     public static float fade(float age, int lifetime) {
         return smooth(Math.clamp(age / 4, 0, 1)) * smooth(Math.clamp((lifetime - age) / 10, 0, 1));
     }

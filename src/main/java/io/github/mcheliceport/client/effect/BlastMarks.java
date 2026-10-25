@@ -243,7 +243,7 @@ public final class BlastMarks {
                             Tile tile = new Tile(pos.immutable(), state, x0, x1, surfaceY + 0.003, z0, z1,
                                     uv(x0, z0, p, mark.radius, turn), uv(x0, z1, p, mark.radius, turn),
                                     uv(x1, z1, p, mark.radius, turn), uv(x1, z0, p, mark.radius, turn),
-                                    tint(state), LightCoordsUtil.getLightCoords(level, pos.above()));
+                                    tint(state), LightCoordsUtil.getLightCoords(level, pos.above()), Double.hashCode(p.x)^Double.hashCode(p.z)*31^(int)p.born);
                             mark.tiles.add(tile); changed = true;
                             if (p.flash && now - p.born < mark.flashDuration && mark.flash.size() < 64) flash(tile);
                         }
@@ -366,27 +366,32 @@ public final class BlastMarks {
         final BlockState state;
         final double x0, x1, y, z0, z1;
         final float[][] uv;
-        final int rgb;
+        final int[] colors = new int[4];
+        final float[] coverage = new float[4];
         int light;
         boolean valid = true;
         long checked = Long.MIN_VALUE / 2;
 
         Tile(BlockPos pos, BlockState state, double x0, double x1, double y, double z0, double z1,
-                float[] a, float[] b, float[] c, float[] d, int rgb, int light) {
+                float[] a, float[] b, float[] c, float[] d, int rgb, int light, int seed) {
             this.pos = pos; this.state = state;
             this.x0 = x0; this.x1 = x1; this.y = y; this.z0 = z0; this.z1 = z1;
-            this.uv = new float[][]{a, b, c, d}; this.rgb = rgb; this.light = light;
+            this.uv = new float[][]{a, b, c, d}; this.light = light;
+            for(int i=0;i<4;i++) {
+                coverage[i]=BlastMarkTuning.scarCoverage(uv[i][0],uv[i][1],seed);
+                colors[i]=BlastMarkTuning.scarColor(rgb,uv[i][0],uv[i][1]);
+            }
         }
 
         void emit(VertexConsumer buffer, PoseStack.Pose matrix, BlockPos origin, int alpha) {
-            int argb = alpha << 24 | this.rgb;
-            vertex(buffer, matrix, origin, this.x0, this.z0, 0, argb);
-            vertex(buffer, matrix, origin, this.x0, this.z1, 1, argb);
-            vertex(buffer, matrix, origin, this.x1, this.z1, 2, argb);
-            vertex(buffer, matrix, origin, this.x1, this.z0, 3, argb);
+            vertex(buffer, matrix, origin, this.x0, this.z0, 0, alpha);
+            vertex(buffer, matrix, origin, this.x0, this.z1, 1, alpha);
+            vertex(buffer, matrix, origin, this.x1, this.z1, 2, alpha);
+            vertex(buffer, matrix, origin, this.x1, this.z0, 3, alpha);
         }
 
-        private void vertex(VertexConsumer buffer, PoseStack.Pose matrix, BlockPos origin, double x, double z, int corner, int argb) {
+        private void vertex(VertexConsumer buffer, PoseStack.Pose matrix, BlockPos origin, double x, double z, int corner, int alpha) {
+            int argb=Math.round(alpha*coverage[corner])<<24 | colors[corner];
             buffer.addVertex(matrix, (float) (x - origin.getX()), (float) (this.y - origin.getY()), (float) (z - origin.getZ()))
                     .setColor(argb).setUv(this.uv[corner][0], this.uv[corner][1]).setOverlay(OverlayTexture.NO_OVERLAY)
                     .setLight(this.light).setNormal(matrix, 0, 1, 0);

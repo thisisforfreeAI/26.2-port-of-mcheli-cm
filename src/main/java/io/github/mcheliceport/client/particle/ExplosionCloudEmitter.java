@@ -20,7 +20,8 @@ final class ExplosionCloudEmitter {
             BlastDirection direction, float footprint) {
         var quality = ClientConfig.get(ClientConfig.EFFECT_BUDGET);
         boolean modern = ModernExplosionLook.enabled();
-        int count = ExplosionSequence.lobes(power, style, quality, EffectPerformance.pressure());
+        int count = BlastReadability.distantLobes(ExplosionSequence.lobes(power, style, quality, EffectPerformance.pressure()),
+                Minecraft.getInstance().gameRenderer.mainCamera().position().distanceToSqr(x,y,z));
         if (count == 0) return false;
         float fireRadius = ExplosionSequence.radius(power, style);
         float radius = ExplosionCraterScale.cloudRadius(fireRadius, footprint, style, quality);
@@ -108,7 +109,7 @@ final class ExplosionCloudEmitter {
         int tier = i - baseCount;
         double angle = i * 2.3999632297 + random.nextDouble() * 0.6;
         double dx = Math.cos(angle), dz = Math.sin(angle);
-        double spread = radius * (base ? 0.27 + random.nextDouble() * 0.16 : 0.12 + random.nextDouble() * 0.20);
+        double spread = radius * (base ? 0.38 + random.nextDouble() * 0.24 : 0.16 + random.nextDouble() * 0.26);
         Vec3 footprint = ExplosionFootprint.cloudOffset(power, style, axis, dx * spread, dz * spread, radius);
         double px = x + footprint.x, pz = z + footprint.z;
         double py = y + radius * (base ? 0.07 : 0.22 + tier * 0.12);
@@ -125,7 +126,7 @@ final class ExplosionCloudEmitter {
                 + (base ? 12 : 20) + random.nextInt(8)), wisp);
         Minecraft.getInstance().particleEngine.add(new BlastCloudParticle(level, px, py, pz,
                 dx * speed, base ? 0.01 : 0.045 + Math.min(3, tier) * 0.018, dz * speed,
-                r, life, 0, wisp ? 0.62F : base ? 0.94F : 0.9F, delay, base,
+                r, life, 0, wisp ? 0.52F : base ? 0.92F : 0.86F, delay, base,
                 base || tier < 2 ? (modern ? ModernExplosionLook.fireTicks(ExplosionSequence.fireTicks(power,style),style)
                         : ExplosionSequence.fireTicks(power, style)) : 0, cards, modern));
     }
@@ -176,10 +177,11 @@ final class ExplosionCloudEmitter {
         puff.setColor(colour + 0.1F, colour + 0.05F, colour);
         puff.diffusible = true;
         puff.coherentDrift = puff.enhanced;
+        puff.silhouetteOpacity = wisp ? .56F : .9F;
         puff.disableCollision();
         puff.particleScale = nominal * ExplosionLook.startScale(power, style, quality);
         puff.particleMaxScale = nominal * 2;
-        puff.heat = ExplosionSequence.smokeLed(power, style) ? 0.55F : 0.3F;
+        puff.heat = (ExplosionSequence.smokeLed(power, style) ? 0.55F : 0.3F) * (wisp ? .45F : 1);
         puff.coolingShare = ExplosionLook.coolingShare(style);
         puff.motionYUpAge = 2;
         int minimumLife = style == BlastStyle.BLAST || style == BlastStyle.PENETRATOR ? 44 + (int) Math.min(power, 12) * 3 : 8;

@@ -372,3 +372,10 @@ On enables new billow/fire art and volumetric-looking depth within the existing 
 system. Preserve original crater formation and size VFX to its reported footprint. Default Off
 until player acceptance. [Implementation](M8_MODERN_EXPLOSIONS.md) adds the saved menu toggle,
 modern atlas and per-weapon rendering path. Target-PC 60 FPS/artistic acceptance remains open.
+
+## Default graphics refinement
+
+[Default visual refinement](M8_DEFAULT_VISUAL_REFINEMENT.md) improves smoke silhouettes,
+localized fire/smoke contrast, baked vehicle material cues, terrain scars, ground contact
+and distance transitions within the existing budgets. Keep the Modern on/off toggle,
+original craters and 60 FPS target. NTM work remains owned by Claude and is untouched.

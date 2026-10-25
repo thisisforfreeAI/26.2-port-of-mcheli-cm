@@ -67,7 +67,8 @@ public abstract class AircraftRenderer<T extends AircraftEntity> extends EntityR
                     var wheel = contactInfo.wheels.get(i);
                     wheelReach = Math.max(wheelReach, Math.hypot(wheel.pos().x, wheel.pos().z));
                 }
-                state.contactShadowRadius = VehicleContactLook.radius(entity.getBbWidth(), wheelReach, budget, pressure);
+                float contact = VehicleContactLook.radius(entity.getBbWidth(), wheelReach, budget, pressure);
+                state.contactShadowRadius = 2+(contact-2)*VehicleContactLook.distanceWeight(this.entityRenderDispatcher.distanceToSqr(entity));
             }
         }
         super.extractRenderState(entity, state, partialTicks);

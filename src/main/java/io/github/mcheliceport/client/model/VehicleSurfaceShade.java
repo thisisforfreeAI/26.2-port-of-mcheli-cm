@@ -18,9 +18,10 @@ public final class VehicleSurfaceShade {
         boolean hasBody = model.containsPart("$body");
         for (var group : model.groups) {
             float[] shade = bake(group.data());
+            var material = VehicleSurfaceFinish.material(group.name());
             int[] colors = shade == null ? null : new int[shade.length];
             if (colors != null) for (int i = 0; i < shade.length; i++) {
-                float value = shade[i];
+                float value = VehicleSurfaceFinish.shade(material, shade[i]);
                 if (!zones.isEmpty() && (!hasBody || group.name().equalsIgnoreCase("$body"))) {
                     int at = i * McheliModel.STRIDE;
                     value = Math.max(0.84F, value * VehicleDetailShade.factor(zones,

@@ -19,6 +19,11 @@ public final class TrackLook {
         return Surface.HARD;
     }
 
+    /** Reuse the existing grain texture, breaking up repeated clipped tiles at birth. */
+    public static float grain(double x,double z) {
+        if(!Double.isFinite(x+z))return 1;
+        return (float)(.88+.12*(.5+.5*Math.sin(x*2.17+z*.73)*Math.cos(z*1.43-x*.31)));
+    }
     public static int color(Surface surface) {
         return switch (surface) {
             case SOIL -> 0x4C3526; case SAND -> 0x896A42; case SNOW -> 0x9AADB9;

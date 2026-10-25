@@ -64,6 +64,32 @@ public final class BlastMarkTuning {
         return Double.isFinite(reach) && dx * dx + dy * dy + dz * dz <= reach * reach;
     }
 
+    private static float noise(int x,int z) {
+        int h=x*0x1f123bb5 ^ z*0x5f356495; h^=h>>>16;h*=0x45d9f3b;h^=h>>>16;
+        return (h&1023)/1023F;
+    }
+    private static float grain(float u,float v) {
+        float x=u*11,z=v*11;int ix=(int)Math.floor(x),iz=(int)Math.floor(z);
+        float fx=x-ix,fz=z-iz;fx=fx*fx*(3-2*fx);fz=fz*fz*(3-2*fz);
+        float a=noise(ix,iz)+(noise(ix+1,iz)-noise(ix,iz))*fx;
+        float b=noise(ix,iz+1)+(noise(ix+1,iz+1)-noise(ix,iz+1))*fx;
+        return a+(b-a)*fz;
+    }
+    public static float scarCoverage(float u,float v) {return scarCoverage(u,v,0);}
+    public static float scarCoverage(float u,float v,int seed) {
+        if(!Float.isFinite(u+v))return 0;
+        float radial=(float)Math.hypot((u-.5)*2,(v-.5)*2);
+        float broken=grain(u+(seed&31)*.037F,v+(seed>>>5&31)*.037F);
+        float edge=Math.clamp((1.12F-radial+(.5F-broken)*.18F)/.38F,0,1);
+        // The atlas already cuts out the footprint. Keep a nonzero corner floor so a
+        // sub-block mark on one quad cannot disappear through four transparent vertices.
+        return (.68F+.32F*edge*edge*(3-2*edge))*(.84F+.16F*broken);
+    }
+    public static int scarColor(int rgb,float u,float v) {
+        float radial=(float)Math.min(1,Math.hypot((u-.5)*2,(v-.5)*2));
+        float shade=.62F+.38F*radial;
+        return Math.round((rgb>>16&255)*shade)<<16 | Math.round((rgb>>8&255)*shade)<<8 | Math.round((rgb&255)*shade);
+    }
     /** Quarter turns preserve the pixel grid and continuity between neighbouring surface tiles. */
     public static float[] uv(double dx, double dz, float radius, int turn) {
         double u = dx / (2 * radius), v = dz / (2 * radius);
