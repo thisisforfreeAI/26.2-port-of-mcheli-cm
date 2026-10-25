@@ -67,7 +67,6 @@ public final class ModGameTests {
         PlaneCameraGameTests.register();
         ParachuteGameTests.register();
         WeaponGameTests.register();
-        HbmGameTests.register();
         CraftingGameTests.register();
         ToolGameTests.register();
         GltdGameTests.register();

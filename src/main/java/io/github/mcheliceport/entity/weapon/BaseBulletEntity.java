@@ -1273,9 +1273,6 @@ public abstract class BaseBulletEntity extends Entity implements WeaponTargets.P
     private void explode(double x, double y, double z, float size, float sizeBlock, float damagePower,
             float blockPower, boolean inWater) {
         WeaponInfo info = this.getInfo();
-        if (this.level() instanceof net.minecraft.server.level.ServerLevel serverLevel) {
-            io.github.mcheliceport.compat.hbm.HbmCompat.detonate(serverLevel, this, info, x, y, z, blockPower);
-        }
         if (info != null && info.effectOnly) {
             return;
         }
