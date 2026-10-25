@@ -1,6 +1,7 @@
 # M6 plan: remaining vehicles and support systems
 
-Status: in progress; shared integration, planes, ships and the ground-vehicle increment are implemented. This expands PORTING_PLAN.md §6.
+Status: all eight stages are implemented, and an OpenGL gameplay pass across all five vehicle
+types ran clean (see "OpenGL gameplay pass"). This expands PORTING_PLAN.md §6.
 The starting checkout is 0.5.1. Preserve decisions D1–D23 and compare
 behaviour with McHeli CE 1.5.1 at `cbaff7f30e549ff75e485388c24c74a4316c2228`.
 
@@ -1008,7 +1009,8 @@ cases alongside successful control cases. Keep current-run results and actual te
 
 The milestone also requires client world-load and dedicated-server startup/shutdown checks,
 OpenGL/Vulkan rendering checks, and a two-client movement check. Report checks unavailable in
-the current machine as unrun. Update CHANGELOG.md, README.md and KNOWN_ISSUES.md only for
+the current machine as unrun. Vulkan checks are now a documented caveat only: validation runs
+on OpenGL. Update CHANGELOG.md, README.md and KNOWN_ISSUES.md only for
 implemented behaviour; do not remove the M6 missing-feature list merely because a plan exists.
 
 ## Development environment
@@ -1643,3 +1645,22 @@ crew-seat and rider cases; all 257 required GameTests pass. An OpenGL client on 
 showed the prompt on a UH-1C.
 
 ![Enter-seat prompt on a UH-1C](screens/m6-enter-seat.png)
+
+## OpenGL gameplay pass
+
+One dedicated server and one OpenGL client, without NTM Next, mounted one stock vehicle of each
+type in turn, drove it forward and fired its first weapon:
+
+- AH-64 (helicopter): climbed from 150 to 171 under throttle; the M230 fired 5 rounds.
+- A-10 (plane): took off by itself after 7 seconds of throttle, climbing at 0.96 blocks per tick;
+  the GAU-8 fired 10 rounds.
+- CB90 (ship): floated on the water and ran 60 blocks forward in 6 seconds; the pilot seat has no
+  weapon, as in upstream.
+- M1129 (tank): drove 53 blocks forward in 4 seconds in free look.
+- 12.7 mm gun (stationary vehicle): stayed put and fired one round.
+
+The HUD, the cockpit or hull models and the ammunition counters drew correctly in every vehicle.
+The only errors in either log came from the test environment: no audio device, and data that NTM
+Next left in the test world.
+
+![Helicopter, plane, ship, tank and gun on OpenGL](screens/m6-gameplay-pass-opengl.png)

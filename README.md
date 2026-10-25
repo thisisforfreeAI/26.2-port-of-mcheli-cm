@@ -22,8 +22,8 @@ defined by addons. Hand parachutes, transport-seat bailout and plane ejection ar
 including reserve slots in the aircraft menu. The stock ejection/transport model has an upstream
 asset defect described in KNOWN_ISSUES.md. Ships can now be placed, boarded and piloted, with buoyancy, steering, crew weapons, models
 and wakes. Tanks and ground vehicles now place, mount and save/load, with driving, terrain tilt,
-animated wheels/tracks and independent weapon aiming. Broader gameplay validation and the
-remaining support systems continue in M6. The stock fuel truck now supplies nearby vehicles, and
+animated wheels/tracks and independent weapon aiming. Every M6 stage is now implemented; a
+broader hands-on gameplay pass closes the milestone. The stock fuel truck now supplies nearby vehicles, and
 medical transports regenerate secondary-seat passengers while a pilot is aboard. Addon-defined
 nearby vehicle repair is supported. Cargo containers now place, float and store 54 slots of
 items: right-click to open, and attack to break and drop the contents. Aircraft racks now load
@@ -134,9 +134,9 @@ the mouse). In freelook, the pilot can aim pilot-usable turrets independently of
 Hold **Ctrl+I** for the next crew seat or **Ctrl+F** for the previous one; these shortcuts
 also work from the driver's seat. Project 1204's first three crew seats control the front gun,
 rocket launcher and rear gun respectively. An occupied gunner seat takes control of its weapons.
-**H** switches camera/gunner view where the vehicle supports it. **Ctrl+C** toggles the NPC
-gunner status shown on the HUD; NPC gunners are still pending in M6, so it does not enter a
-turret seat or enable a player camera.
+**H** switches camera/gunner view where the vehicle supports it. **Ctrl+C** switches the vehicle's NPC
+gunners on or off (on for new vehicles). Seat a gunner with the Gunner item: it aims and fires its
+seat's weapon at nearby monsters, or at players of other teams, and uses flares and chaff.
 
 Searchlights/headlights: **L** toggles the lights on vehicles whose definitions include them.
 The pilot and first crew seat can switch them. Movable lights follow the first crew member's look,
