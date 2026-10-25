@@ -16,9 +16,6 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
   closed canopy, while sneaking or riding, and while holding a wrench or gunner spawn item.
 
 ### Changed
-- The ESC effects panel cycles Current M8, Modern and an optional NTM Next explosion mode.
-  NTM mode uses the installed mod's actual fire/smoke/shockwave particles, with crater-aware
-  sizing and bounded admission; unavailable NTM falls back to Current M8. Original craters remain.
 - Vehicle models stay on the graphics card and are drawn from there instead of being sent again
   every frame; with 28 vehicles in view the render thread spent about 85% less time on them. The
   client config's `render.gpuModelBuffers` turns it off.
@@ -53,20 +50,10 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
   Gameplay and global effect caps are unchanged. See `docs/M8_COMPLETION.md` for validation
   and target-hardware acceptance limits.
 
-- M7 NTM Next client validation: all six payloads checked in game on OpenGL and Vulkan clients
-  of a dedicated server. `-PwithHbm` now also adds CrankShaft, so the dev client starts with NTM
-  Next. `scripts/make-ntm-validation-pack.sh` writes the test pack. On Mesa's software Vulkan
-  driver CrankShaft crashes the client unless its renderer is off (KNOWN_ISSUES 7).
-
-- M7 NTM Next follow-up: add configurable native chlorine, standard, pink and orange chemical
-  clouds with count/speed controls and EffectOnly suppression. Preserve every NTM setting during
-  YAML export/reload, including nested VNT processors, mini-nuke presets and legacy attributes.
-  Document addon setup in `docs/NTM_NEXT_ADDONS.md`.
-
-- M7 optional NTM Next warhead bridge: adapt mini-nukes, nuclear clouds, VNT processors,
-  lingering fire and fluid mist to the NeoForge 26.2 APIs. Preserve ordinary explosions and
-  EffectOnly behavior when HBM is absent or unsupported. Add fallback/API regression coverage;
-  server GameTests pass with and without NTM Next.
+- NTM Next weapon payloads, rebuilt: addon weapons can carry upstream's seven HBM payloads (fire,
+  mist, chemical, mini-nuke, nuke, VNT and legacy NT) against NTM Next 1.0.3, with a new
+  `Chemical` block for gas clouds. The earlier warhead bridge and the NTM Next explosion style
+  are removed. See `docs/NTM_NEXT_WEAPONS.md`.
 
 - M8 impacts: fuller growing rocket/missile smoke, wider billow spread and longer smoke retention
   inside existing primary caps. Large general warheads devote more of their cloud to smoke.

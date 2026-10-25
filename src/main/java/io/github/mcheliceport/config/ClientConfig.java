@@ -33,8 +33,6 @@ public final class ClientConfig {
     public static final ModConfigSpec.BooleanValue DEFAULT_EXPLOSION_PARTICLE;
     public enum EffectStyle { CLASSIC, POLISHED }
     public enum EffectBudget { LOW, BALANCED, HIGH }
-    public enum ExplosionMode { CURRENT, MODERN, NTM_NEXT }
-    public static final ModConfigSpec.EnumValue<ExplosionMode> EXPLOSION_MODE;
     public static final ModConfigSpec.EnumValue<EffectStyle> EFFECT_STYLE;
     public static final ModConfigSpec.EnumValue<EffectBudget> EFFECT_BUDGET;
     public static final ModConfigSpec.BooleanValue ADAPTIVE_EFFECTS;
@@ -145,10 +143,7 @@ public final class ClientConfig {
         DEFAULT_EXPLOSION_PARTICLE = builder
                 .comment("Draw McHeli's explosions with vanilla's explosion particles. Upstream: DefaultExplosionParticle.")
                 .define("defaultExplosionParticle", false);
-        EXPLOSION_MODE = builder.comment("Explosion presentation: CURRENT, MODERN, or NTM_NEXT (requires NTM Next on this client).",
-                        "Client-only: original crater formation and weapon damage are unchanged.")
-                .defineEnum("explosionMode", ExplosionMode.CURRENT);
-        MODERN_EXPLOSIONS = builder.comment("Legacy Modern preference; retained for existing configs. The ESC selector updates both keys.")
+        MODERN_EXPLOSIONS = builder.comment("Modern volumetric-looking explosion art and layered billows; client-only, opt-in.")
                 .define("modernExplosions", false);
         EFFECT_STYLE = builder
                 .comment("POLISHED adds shaded pixel smoke, warm flashes and flare glow. CLASSIC uses upstream sprites.",

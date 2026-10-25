@@ -67,7 +67,6 @@ public final class ModGameTests {
         PlaneCameraGameTests.register();
         ParachuteGameTests.register();
         WeaponGameTests.register();
-        HbmGameTests.register();
         CraftingGameTests.register();
         ToolGameTests.register();
         GltdGameTests.register();
@@ -93,6 +92,7 @@ public final class ModGameTests {
         AdvancementGameTests.register();
         LongDistanceGameTests.register();
         BlockListGameTests.register();
+        NtmGameTests.register();
         if (System.getProperty("neoforge.enabledGameTestNamespaces") != null) {
             ChargerGameTests.registerTestBattery(modBus);
         }

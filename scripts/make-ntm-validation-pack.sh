@@ -1,6 +1,6 @@
 #!/bin/sh
 # Builds an addon pack that gives six stock rockets an NTM Next payload, for checking the
-# optional bridge in game (docs/M7_PLAN.md, "Optional NTM Next bridge"). Then start the
+# optional bridge in game (docs/NTM_NEXT_WEAPONS.md). Then start the
 # server and client with -PwithHbm and fire the rockets of these vehicles:
 #
 #   AH-6 Hydra (hydra70_l)          chemical (chlorine)

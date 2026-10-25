@@ -81,21 +81,13 @@ These follow from how Minecraft 26.2 works or from decisions approved in PORTING
    entity type IDs instead.
 6. GregTech EU charging is removed (Forge Energy only). The One Probe and Trajectory Preview
    integrations are stubs.
-7. NTM Next provides HBM (`hbm`) on NeoForge 26.2. The optional bridge targets its mini-nuke,
-   nuclear, VNT, lingering-fire, fluid-mist and native chemical cloud APIs. HBM effects supplement
-   the normal McHeli explosion, as upstream; `EffectOnly` suppresses the normal blast and damaging
-   HBM entities. Missing HBM, unavailable APIs and unsupported legacy NT payloads log once and
-   retain the normal blast (none for `EffectOnly`). NTM Next removed `ExplosionNT` and mini-nuke
-   `ExAttrib[]`; those settings remain parsed, but are not applied. Large VNT effect parameters
-   are approximated by NTM Next's small/standard/large named effects; its small-cloud API retains
-   count, scale and speed. No stock weapon enables NTM payloads. Server GameTests pass with and
-   without NTM Next, and all six payloads were checked on OpenGL and Vulkan clients of a
-   dedicated server; see `docs/M7_PLAN.md`. Chemical clouds use their native NTM types, counts
-   and initial velocities; `EffectOnly` creates none because the entities themselves cause
-   damage. Addon configuration is documented in `docs/NTM_NEXT_ADDONS.md`. On Mesa's software
-   Vulkan driver (lavapipe), CrankShaft, NTM Next's required renderer, crashes the client in the
-   driver when NTM effects appear, also with no McHeli weapon involved; its `backend =
-   "flywheel:off"` setting avoids it. Hardware Vulkan drivers were not available to check.
+7. NTM Next (`hbm`) weapon payloads follow upstream's HBM integration against NTM Next 1.0.3:
+   fire, mist, chemical, mini-nuke, nuke, VNT and legacy NT (see `docs/NTM_NEXT_WEAPONS.md`). NTM Next
+   removed `ExplosionNT`, mini-nuke attributes and the configurable large explosion effect, so NT
+   payloads are rebuilt from VNT parts, mini-nuke attributes are ignored and VNT effects use NTM
+   Next's nearest fixed size. No stock weapon has a payload. Without NTM Next, payload weapons
+   explode normally. On Mesa's software Vulkan driver, CrankShaft (NTM Next's renderer) crashed the
+   client when NTM effects appeared, also without McHeli; OpenGL is the supported backend.
 8. Vehicles past the render distance are drawn full size and without fog in the normal entity pass,
    not in a second pass with upstream's own 3,000-block projection, so they disappear past vanilla's
    far plane (four times the render distance or the cloud range, whichever is larger).

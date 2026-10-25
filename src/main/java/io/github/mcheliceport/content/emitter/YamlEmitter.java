@@ -964,7 +964,6 @@ public final class YamlEmitter {
             effects.put("BulletDecay", decay);
         }
         if (!effects.isEmpty()) root.put("Effects", effects);
-        if (info.useHBM) root.put("NTM", NtmEmitter.emit(info));
         } catch (Exception e) {
             throw new EmissionException("Unexpected error during throwable emission", info, e);
         }

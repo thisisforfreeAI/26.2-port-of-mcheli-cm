@@ -2,6 +2,7 @@ package io.github.mcheliceport.entity.weapon;
 
 import io.github.mcheliceport.config.CommonConfig;
 import io.github.mcheliceport.content.ContentRegistries;
+import io.github.mcheliceport.compat.hbm.NtmPayloads;
 import io.github.mcheliceport.content.weapon.WeaponInfo;
 import io.github.mcheliceport.effect.McheliEffects;
 import io.github.mcheliceport.effect.ParticleParam;
@@ -1273,8 +1274,8 @@ public abstract class BaseBulletEntity extends Entity implements WeaponTargets.P
     private void explode(double x, double y, double z, float size, float sizeBlock, float damagePower,
             float blockPower, boolean inWater) {
         WeaponInfo info = this.getInfo();
-        if (this.level() instanceof net.minecraft.server.level.ServerLevel serverLevel) {
-            io.github.mcheliceport.compat.hbm.HbmCompat.detonate(serverLevel, this, info, x, y, z, blockPower);
+        if (this.level() instanceof ServerLevel server) {
+            NtmPayloads.detonate(server, this, info, x, y, z, blockPower);
         }
         if (info != null && info.effectOnly) {
             return;

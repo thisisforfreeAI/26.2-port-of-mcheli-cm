@@ -2,211 +2,225 @@ package io.github.mcheliceport.gametest;
 
 import static io.github.mcheliceport.gametest.GameTestSupport.check;
 
-import io.github.mcheliceport.compat.hbm.HbmCompat;
+import com.hbm.entity.effect.EntityFireLingering;
+import com.hbm.entity.effect.EntityMist;
+import com.hbm.entity.effect.EntityNukeTorex;
+import com.hbm.entity.logic.EntityNukeExplosionMK5;
+import com.hbm.entity.particle.EntityChlorineFX;
+import com.hbm.entity.particle.EntityCloudFX;
+import com.hbm.entity.particle.EntityOrangeFX;
+import com.hbm.entity.particle.EntityPinkCloudFX;
+import io.github.mcheliceport.compat.hbm.NtmPayloads;
 import io.github.mcheliceport.content.ContentLocation;
 import io.github.mcheliceport.content.weapon.WeaponInfo;
 import io.github.mcheliceport.content.weapon.hbm.ChemicalContainer;
-import io.github.mcheliceport.content.weapon.hbm.FireContainer;
 import io.github.mcheliceport.content.weapon.hbm.MistContainer;
 import io.github.mcheliceport.content.weapon.hbm.MukeContainer;
+import io.github.mcheliceport.content.weapon.hbm.NTSettingContainer;
 import io.github.mcheliceport.content.weapon.hbm.VNTSettingContainer;
 import io.github.mcheliceport.entity.weapon.RocketEntity;
-import io.github.mcheliceport.registry.ModEntityTypes;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntitySpawnReason;
-import net.minecraft.world.entity.EntityTypes;
-import net.minecraft.world.entity.monster.zombie.Husk;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.fml.ModList;
 
-/** Default runs cover absent-HBM fallback; -PwithHbm also exercises NTM Next's real runtime APIs. */
+/**
+ * Every NTM payload against the installed NTM Next ({@code ./gradlew runGameTestServer -PwithHbm}):
+ * each spawns NTM's own entities or explosion, and {@code EffectOnly} keeps only the visuals.
+ * Registered only when NTM Next is loaded.
+ */
 final class HbmGameTests {
-    private HbmGameTests() {}
 
-    static void register() {
-        ModGameTests.test("hbm_normal_blast_and_effect_only", 20, HbmGameTests::normalBlast);
-        if (ModList.get().isLoaded("hbm")) {
-            ModGameTests.test("hbm_next_payloads", 20, HbmGameTests::payloads);
-            ModGameTests.test("hbm_next_chemical_payloads", 20, HbmGameTests::chemicalPayloads);
-        }
+    private HbmGameTests() {
     }
 
-    private static WeaponInfo info(WeaponInfo.Payload payload) {
-        WeaponInfo info = new WeaponInfo(ContentLocation.builtin("hbm_test"), "hbm_test.yml", "yaml");
+    static void register() {
+        ModGameTests.test("ntm_rocket_sets_off_its_payload", 20, HbmGameTests::rocketPayload);
+        ModGameTests.test("ntm_fire", 20, HbmGameTests::fire);
+        ModGameTests.test("ntm_mist", 20, HbmGameTests::mist);
+        ModGameTests.test("ntm_chemical", 20, HbmGameTests::chemical);
+        ModGameTests.testAlone("ntm_nuke", 20, HbmGameTests::nuke);
+        ModGameTests.testAlone("ntm_mini_nuke", 40, HbmGameTests::miniNuke);
+        ModGameTests.testAlone("ntm_vnt", 40, HbmGameTests::vnt);
+        ModGameTests.testAlone("ntm_nt", 40, HbmGameTests::nt);
+    }
+
+    private static WeaponInfo weapon(String name, WeaponInfo.Payload payload, boolean effectOnly) {
+        WeaponInfo info = new WeaponInfo(ContentLocation.builtin(name), name + ".yml", "yaml");
         info.useHBM = true;
         info.payloadNTM = payload;
+        info.effectOnly = effectOnly;
         return info;
     }
 
-    private static RocketEntity projectile(GameTestHelper h, WeaponInfo info, Vec3 pos) {
-        RocketEntity rocket = new RocketEntity(ModEntityTypes.ROCKET.get(), h.getLevel()) {
-            @Override public WeaponInfo getInfo() { return info; }
-            @Override public WeaponInfo getWeaponInfo() { return info; }
-        };
-        rocket.setPos(pos);
-        return rocket;
+    private static <T extends Entity> List<T> around(GameTestHelper h, Class<T> type, Vec3 relative) {
+        return h.getLevel().getEntitiesOfClass(type, new AABB(h.absoluteVec(relative), h.absoluteVec(relative))
+                .inflate(12.0));
     }
 
-    private static void normalBlast(GameTestHelper h) {
-        Vec3 pos = h.absoluteVec(new Vec3(12, 8, 12));
-        boolean installed = ModList.get().isLoaded("hbm");
-        for (WeaponInfo.Payload payload : WeaponInfo.Payload.values()) {
-            if (payload == WeaponInfo.Payload.NONE) continue;
-            if (installed && payload != WeaponInfo.Payload.NTM_NT && payload != WeaponInfo.Payload.NTM_CHEMICAL)
-                continue;
-            WeaponInfo info = info(payload);
-            RocketEntity rocket = projectile(h, info, pos);
-            // No payload settings: a loaded but unavailable API must still use normal McHeli damage.
-            // Mist has no damaging effect-only path, even with the optional mod loaded.
-            Husk target = EntityTypes.HUSK.create(h.getLevel(), EntitySpawnReason.COMMAND);
-            target.setPos(pos.add(1, 0, 0));
-            target.setNoAi(true);
-            h.getLevel().addFreshEntity(target);
-            float before = target.getHealth();
-            rocket.newExplosion(pos.x, pos.y, pos.z, 1, 0, false);
-            check(h, target.getHealth() < before, payload + " suppressed the normal fallback blast");
-            target.discard();
+    private static void detonate(GameTestHelper h, WeaponInfo info, Vec3 relative, float blockPower) {
+        Vec3 at = h.absoluteVec(relative);
+        NtmPayloads.detonate(h.getLevel(), null, info, at.x, at.y, at.z, blockPower);
+    }
 
-            target = EntityTypes.HUSK.create(h.getLevel(), EntitySpawnReason.COMMAND);
-            target.setPos(pos.add(1, 0, 0));
-            h.getLevel().addFreshEntity(target);
-            before = target.getHealth();
-            info.effectOnly = true;
-            rocket.newExplosion(pos.x, pos.y, pos.z, 1, 0, 1, 0, true);
-            check(h, target.getHealth() == before, payload + " EffectOnly caused fallback damage");
-            target.discard();
-            if (!installed) check(h, HbmCompat.detonate(h.getLevel(), rocket, info, pos.x, pos.y, pos.z, 0)
-                    == HbmCompat.Outcome.FALLBACK, "Missing HBM was not reported as fallback");
-        }
+    private static void discardAll(List<? extends Entity> entities) {
+        entities.forEach(Entity::discard);
+    }
+
+    /** A rocket's explosion sets off its payload: here lingering fire, beside the normal blast. */
+    private static void rocketPayload(GameTestHelper h) {
+        Vec3 spot = new Vec3(12.5, 2, 12.5);
+        RocketEntity rocket = NtmGameTests.rocket(h, NtmGameTests.fireWeapon("ntm_rocket", false), spot);
+        Vec3 at = rocket.position();
+        rocket.newExplosion(at.x, at.y, at.z, 1.0F, 0.0F, false);
+        List<EntityFireLingering> fires = around(h, EntityFireLingering.class, spot);
+        check(h, fires.size() == 1, "the rocket left " + fires.size() + " lingering fires, not 1");
+        discardAll(fires);
+        rocket.discard();
         h.succeed();
     }
 
-    private static void payloads(GameTestHelper h) {
-        Vec3 pos = h.absoluteVec(new Vec3(12, 8, 12));
-        WeaponInfo info = info(WeaponInfo.Payload.NTM_FIRE);
-        info.fireContainer = new FireContainer();
+    private static void fire(GameTestHelper h) {
+        WeaponInfo info = NtmGameTests.fireWeapon("ntm_fire", false);
         info.fireContainer.fireType = "PHOSPHORUS";
-        info.fireContainer.particles = false;
-        apply(h, info, pos);
-        var fire = h.getLevel().getEntitiesOfClass(Entity.class, new AABB(pos, pos).inflate(2),
-                e -> e.getClass().getName().equals("com.hbm.entity.effect.EntityFireLingering"));
-        check(h, fire.size() == 1, "NTM Next did not create exactly one lingering fire");
-        fire.forEach(Entity::discard);
-        info.effectOnly = true;
-        apply(h, info, pos);
-        check(h, h.getLevel().getEntitiesOfClass(Entity.class, new AABB(pos, pos).inflate(2),
-                e -> e.getClass().getName().equals("com.hbm.entity.effect.EntityFireLingering")).isEmpty(),
-                "EffectOnly created damaging lingering fire");
+        info.fireContainer.count = 3;
+        info.fireContainer.areaSpread = 2;
+        detonate(h, info, new Vec3(6.5, 1, 6.5), 0.0F);
+        List<EntityFireLingering> fires = around(h, EntityFireLingering.class, new Vec3(6.5, 1, 6.5));
+        check(h, fires.size() == 3, "3 fires expected, got " + fires.size());
+        check(h, fires.stream().allMatch(f -> f.getFireType() == EntityFireLingering.TYPE_PHOSPHORUS),
+                "the fires are not phosphorus");
+        discardAll(fires);
+        detonate(h, NtmGameTests.fireWeapon("ntm_fire_effect", true), new Vec3(18.5, 1, 18.5), 0.0F);
+        check(h, around(h, EntityFireLingering.class, new Vec3(18.5, 1, 18.5)).isEmpty(),
+                "an effect-only fire payload left lingering fire");
+        h.succeed();
+    }
 
-        info = info(WeaponInfo.Payload.NTM_MIST);
+    private static void mist(GameTestHelper h) {
+        WeaponInfo info = weapon("ntm_mist", WeaponInfo.Payload.NTM_MIST, false);
         info.mistContainer = new MistContainer();
         info.mistContainer.fluidType = "WATER";
-        apply(h, info, pos);
-        var mist = h.getLevel().getEntitiesOfClass(Entity.class, new AABB(pos, pos).inflate(2),
-                e -> e.getClass().getName().equals("com.hbm.entity.effect.EntityMist"));
-        check(h, mist.size() == 1, "NTM Next did not create exactly one fluid mist");
-        mist.forEach(Entity::discard);
+        info.mistContainer.cloudCount = 2;
+        detonate(h, info, new Vec3(12.5, 1, 12.5), 0.0F);
+        List<EntityMist> mists = around(h, EntityMist.class, new Vec3(12.5, 1, 12.5));
+        check(h, mists.size() == 2, "2 mists expected, got " + mists.size());
+        check(h, mists.stream().allMatch(m -> m.getFluid() != null), "a mist has no fluid");
+        discardAll(mists);
         info.effectOnly = true;
-        apply(h, info, pos);
-        check(h, h.getLevel().getEntitiesOfClass(Entity.class, new AABB(pos, pos).inflate(2),
-                e -> e.getClass().getName().equals("com.hbm.entity.effect.EntityMist")).isEmpty(),
-                "EffectOnly created damaging fluid mist");
-
-        info = info(WeaponInfo.Payload.NTM_MINI_NUKE);
-        info.mukeContainer = new MukeContainer();
-        info.mukeContainer.safe = true;
-        info.mukeContainer.shrapnelCount = 0;
-        info.mukeContainer.radiationLevel = 0;
-        apply(h, info, pos);
-        info.effectOnly = true;
-        apply(h, info, pos);
-
-        info = info(WeaponInfo.Payload.NTM_VNT);
-        info.vntSettingContainer = new VNTSettingContainer(Map.of("BlockAllocator",
-                Map.of("Type", "BlockAllocatorStandard", "Constructor", java.util.List.of(8))));
-        apply(h, info, pos);
-        info.effectOnly = true;
-        apply(h, info, pos);
-
-        // Verify both nuclear factories, then discard before their first tick.
-        info = info(WeaponInfo.Payload.NTM_NUKE);
-        try {
-            check(h, HbmCompat.detonate(h.getLevel(), projectile(h, info, pos), info, pos.x, pos.y, pos.z, 1)
-                    == HbmCompat.Outcome.APPLIED, "NTM Next nuclear factory failed");
-            var nuclear = nuclearEntities(h, pos);
-            check(h, nuclear.size() == 2, "Expected one nuclear blast and one cloud");
-            nuclear.forEach(Entity::discard);
-            info.effectOnly = true;
-            check(h, HbmCompat.detonate(h.getLevel(), projectile(h, info, pos), info, pos.x, pos.y, pos.z, 1)
-                    == HbmCompat.Outcome.APPLIED, "NTM Next nuclear visual failed");
-            nuclear = nuclearEntities(h, pos);
-            check(h, nuclear.size() == 1 && nuclear.getFirst().getClass().getSimpleName().equals("EntityNukeTorex"),
-                    "EffectOnly created a damaging nuke or duplicated its cloud");
-        } finally {
-            nuclearEntities(h, pos).forEach(Entity::discard);
-        }
+        detonate(h, info, new Vec3(12.5, 1, 12.5), 0.0F);
+        check(h, around(h, EntityMist.class, new Vec3(12.5, 1, 12.5)).isEmpty(), "an effect-only mist spawned");
         h.succeed();
     }
 
-    private static java.util.List<Entity> nuclearEntities(GameTestHelper h, Vec3 pos) {
-        return h.getLevel().getEntitiesOfClass(Entity.class, new AABB(pos, pos).inflate(2),
-                e -> e.getClass().getName().equals("com.hbm.entity.logic.EntityNukeExplosionMK5")
-                        || e.getClass().getName().equals("com.hbm.entity.effect.EntityNukeTorex"));
+    private static void chemical(GameTestHelper h) {
+        Map<ChemicalContainer.ChemType, Class<? extends Entity>> types = Map.of(
+                ChemicalContainer.ChemType.CHLORINE, EntityChlorineFX.class,
+                ChemicalContainer.ChemType.CLOUD, EntityCloudFX.class,
+                ChemicalContainer.ChemType.PINK_CLOUD, EntityPinkCloudFX.class,
+                ChemicalContainer.ChemType.ORANGE, EntityOrangeFX.class);
+        Vec3 spot = new Vec3(12.5, 2, 12.5);
+        for (Map.Entry<ChemicalContainer.ChemType, Class<? extends Entity>> type : types.entrySet()) {
+            WeaponInfo info = weapon("ntm_chemical", WeaponInfo.Payload.NTM_CHEMICAL, false);
+            info.chemicalContainer = new ChemicalContainer(0.1, 5, type.getKey());
+            detonate(h, info, spot, 0.0F);
+            List<? extends Entity> clouds = around(h, type.getValue(), spot);
+            check(h, clouds.size() == 5, type.getKey() + ": 5 clouds expected, got " + clouds.size());
+            discardAll(clouds);
+        }
+        detonate(h, weapon("ntm_chemical_default", WeaponInfo.Payload.NTM_CHEMICAL, false), spot, 0.0F);
+        List<EntityChlorineFX> chlorine = around(h, EntityChlorineFX.class, spot);
+        check(h, chlorine.size() == ChemicalContainer.DEFAULT_COUNT,
+                "a chemical payload without settings should release chlorine, got " + chlorine.size());
+        discardAll(chlorine);
+        h.succeed();
     }
 
-    private static void chemicalPayloads(GameTestHelper h) {
-        Vec3 pos = h.absoluteVec(new Vec3(12, 8, 12));
-        for (var type : ChemicalContainer.ChemType.values()) {
-            String expected = switch (type) {
-                case CHLORINE -> "EntityChlorineFX";
-                case CLOUD -> "EntityCloudFX";
-                case PINK_CLOUD -> "EntityPinkCloudFX";
-                case ORANGE -> "EntityOrangeFX";
-            };
-            WeaponInfo info = info(WeaponInfo.Payload.NTM_CHEMICAL);
-            info.chemicalContainer = new ChemicalContainer(0, 2, type);
-            try {
-                apply(h, info, pos);
-                var clouds = chemicalEntities(h, pos);
-                check(h, clouds.size() == 2, type + " did not spawn exactly two native clouds");
-                check(h, clouds.stream().allMatch(e -> e.getClass().getSimpleName().equals(expected)
-                                && e.getDeltaMovement().lengthSqr() == 0),
-                        type + " selected the wrong cloud type or ignored zero speed");
-                clouds.forEach(Entity::discard);
+    /** The MK5 blast and its cloud; both are removed before they tick, so nothing is destroyed. */
+    private static void nuke(GameTestHelper h) {
+        Vec3 spot = new Vec3(12.5, 2, 12.5);
+        detonate(h, weapon("ntm_nuke", WeaponInfo.Payload.NTM_NUKE, false), spot, 20.0F);
+        List<EntityNukeExplosionMK5> blasts = around(h, EntityNukeExplosionMK5.class, spot);
+        List<EntityNukeTorex> clouds = around(h, EntityNukeTorex.class, spot);
+        check(h, blasts.size() == 1 && blasts.get(0).getRadius() == 20, "one 20-block MK5 blast expected, got "
+                + blasts.size());
+        check(h, clouds.size() == 1, "one torex cloud expected, got " + clouds.size());
+        discardAll(blasts);
+        discardAll(clouds);
+        detonate(h, weapon("ntm_nuke_effect", WeaponInfo.Payload.NTM_NUKE, true), spot, 20.0F);
+        check(h, around(h, EntityNukeExplosionMK5.class, spot).isEmpty(), "an effect-only nuke started a blast");
+        List<EntityNukeTorex> cloudOnly = around(h, EntityNukeTorex.class, spot);
+        check(h, cloudOnly.size() == 1, "an effect-only nuke should still show its cloud");
+        discardAll(cloudOnly);
+        h.succeed();
+    }
 
-                info.effectOnly = true;
-                apply(h, info, pos);
-                check(h, chemicalEntities(h, pos).isEmpty(), type + " EffectOnly spawned damaging clouds");
+    /** A small mini-nuke breaks the block it hits; effect only, it breaks nothing. */
+    private static void miniNuke(GameTestHelper h) {
+        BlockPos block = new BlockPos(12, 3, 12);
+        h.setBlock(block, Blocks.STONE);
+        WeaponInfo info = weapon("ntm_mini_nuke", WeaponInfo.Payload.NTM_MINI_NUKE, true);
+        info.mukeContainer = new MukeContainer();
+        info.mukeContainer.blastRadius = 3.0F;
+        info.mukeContainer.killRadius = 0.0F;
+        info.mukeContainer.radiationLevel = 0.0F;
+        info.mukeContainer.shrapnelCount = 0;
+        detonate(h, info, new Vec3(12.5, 3.5, 12.5), 0.0F);
+        check(h, h.getBlockState(block).is(Blocks.STONE), "an effect-only mini-nuke broke a block");
+        info.effectOnly = false;
+        detonate(h, info, new Vec3(12.5, 3.5, 12.5), 0.0F);
+        check(h, h.getBlockState(block).isAir(), "the mini-nuke did not break the block it hit");
+        h.succeed();
+    }
 
-                info.effectOnly = false;
-                info.chemicalContainer = new ChemicalContainer(0.125, 1, type);
-                apply(h, info, pos);
-                clouds = chemicalEntities(h, pos);
-                check(h, clouds.size() == 1 && clouds.getFirst().getDeltaMovement().lengthSqr() > 0,
-                        type + " ignored cloud speed or count");
-                clouds.forEach(Entity::discard);
-                info.chemicalContainer = new ChemicalContainer(0.125, 0, type);
-                apply(h, info, pos);
-                check(h, chemicalEntities(h, pos).isEmpty(), type + " ignored zero Count");
-            } finally {
-                // These clouds poison on ticking; none should escape into other test arenas.
-                chemicalEntities(h, pos).forEach(Entity::discard);
+    /**
+     * A VNT payload builds its parts from the weapon's maps: no drops, and fire left behind. NTM's
+     * {@code BlockMutatorFire} lights each cleared block over a solid one with a one-in-three
+     * chance, so the blast is repeated on fresh planks until it does.
+     */
+    private static void vnt(GameTestHelper h) {
+        BlockPos block = new BlockPos(12, 2, 12);
+        Map<String, Object> attributes = new LinkedHashMap<>();
+        attributes.put("BlockAllocator", Map.of("Type", "BlockAllocatorStandard", "Constructor", List.of(16)));
+        attributes.put("BlockProcessor", Map.of("Type", "BlockProcessorStandard", "NoDrop", true,
+                "WithBlockEffect", Map.of("Type", "BlockMutatorFire")));
+        attributes.put("EntityProcessor", Map.of("Type", "EntityProcessorStandard"));
+        attributes.put("SFX", List.of(Map.of("Type", "ExplosionEffectStandard")));
+        WeaponInfo info = weapon("ntm_vnt", WeaponInfo.Payload.NTM_VNT, false);
+        info.vntSettingContainer = new VNTSettingContainer(attributes);
+        boolean fire = false;
+        for (int attempt = 0; attempt < 12 && !fire; attempt++) {
+            for (BlockPos pos : BlockPos.betweenClosed(new BlockPos(9, 1, 9), new BlockPos(15, 4, 15))) {
+                h.setBlock(pos, pos.getY() == 1 ? Blocks.OAK_PLANKS : Blocks.AIR);
+            }
+            h.setBlock(block, Blocks.OAK_PLANKS);
+            detonate(h, info, new Vec3(12.5, 2.5, 12.5), 3.0F);
+            check(h, h.getBlockState(block).isAir() || h.getBlockState(block).is(Blocks.FIRE),
+                    "the VNT blast did not break the block it hit");
+            check(h, around(h, ItemEntity.class, new Vec3(12.5, 2, 12.5)).isEmpty(), "NoDrop blocks dropped items");
+            for (BlockPos pos : BlockPos.betweenClosed(new BlockPos(9, 1, 9), new BlockPos(15, 4, 15))) {
+                fire |= h.getBlockState(pos).is(Blocks.FIRE);
             }
         }
+        check(h, fire, "the fire block effect left no fire in 12 blasts");
         h.succeed();
     }
 
-    private static java.util.List<Entity> chemicalEntities(GameTestHelper h, Vec3 pos) {
-        return h.getLevel().getEntitiesOfClass(Entity.class, new AABB(pos, pos).inflate(2),
-                e -> e.getClass().getName().startsWith("com.hbm.entity.particle.Entity")
-                        && e.getClass().getName().endsWith("FX"));
-    }
-
-    private static void apply(GameTestHelper h, WeaponInfo info, Vec3 pos) {
-        check(h, HbmCompat.detonate(h.getLevel(), projectile(h, info, pos), info, pos.x, pos.y, pos.z, 0)
-                == HbmCompat.Outcome.APPLIED, "NTM Next API failed for " + info.payloadNTM);
+    /** Legacy NT explosions run on VNT parts: they break blocks, and NODROP keeps the drops away. */
+    private static void nt(GameTestHelper h) {
+        BlockPos block = new BlockPos(12, 2, 12);
+        h.setBlock(block, Blocks.OAK_PLANKS);
+        WeaponInfo info = weapon("ntm_nt", WeaponInfo.Payload.NTM_NT, false);
+        info.ntSettingContainer = new NTSettingContainer(List.of("NODROP", "NOSOUND"), 16);
+        detonate(h, info, new Vec3(12.5, 2.5, 12.5), 3.0F);
+        check(h, h.getBlockState(block).isAir(), "the NT blast did not break the block it hit");
+        check(h, around(h, ItemEntity.class, new Vec3(12.5, 2, 12.5)).isEmpty(), "NODROP blocks dropped items");
+        h.succeed();
     }
 }

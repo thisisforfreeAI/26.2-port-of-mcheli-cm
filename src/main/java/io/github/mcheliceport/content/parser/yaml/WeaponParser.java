@@ -33,8 +33,8 @@ import io.github.mcheliceport.content.weapon.MineFuze;
 import io.github.mcheliceport.content.weapon.PotionEffectInfo;
 import io.github.mcheliceport.content.weapon.SightType;
 import io.github.mcheliceport.content.weapon.WeaponInfo;
-import io.github.mcheliceport.content.weapon.hbm.ChemicalContainer;
 import io.github.mcheliceport.content.weapon.hbm.FireContainer;
+import io.github.mcheliceport.content.weapon.hbm.ChemicalContainer;
 import io.github.mcheliceport.content.weapon.hbm.MistContainer;
 import io.github.mcheliceport.content.weapon.hbm.MukeContainer;
 import io.github.mcheliceport.content.weapon.hbm.NTSettingContainer;
@@ -80,7 +80,7 @@ public final class WeaponParser {
             case "NTM_VNT", "VNT" -> WeaponInfo.Payload.NTM_VNT;
             case "NTM_NT", "NT" -> WeaponInfo.Payload.NTM_NT;
             case "NTM_NUKE", "NUKE" -> WeaponInfo.Payload.NTM_NUKE;
-            case "NTM_MINI_NUKE", "MINI_NUKE", "NTM_MININUKE", "MININUKE" -> WeaponInfo.Payload.NTM_MINI_NUKE;
+            case "NTM_MININUKE", "MININUKE" -> WeaponInfo.Payload.NTM_MINI_NUKE;
             case "CHEMICAL", "NTM_CHEMICAL" -> WeaponInfo.Payload.NTM_CHEMICAL;
             case "NTM_MIST", "MIST" -> WeaponInfo.Payload.NTM_MIST;
             case "NTM_FIRE", "FIRE", "PHOSPHORUS", "PHOSPHOR", "WP", "BALEFIRE" -> WeaponInfo.Payload.NTM_FIRE;
@@ -495,7 +495,6 @@ public final class WeaponParser {
                 case "PayloadType", "Type" -> info.payloadNTM = parsePayload((String) entry.getValue());
                 case "EffectOnly" -> info.effectOnly = (Boolean) entry.getValue();
                 case "Mist" -> parseMist(info, (Map<String, Object>) entry.getValue());
-                case "Chemical" -> parseChemical(info, (Map<String, Object>) entry.getValue());
                 case "MiniNuke", "Muke" -> {
                     Object muke = entry.getValue();
                     if (muke instanceof String mukeString) {
@@ -515,6 +514,7 @@ public final class WeaponParser {
                 case "VNT" -> parseVNT(info, (Map<String, Object>) entry.getValue());
 
                 case "NT" -> parseNTExplosion(info, (Map<String, Object>) entry.getValue());
+                case "Chemical", "Gas" -> parseChemical(info, (Map<String, Object>) entry.getValue());
                 case "Fire", "Phosphorus", "Splash" -> parseFire(info, (Map<String, Object>) entry.getValue());
                 default -> logUnknownEntry(entry, "NTM");
             }
@@ -573,16 +573,6 @@ public final class WeaponParser {
                 default -> logUnknownEntry(entry, "VNT");
             }
         }
-    }
-
-    private static void parseChemical(WeaponInfo info, Map<String, Object> map) {
-        Number count = (Number) map.getOrDefault("Count", 1);
-        if (count.doubleValue() != count.intValue())
-            throw new IllegalArgumentException("Chemical Count must be a nonnegative integer");
-        double speed = ((Number) map.getOrDefault("Speed", 0.2)).doubleValue();
-        String type = ((String) map.getOrDefault("Type", "CHLORINE")).trim().toUpperCase(Locale.ROOT)
-                .replace('-', '_').replace(' ', '_');
-        info.chemicalContainer = new ChemicalContainer(speed, count.intValue(), ChemicalContainer.ChemType.valueOf(type));
     }
 
     private static void parseFire(WeaponInfo info, Map<String, Object> map) {
@@ -647,6 +637,26 @@ public final class WeaponParser {
             }
         }
         info.mukeContainer = container;
+    }
+
+    /**
+     * Not in upstream, whose chemical payload had no settings and so never spawned anything: the
+     * gas cloud type, cloud count and launch speed.
+     */
+    private static void parseChemical(WeaponInfo info, Map<String, Object> map) {
+        ChemicalContainer.ChemType type = ChemicalContainer.ChemType.CHLORINE;
+        int count = ChemicalContainer.DEFAULT_COUNT;
+        double speed = ChemicalContainer.DEFAULT_SPEED;
+        for (Map.Entry<String, Object> entry : map.entrySet()) {
+            switch (entry.getKey()) {
+                case "Type", "ChemType" -> type = ChemicalContainer.ChemType.valueOf(((String) entry.getValue())
+                        .trim().toUpperCase(Locale.ROOT).replace(' ', '_').replace('-', '_'));
+                case "Count" -> count = Math.max(0, ((Number) entry.getValue()).intValue());
+                case "Speed" -> speed = Math.max(0.0, ((Number) entry.getValue()).doubleValue());
+                default -> logUnknownEntry(entry, "Chemical");
+            }
+        }
+        info.chemicalContainer = new ChemicalContainer(speed, count, type);
     }
 
     private static void parseNTExplosion(WeaponInfo info, Map<String, Object> map) {
