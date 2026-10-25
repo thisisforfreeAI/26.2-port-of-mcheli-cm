@@ -179,15 +179,13 @@ final class HbmGameTests {
         h.succeed();
     }
 
-    /** A VNT payload builds its parts from the weapon's maps: no drops, and fire left behind. */
+    /**
+     * A VNT payload builds its parts from the weapon's maps: no drops, and fire left behind. NTM's
+     * {@code BlockMutatorFire} lights each cleared block over a solid one with a one-in-three
+     * chance, so the blast is repeated on fresh planks until it does.
+     */
     private static void vnt(GameTestHelper h) {
         BlockPos block = new BlockPos(12, 2, 12);
-        for (int x = 10; x <= 14; x++) {
-            for (int z = 10; z <= 14; z++) {
-                h.setBlock(new BlockPos(x, 1, z), Blocks.OAK_PLANKS);
-            }
-        }
-        h.setBlock(block, Blocks.OAK_PLANKS);
         Map<String, Object> attributes = new LinkedHashMap<>();
         attributes.put("BlockAllocator", Map.of("Type", "BlockAllocatorStandard", "Constructor", List.of(16)));
         attributes.put("BlockProcessor", Map.of("Type", "BlockProcessorStandard", "NoDrop", true,
@@ -196,15 +194,21 @@ final class HbmGameTests {
         attributes.put("SFX", List.of(Map.of("Type", "ExplosionEffectStandard")));
         WeaponInfo info = weapon("ntm_vnt", WeaponInfo.Payload.NTM_VNT, false);
         info.vntSettingContainer = new VNTSettingContainer(attributes);
-        detonate(h, info, new Vec3(12.5, 2.5, 12.5), 3.0F);
-        check(h, h.getBlockState(block).isAir() || h.getBlockState(block).is(Blocks.FIRE),
-                "the VNT blast did not break the block it hit");
-        check(h, around(h, ItemEntity.class, new Vec3(12.5, 2, 12.5)).isEmpty(), "NoDrop blocks dropped items");
         boolean fire = false;
-        for (BlockPos pos : BlockPos.betweenClosed(new BlockPos(9, 1, 9), new BlockPos(15, 4, 15))) {
-            fire |= h.getBlockState(pos).is(Blocks.FIRE);
+        for (int attempt = 0; attempt < 12 && !fire; attempt++) {
+            for (BlockPos pos : BlockPos.betweenClosed(new BlockPos(9, 1, 9), new BlockPos(15, 4, 15))) {
+                h.setBlock(pos, pos.getY() == 1 ? Blocks.OAK_PLANKS : Blocks.AIR);
+            }
+            h.setBlock(block, Blocks.OAK_PLANKS);
+            detonate(h, info, new Vec3(12.5, 2.5, 12.5), 3.0F);
+            check(h, h.getBlockState(block).isAir() || h.getBlockState(block).is(Blocks.FIRE),
+                    "the VNT blast did not break the block it hit");
+            check(h, around(h, ItemEntity.class, new Vec3(12.5, 2, 12.5)).isEmpty(), "NoDrop blocks dropped items");
+            for (BlockPos pos : BlockPos.betweenClosed(new BlockPos(9, 1, 9), new BlockPos(15, 4, 15))) {
+                fire |= h.getBlockState(pos).is(Blocks.FIRE);
+            }
         }
-        check(h, fire, "the fire block effect left no fire");
+        check(h, fire, "the fire block effect left no fire in 12 blasts");
         h.succeed();
     }
 
