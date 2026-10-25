@@ -22,7 +22,7 @@ import org.junit.jupiter.api.Test;
 
 class ParachuteModelsTest {
     @Test
-    void stockModelsKeepThePinnedAssetsIncludingBrokenEjectionGroupNames() throws Exception {
+    void stockModelsHaveTheEjectionSeatAndCanopyGroups() throws Exception {
         var pack = new PathPackResources(new PackLocationInfo("parachute_test", Component.empty(),
                 PackSource.DEFAULT, Optional.empty()), ContentTestSupport.stockPack());
         try (var resources = new MultiPackResourceManager(PackType.CLIENT_RESOURCES, List.of(pack))) {
@@ -31,13 +31,17 @@ class ParachuteModelsTest {
                 assertNotNull(model);
                 assertTrue(model.vertexCount() > 0);
                 if (type == 2) {
-                    // Upstream's whitespace parser reads every exported name as "[Exported".
-                    // Pin the exact broken asset; do not silently accept a new model gap.
-                    assertTrue(model.part("$seat").isEmpty());
-                    assertTrue(model.part("$parachute").isEmpty());
+                    // Upstream's file prefixed every name with "[Exported] [Imported]", which its
+                    // whitespace parser cut to "[Exported", and left $parachute empty. The port's
+                    // copy names the seat $seat and starts the canopy and lines with $parachute,
+                    // so they merge into that group as upstream's loader merged unnamed objects.
+                    assertEquals(1, model.part("$seat").size());
+                    assertEquals(1, model.part("$parachute").size());
+                    assertEquals(2, model.groups.size());
+                    assertTrue(model.part("$seat").getFirst().vertexCount() > 0);
                     try (var stream = resources.getResource(Identifier.fromNamespaceAndPath("mcheli",
                             "models/parachute2.mqo")).orElseThrow().open()) {
-                        assertEquals("8ef51b1822f436169927a93bd1217fd9e3aa6ecad51d9665685c511b011a5e7b",
+                        assertEquals("91170dc9fe5f44ee4a1d61df6cca93c13a819bde571bba60f5cacab68953a6a3",
                                 HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(stream.readAllBytes())));
                     }
                 }

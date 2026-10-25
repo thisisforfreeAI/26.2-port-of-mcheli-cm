@@ -31,7 +31,6 @@ class AllHelicopterModelsTest {
      * nothing for them, as the port does). Listed so that any other gap fails.
      */
     private static final List<String> UPSTREAM_GAPS = List.of(
-            "ah-1z: part canopy is neither in the body nor in a file",
             "uh-1c: part camera0 is neither in the body nor in a file");
 
     @Test
@@ -51,7 +50,7 @@ class AllHelicopterModelsTest {
                 }
                 for (String part : AircraftModels.partNames(info)) {
                     parts++;
-                    if (models.part(part).isEmpty()) {
+                    if (CanopyAlias.missing(models::part, part)) {
                         problems.add(info.name + ": part " + part + " is neither in the body nor in a file");
                     }
                 }

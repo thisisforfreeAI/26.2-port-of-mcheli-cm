@@ -504,6 +504,15 @@ public abstract class AircraftEntity extends Entity
         return this.hitBoxes;
     }
 
+    /**
+     * Whether other entities collide with the content's extra boxes as well as the main box, as
+     * with upstream's {@code MCH_AircraftBoundingBox}. Only tanks do here, so long hulls and turrets
+     * are solid; aircraft keep their extra boxes for hits only.
+     */
+    public boolean hasSolidHitBoxes() {
+        return false;
+    }
+
     public void updateHitBoxPosition() {
         for (AircraftHitBox box : this.hitBoxes) {
             box.updatePosition(this.getX(), this.getY(), this.getZ(), this.getYaw(), this.getPitch(), this.getRoll());

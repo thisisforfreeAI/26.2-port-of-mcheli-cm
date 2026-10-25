@@ -3,6 +3,7 @@ package io.github.mcheliceport.client.gui;
 import io.github.mcheliceport.client.hud.TeamListOverlay;
 import io.github.mcheliceport.multiplay.MultiplayManager;
 import io.github.mcheliceport.net.MultiplayActionPayload;
+import java.util.List;
 import java.util.regex.Pattern;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
@@ -14,6 +15,7 @@ import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextColor;
 import net.minecraft.resources.Identifier;
+import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.world.scores.TeamColor;
 import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import org.jspecify.annotations.Nullable;
@@ -22,7 +24,9 @@ import org.jspecify.annotations.Nullable;
  * Upstream's multiplay manager ({@code MCH_GuiScoreboard} with its {@code _Main} and
  * {@code _CreateTeam} screens): the team lists, with buttons that toggle PVP, shuffle the players
  * over the teams, send everyone to their spawn point, remove every vehicle and create a team. The
- * server checks each button's permission, as upstream's did.
+ * server checks each button's permission, as upstream's did. Under the lists, a port addition: a
+ * Join button per team and a Leave button under the players in no team, when the server lets this
+ * player choose a team.
  */
 public class MultiplayManagerScreen extends Screen {
 
@@ -35,12 +39,15 @@ public class MultiplayManagerScreen extends Screen {
     /** Upstream's 16 characters, in the characters {@code /team add} reads as one word. */
     private static final Pattern TEAM_NAME = Pattern.compile("[0-9A-Za-z_\\-.+]{1,16}");
 
+    /** The bottom of the action buttons' column. */
+    private static final int ACTIONS_BOTTOM = 180;
     /** Upstream kept the friendly fire choice for the next team. */
     private static boolean friendlyFire = true;
 
     private boolean createTeam;
     private int teamColor;
-    private int lastTeamNum = -1;
+    /** What the layout was built for: the teams, the list rows, the team buttons and this player's team. */
+    private String lastLayout = "";
     /** The screen to switch to on the next tick: -1 none, 0 main, 1 create team. */
     private int pendingSwitch = -1;
     private String teamName = "";
@@ -55,7 +62,7 @@ public class MultiplayManagerScreen extends Screen {
 
     @Override
     protected void init() {
-        this.lastTeamNum = this.teamNum();
+        this.lastLayout = this.layout();
         this.pvpButton = null;
         this.okButton = null;
         this.friendlyFireButton = null;
@@ -70,6 +77,21 @@ public class MultiplayManagerScreen extends Screen {
 
     private int teamNum() {
         return this.minecraft.level != null ? this.minecraft.level.getScoreboard().getPlayerTeams().size() : 0;
+    }
+
+    private String layout() {
+        if (this.minecraft.level == null || this.minecraft.player == null) {
+            return "";
+        }
+        StringBuilder key = new StringBuilder();
+        this.minecraft.level.getScoreboard().getPlayerTeams().forEach(t -> key.append(t.getName()).append('/'));
+        PlayerTeam own = this.ownTeam();
+        return key.append(TeamListOverlay.rows(this.minecraft)).append('/').append(MultiplayManager.clientChooseTeam())
+                .append('/').append(own == null ? "" : own.getName()).toString();
+    }
+
+    private @Nullable PlayerTeam ownTeam() {
+        return this.minecraft.level.getScoreboard().getPlayersTeam(this.minecraft.player.getScoreboardName());
     }
 
     /** Upstream {@code MCH_GuiScoreboard_Main.initGui}: the buttons in the column left of the lists. */
@@ -92,6 +114,39 @@ public class MultiplayManagerScreen extends Screen {
                         b -> this.send(MultiplayActionPayload.Action.DESTROY_AIRCRAFT))
                 .bounds(left, 160, width, 20)
                 .tooltip(Tooltip.create(Component.literal("Destroy all aircraft and vehicle."))).build());
+        if (MultiplayManager.clientChooseTeam() && this.minecraft.level != null && this.minecraft.player != null) {
+            this.initTeamButtons();
+        }
+    }
+
+    /** The Join and Leave buttons, one under each list. */
+    private void initTeamButtons() {
+        List<@Nullable PlayerTeam> columns = TeamListOverlay.columns(this.minecraft);
+        int width = TeamListOverlay.columnWidth(this.minecraft, this.width);
+        // Below the lists, and below the action buttons, which the no-team list reaches under.
+        int y = Math.max(TeamListOverlay.listBottom(this.minecraft, this.height) + 4, ACTIONS_BOTTOM + 4);
+        PlayerTeam own = this.ownTeam();
+        for (int i = 0; i < columns.size(); i++) {
+            PlayerTeam team = columns.get(i);
+            int left = TeamListOverlay.columnLeft(this.minecraft, this.width, 1 + columns.size(), 1 + i);
+            Button button;
+            if (team == null) {
+                button = Button.builder(Component.literal("Leave team"),
+                        b -> ClientPacketDistributor.sendToServer(
+                                new MultiplayActionPayload(MultiplayActionPayload.Action.LEAVE_TEAM)))
+                        .bounds(left - 1, y, width + 1, 20).build();
+                button.active = own != null;
+            } else {
+                boolean joined = own != null && own.getName().equals(team.getName());
+                String name = team.getName();
+                button = Button.builder(Component.literal(joined ? "Joined" : "Join"),
+                        b -> ClientPacketDistributor.sendToServer(
+                                new MultiplayActionPayload(MultiplayActionPayload.Action.JOIN_TEAM, name)))
+                        .bounds(left - 1, y, width + 1, 20).build();
+                button.active = !joined && name.length() <= MultiplayActionPayload.MAX_TEAM_NAME;
+            }
+            this.addRenderableWidget(button);
+        }
     }
 
     /** Upstream {@code MCH_GuiScoreboard_CreateTeam.initGui}, around the middle of the screen. */
@@ -172,7 +227,10 @@ public class MultiplayManagerScreen extends Screen {
         }
     }
 
-    /** Upstream {@code updateScreen}: a new or removed team lays the screen out again. */
+    /**
+     * Upstream {@code updateScreen}: a new or removed team lays the screen out again, as do more
+     * list rows, the server's answer on the team buttons and a change of this player's team.
+     */
     @Override
     public void tick() {
         if (this.pendingSwitch >= 0) {
@@ -181,7 +239,7 @@ public class MultiplayManagerScreen extends Screen {
             // Upstream's acviveScreen: the name field starts empty each time.
             this.teamName = "";
             this.rebuildWidgets();
-        } else if (this.teamNum() != this.lastTeamNum) {
+        } else if (!this.layout().equals(this.lastLayout)) {
             this.rebuildWidgets();
         }
         this.updateButtons();

@@ -96,6 +96,21 @@ public class AircraftHitBox extends PartEntity<AircraftEntity> {
         return this.info != null && this.getParent().isPickable() && this.getParent().isHitBoxActive(this);
     }
 
+    /**
+     * Solid for other entities on vehicles with {@link AircraftEntity#hasSolidHitBoxes()}, except for
+     * the vehicle itself, its other boxes, and whatever rides with it (its crew, seats and loads, or
+     * the carrier it rides on). Entities already inside a box can still move out of it.
+     */
+    @Override
+    public boolean canBeCollidedWith(@Nullable Entity other) {
+        AircraftEntity parent = this.getParent();
+        if (!parent.hasSolidHitBoxes() || !this.isPickable()) {
+            return false;
+        }
+        return other == null || other != parent && !(other instanceof AircraftHitBox box && box.getParent() == parent)
+                && other.getRootVehicle() != parent.getRootVehicle();
+    }
+
     @Override
     public @Nullable ItemStack getPickResult() {
         return this.getParent().getPickResult();

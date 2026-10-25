@@ -151,6 +151,7 @@ public final class ContentRegistries {
             s = new Snapshot(s.hud, s.weapon, s.heli, s.plane, s.ship, s.tank, s.vehicle,
                     parseContents(ThrowableInfo.class, "throwable", contents.get(ContentType.THROWABLE)));
             resolveHudNames(s);
+            dropWeaponsOfMissingMods(s, ContentRegistries::modLoaded);
             current = s;
             LOGGER.info("Loaded {} HUDs, {} weapons, {} helicopters, {} planes, {} ships, {} tanks, {} vehicles,"
                     + " {} throwables", s.hud.size(), s.weapon.size(), s.heli.size(), s.plane.size(),
@@ -168,6 +169,27 @@ public final class ContentRegistries {
         values.stream().map(ContentLoader.ContentEntry::parse).filter(Objects::nonNull).map(clazz::cast)
                 .forEach(builder::put);
         return builder.build();
+    }
+
+    private static boolean modLoaded(String modId) {
+        return net.neoforged.fml.ModList.get() != null && net.neoforged.fml.ModList.get().isLoaded(modId);
+    }
+
+    /**
+     * Takes the weapons whose {@code RequiredMod} is not installed out of every vehicle's weapon
+     * list, so a vehicle offers them only with that mod. Client and server load the same content
+     * and mods, so both drop the same sets and their weapon indices still agree.
+     */
+    static void dropWeaponsOfMissingMods(Snapshot s, java.util.function.Predicate<String> loaded) {
+        for (AircraftInfo info : s.aircraft()) {
+            info.weaponSetList.removeIf(set -> {
+                WeaponInfo weapon = s.weapon.get(set.type);
+                if (weapon == null) {
+                    weapon = s.weapon.get(set.type.toLowerCase(java.util.Locale.ROOT));
+                }
+                return weapon != null && weapon.requiredMod != null && !loaded.test(weapon.requiredMod);
+            });
+        }
     }
 
     /**

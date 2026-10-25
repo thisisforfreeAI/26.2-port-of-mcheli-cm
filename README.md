@@ -63,6 +63,15 @@ HUDs, from YAML and legacy TXT files, including addon packs).
 
 ## Building and running
 
+Releases are on the
+[Releases page](https://github.com/thisisforfreeAI/26.2-port-of-mcheli-cm/releases), and on
+CurseForge and Modrinth once their projects are set up. Maintainers cut one by setting
+`mod_version` in `gradle.properties`, adding its `## [x.y.z]` section to `CHANGELOG.md`, and
+pushing the tag `vx.y.z`: [Actions → Release](.github/workflows/release.yml) builds the JAR, runs
+the GameTests, makes a pre-release with that changelog section, and uploads to CurseForge and
+Modrinth when the repository has the secrets `CURSEFORGE_TOKEN` and `MODRINTH_TOKEN` and the
+variables `CURSEFORGE_PROJECT_ID` and `MODRINTH_PROJECT_ID`.
+
 To download a tested development build, sign in to GitHub, open a successful run under
 [Actions → Build](https://github.com/thisisforfreeAI/26.2-port-of-mcheli-cm/actions/workflows/build.yml),
 and download its `mcheli-ce-port-<commit>` artifact. Extract the ZIP and put the JAR in your
@@ -137,6 +146,9 @@ rocket launcher and rear gun respectively. An occupied gunner seat takes control
 **H** switches camera/gunner view where the vehicle supports it. **Ctrl+C** switches the vehicle's NPC
 gunners on or off (on for new vehicles). Seat a gunner with the Gunner item: it aims and fires its
 seat's weapon at nearby monsters, or at players of other teams, and uses flares and chaff.
+
+Teams: **M** opens the multiplay manager, in singleplayer too. Under each team's list a **Join**
+button puts you in that team, and **Leave team** takes you out; holding **L** shows the lists.
 
 Searchlights/headlights: **L** toggles the lights on vehicles whose definitions include them.
 The pilot and first crew seat can switch them. Movable lights follow the first crew member's look,

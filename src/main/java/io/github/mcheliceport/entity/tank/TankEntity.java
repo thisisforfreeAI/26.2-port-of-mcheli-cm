@@ -27,6 +27,7 @@ public class TankEntity extends GroundVehicleEntity {
     public void rememberCarrier(Entity carrier) { this.collisions.rememberCarrier(carrier); }
     @Override protected @Nullable AircraftInfo lookupInfo(String name) { return ContentRegistries.get().tank().get(name); }
     @Override public ContentType getContentType() { return ContentType.TANK; }
+    @Override public boolean hasSolidHitBoxes() { return true; }
     public @Nullable TankInfo getTankInfo() { return (TankInfo) this.getAcInfo(); }
     public @Nullable TankTerrain terrain() { return this.terrain; }
     @Override protected void onTypeChanged(AircraftInfo info) { this.terrain = new TankTerrain(this, (TankInfo) info); }

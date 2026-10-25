@@ -173,6 +173,12 @@ Weapons:
 - Type: anm17allc
   Position: [-0.55, 1.08, -16.0]
   Pitch: 90.0
+- Type: ntm_little_boy
+  Position: [0.55, 1.08, -6.0]
+  Pitch: 90.0
+- Type: ntm_fat_man
+  Position: [0.55, 1.08, -6.0]
+  Pitch: 90.0
 Seats:
 - Position: [-0.55, 2.5, -0.28]
   Hud: plane_wwii
@@ -261,12 +267,12 @@ Components:
   - Position: [0.98, 0.88, -12.3]
     Rotation: [0.0, 0.0, 1.0]
     PartName: wb0
-    WeaponName: 250kg / anm17allc
+    WeaponName: 250kg / anm17allc / ntm_little_boy / ntm_fat_man
     MaxRotation: 1.0
   - Position: [-0.98, 0.88, -12.3]
     Rotation: [0.0, 0.0, -1.0]
     PartName: wb1
-    WeaponName: 250kg / anm17allc
+    WeaponName: 250kg / anm17allc / ntm_little_boy / ntm_fat_man
     MaxRotation: 1.0
   LandingGear:
   - Position: [6.08, 1.52, -11.19]

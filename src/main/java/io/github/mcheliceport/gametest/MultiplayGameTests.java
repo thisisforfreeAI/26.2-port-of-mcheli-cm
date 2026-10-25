@@ -30,6 +30,49 @@ final class MultiplayGameTests {
         ModGameTests.test("multiplay_shuffle_team", 20, MultiplayGameTests::shuffle);
         ModGameTests.test("multiplay_jump_spawn_point", 20, MultiplayGameTests::jumpSpawn);
         ModGameTests.testAlone("multiplay_actions_need_operator", 20, MultiplayGameTests::operator);
+        ModGameTests.testAlone("multiplay_join_and_leave_team", 20, MultiplayGameTests::joinTeam);
+    }
+
+    /**
+     * The manager's team buttons: a player joins an existing team, moves to another, leaves, and
+     * cannot join a team that does not exist; with {@code playersChooseTeam} off only a game master
+     * can.
+     */
+    private static void joinTeam(GameTestHelper h) {
+        ServerPlayer player = (ServerPlayer) h.makeMockServerPlayer(GameType.SURVIVAL);
+        MinecraftServer server = h.getLevel().getServer();
+        Scoreboard scoreboard = server.getScoreboard();
+        String name = player.getScoreboardName();
+        PlayerTeam red = scoreboard.addPlayerTeam("mch_test_red");
+        PlayerTeam blue = scoreboard.addPlayerTeam("mch_test_blue");
+        boolean allowed = io.github.mcheliceport.config.ServerConfig.PLAYERS_CHOOSE_TEAM.get();
+        PlayerList players = server.getPlayerList();
+        NameAndId id = new NameAndId(player.getGameProfile());
+        try {
+            io.github.mcheliceport.config.ServerConfig.PLAYERS_CHOOSE_TEAM.set(true);
+            MultiplayManager.handle(player, MultiplayActionPayload.Action.JOIN_TEAM, "mch_test_red");
+            check(h, scoreboard.getPlayersTeam(name) == red, "the player joined red");
+            MultiplayManager.handle(player, MultiplayActionPayload.Action.JOIN_TEAM, "mch_test_blue");
+            check(h, scoreboard.getPlayersTeam(name) == blue, "the player moved to blue");
+            check(h, !MultiplayManager.joinTeam(player, "mch_test_none"), "a missing team cannot be joined");
+            check(h, scoreboard.getPlayersTeam(name) == blue, "and the player stays in blue");
+            MultiplayManager.handle(player, MultiplayActionPayload.Action.LEAVE_TEAM);
+            check(h, scoreboard.getPlayersTeam(name) == null, "the player left their team");
+
+            io.github.mcheliceport.config.ServerConfig.PLAYERS_CHOOSE_TEAM.set(false);
+            check(h, !MultiplayManager.canChooseTeam(player), "with the setting off a player cannot choose");
+            MultiplayManager.handle(player, MultiplayActionPayload.Action.JOIN_TEAM, "mch_test_red");
+            check(h, scoreboard.getPlayersTeam(name) == null, "so the join does nothing");
+            players.op(id, Optional.of(LevelBasedPermissionSet.GAMEMASTER), Optional.of(false));
+            MultiplayManager.handle(player, MultiplayActionPayload.Action.JOIN_TEAM, "mch_test_red");
+            check(h, scoreboard.getPlayersTeam(name) == red, "but a game master can");
+        } finally {
+            players.deop(id);
+            io.github.mcheliceport.config.ServerConfig.PLAYERS_CHOOSE_TEAM.set(allowed);
+            scoreboard.removePlayerTeam(red);
+            scoreboard.removePlayerTeam(blue);
+        }
+        h.succeed();
     }
 
     /** The players join the teams in turn, so team sizes differ by at most one. */

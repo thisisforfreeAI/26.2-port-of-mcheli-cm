@@ -4,9 +4,13 @@ import static io.github.mcheliceport.gametest.GameTestSupport.check;
 
 import io.github.mcheliceport.compat.hbm.NtmPayloads;
 import io.github.mcheliceport.content.ContentLocation;
+import io.github.mcheliceport.content.ContentRegistries;
+import io.github.mcheliceport.content.aircraft.PlaneInfo;
 import io.github.mcheliceport.content.weapon.WeaponInfo;
 import io.github.mcheliceport.content.weapon.hbm.FireContainer;
 import io.github.mcheliceport.entity.weapon.RocketEntity;
+import java.util.List;
+import java.util.Map;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.monster.zombie.Husk;
@@ -22,7 +26,25 @@ final class NtmGameTests {
     private NtmGameTests() {
     }
 
+    /** The port's NTM Next bombs and the stock planes that carry them. */
+    static final Map<String, List<String>> PLANE_BOMBS = Map.ofEntries(
+            Map.entry("b29", List.of("ntm_little_boy", "ntm_fat_man")),
+            Map.entry("b-2a", List.of("ntm_b61", "ntm_b83", "ntm_balefire_bomb")),
+            Map.entry("f-15e", List.of("ntm_b61_tactical")),
+            Map.entry("f-35a", List.of("ntm_b61_tactical")),
+            Map.entry("tornado-ids", List.of("ntm_we177")),
+            Map.entry("mig29", List.of("ntm_rn40")),
+            Map.entry("su37", List.of("ntm_odab500", "ntm_chlorine_bomb")),
+            Map.entry("f4a", List.of("ntm_mk77_napalm")),
+            Map.entry("fa18f", List.of("ntm_mk77_napalm")),
+            Map.entry("harrier", List.of("ntm_mk77_napalm")),
+            Map.entry("a-10", List.of("ntm_wp_bomb")),
+            Map.entry("mq-9", List.of("ntm_mini_nuke_bomb")),
+            Map.entry("x-47b", List.of("ntm_mini_nuke_bomb")),
+            Map.entry("pzl-m18", List.of("ntm_agent_orange")));
+
     static void register() {
+        ModGameTests.test("ntm_bombs_only_with_ntm_next", 20, NtmGameTests::planeBombs);
         if (NtmPayloads.available()) {
             HbmGameTests.register();
         } else {
@@ -55,6 +77,31 @@ final class NtmGameTests {
         };
         h.getLevel().addFreshEntity(rocket);
         return rocket;
+    }
+
+    /**
+     * Each bomb needs NTM Next and carries a payload; the planes list it as a weapon exactly when
+     * NTM Next is installed, after all of their own weapons.
+     */
+    private static void planeBombs(GameTestHelper h) {
+        boolean installed = NtmPayloads.available();
+        for (Map.Entry<String, List<String>> entry : PLANE_BOMBS.entrySet()) {
+            PlaneInfo plane = ContentRegistries.plane().get(entry.getKey());
+            check(h, plane != null, "no plane " + entry.getKey());
+            List<String> types = plane.weaponSetList.stream().map(set -> set.type).toList();
+            for (String bomb : entry.getValue()) {
+                WeaponInfo info = ContentRegistries.weapon().get(bomb);
+                check(h, info != null && "hbm".equals(info.requiredMod) && info.useHBM
+                        && info.payloadNTM != WeaponInfo.Payload.NONE, bomb + " is not an NTM Next payload weapon");
+                check(h, types.contains(bomb) == installed, entry.getKey() + (installed ? " lacks " : " offers ") + bomb);
+            }
+            if (installed) {
+                int first = types.indexOf(entry.getValue().get(0));
+                check(h, types.subList(first, types.size()).stream().allMatch(t -> t.startsWith("ntm_")),
+                        entry.getKey() + "'s bombs are not after its own weapons: " + types);
+            }
+        }
+        h.succeed();
     }
 
     private static void withoutMod(GameTestHelper h) {

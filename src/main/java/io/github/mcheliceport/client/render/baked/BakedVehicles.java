@@ -42,9 +42,10 @@ import org.slf4j.LoggerFactory;
  * Render path B: vehicle models drawn from vertex buffers uploaded once per model group, instead
  * of writing every triangle again each frame (path A, {@code ModelVertices}). Each part is one draw
  * with its transform, colour and light in a small uniform block; the image is path A's, drawn with
- * vanilla's entity fragment shader and lighting. Vehicles whose look path A changes per frame
- * (thermal vision, the far-vehicle pass, a glowing outline) and the emissive layers stay on path A,
- * as does everything when the client config turns it off or the pipeline fails.
+ * vanilla's entity fragment shader and lighting. Thermal vision only swaps the texture; vehicles past
+ * the render distance use {@link #PIPELINE_FAR}, with path A's fog-less fragment shader. Vehicles
+ * with a glowing outline and the emissive layers stay on path A, as does everything when the client
+ * config turns it off or the pipeline fails.
  *
  * <p>Bodies are drawn with the solid entities, before anything translucent, so exhaust flames,
  * search light beams and other see-through geometry, which write no depth, land on top of them.
@@ -63,10 +64,16 @@ public final class BakedVehicles {
             .addAttribute("FlatNormal", GpuFormat.RGBA8_SNORM)
             .build();
 
-    static final RenderPipeline PIPELINE = RenderPipeline.builder(RenderPipelines.MATRICES_FOG_LIGHT_DIR_SNIPPET)
-            .withLocation(id("pipeline/baked_vehicle"))
+    static final RenderPipeline PIPELINE = pipeline("pipeline/baked_vehicle", Identifier.withDefaultNamespace("core/entity"));
+
+    /** {@link #PIPELINE} without fog, for vehicles past the render distance ({@code FarVehicles}). */
+    static final RenderPipeline PIPELINE_FAR = pipeline("pipeline/baked_far_vehicle", id("core/far_vehicle"));
+
+    private static RenderPipeline pipeline(String location, Identifier fragmentShader) {
+        return RenderPipeline.builder(RenderPipelines.MATRICES_FOG_LIGHT_DIR_SNIPPET)
+            .withLocation(id(location))
             .withVertexShader(id("core/baked_vehicle"))
-            .withFragmentShader("core/entity")
+            .withFragmentShader(fragmentShader)
             .withShaderDefine("ALPHA_CUTOUT", 0.1F)
             .withShaderDefine("NO_OVERLAY")
             .withBindGroupLayout(BindGroupLayouts.SAMPLER0_SAMPLER2)
@@ -76,6 +83,7 @@ public final class BakedVehicles {
             .withDepthStencilState(DepthStencilState.DEFAULT)
             .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
             .build();
+    }
 
     static final FeatureRendererType<Submit> TYPE = FeatureRendererType.create("mcheli_ce_port:baked_vehicle");
 
@@ -89,7 +97,10 @@ public final class BakedVehicles {
     }
 
     public static void register(IEventBus modBus) {
-        modBus.addListener((RegisterRenderPipelinesEvent event) -> event.registerPipeline(PIPELINE));
+        modBus.addListener((RegisterRenderPipelinesEvent event) -> {
+            event.registerPipeline(PIPELINE);
+            event.registerPipeline(PIPELINE_FAR);
+        });
         NeoForge.EVENT_BUS.addListener((RegisterFeatureRenderersEvent event) ->
                 event.register(TYPE, new BakedVehicleRenderer()));
         NeoForge.EVENT_BUS.addListener((FlipFrameEvent event) -> endFrame());
@@ -104,7 +115,8 @@ public final class BakedVehicles {
     }
 
     /** A vehicle's body, drawn by {@link BakedVehicleRenderer}. */
-    record Submit(Identifier texture, List<Part> parts, int color, int light, boolean flat, boolean surfaceShade)
+    record Submit(Identifier texture, List<Part> parts, int color, int light, boolean flat, boolean surfaceShade,
+            boolean far)
             implements SubmitNode {
         @Override
         public FeatureRendererType<Submit> featureType() {
@@ -138,11 +150,12 @@ public final class BakedVehicles {
 
     /**
      * Submits a vehicle's body to path B: each draw's groups with the draw's pose on top of the
-     * entity's, with {@code ModelVertices#emit}'s flat and surface shade choices. Returns false,
-     * submitting nothing, when path A must draw it.
+     * entity's, with {@code ModelVertices#emit}'s flat and surface shade choices, and without fog
+     * when {@code far}. Returns false, submitting nothing, when path A must draw it.
      */
     public static boolean submit(SubmitNodeCollector collector, PoseStack poseStack, Identifier texture,
-            List<AircraftPartPoses.Draw> draws, int color, int light, boolean flat, boolean surfaceShade) {
+            List<AircraftPartPoses.Draw> draws, int color, int light, boolean flat, boolean surfaceShade,
+            boolean far) {
         // NeoForge's default submitSpecial drops the submit: only the vanilla collectors keep it.
         if (!enabled() || !(collector instanceof SubmitNodeStorage || collector instanceof SubmitNodeCollection)) {
             return false;
@@ -153,7 +166,7 @@ public final class BakedVehicles {
             pose.mulPose(draw.pose());
             list.add(new Part(new Matrix4f(pose.pose()), new Matrix4f().set(pose.normal()), draw.groups()));
         }
-        collector.submitSpecial(RenderPhaseKeys.SOLID, new Submit(texture, list, color, light, flat, surfaceShade));
+        collector.submitSpecial(RenderPhaseKeys.SOLID, new Submit(texture, list, color, light, flat, surfaceShade, far));
         return true;
     }
 

@@ -1,0 +1,39 @@
+DisplayName: WE.177 nuclear bomb
+Type: bomb
+RequiredMod: hbm
+BaseDamage: 100
+Ballistics:
+  Acceleration: 0.1
+  AccelerationInWater: 1.0
+  Gravity: -0.03
+  GravityInWater: -0.03
+  VelocityInWater: 0.999
+Sound:
+  Volume: 3.0
+  Locations:
+    Fire: mcheli:bomb_snd
+Explosion:
+  Power: 6
+  NewBreak: true
+  Radio: 6
+  DestructionPower: 40
+NTM:
+  PayloadType: NUKE
+Ammo:
+  ReloadTime: 600
+  MagSize: 1
+  MaxAmmo: 2
+  ResupplyCount: 1
+  AmmoItems:
+  - Count: 2
+    Name: hbm:ingot_pu239
+    Meta: 0
+  - Count: 2
+    Name: minecraft:iron_block
+    Meta: 0
+  - Count: 4
+    Name: minecraft:tnt
+    Meta: 0
+FireCooldown: 40
+Render:
+  BulletModel: mk82

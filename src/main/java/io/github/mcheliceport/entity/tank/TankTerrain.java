@@ -128,8 +128,9 @@ public final class TankTerrain {
         @Override public EntityDimensions getDimensions(Pose pose) { return EntityDimensions.scalable(1, 1); }
         @Override public float maxUpStep() { return 1.5F; }
         // Vanilla's solid-entity test first: it rules out nearly every neighbour (seats, riders, hit
-        // boxes) before the seat lookup, which showed up when profiling parked tanks.
-        @Override public boolean canCollideWith(Entity other) { return other != this.parent && super.canCollideWith(other) && !this.parent.isMountedEntity(other); }
+        // boxes) before the seat lookup, which showed up when profiling parked tanks. The tank's own
+        // solid extra boxes are its parts, so is() rules them out with the hull.
+        @Override public boolean canCollideWith(Entity other) { return !other.is(this.parent) && super.canCollideWith(other) && !this.parent.isMountedEntity(other); }
         // Upstream's wheel moved with its own collision code: no landing, step sounds or game events.
         @Override protected void checkFallDamage(double y, boolean onGround, net.minecraft.world.level.block.state.BlockState state,
                 net.minecraft.core.BlockPos pos) { }
