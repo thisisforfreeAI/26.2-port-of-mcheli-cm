@@ -17,12 +17,12 @@ public final class VehicleDetailShade {
         for (int i = 0; i < Math.min(4, info.engineOutlets.size()); i++) {
             var outlet = info.engineOutlets.get(i);
             float size = Math.clamp(outlet.size(), 0.2F, 2);
-            add(result, outlet.position(), size * 0.65F, size * 0.55F, size * 0.7F, 0.06F);
+            add(result, outlet.position(), size * 0.65F, size * 0.55F, size * 0.7F, 0.085F);
         }
         if (info.engineOutlets.isEmpty() && info instanceof PlaneInfo plane) {
             for (int i = 0; i < Math.min(4, plane.nozzles.size()); i++) {
                 var nozzle = plane.nozzles.get(i);
-                add(result, nozzle.pos, 1.2F, 1.1F, 1.2F, 0.06F);
+                add(result, nozzle.pos, 1.2F, 1.1F, 1.2F, 0.085F);
             }
         }
         if (info instanceof HeliInfo heli) {

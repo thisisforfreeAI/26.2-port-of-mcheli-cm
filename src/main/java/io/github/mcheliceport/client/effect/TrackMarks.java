@@ -199,7 +199,7 @@ public final class TrackMarks {
         Tile(BlockPos pos, BlockState state, BlockState above, List<TrackClip.Point> polygon, double y, long born,
                 int rgb, float opacity, int light) {
             this.pos = pos; this.state = state; this.above = above; this.polygon = polygon; this.y = y;
-            this.born = born; this.rgb = rgb; this.opacity = opacity; this.light = light; this.cost = TrackClip.quads(polygon);
+            this.born = born; this.rgb = rgb; this.opacity = opacity * TrackLook.grain(pos.getX()+.5,pos.getZ()+.5); this.light = light; this.cost = TrackClip.quads(polygon);
         }
         void emit(VertexConsumer buffer, PoseStack.Pose pose, BlockPos origin, float fade) {
             int color = Math.round(255 * opacity * fade) << 24 | rgb;

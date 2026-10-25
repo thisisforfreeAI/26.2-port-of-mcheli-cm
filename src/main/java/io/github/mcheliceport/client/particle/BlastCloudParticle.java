@@ -10,6 +10,7 @@ final class BlastCloudParticle extends SmokeParticle {
     static final Identifier TEXTURE = Identifier.fromNamespaceAndPath("mcheli_ce_port", "m8_blast_cloud");
     static final Identifier MODERN_TEXTURE = Identifier.fromNamespaceAndPath("mcheli_ce_port", "m8_modern_blast_cloud");
     private final boolean modern;
+    private final int smokePhase;
     private final float radius;
     private final int cards;
     private final int fireTicks;
@@ -49,6 +50,7 @@ final class BlastCloudParticle extends SmokeParticle {
         var art=modern?sprite(MODERN_TEXTURE):sprite(TEXTURE);
         this.modern=modern && art.contents().name().equals(MODERN_TEXTURE);
         this.cards = Math.clamp(cards, 1, 3);
+        this.smokePhase = this.random.nextInt(4);
         this.setSprite(modern && !this.modern ? sprite(TEXTURE) : art);
         this.radius = radius;
         this.delay = Math.clamp(delay, 0, 12);
@@ -95,22 +97,25 @@ final class BlastCloudParticle extends SmokeParticle {
         float localAge = Math.max(0, age - this.delay);
         // Advance through fire promptly, then spend most of the lifetime as non-emissive smoke.
         if (localAge < this.fireTicks) this.frame = Math.min(11, (int) (localAge * 12 / this.fireTicks));
-        else if (localAge < this.backlightTicks) this.frame = 8 + Math.min(3, (int) (localAge * 4 / this.backlightTicks));
-        else this.frame = 12 + Math.min(3, (int) ((localAge - this.fireTicks) * 4
-                / Math.max(1, this.lifetime - this.delay - this.fireTicks)));
+        else this.frame = BlastReadability.smokeFrame(localAge,this.fireTicks,this.lifetime-this.delay,this.smokePhase);
         this.alpha = this.opacity * ExplosionSequence.cloudAlpha(age, this.lifetime, this.delay, this.fireTicks > 0, this.fadeTicks);
         if (this.modern) this.alpha *= this.fireTicks>0 ? 0.92F : 0.84F;
         float shade = localAge >= this.fireTicks ? this.smokeShade : 1;
-        this.setColor(shade, shade, shade);
+        float amber = this.fireTicks==0 ? BlastReadability.amber(localAge,this.backlightTicks) : 0;
+        this.setColor(Math.min(1,shade*(1+.18F*amber)),Math.min(1,shade*(1+.04F*amber)),shade*(1-.14F*amber));
+        this.alpha *= BlastReadability.pocketOpacity(localAge,this.fireTicks,this.angle);
         // Skip SmokeParticle's fire tint/fade; the dedicated sheet contains that transition.
         this.getFacingCameraMode().setRotation(this.rotation, camera, partialTick);
         this.rotation.rotateZ(this.angle + (this.fireTicks > 0 ? localAge * 0.018F : 0));
-        boolean depth = this.cards > 1 && EffectAdmission.depthDetail(this.level, this.x, this.y, this.z);
+        float detail = this.cards>1 ? BlastDepthLook.visibility(io.github.mcheliceport.config.ClientConfig.get(
+                io.github.mcheliceport.config.ClientConfig.EFFECT_BUDGET),EffectPerformance.pressure(),
+                camera.position().distanceToSqr(this.x,this.y,this.z)) : 0;
+        boolean depth = detail>0;
         float alpha = this.alpha;
-        if (depth && this.cards == 3) this.alpha *= 0.85F;
+        if (depth && this.cards == 3) this.alpha *= 1-.15F*detail;
         this.extractRotatedQuad(state, camera, this.rotation, partialTick);
         if (depth && this.cards == 3) {
-            this.alpha = alpha * 0.25F;
+            this.alpha = alpha * 0.25F * detail;
             this.rotation.rotationY(this.angle).rotateX(0.12F);
             this.extractRotatedQuad(state, camera, this.rotation, partialTick);
             this.rotation.rotateY((float) Math.PI / 2);
@@ -118,7 +123,7 @@ final class BlastCloudParticle extends SmokeParticle {
         } else if (depth && localAge < this.fireTicks) {
             var pos = camera.position();
             float r = this.getQuadSize(partialTick);
-            this.alpha = alpha * 0.65F;
+            this.alpha = alpha * 0.65F * detail;
             this.extractRotatedQuad(state, this.rotation,
                     (float)(net.minecraft.util.Mth.lerp(partialTick,this.xo,this.x)-pos.x) + (float)Math.cos(this.angle)*r*0.18F,
                     (float)(net.minecraft.util.Mth.lerp(partialTick,this.yo,this.y)-pos.y) + r*0.16F,

@@ -16,6 +16,9 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
   closed canopy, while sneaking or riding, and while holding a wrench or gunner spawn item.
 
 ### Changed
+- Default M8 effects gain clearer smoke cores/wisps and localized warm backlighting, baked
+  vehicle surface contrast, varied terrain scars/tracks, patchier rotor wash and smoother
+  distance detail. Existing effect budgets and original crater behavior are unchanged.
 - Vehicle models stay on the graphics card and are drawn from there instead of being sent again
   every frame; with 28 vehicles in view the render thread spent about 85% less time on them. The
   client config's `render.gpuModelBuffers` turns it off.

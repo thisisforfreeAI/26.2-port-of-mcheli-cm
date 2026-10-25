@@ -83,7 +83,7 @@ public final class RotorWashEmitter {
             float strength = RotorWashLook.strength(height, scale, throttle, Math.hypot(mx, mz));
             RotorWashLook.Surface material = material(centre.state);
             if (strength <= 0) continue;
-            double angle = random.nextDouble() * Math.PI * 2;
+            double angle = (Math.floorMod(now/period+i*3+id,8)+random.nextDouble()*.65)*Math.PI/4;
             double dx = Math.cos(angle), dz = Math.sin(angle);
             double radius = RotorWashLook.radius(scale, height) * (0.25 + random.nextDouble() * 0.65);
             double px = origin.x + dx * radius - mx * 2, pz = origin.z + dz * radius - mz * 2;
@@ -91,6 +91,7 @@ public final class RotorWashEmitter {
             if (surface == null || surface.state == null) continue;
             material = material(surface.state);
             float localStrength = RotorWashLook.strength(origin.y - surface.y, scale, throttle, Math.hypot(mx, mz));
+            localStrength *= RotorWashLook.patch(px,pz,id,now);
             if (localStrength <= 0 || random.nextFloat() > localStrength * material.density) continue;
             float puffRadius = RotorWashLook.puffRadius(scale);
             if (!EffectAdmission.admit(level, px, surface.y + 0.35, pz, false, puffRadius)) continue;

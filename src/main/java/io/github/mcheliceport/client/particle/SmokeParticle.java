@@ -25,6 +25,7 @@ public class SmokeParticle extends McheliParticle {
     /** Enabled for enhanced explosion/damage smoke, never trails or Classic smoke. */
     boolean coherentDrift;
     float coolingShare = EffectLook.COOL_SHARE;
+    float silhouetteOpacity = 1;
     /** Scale at the previous tick, for smooth growth between ticks; 0 until the first growth. */
     private float prevScale;
     private final boolean mirror;
@@ -139,7 +140,7 @@ public class SmokeParticle extends McheliParticle {
         float b = this.bCol;
         float age = this.age - 1 + partialTick;
         float h = EffectLook.heat(this.heat, age, this.lifetime, this.coolingShare);
-        this.alpha = a * EffectLook.smokeAlpha(age, this.lifetime);
+        this.alpha = a * EffectLook.smokeAlpha(age, this.lifetime) * this.silhouetteOpacity;
         this.rCol = EffectLook.fireBlend(r, EffectLook.FIRE_R, h);
         this.gCol = EffectLook.fireBlend(g, EffectLook.FIRE_G, h);
         this.bCol = EffectLook.fireBlend(b, EffectLook.FIRE_B, h);
