@@ -1,5 +1,6 @@
 package io.github.mcheliceport.multiplay;
 
+import io.github.mcheliceport.config.ServerConfig;
 import io.github.mcheliceport.entity.aircraft.AircraftEntity;
 import io.github.mcheliceport.net.ModNetwork;
 import io.github.mcheliceport.net.MultiplayActionPayload;
@@ -32,6 +33,8 @@ public final class MultiplayManager {
 
     /** The PVP state the server last sent this client; upstream's client {@code enablePVP} starts on. */
     private static volatile boolean clientPvp = true;
+    /** Whether the server last told this client it may use the team buttons. */
+    private static volatile boolean clientChooseTeam = false;
 
     private MultiplayManager() {
     }
@@ -40,18 +43,33 @@ public final class MultiplayManager {
         return clientPvp;
     }
 
-    public static void setClientPvp(boolean pvp) {
+    public static boolean clientChooseTeam() {
+        return clientChooseTeam;
+    }
+
+    public static void setClientState(boolean pvp, boolean chooseTeam) {
         clientPvp = pvp;
+        clientChooseTeam = chooseTeam;
     }
 
     public static boolean canManage(ServerPlayer player) {
         return player.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER);
     }
 
+    /** Whether {@code player} may join and leave teams with the manager's team buttons. */
+    public static boolean canChooseTeam(ServerPlayer player) {
+        return canManage(player) || !ServerConfig.SPEC.isLoaded() || ServerConfig.PLAYERS_CHOOSE_TEAM.get();
+    }
+
     public static void handle(ServerPlayer player, MultiplayActionPayload.Action action) {
+        handle(player, action, "");
+    }
+
+    public static void handle(ServerPlayer player, MultiplayActionPayload.Action action, String team) {
         MinecraftServer server = player.level().getServer();
         switch (action) {
-            case STATE -> ModNetwork.sendToPlayer(player, new MultiplayStatePayload(isPvp(server)));
+            case STATE -> ModNetwork.sendToPlayer(player, new MultiplayStatePayload(isPvp(server),
+                    canChooseTeam(player)));
             case SHUFFLE_TEAM -> {
                 if (canManage(player)) {
                     List<String> names = new ArrayList<>();
@@ -67,7 +85,9 @@ public final class MultiplayManager {
             case SET_PVP -> {
                 if (canManage(player)) {
                     server.getGameRules().set(GameRules.PVP, !isPvp(server), server);
-                    ModNetwork.sendToAllPlayers(server, new MultiplayStatePayload(isPvp(server)));
+                    boolean pvp = isPvp(server);
+                    server.getPlayerList().getPlayers().forEach(p -> ModNetwork.sendToPlayer(p,
+                            new MultiplayStatePayload(pvp, canChooseTeam(p))));
                 }
             }
             case DESTROY_AIRCRAFT -> {
@@ -75,7 +95,36 @@ public final class MultiplayManager {
                     destroyAllAircraft(player.level());
                 }
             }
+            case JOIN_TEAM -> joinTeam(player, team);
+            case LEAVE_TEAM -> leaveTeam(player);
         }
+    }
+
+    /**
+     * The manager's Join button: the player joins the team of that name, leaving their own, when
+     * they may choose a team and the team exists.
+     *
+     * @return whether the player is now in that team
+     */
+    public static boolean joinTeam(ServerPlayer player, String teamName) {
+        Scoreboard scoreboard = player.level().getServer().getScoreboard();
+        PlayerTeam team = scoreboard.getPlayerTeam(teamName);
+        if (team == null || !canChooseTeam(player)) {
+            return false;
+        }
+        return scoreboard.addPlayerToTeam(player.getScoreboardName(), team);
+    }
+
+    /**
+     * The manager's Leave button under the no-team list.
+     *
+     * @return whether the player left a team
+     */
+    public static boolean leaveTeam(ServerPlayer player) {
+        if (!canChooseTeam(player)) {
+            return false;
+        }
+        return player.level().getServer().getScoreboard().removePlayerFromTeam(player.getScoreboardName());
     }
 
     public static boolean isPvp(MinecraftServer server) {

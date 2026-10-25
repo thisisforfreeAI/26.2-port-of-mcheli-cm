@@ -28,6 +28,9 @@ Weapons:
 - Type: dispenser_fertilizer
   Position: [0.0, 0.0, 0.54]
   Yaw: 1.0
+- Type: ntm_agent_orange
+  Position: [0.0, 0.0, 0.54]
+  Yaw: 1.0
 Seats:
 - Position: [0.0, 2.67, -2.95]
   Hud: plane_wwii

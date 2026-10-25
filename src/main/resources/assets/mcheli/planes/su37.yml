@@ -49,6 +49,14 @@ Weapons:
   Position: [-5.09, 1.91, -6.73]
 - Type: targeting_pod_ph50s
   Position: [0.0, 3.1, 4.2]
+- Type: ntm_odab500
+  Position: [6.75, 1.84, -7.59]
+- Type: ntm_odab500
+  Position: [-6.75, 1.84, -7.59]
+- Type: ntm_chlorine_bomb
+  Position: [6.75, 1.84, -7.59]
+- Type: ntm_chlorine_bomb
+  Position: [-6.75, 1.84, -7.59]
 Seats:
 - Position: [0.0, 2.79, 4.19]
   Hud: plane

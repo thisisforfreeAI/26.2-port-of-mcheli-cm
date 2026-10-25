@@ -10,7 +10,7 @@ The current M6 development work also adds planes, ships, tanks and ground vehicl
 M6 stage in `docs/M6_PLAN.md` is now implemented; what remains is the broader hands-on gameplay
 pass below. Plane effects and destroyed-plane visual motion are now implemented;
 plane camera-position switching and the shared gunner camera are connected. Parachutes, plane
-ejection and transport-seat bailout are implemented, with the stock model limitation below.
+ejection and transport-seat bailout are implemented.
 Ship placement, water movement, steering, crew weapons and model submission are implemented.
 Tank/ground-vehicle placement, driving, wheel contacts, tracks, rollers, independent weapons
 and reactive armor state are implemented. Ground crushing/ramming, nearby fuel/ammunition supply,
@@ -45,12 +45,12 @@ Until then:
   `uav.maxPairedUavs` defaults to five (0..64). Copied tablets share their copied pairing identity;
   simultaneous control is still excluded by the active UAV link. An unloaded or destroyed
   controller cannot remotely release a loaded UAV; the physical pairing device can release it.
-- Tank movement uses the main hull collision box plus wheel terrain probes. Extra hull boxes
-  contribute damage/crushing regions, but do not provide additional solid movement collision
-  shapes. Ground attitude is
+- Tank movement uses the main hull collision box plus wheel terrain probes. A tank's extra hull
+  boxes are solid for players, mobs and other vehicles, as upstream's were, but the tank's own
+  movement still checks terrain with the main box only, so a long barrel or hull can poke into
+  walls. Each extra box is solid as the upright box around it, slightly larger when the tank turns
+  diagonally; aircraft keep their extra boxes for hits only. Ground attitude is
   updated at a fixed simulation tick; it is not tied to the client's frame rate.
-- The stock MXT-MV definition references a canopy missing from its upstream model. That part
-  remains absent; the shipped definition and model are preserved.
 - The aircraft menu has the fuel slots, the trunk, the weapon list with its reload buttons and the
   command field with an Options button, on a plain container background rather than upstream's
   `gui.png`. Supported planes also expose parachute reserves.
@@ -86,8 +86,8 @@ These follow from how Minecraft 26.2 works or from decisions approved in PORTING
    fire, mist, chemical, mini-nuke, nuke, VNT and legacy NT (see `docs/NTM_NEXT_WEAPONS.md`). NTM Next
    removed `ExplosionNT`, mini-nuke attributes and the configurable large explosion effect, so NT
    payloads are rebuilt from VNT parts, mini-nuke attributes are ignored and VNT effects use NTM
-   Next's nearest fixed size. No stock weapon has a payload. Without NTM Next, payload weapons
-   explode normally. On Mesa's software Vulkan driver, CrankShaft (NTM Next's renderer) crashed the
+   Next's nearest fixed size. With NTM Next, 14 stock planes also carry NTM bombs, which upstream
+   never had; without it those bombs are hidden and other payload weapons explode normally. On Mesa's software Vulkan driver, CrankShaft (NTM Next's renderer) crashed the
    client when NTM effects appeared, also without McHeli; OpenGL is the supported backend.
 8. Vehicles past the render distance are drawn full size and without fog in the normal entity pass,
    not in a second pass with upstream's own 3,000-block projection, so they disappear past vanilla's
@@ -382,11 +382,15 @@ These follow from how Minecraft 26.2 works or from decisions approved in PORTING
     output slot could empty a tank item without fuelling the vehicle; here nothing moves until
     the output slot can take what is left of the container.
 
-83. The scoreboard key (L) shows the team lists only off singleplayer (or with the debug log on),
-    as upstream, and while it can show them it keeps L from vanilla's Advancements key, which
-    upstream's L also opened. The multiplay manager (M) toggles PVP through the `pvp` gamerule,
-    which the server has instead of upstream's server property, and its buttons need the
-    game-master permission level, as upstream's scoreboard, teleport and summon commands did.
+83. Upstream kept the scoreboard key (L) and the multiplay manager (M) off singleplayer (unless
+    the debug log was on); here both work in singleplayer too. While L shows the team lists it
+    keeps L from vanilla's Advancements key, which upstream's L also opened; in singleplayer it
+    does so only once a team exists, so Advancements stay on L until then. The multiplay manager
+    toggles PVP through the `pvp` gamerule, which the server has instead of upstream's server
+    property, and its buttons need the game-master permission level, as upstream's scoreboard,
+    teleport and summon commands did. Its Join and Leave team buttons are a port addition: any
+    player may use them while the server setting `teams.playersChooseTeam` is on (the default),
+    otherwise only game masters.
     Its lists show at least ten rows in steps of five; upstream also capped them at the server's
     player limit, which clients no longer receive. Team names take the characters `/team add`
     reads as one word, so OK stays greyed out for others; upstream sent the command and let it fail.
@@ -594,8 +598,8 @@ These follow from how Minecraft 26.2 works or from decisions approved in PORTING
 108. Vehicle models are drawn from GPU buffers (client config `render.gpuModelBuffers`, on by
     default), as upstream drew them from display lists. They are drawn with the solid entities, so their
     see-through texels (canopies) are unsorted and do not show translucent things behind them, as
-    upstream's were; the per-frame path the option turns back on sorts them. Vehicles in thermal
-    vision, past the render distance or glowing always take the per-frame path. M8's surface shading
+    upstream's were; the per-frame path the option turns back on sorts them. Vehicles with a glowing
+    outline and the emissive layers (exhaust flames) always take the per-frame path. M8's surface shading
     is baked into the GPU buffers too. If the GPU path fails once, it turns itself off for the
     session and logs why.
 
@@ -615,10 +619,11 @@ its stock content from TXT to YAML lost or changed (the full list, checked by a 
   its sign flipped).
 - The stock helicopter HUD tests `hovering==1`, but `hovering` is true or false, so the HOVERING
   label never shows, as upstream.
-- The AH-1Z names a `canopy` part and the UH-1C a `camera0` part that their model files do not
-  have; nothing is drawn for them, as upstream.
-- Stock plane definitions contain 79 references to parts without matching geometry in the
-  upstream models (including empty rotor hubs/nozzles and mismatched canopy/gear names).
+- The UH-1C names a `camera0` part that its model file does not have; nothing is drawn for it,
+  as upstream. Upstream adds each first canopy twice, as `canopy0` and `canopy`, so a model may
+  name it either way; the unused name draws nothing, as upstream.
+- Stock plane definitions contain 54 references to parts without matching geometry in the
+  upstream models (empty rotor hubs and nozzles, and mismatched gear names).
   The exact list is in `src/test/resources/parity/plane-model-gaps.txt`; these missing parts
   are not invented or silently renamed by the renderer.
 - The stock planes each define only one camera position. Additional positions require addon
@@ -633,9 +638,7 @@ its stock content from TXT to YAML lost or changed (the full list, checked by a 
   any potion instead of requiring a 1.12 potion metadata value. Other restored recipes retain
   their legacy ingredients and patterns.
 
-- The stock `models/parachute2.mqo` has `[Exported] [Imported]` prefixes on every group name.
-  Upstream's whitespace parser truncates those names, so neither `$seat` nor `$parachute` exists
-  for rendering. Ejection seats and transport chutes therefore draw nothing with the stock model,
-  as upstream; movement, riders, landing and rescue still work. A replacement addon model with
-  correctly named groups renders both forms. The exact shipped asset is pinned by a SHA-256 test;
-  the stock hand parachute (`parachute1.obj`) renders normally.
+- Upstream's `models/parachute2.mqo` prefixed every group name with `[Exported] [Imported]`, which
+  its parser cut short, and its `$parachute` group was empty, so ejection seats and transport
+  chutes drew nothing. The port's copy names the seat `$seat` and puts the canopy and lines in
+  `$parachute`, so an ejected pilot falls on the seat and then hangs under the canopy.

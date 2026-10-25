@@ -44,6 +44,10 @@ Weapons:
   Position: [-1.06, 1.71, -6.85]
 - Type: targeting_pod_ph75s
   Position: [0.0, 3.0, 0.3]
+- Type: ntm_b61_tactical
+  Position: [1.06, 1.71, -4.85]
+- Type: ntm_b61_tactical
+  Position: [-1.06, 1.71, -4.85]
 Seats:
 - Position: [0.0, 1.92, 0.32]
   Hud: plane
@@ -90,22 +94,22 @@ Components:
   - Position: [1.65, 1.43, -2.64]
     Rotation: [-0.027, -0.031, 1.0]
     PartName: wb0
-    WeaponName: aim-9x / gbu-39_b_sdb
+    WeaponName: aim-9x / gbu-39_b_sdb / ntm_b61_tactical
     MaxRotation: 0.8888889
   - Position: [-1.65, 1.43, -2.64]
     Rotation: [0.027, -0.031, 1.0]
     PartName: wb1
-    WeaponName: aim-9x / gbu-39_b_sdb
+    WeaponName: aim-9x / gbu-39_b_sdb / ntm_b61_tactical
     MaxRotation: -0.8888889
   - Position: [0.51, 1.15, -2.64]
     Rotation: [0.0, -0.011, 1.0]
     PartName: wb2
-    WeaponName: aim-9x / gbu-39_b_sdb
+    WeaponName: aim-9x / gbu-39_b_sdb / ntm_b61_tactical
     MaxRotation: -0.8888889
   - Position: [-0.51, 1.15, -2.64]
     Rotation: [0.0, -0.011, 1.0]
     PartName: wb3
-    WeaponName: aim-9x / gbu-39_b_sdb
+    WeaponName: aim-9x / gbu-39_b_sdb / ntm_b61_tactical
     MaxRotation: 0.8888889
   - Position: [0.65, 1.22, -4.92]
     Rotation: [0.0, 0.0, 1.0]

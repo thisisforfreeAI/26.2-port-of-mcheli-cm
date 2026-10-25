@@ -8,7 +8,9 @@ Versions stay below 1.0.0 until the port is feature-complete, and each milestone
 McHeli CE 1.5.1 (`master` @ `cbaff7f`). Where it deliberately differs from upstream, the difference is
 listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 
-## [Unreleased] - M6 in progress
+## [Unreleased]
+
+## [0.6.0] - 2026-10-25 (M6 preview: gameplay and multiplayer)
 
 ### Added
 - Fitted vehicle impacts shed bounded, directional tumbling metal fragments.
@@ -21,6 +23,13 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
   closed canopy, while sneaking or riding, and while holding a wrench or gunner spawn item.
 
 ### Changed
+- Vehicles in thermal vision and vehicles past the render distance are drawn from the graphics card
+  too, like other vehicles. With 28 tanks in thermal view the render thread spent about two thirds
+  less time on them.
+- A tank's extra hull boxes are now solid, so players, mobs and other vehicles stop at the whole
+  hull and turret instead of walking into long tanks. On the M1A2 a player now stops about 4 blocks
+  from the centre at the front, where before they reached about 1.3. The tank's crew, seats and
+  loads still pass through.
 - Default M8 effects gain clearer smoke cores/wisps and localized warm backlighting, baked
   vehicle surface contrast, varied terrain scars/tracks, patchier rotor wash and smoother
   distance detail. Existing effect budgets and original crater behavior are unchanged.
@@ -486,7 +495,9 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
   unchanged and is documented in KNOWN_ISSUES.md. Correctly grouped addon models render.
 
 ### Fixed
-
+- Ejection seats and transport chutes now draw, as upstream never did: the stock parachute model's group names are
+  repaired and its canopy is in the `$parachute` group. An ejected pilot now falls on the seat
+  and then hangs under the canopy.
 - Vehicles stay drawn as far as the client has them. Vanilla hid them past about 150 blocks
   (by their small bounding box), while upstream drew every vehicle the client had.
 - Wheeled tanks with a pivot-turn throttle (M1129, B1 Centauro) steer again: their turn rate

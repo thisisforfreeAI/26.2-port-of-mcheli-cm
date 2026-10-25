@@ -31,7 +31,7 @@ import org.junit.jupiter.api.io.TempDir;
  */
 class AddonOverrideTest {
 
-    private static final int STOCK_FILES = 372;
+    private static final int STOCK_FILES = 372 + io.github.mcheliceport.content.ContentParityTest.NTM_BOMBS;
 
     @TempDir
     Path addonDir;
@@ -62,7 +62,7 @@ class AddonOverrideTest {
         ContentRegistries.Snapshot content = ContentRegistries.loadContents(packs);
         assertEquals(35, content.heli().size(), "34 stock helicopters plus one new");
         assertEquals(46, content.plane().size());
-        assertEquals(234, content.weapon().size());
+        assertEquals(234 + io.github.mcheliceport.content.ContentParityTest.NTM_BOMBS, content.weapon().size());
 
         HeliInfo overridden = content.heli().get("ah-64");
         assertNotNull(overridden);

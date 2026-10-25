@@ -38,6 +38,11 @@ public class WeaponInfo extends BaseInfo {
     public @Nullable NTSettingContainer ntSettingContainer = null;
     public @Nullable FireContainer fireContainer = null;
     public @Nullable String explosionType;
+    /**
+     * A port addition: the id of a mod this weapon needs. Without that mod, vehicles leave the
+     * weapon out of their weapon lists (see {@code ContentRegistries}).
+     */
+    public @Nullable String requiredMod = null;
     public String displayName;
     public String type = "";
     public int power = 0;

@@ -1,0 +1,78 @@
+name: Release
+
+# Pushing a tag such as v0.6.0, or running this workflow by hand on main (which tags the commit
+# v<mod_version>), builds the mod, runs the GameTests, attaches the jar to a GitHub release with
+# that version's CHANGELOG section, and uploads it to CurseForge and Modrinth when their tokens are
+# set as repository secrets (each upload is skipped without its token).
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    # Hand runs release main only.
+    if: github.event_name == 'push' || github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    env:
+      # Step conditions cannot read secrets directly.
+      HAS_UPLOAD_TOKEN: ${{ secrets.CURSEFORGE_TOKEN != '' || secrets.MODRINTH_TOKEN != '' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '25'
+          distribution: 'temurin'
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Check the tag matches mod_version
+        run: |
+          version=$(grep '^mod_version=' gradle.properties | cut -d= -f2)
+          if [ "$GITHUB_EVENT_NAME" = workflow_dispatch ]; then
+            # A hand run makes the tag itself, so the version must not be released yet.
+            test -z "$(git ls-remote --tags origin "refs/tags/v$version")" || { echo "Tag v$version already exists"; exit 1; }
+          else
+            test "v$version" = "$GITHUB_REF_NAME" || { echo "Tag $GITHUB_REF_NAME does not match mod_version $version"; exit 1; }
+          fi
+          echo "VERSION=$version" >> "$GITHUB_ENV"
+
+      - name: Build and run GameTests
+        run: ./gradlew build runGameTestServer
+
+      - name: Release notes from CHANGELOG.md
+        run: |
+          awk -v v="$VERSION" '$0 ~ "^## \\[" v "\\]" {on=1; next} on && /^## \[/ {exit} on' CHANGELOG.md > release-notes.md
+          test -s release-notes.md
+
+      - name: GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: McHeli CE (26.2 Port) ${{ env.VERSION }}
+          tag_name: v${{ env.VERSION }}
+          target_commitish: ${{ github.sha }}
+          body_path: release-notes.md
+          prerelease: true
+          files: build/libs/mcheli_ce_port-${{ env.VERSION }}.jar
+
+      - name: CurseForge and Modrinth
+        if: env.HAS_UPLOAD_TOKEN == 'true'
+        uses: Kir-Antipov/mc-publish@v3.3
+        with:
+          curseforge-id: ${{ vars.CURSEFORGE_PROJECT_ID }}
+          curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
+          modrinth-id: ${{ vars.MODRINTH_PROJECT_ID }}
+          modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
+          files: build/libs/mcheli_ce_port-${{ env.VERSION }}.jar
+          name: McHeli CE (26.2 Port) ${{ env.VERSION }}
+          version: ${{ env.VERSION }}
+          version-type: beta
+          changelog-file: release-notes.md
+          loaders: neoforge
+          game-versions: '26.2'
+          java: 25
+          dependencies: |
+            ntm-next(optional){curseforge:1699386}

@@ -82,6 +82,14 @@ Weapons:
 - Type: agm158
   Position: [-1.84, 1.8, -6.13]
   SeatID: 2
+- Type: ntm_b61
+  Position: [1.84, 2.8, -4.27]
+- Type: ntm_b61
+  Position: [-1.84, 2.8, -4.27]
+- Type: ntm_b83
+  Position: [1.84, 2.8, -4.27]
+- Type: ntm_balefire_bomb
+  Position: [1.84, 2.8, -4.27]
 Seats:
 - Position: [0.8, 3.4, 0.28]
   Hud: plane
@@ -129,22 +137,22 @@ Components:
   - Position: [-2.79, 1.86, -6.56]
     Rotation: [0.0, -0.04, 1.0]
     PartName: wb0
-    WeaponName: mk82_b2/ gbu38 / gbu28 / agm154 / gbu57 /agm158
+    WeaponName: mk82_b2/ gbu38 / gbu28 / agm154 / gbu57 /agm158 / ntm_b61 / ntm_b83 / ntm_balefire_bomb
     MaxRotation: -1.0
   - Position: [-0.15, 1.72, -6.56]
     Rotation: [0.0, -0.04, 1.0]
     PartName: wb1
-    WeaponName: mk82_b2/ gbu38 / gbu28 / agm154 / gbu57 /agm158
+    WeaponName: mk82_b2/ gbu38 / gbu28 / agm154 / gbu57 /agm158 / ntm_b61 / ntm_b83 / ntm_balefire_bomb
     MaxRotation: 1.0
   - Position: [2.79, 1.86, -6.56]
     Rotation: [0.0, -0.04, 1.0]
     PartName: wb2
-    WeaponName: mk82_b2/ gbu38 / gbu28 / agm154 / gbu57 /agm158
+    WeaponName: mk82_b2/ gbu38 / gbu28 / agm154 / gbu57 /agm158 / ntm_b61 / ntm_b83 / ntm_balefire_bomb
     MaxRotation: 1.0
   - Position: [0.15, 1.72, -6.56]
     Rotation: [0.0, -0.04, 1.0]
     PartName: wb3
-    WeaponName: mk82_b2/ gbu38 / gbu28 / agm154 / gbu57 /agm158
+    WeaponName: mk82_b2/ gbu38 / gbu28 / agm154 / gbu57 /agm158 / ntm_b61 / ntm_b83 / ntm_balefire_bomb
     MaxRotation: -1.0
   LandingGear:
   - Position: [0.0, 2.96, 2.79]

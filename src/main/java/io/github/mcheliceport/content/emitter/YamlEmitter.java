@@ -429,6 +429,7 @@ public final class YamlEmitter {
         try {
         var dummy = new WeaponInfo(info.location, info.filePath, identifier);
         if (notBlank(info.displayName)) root.put("DisplayName", info.displayName);
+        if (notBlank(info.requiredMod)) root.put("RequiredMod", info.requiredMod);
         if (notBlank(info.type)) root.put("Type", info.type);
         if (notBlank(info.group)) root.put("Group", info.group);
         if (info.power != dummy.power) root.put("BaseDamage", info.power);

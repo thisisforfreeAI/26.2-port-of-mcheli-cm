@@ -27,7 +27,7 @@ class AllGroundModelsTest {
                     var model = AircraftModels.load(resources, dir, info);
                     if (model == null) { missing.add(dir + "/" + info.name + ": body"); continue; }
                     for (String part : AircraftModels.partNames(info)) {
-                        if (model.part(part).isEmpty()) { missing.add(dir + "/" + info.name + ": " + part); }
+                        if (CanopyAlias.missing(model::part, part)) { missing.add(dir + "/" + info.name + ": " + part); }
                     }
                     for (String texture : info.getTextureNames()) {
                         if (resources.getResource(Identifier.fromNamespaceAndPath("mcheli", "textures/" + dir + "/" + texture + ".png")).isEmpty()) {
@@ -38,7 +38,7 @@ class AllGroundModelsTest {
             }
         }
         assertEquals(12, stock.tank().size()); assertEquals(18, stock.vehicle().size());
-        // The pinned upstream MXT-MV definition names a canopy absent from its own model.
-        assertEquals(List.of("tanks/mxtmv: canopy"), missing);
+        // The MXT-MV's model has its canopy as $canopy0, so the "canopy" alias entry draws nothing.
+        assertEquals(List.of(), missing);
     }
 }
