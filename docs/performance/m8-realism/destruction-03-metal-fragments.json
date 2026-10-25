@@ -1,0 +1,30 @@
+{
+  "stage": 3,
+  "name": "metal-fragments",
+  "unit_tests": 305,
+  "failures": 0,
+  "native_build_successful": true,
+  "checks": [
+    "M8_DESTRUCTION step=3 vehicle=m1a2",
+    "M8_DESTRUCTION metal_fragments=8",
+    "M8_DESTRUCTION Saved screenshot as m8-destruction-3-m1a2-age145.png",
+    "M8_DESTRUCTION metal_fragments=4",
+    "M8_DESTRUCTION Saved screenshot as m8-destruction-3-m1a2-age180.png",
+    "M8_DESTRUCTION state_count=1 emitted=0",
+    "M8_DESTRUCTION step=3 vehicle=ah-64",
+    "M8_DESTRUCTION metal_fragments=12",
+    "M8_DESTRUCTION Saved screenshot as m8-destruction-3-ah-64-age145.png",
+    "M8_DESTRUCTION metal_fragments=12",
+    "M8_DESTRUCTION Saved screenshot as m8-destruction-3-ah-64-age180.png",
+    "M8_DESTRUCTION state_count=1 emitted=0",
+    "M8_DESTRUCTION step=3 vehicle=f-35a",
+    "M8_DESTRUCTION metal_fragments=8",
+    "M8_DESTRUCTION Saved screenshot as m8-destruction-3-f-35a-age145.png",
+    "M8_DESTRUCTION metal_fragments=8",
+    "M8_DESTRUCTION Saved screenshot as m8-destruction-3-f-35a-age180.png",
+    "M8_DESTRUCTION state_count=1 emitted=0"
+  ],
+  "captures": "Controlled cosmetic-state previews on stock models; unedited native screenshots.",
+  "target_fps": 60,
+  "target_hardware_fps_certified": false
+}

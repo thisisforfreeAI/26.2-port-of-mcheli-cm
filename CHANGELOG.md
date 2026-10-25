@@ -11,6 +11,7 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 ## [Unreleased] - M6 in progress
 
 ### Added
+- Fitted vehicle impacts shed bounded, directional tumbling metal fragments.
 - Damaged vehicles shed cosmetic oil/coolant drips and temporary ground-fitted wet stains.
 - Enhanced damaged-engine smoke sheds behind moving vehicles, with pulsing cores and fading wisps.
 - Enhanced vehicle damage details add panel-fitted gun chips, cannon scorch marks and cracks

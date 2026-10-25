@@ -93,7 +93,7 @@ public final class VehicleImpactMarks {
             fits++;
             var pending=state.pending.removeFirst();
             boolean[] waiting={false};
-            Mark mark=fit(pending,render,waiting);
+            Mark mark=fit(pending,render,waiting,entity);
             if(mark==null&&waiting[0]&&world.getGameTime()-pending.born<=40)state.pending.addLast(pending);
             if(mark!=null){
                 while(state.marks.size()>=cap)state.marks.removeFirst();
@@ -119,7 +119,7 @@ public final class VehicleImpactMarks {
         }
         return count==expectedInstances?pose:null;
     }
-    private static Mark fit(Pending pending,AircraftRenderState render,boolean[] waiting){
+    private static Mark fit(Pending pending,AircraftRenderState render,boolean[] waiting,AircraftEntity entity){
         var p=pending.payload;
         Matrix4f body=VehicleImpactLook.body(render.yaw,render.pitch,render.roll);
         Vector3f point=body.transformPosition(new Vector3f(p.x(),p.y(),p.z()));
@@ -127,6 +127,7 @@ public final class VehicleImpactMarks {
         Vector3f origin=new Vector3f(point).fma(-2,direction);
         McheliModel.Group chosen=null;VehicleImpactSurface.Hit hit=null;Vector3f localOrigin=null,localDirection=null;
         VehicleImpactSurface.Index chosenIndex=null;
+        Matrix4f chosenPose=null;
         int occurrence=0,chosenOccurrence=0,groups=0;
         var occurrences=new IdentityHashMap<McheliModel.Group,Integer>();
         int[] work={8192};
@@ -140,7 +141,7 @@ public final class VehicleImpactMarks {
                 var index=VehicleImpactSurface.get(group);
                 if(index==null){waiting[0]|=VehicleImpactSurface.request(group);continue;}
                 var candidate=index.ray(group.data(),local,dir,hit==null?7:hit.distance(),work);
-                if(candidate!=null){chosen=group;chosenIndex=index;hit=candidate;localOrigin=local;localDirection=dir;chosenOccurrence=occurrence;}
+                if(candidate!=null){chosen=group;chosenIndex=index;chosenPose=draw.pose();hit=candidate;localOrigin=local;localDirection=dir;chosenOccurrence=occurrence;}
             }
         }
         if(chosen==null||work[0]<=0||waiting[0])return null;
@@ -148,6 +149,13 @@ public final class VehicleImpactMarks {
                 Math.floorMod(p.seed(),628)*.01F);
         if(mesh.vertices().isEmpty())return null;
         int tile=tile(chosen.name(),p.cannon(),p.seed());
+        if(tile<6&&world.getGameTime()-pending.born<=6){
+            var contact=chosenPose.transformPosition(new Vector3f(localDirection).mul(hit.distance()).add(localOrigin));
+            var normal=new org.joml.Matrix3f(chosenPose).invert().transpose().transform(new Vector3f(mesh.normal())).normalize();
+            io.github.mcheliceport.client.particle.VehicleShrapnel.emit(world,
+                    entity.position().add(contact.x,contact.y,contact.z),new net.minecraft.world.phys.Vec3(direction.x,direction.y,direction.z),
+                    new net.minecraft.world.phys.Vec3(normal.x,normal.y,normal.z),entity.getDeltaMovement(),p.cannon(),p.seed());
+        }
         return new Mark(chosen,chosenOccurrence,occurrences.get(chosen),tile,mesh,pending.born);
     }
     static int tile(String group,boolean cannon,int seed){

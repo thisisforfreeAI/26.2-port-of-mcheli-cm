@@ -8,7 +8,7 @@ RTX 3060 8GB / Ryzen 7 7800X3D at 1080p. Hardware FPS needs target-PC verificati
 | --- | --- | --- |
 | 1 | Uneven damaged-engine smoke trails that stretch with movement | Complete |
 | 2 | Coolant/oil leaks and temporary ground stains | Complete |
-| 3 | Directional tumbling metal fragments | Pending |
+| 3 | Directional tumbling metal fragments | Complete |
 | 4 | Flickering/failing damaged lights and local sparks | Pending |
 | 5 | Wreck fires, embers and cooling smoke that die away | Pending |
 | 6 | Localized blast soot, exposed metal and panel smoke | Pending |
@@ -38,3 +38,14 @@ visual bounds without loading models. 303 local unit tests and native terrain/ve
 checks pass.
 
 ![F-35A oil leak](screens/m8-destruction-02-fluid-leaks.png)
+
+## 3. Directional metal fragments
+
+Bullet/cannon impacts shed small, cold, three-face metal pieces from the fitted model
+surface. Reflected direction plus an uneven outward fan keeps them away from the panel.
+Known glass groups skip metal. Global live limits are 16/32/48; at most 16 births per tick,
+40-block range and 20–28 tick lifetimes. Existing particle admission applies; no entities,
+block scans or extra packets. Delayed model loads do not replay old fragments. Native
+M1A2/AH-64/F-35A previews and 305 local unit tests pass.
+
+![M1A2 metal fragments](screens/m8-destruction-03-metal-fragments.png)

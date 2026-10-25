@@ -25,7 +25,7 @@ public final class DestructionPreviewProbe {
     private static int tick,phase=-1,age;
     private static AircraftEntity vehicle;
     private static String capture;
-    private static int damage(AircraftEntity e){return (int)(e.getMaxHP()*(STEP==5?1:STEP==7?.94:.78));}
+    private static int damage(AircraftEntity e){return (int)(e.getMaxHP()*(STEP==3?.05:STEP==5?1:STEP==7?.94:.78));}
     private static void move(AircraftEntity e){
         e.xo=e.getX();e.yo=e.getY();e.zo=e.getZ();
         double speed=STEP==1?(phase==2?.5:phase==1?.25:.1):0;
@@ -84,6 +84,15 @@ public final class DestructionPreviewProbe {
             mc.level.addEntity(vehicle);System.out.println("M8_DESTRUCTION step="+STEP+" vehicle="+NAMES[phase]);
         }
         if(age==145||age==180)capture=NAMES[phase]+"-age"+age;
+        if(STEP==3&&(age==140||age==175)){
+            for(int i=0;i<3;i++)VehicleImpactMarks.receive(new io.github.mcheliceport.net.VehicleImpactPayload(
+                    vehicle.getId(),vehicle.getUUID(),2.8F,.8F+i*.5F,(i-1)*.8F,-1,0,0,.3F,true,tick*3+i));
+        }
+        if(STEP==3&&(age==145||age==180)){
+            int fragments=io.github.mcheliceport.client.particle.VehicleShrapnel.liveCount();
+            if(fragments==0||fragments>32)throw new IllegalStateException("Missing/unbounded metal fragments");
+            System.out.println("M8_DESTRUCTION metal_fragments="+fragments);
+        }
         if(age==200){
             System.out.println("M8_DESTRUCTION state_count="+VehicleAtmosphere.stateCount()+" emitted="+VehicleAtmosphere.emitted());
             if(STEP==2){
@@ -94,14 +103,14 @@ public final class DestructionPreviewProbe {
         }
     }
     @SubscribeEvent public static void angles(ViewportEvent.ComputeCameraAngles e){
-        if(STEP==0||vehicle==null)return;e.setYaw(STEP==2?64:94);e.setPitch(STEP==2?12:17);e.setRoll(0);
+        if(STEP==0||vehicle==null)return;e.setYaw(STEP==2?64:STEP==3?90:94);e.setPitch(STEP==2?12:STEP==3?20:17);e.setRoll(0);
     }
     @SubscribeEvent public static void position(ViewportEvent.ComputeFov e){
         if(STEP==0||vehicle==null)return;
         if(STEP==2){
             var origin=VehicleAtmosphere.origins(vehicle).getFirst();
             e.getCamera().setPosition(new Vec3(origin.x,vehicle.getY(),origin.z).add(5.2,1.2,-2.5));
-        }else e.getCamera().setPosition(vehicle.position().add(15,5,1));
+        }else e.getCamera().setPosition(vehicle.position().add(STEP==3?new Vec3(6,2.3,0):new Vec3(15,5,1)));
     }
     @SubscribeEvent public static void frame(RenderFrameEvent.Post event){
         if(capture==null)return;var mc=Minecraft.getInstance();String name=capture;capture=null;
