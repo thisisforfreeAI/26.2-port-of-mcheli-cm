@@ -27,6 +27,10 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
   closed canopy, while sneaking or riding, and while holding a wrench or gunner spawn item.
 
 ### Changed
+- A tank's extra hull boxes are now solid, so players, mobs and other vehicles stop at the whole
+  hull and turret instead of walking into long tanks. On the M1A2 a player now stops about 4 blocks
+  from the centre at the front, where before they reached about 1.3. The tank's crew, seats and
+  loads still pass through.
 - Default M8 effects gain clearer smoke cores/wisps and localized warm backlighting, baked
   vehicle surface contrast, varied terrain scars/tracks, patchier rotor wash and smoother
   distance detail. Existing effect budgets and original crater behavior are unchanged.

@@ -45,9 +45,11 @@ Until then:
   `uav.maxPairedUavs` defaults to five (0..64). Copied tablets share their copied pairing identity;
   simultaneous control is still excluded by the active UAV link. An unloaded or destroyed
   controller cannot remotely release a loaded UAV; the physical pairing device can release it.
-- Tank movement uses the main hull collision box plus wheel terrain probes. Extra hull boxes
-  contribute damage/crushing regions, but do not provide additional solid movement collision
-  shapes. Ground attitude is
+- Tank movement uses the main hull collision box plus wheel terrain probes. A tank's extra hull
+  boxes are solid for players, mobs and other vehicles, as upstream's were, but the tank's own
+  movement still checks terrain with the main box only, so a long barrel or hull can poke into
+  walls. Each extra box is solid as the upright box around it, slightly larger when the tank turns
+  diagonally; aircraft keep their extra boxes for hits only. Ground attitude is
   updated at a fixed simulation tick; it is not tied to the client's frame rate.
 - The stock MXT-MV definition references a canopy missing from its upstream model. That part
   remains absent; the shipped definition and model are preserved.

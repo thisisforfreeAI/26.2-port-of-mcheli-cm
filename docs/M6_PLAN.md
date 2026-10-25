@@ -1407,6 +1407,21 @@ dedicated server, a non-operator OpenGL client joined Red and left it with the b
 made Alpha, Join put the player in it, and holding L showed the lists
 ([singleplayer](screens/m6-team-join-singleplayer.png)).
 
+### Solid tank hull boxes
+
+- `AircraftHitBox.canBeCollidedWith` makes a vehicle's extra boxes solid when
+  `AircraftEntity.hasSolidHitBoxes()`, which only `TankEntity` returns true for. It is not solid for
+  the vehicle itself, its other boxes, or anything with the same root vehicle (crew, seats, loads,
+  the carrier it rides on). Inactive ERA tiles aren't solid. NeoForge's `Level.getEntities` lists
+  part entities, so vanilla's entity collisions pick the boxes up on server and client.
+- The tank's wheel probes skip their own tank's parts (`other.is(parent)`).
+
+Validation: the `tank_extra_box_solid` GameTest stops a mob at an extra box, lets one inside move
+out, and checks crew, popped ERA and aircraft; all 260 required GameTests pass. In game on OpenGL
+against a dedicated server, a survival player walking at an M1A2 stopped 4.2 blocks from its
+centre at the front, 6.0 at the rear and 2.2 at the side; its main box alone stops them at 1.3
+([screen](screens/m6-tank-solid-hull.png)).
+
 ### NTM bombs on stock planes
 
 - 14 new `ntm_*` weapons in `assets/mcheli/weapons/` (see `docs/NTM_NEXT_WEAPONS.md`) carry
