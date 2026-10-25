@@ -32,10 +32,9 @@ repositories {
             url = 'https://www.cursemaven.com'
             content { includeGroup 'curse.maven' }
         }
-        // CrankShaft, NTM Next's required client dependency.
         maven {
-            url = 'https://api.modrinth.com/maven'
-            content { includeGroup 'maven.modrinth' }
+            url = 'https://repo.warfactory.co/releases'
+            content { includeGroup 'dev.engine_room' }
         }
     }
     // Just Enough Items, an optional client integration (src/main/java/.../compat/jei).
@@ -166,8 +165,8 @@ dependencies {
     // Optional NTM Next runtime for integration testing; the bridge has no hard HBM references.
     if (providers.gradleProperty('withHbm').isPresent()) {
         localRuntime "curse.maven:ntm-next-1699386:${providers.gradleProperty('hbmFile').orElse('9130786').get()}"
-        // Modrinth version ID of crankshaft-neoforge-1.6.1+mc26.2 (the version number alone picks the Fabric file).
-        localRuntime "maven.modrinth:crankshaft:${providers.gradleProperty('crankshaftVersion').orElse('CQ6T0FZP').get()}"
+        // NTM requires Crankshaft on clients; CurseMaven does not resolve CurseForge mod dependencies.
+        localRuntime "dev.engine_room:crankshaft-neoforge:1.6.0+mc26.2"
     }
 
     // Example mod dependency using a mod jar from ./libs with a flat dir repository

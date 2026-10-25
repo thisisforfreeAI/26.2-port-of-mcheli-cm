@@ -37,7 +37,15 @@ public class ModLanguageProvider extends LanguageProvider {
         add("mcheli.effects.modern", "Modern explosions: %s");
         add("mcheli.effects.modern.tip", "Modern billows and layered depth. Original craters stay unchanged. New explosions use this choice immediately.");
         add("mcheli.effects.modern.requires", "Requires Enhanced effects, Polished artwork and Minecraft explosion particles disabled. Open Full mod settings to adjust them.");
-        add("mcheli.effects.inactive", "Modern saved; check full mod settings.");
+        add("mcheli.effects.inactive", "Mode saved; check full mod settings.");
+        add("mcheli.effects.explosionMode", "Explosions: %s");
+        add("mcheli.effects.explosionMode.current", "Current M8");
+        add("mcheli.effects.explosionMode.modern", "Modern");
+        add("mcheli.effects.explosionMode.ntm_next", "NTM Next");
+        add("mcheli.effects.explosionMode.tip", "Cycle Current M8, Modern, and native NTM Next fire, smoke and shockwaves. NTM Next requires that mod on this client. Original craters stay unchanged.");
+        add("mcheli.effects.ntm.active", "Native NTM fire, smoke and shockwaves.");
+        add("mcheli.effects.ntm.missing", "Install NTM Next; using Current M8.");
+        add("mcheli.effects.ntm.incompatible", "NTM unavailable; using Current M8.");
         add("mcheli.effects.detail", "Detail: %s");
         add("mcheli.effects.detail.low", "Low");
         add("mcheli.effects.detail.balanced", "Balanced");
