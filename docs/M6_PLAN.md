@@ -1625,3 +1625,21 @@ in the output slot. This check uses the normal client/server menu and network ha
 
 ![Restored helicopter recipes](screens/vehicle-recipes-helicopter-list.png)
 ![AH-64 crafted in survival](screens/vehicle-recipes-crafted-apache.png)
+
+### Enter-seat prompt
+
+A pass over upstream's client HUD list (`GuiTickHandler`) against the port's GUI layers found
+one HUD left unported: `GuiInteractSeat`. Looking at a vehicle in first person now shows its
+prompt below the crosshair, "Press <use key> to enter seat N", in upstream's green on a dark
+panel. `SeatPrompt` keeps upstream's choice of seat: 0 for an empty pilot's seat, otherwise the
+first free crew seat (1 upward), or the crew seat under the crosshair. Nothing shows behind a
+closed canopy, during a mode-switch cooldown, for another team's vehicle, on a destroyed one, while
+riding or sneaking, or holding a wrench or gunner spawn item. The target is the vanilla crosshair
+pick, so the prompt appears at the same reach as the use key; upstream used its own 4-block trace.
+Lang keys come from upstream's English, Japanese and Chinese files.
+
+Validation: the `riding_seat_prompt` GameTest covers the empty, crewed, canopy, sneaking, wrench,
+crew-seat and rider cases; all 257 required GameTests pass. An OpenGL client on a dedicated server
+showed the prompt on a UH-1C.
+
+![Enter-seat prompt on a UH-1C](screens/m6-enter-seat.png)

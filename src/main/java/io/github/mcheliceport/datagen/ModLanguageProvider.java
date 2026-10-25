@@ -33,6 +33,7 @@ public class ModLanguageProvider extends LanguageProvider {
 
     private void english() {
         add("mcheli.effects.menu", "MC Heli Effects…");
+        add("gui.mcheli.interact_seat.enter", "Press %s to enter seat %d");
         add("mcheli.effects.modern", "Modern explosions: %s");
         add("mcheli.effects.modern.tip", "Modern billows and layered depth. Original craters stay unchanged. New explosions use this choice immediately.");
         add("mcheli.effects.modern.requires", "Requires Enhanced effects, Polished artwork and Minecraft explosion particles disabled. Open Full mod settings to adjust them.");
@@ -249,6 +250,7 @@ public class ModLanguageProvider extends LanguageProvider {
     }
 
     private void japanese() {
+        add("gui.mcheli.interact_seat.enter", "%s で座席 %d に搭乗");
         advancements(new String[] {"MC Helicopter MOD へようこそ", "ヘリコプターを設置", "燃料補給", "燃料を補給",
                 "弾薬補給", "弾薬を補給", "支援物資", "コンテナを投下", "ワルキューレの騎行", "?", "ホント戦争は地獄だぜ", "?"});
         addItem(ModItems.SPAWN_GUNNER_VS_MONSTER, "対モンスター 射撃手");
@@ -270,6 +272,7 @@ public class ModLanguageProvider extends LanguageProvider {
     }
 
     private void chinese() {
+        add("gui.mcheli.interact_seat.enter", "按 %s 进入座位 %d");
         advancements(new String[] {"欢迎使用MC直升机模组!", "飞翔吧~少年", "燃料满满", "停机加油~亲", "火力十足",
                 "没有弹药啦~补给 补给", "物资支援", "物资箱下投", "女武神的騎行", "?", "战争就是地狱?", "?"});
         addItem(ModItems.RANGEFINDER, "激光测距仪");

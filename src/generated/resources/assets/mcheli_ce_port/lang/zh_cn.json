@@ -14,6 +14,7 @@
   "block.mcheli_ce_port.drafting_table": "绘图台",
   "block.mcheli_ce_port.lit_drafting_table": "绘图台",
   "fluid_type.mcheli_ce_port.mch_fuel": "燃料",
+  "gui.mcheli.interact_seat.enter": "按 %s 进入座位 %d",
   "item.mcheli_ce_port.ammo_box": "弹药箱",
   "item.mcheli_ce_port.chain": "锁链",
   "item.mcheli_ce_port.container": "集装箱",

@@ -10,6 +10,11 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 
 ## [Unreleased] - M6 in progress
 
+### Added
+- Looking at a vehicle in first person shows upstream's enter-seat prompt ("Press Right Button to
+  enter seat 0") below the crosshair, naming the seat the use key would board. It hides behind a
+  closed canopy, while sneaking or riding, and while holding a wrench or gunner spawn item.
+
 ### Changed
 - Vehicle models stay on the graphics card and are drawn from there instead of being sent again
   every frame; with 28 vehicles in view the render thread spent about 85% less time on them. The
