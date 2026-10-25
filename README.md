@@ -138,6 +138,9 @@ rocket launcher and rear gun respectively. An occupied gunner seat takes control
 gunners on or off (on for new vehicles). Seat a gunner with the Gunner item: it aims and fires its
 seat's weapon at nearby monsters, or at players of other teams, and uses flares and chaff.
 
+Teams: **M** opens the multiplay manager, in singleplayer too. Under each team's list a **Join**
+button puts you in that team, and **Leave team** takes you out; holding **L** shows the lists.
+
 Searchlights/headlights: **L** toggles the lights on vehicles whose definitions include them.
 The pilot and first crew seat can switch them. Movable lights follow the first crew member's look,
 or the pilot's when that seat is empty; fixed lights follow the hull. Stock examples include

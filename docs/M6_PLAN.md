@@ -1388,6 +1388,25 @@ moved Dev from Red to Blue, New team created a dark green team Green with friend
 ([new team](screens/m6-create-team.png)) and the lists made room for it, Jump spawn pos took Dev
 to the world spawn, and Destroy All removed an AH-64 in view. Not run: Vulkan, a second player.
 
+### Team join buttons and singleplayer
+
+- `MultiplayManagerScreen` puts a Join button under each team's list ("Joined" and greyed out for
+  the player's own team) and a Leave team button under the players in no team, below the action
+  buttons. They send `MultiplayActionPayload` `JOIN_TEAM` (with the team's name) and `LEAVE_TEAM`;
+  `MultiplayManager.joinTeam` and `leaveTeam` act when the team exists and the player may choose
+  (`teams.playersChooseTeam`, on by default, or a game master). `MultiplayStatePayload` tells the
+  client whether to show the buttons. The screen lays itself out again when the player's team,
+  the list rows or that answer change. Network protocol 31.
+- The multiplay keys now work in singleplayer. There L takes over from Advancements only once a
+  team exists.
+
+Validation: the `multiplay_join_and_leave_team` GameTest joins, moves, leaves, refuses a missing
+team and checks the setting with and without game master; all 258 required GameTests pass. On a
+dedicated server, a non-operator OpenGL client joined Red and left it with the buttons
+([server](screens/m6-team-join.png)). In a new singleplayer world M opened the manager, New team
+made Alpha, Join put the player in it, and holding L showed the lists
+([singleplayer](screens/m6-team-join-singleplayer.png)).
+
 ## Mobs in seats increment
 
 - `AircraftEntity.mountMobToSeats` ports upstream's: when a player boards as pilot through the

@@ -11,6 +11,11 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 ## [Unreleased] - M6 in progress
 
 ### Added
+- The multiplay manager (M) has a Join button under each team's list and a Leave team button
+  under the players in no team, so players choose their own team without `/team join`. The
+  server setting `teams.playersChooseTeam` (on by default) limits them to game masters. The
+  manager and the team lists (L) now also work in singleplayer; there L keeps opening
+  Advancements until a team exists. Network protocol 31.
 - Looking at a vehicle in first person shows upstream's enter-seat prompt ("Press Right Button to
   enter seat 0") below the crosshair, naming the seat the use key would board. It hides behind a
   closed canopy, while sneaking or riding, and while holding a wrench or gunner spawn item.

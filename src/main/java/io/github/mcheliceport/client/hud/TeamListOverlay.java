@@ -61,11 +61,21 @@ public final class TeamListOverlay {
         if (mc.player == null || mc.gui.screen() != null) {
             return;
         }
-        drawScoreboard = ModKeyMappings.SCOREBOARD.isDown();
+        drawScoreboard = ModKeyMappings.SCOREBOARD.isDown() && scoreboardTakesKey(mc);
         if (!drawScoreboard && manager) {
             ClientPacketDistributor.sendToServer(new MultiplayActionPayload(MultiplayActionPayload.Action.STATE));
             mc.gui.setScreen(new MultiplayManagerScreen());
         }
+    }
+
+    /**
+     * Whether the scoreboard key shows the lists: always on a server; in singleplayer, where
+     * upstream never showed them, only once there is a team, so that L opens vanilla's
+     * Advancements until then.
+     */
+    public static boolean scoreboardTakesKey(Minecraft mc) {
+        return !mc.hasSingleplayerServer()
+                || mc.level != null && !mc.level.getScoreboard().getPlayerTeams().isEmpty();
     }
 
     /**
@@ -74,7 +84,8 @@ public final class TeamListOverlay {
      */
     public static void onKey(InputEvent.Key event) {
         Minecraft mc = Minecraft.getInstance();
-        if (ModKeyMappings.MULTIPLAY.isActive() && ModKeyMappings.SCOREBOARD.matches(event.getKeyEvent())
+        if (ModKeyMappings.MULTIPLAY.isActive() && scoreboardTakesKey(mc)
+                && ModKeyMappings.SCOREBOARD.matches(event.getKeyEvent())
                 && mc.options.keyAdvancements.matches(event.getKeyEvent())) {
             while (mc.options.keyAdvancements.consumeClick()) {
                 // Shown by the scoreboard instead.
@@ -110,13 +121,30 @@ public final class TeamListOverlay {
         return (int) ((double) screenWidth / 2 + (columnWidth(mc, screenWidth) + 10) * (-teamNum / 2.0 + teamIndex));
     }
 
-    /** Upstream {@code drawList}: no team first, then the teams by name. */
-    public static void drawList(GuiGraphicsExtractor graphics, Minecraft mc, int screenWidth, int screenHeight,
-            boolean manager) {
+    /** The lists' columns in order: null for the players in no team, then the teams by name. */
+    public static List<@Nullable PlayerTeam> columns(Minecraft mc) {
         List<@Nullable PlayerTeam> teams = new ArrayList<>();
         teams.add(null);
         mc.level.getScoreboard().getPlayerTeams().stream().sorted(Comparator.comparing(PlayerTeam::getName))
                 .forEach(teams::add);
+        return teams;
+    }
+
+    /** Upstream's row count: room for at least ten rows, in steps of five. */
+    public static int rows(Minecraft mc) {
+        return Math.max((mc.player.connection.getOnlinePlayers().size() / 5 + 1) * 5, 10);
+    }
+
+    /** The y just below the lists. */
+    public static int listBottom(Minecraft mc, int screenHeight) {
+        int rows = rows(mc);
+        return screenHeight / 2 - (rows * 9 + 10) / 2 + 9 * rows;
+    }
+
+    /** Upstream {@code drawList}: no team first, then the teams by name. */
+    public static void drawList(GuiGraphicsExtractor graphics, Minecraft mc, int screenWidth, int screenHeight,
+            boolean manager) {
+        List<@Nullable PlayerTeam> teams = columns(mc);
         for (int i = 0; i < teams.size(); i++) {
             if (manager) {
                 drawPlayers(graphics, mc, screenWidth, screenHeight, teams.get(i), 1 + i, 1 + teams.size());
@@ -127,7 +155,7 @@ public final class TeamListOverlay {
     }
 
     /**
-     * Upstream {@code drawPlayersList}: room for at least ten rows, in steps of five. Upstream also
+     * Upstream {@code drawPlayersList}: room for {@link #rows} rows. Upstream also
      * capped the rows at the server's player limit, which clients no longer learn.
      */
     private static void drawPlayers(GuiGraphicsExtractor graphics, Minecraft mc, int screenWidth, int screenHeight,
@@ -136,7 +164,7 @@ public final class TeamListOverlay {
         Scoreboard scoreboard = mc.level.getScoreboard();
         Objective objective = scoreboard.getDisplayObjective(DisplaySlot.LIST);
         List<PlayerInfo> players = new ArrayList<>(mc.player.connection.getOnlinePlayers());
-        int maxPlayers = Math.max((players.size() / 5 + 1) * 5, 10);
+        int maxPlayers = rows(mc);
         int width = columnWidth(mc, screenWidth);
         int left = columnLeft(mc, screenWidth, teamNum, teamIndex);
         int top = screenHeight / 2 - (maxPlayers * 9 + 10) / 2;
