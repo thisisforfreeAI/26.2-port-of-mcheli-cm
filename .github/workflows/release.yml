@@ -1,18 +1,22 @@
 name: Release
 
-# Pushing a tag such as v0.6.0 builds the mod, runs the GameTests, attaches the jar to a GitHub
-# release with that version's CHANGELOG section, and uploads it to CurseForge and Modrinth when
-# their tokens are set as repository secrets (each upload is skipped without its token).
+# Pushing a tag such as v0.6.0, or running this workflow by hand on main (which tags the commit
+# v<mod_version>), builds the mod, runs the GameTests, attaches the jar to a GitHub release with
+# that version's CHANGELOG section, and uploads it to CurseForge and Modrinth when their tokens are
+# set as repository secrets (each upload is skipped without its token).
 
 on:
   push:
     tags: ['v*']
+  workflow_dispatch:
 
 permissions:
   contents: write
 
 jobs:
   release:
+    # Hand runs release main only.
+    if: github.event_name == 'push' || github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     env:
       # Step conditions cannot read secrets directly.
@@ -28,7 +32,12 @@ jobs:
       - name: Check the tag matches mod_version
         run: |
           version=$(grep '^mod_version=' gradle.properties | cut -d= -f2)
-          test "v$version" = "$GITHUB_REF_NAME" || { echo "Tag $GITHUB_REF_NAME does not match mod_version $version"; exit 1; }
+          if [ "$GITHUB_EVENT_NAME" = workflow_dispatch ]; then
+            # A hand run makes the tag itself, so the version must not be released yet.
+            test -z "$(git ls-remote --tags origin "refs/tags/v$version")" || { echo "Tag v$version already exists"; exit 1; }
+          else
+            test "v$version" = "$GITHUB_REF_NAME" || { echo "Tag $GITHUB_REF_NAME does not match mod_version $version"; exit 1; }
+          fi
           echo "VERSION=$version" >> "$GITHUB_ENV"
 
       - name: Build and run GameTests
@@ -43,6 +52,8 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           name: McHeli CE (26.2 Port) ${{ env.VERSION }}
+          tag_name: v${{ env.VERSION }}
+          target_commitish: ${{ github.sha }}
           body_path: release-notes.md
           prerelease: true
           files: build/libs/mcheli_ce_port-${{ env.VERSION }}.jar

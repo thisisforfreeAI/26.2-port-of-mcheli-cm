@@ -67,7 +67,8 @@ Releases are on the
 [Releases page](https://github.com/thisisforfreeAI/26.2-port-of-mcheli-cm/releases), and on
 CurseForge and Modrinth once their projects are set up. Maintainers cut one by setting
 `mod_version` in `gradle.properties`, adding its `## [x.y.z]` section to `CHANGELOG.md`, and
-pushing the tag `vx.y.z`: [Actions → Release](.github/workflows/release.yml) builds the JAR, runs
+pushing the tag `vx.y.z` (or running the Release workflow by hand on main, which makes the tag):
+[Actions → Release](.github/workflows/release.yml) builds the JAR, runs
 the GameTests, makes a pre-release with that changelog section, and uploads to CurseForge and
 Modrinth when the repository has the secrets `CURSEFORGE_TOKEN` and `MODRINTH_TOKEN` and the
 variables `CURSEFORGE_PROJECT_ID` and `MODRINTH_PROJECT_ID`.
