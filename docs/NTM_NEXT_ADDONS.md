@@ -53,4 +53,9 @@ The YAML exporter preserves all NTM containers, even settings not used by the se
 or supported by NTM Next. This includes mini-nuke presets expanded into values, `EffectOnly`,
 legacy attribute lists, nested VNT processor maps and custom effect parameters. `/mcheli dumpyaml`
 uses this exporter for non-YAML content; it continues to skip definitions already loaded from
-YAML. Details and validation history are in [M7_PLAN.md](M7_PLAN.md).
+YAML.
+
+To try every payload in game, `scripts/make-ntm-validation-pack.sh` writes a test pack into
+`run/mcheli_addons/` that gives six stock rockets one payload each; its header lists which
+vehicle fires which. On Mesa's software Vulkan driver, set CrankShaft's `backend` to
+`"flywheel:off"` in `crankshaft-client.toml`, or NTM effects crash the client (KNOWN_ISSUES 7). Details and validation history are in [M7_PLAN.md](M7_PLAN.md).
