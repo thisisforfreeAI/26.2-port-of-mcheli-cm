@@ -114,6 +114,7 @@ public final class NtmExplosionProbe {
         if(!running)switch(++frame) {
             case 1 -> {
                 mc.getWindow().setWindowed(1920,1080);
+                mc.options.renderDistance().set(8);
                 if(!mc.gui.hud.isHidden())mc.gui.hud.toggle();
                 mc.getTutorial().setStep(net.minecraft.client.tutorial.TutorialSteps.NONE);
                 var server=mc.getSingleplayerServer();

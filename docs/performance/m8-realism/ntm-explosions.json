@@ -34,10 +34,10 @@
     "release_build": "passed; native bridge included; all opt-in visual-probe classes excluded"
   },
   "native_runtime_ci": {
-    "status": "OpenGL preferred helper passed; validating portable Vulkan plus accelerated OpenGL selection",
-    "validated_production_commit": "e52dfff12dfd87b23aa8181e194ca5b47183aee6",
+    "status": "passed Vulkan portable path and OpenGL preferred helper",
+    "validated_production_commit": "b15fd597e56f1375d69931daf0a244d29721f204",
     "workflow": ".github/workflows/ntm-explosion-client.yml",
-    "run": "https://github.com/thisisforfreeAI/26.2-port-of-mcheli-cm/actions/runs/40143646236",
+    "run": "https://github.com/thisisforfreeAI/26.2-port-of-mcheli-cm/actions/runs/40145049227",
     "ntm_version": "1.0.3",
     "crankshaft_version": "1.6.0+mc26.2",
     "backends": [
@@ -60,7 +60,11 @@
       "medium_power_5": 151,
       "large_power_12": 301
     },
-    "notes": "18abdb5 preferred-helper OpenGL passed, but accelerated Vulkan crashed Mesa natively. Final policy permits the helper on OpenGL only and retains the previously validated NTM particle group on Vulkan."
+    "notes": "The accelerated Vulkan helper crashed Mesa natively in 18abdb5; regression policy prevents that path. Both final backend paths passed native render/burst/drain/restart checks. Capture-only follow-up raises view distance to eight chunks so fog does not hide a small impact forty blocks away.",
+    "paths": {
+      "vulkan": "NTM ParticleRocketFlame group; accelerated clouds asserted zero",
+      "opengl": "NTM ClientEffects.spawnRocketFlame helper; accelerated clouds present"
+    }
   },
   "bounds": {
     "live_faces": {

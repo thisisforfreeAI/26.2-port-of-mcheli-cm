@@ -79,3 +79,9 @@ JVM persistence pass, as does the complete existing Modern-menu regression. A ne
 GameTest world also passes the Vulkan bootstrap and missing-mod path. Native NTM 1.0.3 + Crankshaft 1.6.0+mc26.2 passed on both Vulkan and OpenGL: actual
 native classes/waves, 2048 overlapping requests, face bounds, final drain, ESC controls and
 a separate JVM persistence check. Native-runtime results are recorded in [the evidence file](performance/m8-realism/ntm-explosions.json).
+
+The final backend policy passed again in [native run 40145049227](https://github.com/thisisforfreeAI/26.2-port-of-mcheli-cm/actions/runs/40145049227):
+Vulkan admitted zero accelerated clouds and used NTM's portable group; OpenGL used the
+normal helper. Both passed 2048 requests, final drain and separate-JVM persistence. The
+fixture now uses eight chunks of view distance so a blast forty blocks away is inside the
+fog range; this only affects development captures.
