@@ -1,6 +1,7 @@
 package io.github.mcheliceport.client.render.baked;
 
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
+import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -28,7 +29,8 @@ final class BakedVehicleRenderer implements FeatureRenderer<BakedVehicles.Submit
     private record Draw(GpuTextureView texture, GpuSampler sampler, GpuBufferSlice part, BakedModelCache.Baked model) {
     }
 
-    private record Prepared(GpuBufferSlice transforms, List<Draw> draws) {
+    /** The group's draws: with fog, and without it for vehicles past the render distance. */
+    private record Prepared(GpuBufferSlice transforms, List<Draw> draws, List<Draw> farDraws) {
     }
 
     private final List<Prepared> groups = new ArrayList<>();
@@ -36,6 +38,7 @@ final class BakedVehicleRenderer implements FeatureRenderer<BakedVehicles.Submit
     @Override
     public void prepareGroup(FeatureFrameContext context, List<BakedVehicles.Submit> submits, boolean strictlyOrdered) {
         List<Draw> draws = new ArrayList<>();
+        List<Draw> farDraws = new ArrayList<>();
         GpuBufferSlice transforms = null;
         try {
             transforms = RenderSystem.getDynamicUniforms().writeTransform(RenderSystem.getModelViewMatrixCopy());
@@ -56,22 +59,33 @@ final class BakedVehicleRenderer implements FeatureRenderer<BakedVehicles.Submit
                             uniform = BakedVehicles.parts().writeUniform(new BakedVehicles.PartUniform(part.partMat(),
                                     part.normalMat(), submit.color(), submit.light(), flags));
                         }
-                        draws.add(new Draw(texture.getTextureView(), texture.getSampler(), uniform, model));
+                        (submit.far() ? farDraws : draws).add(new Draw(texture.getTextureView(), texture.getSampler(),
+                                uniform, model));
                     }
                 }
             }
         } catch (RuntimeException e) {
             BakedVehicles.fail(e);
             draws.clear();
+            farDraws.clear();
         }
-        this.groups.add(new Prepared(transforms, draws));
+        this.groups.add(new Prepared(transforms, draws, farDraws));
     }
 
     @Override
     public void executeGroup(FeatureFrameContext context, int groupIndex, List<BakedVehicles.Submit> submits,
             boolean strictlyOrdered) {
         Prepared prepared = this.groups.get(groupIndex);
-        if (prepared.draws().isEmpty() || prepared.transforms() == null) {
+        if (prepared.transforms() == null) {
+            return;
+        }
+        draw(context, prepared.transforms(), BakedVehicles.PIPELINE, prepared.draws());
+        draw(context, prepared.transforms(), BakedVehicles.PIPELINE_FAR, prepared.farDraws());
+    }
+
+    private static void draw(FeatureFrameContext context, GpuBufferSlice transforms, RenderPipeline pipeline,
+            List<Draw> draws) {
+        if (draws.isEmpty()) {
             return;
         }
         RenderTarget target = OutputTarget.MAIN_TARGET.getRenderTarget();
@@ -83,12 +97,12 @@ final class BakedVehicleRenderer implements FeatureRenderer<BakedVehicles.Submit
                 : null;
         try (RenderPass pass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(
                 () -> "McHeli vehicles from GPU buffers", color, Optional.empty(), depth, OptionalDouble.empty())) {
-            pass.setPipeline(BakedVehicles.PIPELINE);
+            pass.setPipeline(pipeline);
             RenderSystem.bindDefaultUniforms(pass);
-            pass.setUniform("DynamicTransforms", prepared.transforms());
+            pass.setUniform("DynamicTransforms", transforms);
             pass.bindTexture("Sampler2", context.lightmap(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR));
             GpuTextureView bound = null;
-            for (Draw draw : prepared.draws()) {
+            for (Draw draw : draws) {
                 if (draw.texture() != bound) {
                     pass.bindTexture("Sampler0", draw.texture(), draw.sampler());
                     bound = draw.texture();

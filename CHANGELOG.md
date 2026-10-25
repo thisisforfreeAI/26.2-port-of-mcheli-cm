@@ -27,6 +27,9 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
   closed canopy, while sneaking or riding, and while holding a wrench or gunner spawn item.
 
 ### Changed
+- Vehicles in thermal vision and vehicles past the render distance are drawn from the graphics card
+  too, like other vehicles. With 28 tanks in thermal view the render thread spent about two thirds
+  less time on them.
 - A tank's extra hull boxes are now solid, so players, mobs and other vehicles stop at the whole
   hull and turret instead of walking into long tanks. On the M1A2 a player now stops about 4 blocks
   from the centre at the front, where before they reached about 1.3. The tank's crew, seats and

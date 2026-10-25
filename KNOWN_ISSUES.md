@@ -598,8 +598,8 @@ These follow from how Minecraft 26.2 works or from decisions approved in PORTING
 108. Vehicle models are drawn from GPU buffers (client config `render.gpuModelBuffers`, on by
     default), as upstream drew them from display lists. They are drawn with the solid entities, so their
     see-through texels (canopies) are unsorted and do not show translucent things behind them, as
-    upstream's were; the per-frame path the option turns back on sorts them. Vehicles in thermal
-    vision, past the render distance or glowing always take the per-frame path. M8's surface shading
+    upstream's were; the per-frame path the option turns back on sorts them. Vehicles with a glowing
+    outline and the emissive layers (exhaust flames) always take the per-frame path. M8's surface shading
     is baked into the GPU buffers too. If the GPU path fails once, it turns itself off for the
     session and logs why.
 
