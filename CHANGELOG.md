@@ -10,6 +10,11 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 
 ## [Unreleased] - M6 in progress
 
+### Added
+- Looking at a vehicle in first person shows upstream's enter-seat prompt ("Press Right Button to
+  enter seat 0") below the crosshair, naming the seat the use key would board. It hides behind a
+  closed canopy, while sneaking or riding, and while holding a wrench or gunner spawn item.
+
 ### Changed
 - The ESC effects panel cycles Current M8, Modern and an optional NTM Next explosion mode.
   NTM mode uses the installed mod's actual fire/smoke/shockwave particles, with crater-aware

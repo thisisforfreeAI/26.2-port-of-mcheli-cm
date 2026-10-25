@@ -15,6 +15,7 @@
   "block.mcheli_ce_port.lit_drafting_table": "製図台",
   "block.mcheli_ce_port.wingman_marker": "マーカーブロック",
   "fluid_type.mcheli_ce_port.mch_fuel": "燃料",
+  "gui.mcheli.interact_seat.enter": "%s で座席 %d に搭乗",
   "item.mcheli_ce_port.chain": "鎖",
   "item.mcheli_ce_port.container": "コンテナ",
   "item.mcheli_ce_port.fuel": "燃料",
