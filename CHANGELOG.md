@@ -10,6 +10,14 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 
 ## [Unreleased]
 
+### Added
+- Lag compensation (M9): a player's gun rounds hit vehicles where that player saw them, about one
+  round trip plus 100 ms of interpolation in the past, capped at 250 ms by the new server setting
+  `projectiles.lagCompensationMaxMs` (0 turns it off). A jet crossing at 250 km/h is about 17 blocks
+  ahead of where a 150 ms shooter sees it; those hits now land. Missiles and rockets rewind only for
+  that long after launch, so a dodge still beats them. Blocks, mobs and players on foot are never
+  rewound, and explosions still go off where things are now.
+
 ## [0.6.0] - 2026-10-25 (M6 preview: gameplay and multiplayer)
 
 ### Added
