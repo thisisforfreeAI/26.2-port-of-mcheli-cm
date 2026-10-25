@@ -26,7 +26,7 @@ broader gameplay and hardware checks remain pending.
 
 | Area | Planned milestone |
 |---|---|
-| Hands-on gameplay pass across vehicle types (OpenGL) | M6 |
+| Longer hands-on play across the stock vehicles (OpenGL) | M6 |
 
 Until then:
 
