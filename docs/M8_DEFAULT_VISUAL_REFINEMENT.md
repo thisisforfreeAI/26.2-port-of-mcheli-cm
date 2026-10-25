@@ -3,7 +3,7 @@
 This pass improves Enhanced/Polished M8 presentation, including the default explosion art.
 The existing Modern on/off choice remains. Classic keeps its original presentation. Work
 starts from Claude's NTM-removal commits; no NTM renderer, warhead bridge, settings or
-workflows are restored or edited.
+workflows are restored or edited. Claude's subsequent weapon rebuild is retained from main.
 
 | Area | Change | Cost |
 | --- | --- | --- |
@@ -28,14 +28,20 @@ query, decal storage, fragment and geometry limits stay unchanged.
 
 ## Validation
 
-284 JUnit tests pass, including new checks for cold-only smoke frames, bounded lighting and
+284 JUnit tests passed before incorporating the subsequent main update, including checks for cold-only smoke frames, bounded lighting and
 opacity, monotonic distance thinning, smooth extra-plane fades, GPU-compatible grey surface
 colors, continuous scar variation and visible single-quad marks. Native Vulkan/OpenGL
 comparison scenes exercise four stock vehicle models and eight weapon profiles with the
 default art. Mixed combat and material/wash checks validate runtime bounds and cleanup.
-Final native results are recorded in the accompanying performance evidence.
+The final four readability tests also pass independently, including the fire-to-smoke
+opacity boundary regression. Native Vulkan mixed combat passed 2,400 samples with bounded
+work and transient particle drains. Vulkan wash passed 11 material/load phases; OpenGL
+tracks passed 1,980 samples across 11 phases, including ramps, removal, disabled effects
+and adaptive load. Results and raw compressed CSVs are recorded in
+[default-visuals.json](performance/m8-realism/default-visuals.json).
 
 The target remains 60 FPS on RTX 3060 8GB / Ryzen 7 7800X3D at 1080p. The available Mesa
 software renderer validates behavior and budgets; it cannot certify target-PC FPS. Local
-builds exclude the unavailable optional JEI API; repository dependencies are unchanged and
-full CI checks the normal build.
+native builds excluded the unavailable optional JEI API. After incorporating main, the new
+NTM dependency download is restricted in this environment, so GitHub CI checks the complete
+integrated build. Repository dependencies are unchanged.

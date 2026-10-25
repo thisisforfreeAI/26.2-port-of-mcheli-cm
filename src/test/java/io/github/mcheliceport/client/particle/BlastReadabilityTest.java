@@ -27,6 +27,19 @@ class BlastReadabilityTest {
         assertEquals(0,BlastReadability.amber(0,0));
         assertTrue(BlastReadability.pocketOpacity(14,16,0)<BlastReadability.pocketOpacity(2,16,0));
     }
+    @Test void fireToSmokeOpacityHasNoBoundaryJump() {
+        for(int duration:new int[]{1,4,8,16,45})for(int phase=0;phase<4;phase++) {
+            float before=BlastReadability.pocketOpacity(duration-.001F,duration,phase);
+            float after=BlastReadability.pocketOpacity(duration+.001F,duration,phase);
+            assertEquals(before,after,.002F);
+            float previous=after;
+            for(float age=duration+.1F;age<=duration+6;age+=.1F) {
+                float opacity=BlastReadability.pocketOpacity(age,duration,phase);
+                assertTrue(opacity>=previous && opacity<=1);previous=opacity;
+            }
+            assertEquals(1,BlastReadability.pocketOpacity(duration+6,duration,phase));
+        }
+    }
     @Test void extraPlanesFadeContinuouslyAndShedUnderPressure() {
         for(var quality:new EffectBudget[]{EffectBudget.BALANCED,EffectBudget.HIGH}) {
             int range=quality==EffectBudget.HIGH?64:48;

@@ -1,0 +1,339 @@
+{
+  "feature": "Default M8 readability, surface contrast and ground contact",
+  "base_commit": "36a44c5",
+  "ntm_integration_modified": false,
+  "original_craters_unchanged": true,
+  "target": {
+    "fps": 60,
+    "gpu": "RTX 3060 8GB",
+    "cpu": "Ryzen 7 7800X3D",
+    "resolution": "1920x1080",
+    "hardware_fps_certified": false
+  },
+  "unit_tests": {
+    "pre_main_merge_suite": 284,
+    "final_readability_tests": 4,
+    "failures": 0
+  },
+  "runtime_driver": "Mesa software rendering; functional/budget validation only",
+  "stock_comparisons": {
+    "vulkan": {
+      "build_successful": true,
+      "weapons": [
+        "M8_COMPLETE weapon=m230 power=1.0 family=CANNON lobes=4 fire_ticks=4",
+        "M8_COMPLETE weapon=hydra70 power=3.0 family=BLAST lobes=10 fire_ticks=7",
+        "M8_COMPLETE weapon=agm114 power=4.0 family=PENETRATOR lobes=11 fire_ticks=8",
+        "M8_COMPLETE weapon=agm158 power=10.0 family=BLAST lobes=18 fire_ticks=18",
+        "M8_COMPLETE weapon=mk82 power=4.0 family=HEAVY lobes=11 fire_ticks=12",
+        "M8_COMPLETE weapon=gbu57 power=15.0 family=PENETRATOR lobes=18 fire_ticks=13",
+        "M8_COMPLETE weapon=s-8dm power=5.0 family=INCENDIARY lobes=13 fire_ticks=45",
+        "M8_COMPLETE weapon=heavy12 power=12.0 family=HEAVY lobes=18 fire_ticks=20"
+      ],
+      "vehicles": [
+        "m1a2",
+        "ah-64",
+        "ch47",
+        "f-35a"
+      ]
+    },
+    "opengl": {
+      "build_successful": true,
+      "weapons": [
+        "M8_COMPLETE weapon=m230 power=1.0 family=CANNON lobes=4 fire_ticks=4",
+        "M8_COMPLETE weapon=hydra70 power=3.0 family=BLAST lobes=10 fire_ticks=7",
+        "M8_COMPLETE weapon=agm114 power=4.0 family=PENETRATOR lobes=11 fire_ticks=8",
+        "M8_COMPLETE weapon=agm158 power=10.0 family=BLAST lobes=18 fire_ticks=18",
+        "M8_COMPLETE weapon=mk82 power=4.0 family=HEAVY lobes=11 fire_ticks=12",
+        "M8_COMPLETE weapon=gbu57 power=15.0 family=PENETRATOR lobes=18 fire_ticks=13",
+        "M8_COMPLETE weapon=s-8dm power=5.0 family=INCENDIARY lobes=13 fire_ticks=45",
+        "M8_COMPLETE weapon=heavy12 power=12.0 family=HEAVY lobes=18 fire_ticks=20"
+      ],
+      "vehicles": [
+        "m1a2",
+        "ah-64",
+        "ch47",
+        "f-35a"
+      ]
+    }
+  },
+  "combat_vulkan": {
+    "samples": 2400,
+    "phases": {
+      "empty": {
+        "samples": 600,
+        "peaks": {
+          "particles": 0,
+          "bullets": 0,
+          "fragment_slots": 0,
+          "terrain_reads": 0,
+          "terrain_rays": 0,
+          "maintenance": 0,
+          "pending": 0,
+          "active": 0,
+          "tiles": 0,
+          "exhaust": 0,
+          "wash": 0,
+          "pressure": 0
+        }
+      },
+      "models": {
+        "samples": 600,
+        "peaks": {
+          "particles": 0,
+          "bullets": 0,
+          "fragment_slots": 0,
+          "terrain_reads": 0,
+          "terrain_rays": 0,
+          "maintenance": 0,
+          "pending": 0,
+          "active": 0,
+          "tiles": 0,
+          "exhaust": 0,
+          "wash": 0,
+          "pressure": 0
+        }
+      },
+      "fixed": {
+        "samples": 600,
+        "peaks": {
+          "particles": 1510,
+          "bullets": 64,
+          "fragment_slots": 14,
+          "terrain_reads": 193,
+          "terrain_rays": 32,
+          "maintenance": 40,
+          "pending": 3,
+          "active": 2,
+          "tiles": 244,
+          "exhaust": 4,
+          "wash": 2,
+          "pressure": 0
+        }
+      },
+      "adaptive": {
+        "samples": 600,
+        "peaks": {
+          "particles": 865,
+          "bullets": 64,
+          "fragment_slots": 7,
+          "terrain_reads": 186,
+          "terrain_rays": 32,
+          "maintenance": 40,
+          "pending": 3,
+          "active": 2,
+          "tiles": 244,
+          "exhaust": 4,
+          "wash": 1,
+          "pressure": 3
+        }
+      }
+    },
+    "drains": [
+      "M8_COMBAT drained=empty tiles=0",
+      "M8_COMBAT drained=models tiles=0",
+      "M8_COMBAT drained=fixed tiles=180",
+      "M8_COMBAT drained=adaptive tiles=244"
+    ],
+    "build_successful": true
+  },
+  "rotor_wash_vulkan": {
+    "results": [
+      "M8_WASH result=classic-sand lookups=0 emission=0 pressure=0 particles=SQ 155 T 155",
+      "M8_WASH result=sand lookups=24 emission=6 pressure=0 particles=SQ 34 T 34",
+      "M8_WASH result=grass lookups=24 emission=6 pressure=0 particles=SQ 24 T 24",
+      "M8_WASH result=snow lookups=24 emission=6 pressure=0 particles=SQ 12 T 12",
+      "M8_WASH result=water lookups=27 emission=6 pressure=0 particles=SQ 11 T 11",
+      "M8_WASH result=moving lookups=24 emission=6 pressure=0 particles=SQ 38 T 38",
+      "M8_WASH result=high lookups=21 emission=0 pressure=0 particles=T 0",
+      "M8_WASH result=perf-empty lookups=0 emission=0 pressure=0 particles=T 0",
+      "M8_WASH result=perf-classic lookups=0 emission=0 pressure=0 particles=SQ 1240 T 1240",
+      "M8_WASH result=perf-enhanced lookups=96 emission=23 pressure=0 particles=SQ 319 T 319",
+      "M8_WASH result=perf-adaptive lookups=96 emission=22 pressure=3 particles=SQ 6 T 6"
+    ],
+    "build_successful": true
+  },
+  "tracks_opengl": {
+    "samples": 1980,
+    "phases": {
+      "materials": {
+        "samples": 180,
+        "peaks": {
+          "reads": 63,
+          "fitted": 26,
+          "pending": 16,
+          "stored_quads": 512,
+          "drawn_quads": 512,
+          "requests": 0,
+          "vehicles": 0,
+          "states": 0,
+          "pressure": 0
+        }
+      },
+      "steps": {
+        "samples": 180,
+        "peaks": {
+          "reads": 53,
+          "fitted": 12,
+          "pending": 2,
+          "stored_quads": 512,
+          "drawn_quads": 512,
+          "requests": 0,
+          "vehicles": 0,
+          "states": 0,
+          "pressure": 0
+        }
+      },
+      "water": {
+        "samples": 180,
+        "peaks": {
+          "reads": 10,
+          "fitted": 0,
+          "pending": 2,
+          "stored_quads": 0,
+          "drawn_quads": 0,
+          "requests": 0,
+          "vehicles": 0,
+          "states": 0,
+          "pressure": 0
+        }
+      },
+      "air": {
+        "samples": 180,
+        "peaks": {
+          "reads": 21,
+          "fitted": 0,
+          "pending": 2,
+          "stored_quads": 0,
+          "drawn_quads": 0,
+          "requests": 0,
+          "vehicles": 0,
+          "states": 0,
+          "pressure": 0
+        }
+      },
+      "removal": {
+        "samples": 180,
+        "peaks": {
+          "reads": 34,
+          "fitted": 10,
+          "pending": 2,
+          "stored_quads": 512,
+          "drawn_quads": 512,
+          "requests": 0,
+          "vehicles": 0,
+          "states": 0,
+          "pressure": 0
+        }
+      },
+      "vehicles": {
+        "samples": 180,
+        "peaks": {
+          "reads": 61,
+          "fitted": 24,
+          "pending": 6,
+          "stored_quads": 512,
+          "drawn_quads": 512,
+          "requests": 6,
+          "vehicles": 2,
+          "states": 2,
+          "pressure": 0
+        }
+      },
+      "disabled": {
+        "samples": 180,
+        "peaks": {
+          "reads": 0,
+          "fitted": 0,
+          "pending": 0,
+          "stored_quads": 0,
+          "drawn_quads": 0,
+          "requests": 0,
+          "vehicles": 0,
+          "states": 0,
+          "pressure": 0
+        }
+      },
+      "stress": {
+        "samples": 180,
+        "peaks": {
+          "reads": 61,
+          "fitted": 26,
+          "pending": 16,
+          "stored_quads": 512,
+          "drawn_quads": 512,
+          "requests": 6,
+          "vehicles": 2,
+          "states": 2,
+          "pressure": 0
+        }
+      },
+      "low": {
+        "samples": 180,
+        "peaks": {
+          "reads": 20,
+          "fitted": 6,
+          "pending": 16,
+          "stored_quads": 128,
+          "drawn_quads": 128,
+          "requests": 0,
+          "vehicles": 0,
+          "states": 0,
+          "pressure": 0
+        }
+      },
+      "adaptive": {
+        "samples": 180,
+        "peaks": {
+          "reads": 61,
+          "fitted": 26,
+          "pending": 16,
+          "stored_quads": 512,
+          "drawn_quads": 512,
+          "requests": 6,
+          "vehicles": 2,
+          "states": 2,
+          "pressure": 3
+        }
+      },
+      "ramps": {
+        "samples": 180,
+        "peaks": {
+          "reads": 58,
+          "fitted": 24,
+          "pending": 6,
+          "stored_quads": 512,
+          "drawn_quads": 512,
+          "requests": 6,
+          "vehicles": 2,
+          "states": 2,
+          "pressure": 0
+        }
+      }
+    },
+    "results": [
+      "M8_TRACK result=materials reads=63 quads=512 drawn=512 requests=0 pending=0 pressure=0 treadRequests=0 tireRequests=0",
+      "M8_TRACK result=steps reads=53 quads=512 drawn=512 requests=0 pending=0 pressure=0 treadRequests=0 tireRequests=0",
+      "M8_TRACK result=water reads=10 quads=0 drawn=0 requests=0 pending=0 pressure=0 treadRequests=0 tireRequests=0",
+      "M8_TRACK result=air reads=21 quads=0 drawn=0 requests=0 pending=0 pressure=0 treadRequests=0 tireRequests=0",
+      "M8_TRACK result=removal reads=34 quads=512 drawn=512 requests=0 pending=0 pressure=0 treadRequests=0 tireRequests=0",
+      "M8_TRACK result=vehicles reads=61 quads=512 drawn=512 requests=6 pending=4 pressure=0 treadRequests=136 tireRequests=261",
+      "M8_TRACK result=disabled reads=0 quads=0 drawn=0 requests=0 pending=0 pressure=0 treadRequests=0 tireRequests=0",
+      "M8_TRACK result=stress reads=61 quads=512 drawn=512 requests=6 pending=1 pressure=0 treadRequests=134 tireRequests=256",
+      "M8_TRACK result=low reads=20 quads=128 drawn=128 requests=0 pending=0 pressure=0 treadRequests=0 tireRequests=0",
+      "M8_TRACK result=adaptive reads=61 quads=512 drawn=512 requests=6 pending=16 pressure=3 treadRequests=133 tireRequests=252",
+      "M8_TRACK result=ramps reads=58 quads=512 drawn=512 requests=6 pending=0 pressure=0 treadRequests=106 tireRequests=192"
+    ],
+    "feedback": [
+      "M8_TRACK feedback pressure=3 active=true target=60"
+    ],
+    "build_successful": true
+  },
+  "notes": [
+    "Stock comparisons precede the final single-quad scar coverage floor and seeded grain; mixed combat, wash and tracks include that correction.",
+    "The final fire-to-smoke opacity continuity correction is covered by a dedicated boundary regression test; earlier native runs cover its rendering path.",
+    "All existing particle, geometry, terrain-read, decal and shadow bounds remain unchanged.",
+    "Temporary combat decals remaining after transient particle drain are expected.",
+    "Native runs and the 284-test suite use the NTM-removal baseline, excluding unavailable optional JEI API only.",
+    "After merging main, the complete local build is blocked by the new NTM dependency download restriction; the final four readability tests pass independently and GitHub CI checks the complete build. Repository dependencies are unchanged."
+  ]
+}

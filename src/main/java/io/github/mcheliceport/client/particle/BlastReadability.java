@@ -10,9 +10,11 @@ public final class BlastReadability {
         return Math.max(2,Math.round(count*(1-.55F*far)));
     }
     public static float pocketOpacity(float age,int fireTicks,float phase) {
-        if(fireTicks<=0 || age<0 || age>=fireTicks)return 1;
+        if(fireTicks<=0 || age<0)return 1;
+        // Recover density gradually as the fire card becomes cold smoke.
+        if(age>=fireTicks)return .62F+.38F*smooth((age-fireTicks)/6);
         float burial=smooth((age/fireTicks-.3F)/.7F);
-        float roll=.85F+.15F*(float)Math.sin(age*.63F+phase);
+        float roll=1-(.15F-.15F*(float)Math.sin(age*.63F+phase))*(1-burial);
         return (1-.38F*burial)*roll;
     }
     public static float amber(float age,int duration) {
