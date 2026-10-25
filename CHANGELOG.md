@@ -53,9 +53,10 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
   Gameplay and global effect caps are unchanged. See `docs/M8_COMPLETION.md` for validation
   and target-hardware acceptance limits.
 
-- NTM Next integration reset: the warhead bridge and the NTM Next explosion style are removed
-  ahead of a rebuild. Weapon `NTM` settings still parse and export but have no effect; those
-  weapons use the normal McHeli explosion (KNOWN_ISSUES 7).
+- NTM Next weapon payloads, rebuilt: addon weapons can carry upstream's seven HBM payloads (fire,
+  mist, chemical, mini-nuke, nuke, VNT and legacy NT) against NTM Next 1.0.3, with a new
+  `Chemical` block for gas clouds. The earlier warhead bridge and the NTM Next explosion style
+  are removed. See `docs/NTM_NEXT_WEAPONS.md`.
 
 - M8 impacts: fuller growing rocket/missile smoke, wider billow spread and longer smoke retention
   inside existing primary caps. Large general warheads devote more of their cloud to smoke.

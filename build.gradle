@@ -27,11 +27,12 @@ sourceSets.main.resources {
 }
 
 repositories {
+    // NTM Next (HBM), an optional weapon-payload integration (src/main/java/.../compat/hbm).
+    maven {
+        url = 'https://www.cursemaven.com'
+        content { includeGroup 'curse.maven' }
+    }
     if (providers.gradleProperty('withHbm').isPresent()) {
-        maven {
-            url = 'https://www.cursemaven.com'
-            content { includeGroup 'curse.maven' }
-        }
         // CrankShaft, NTM Next's required client dependency.
         maven {
             url = 'https://api.modrinth.com/maven'
@@ -163,7 +164,9 @@ dependencies {
     if (providers.gradleProperty('withJei').isPresent()) {
         localRuntime "mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}"
     }
-    // Optional NTM Next runtime for integration testing; the bridge has no hard HBM references.
+    // NTM Next is optional too: the payload bridge compiles against 1.0.3 (CurseForge file 9130786)
+    // and only loads when the hbm mod is present. -PwithHbm adds it and CrankShaft to the runs.
+    compileOnly "curse.maven:ntm-next-1699386:9130786"
     if (providers.gradleProperty('withHbm').isPresent()) {
         localRuntime "curse.maven:ntm-next-1699386:${providers.gradleProperty('hbmFile').orElse('9130786').get()}"
         // Modrinth version ID of crankshaft-neoforge-1.6.1+mc26.2 (the version number alone picks the Fabric file).

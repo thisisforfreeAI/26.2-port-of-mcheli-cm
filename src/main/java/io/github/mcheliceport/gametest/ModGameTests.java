@@ -92,6 +92,7 @@ public final class ModGameTests {
         AdvancementGameTests.register();
         LongDistanceGameTests.register();
         BlockListGameTests.register();
+        NtmGameTests.register();
         if (System.getProperty("neoforge.enabledGameTestNamespaces") != null) {
             ChargerGameTests.registerTestBattery(modBus);
         }

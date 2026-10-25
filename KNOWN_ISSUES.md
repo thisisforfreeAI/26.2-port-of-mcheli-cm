@@ -81,9 +81,13 @@ These follow from how Minecraft 26.2 works or from decisions approved in PORTING
    entity type IDs instead.
 6. GregTech EU charging is removed (Forge Energy only). The One Probe and Trajectory Preview
    integrations are stubs.
-7. NTM Next (`hbm`) weapon payloads are being rebuilt. Weapon definitions' `NTM` settings
-   (mini-nuke, nuke, VNT, fire, mist, chemical, legacy NT) are parsed and exported, but have no
-   effect yet; those weapons use the normal McHeli explosion.
+7. NTM Next (`hbm`) weapon payloads follow upstream's HBM integration against NTM Next 1.0.3:
+   fire, mist, chemical, mini-nuke, nuke, VNT and legacy NT (see `docs/NTM_NEXT_WEAPONS.md`). NTM Next
+   removed `ExplosionNT`, mini-nuke attributes and the configurable large explosion effect, so NT
+   payloads are rebuilt from VNT parts, mini-nuke attributes are ignored and VNT effects use NTM
+   Next's nearest fixed size. No stock weapon has a payload. Without NTM Next, payload weapons
+   explode normally. On Mesa's software Vulkan driver, CrankShaft (NTM Next's renderer) crashed the
+   client when NTM effects appeared, also without McHeli; OpenGL is the supported backend.
 8. Vehicles past the render distance are drawn full size and without fog in the normal entity pass,
    not in a second pass with upstream's own 3,000-block projection, so they disappear past vanilla's
    far plane (four times the render distance or the cloud range, whichever is larger).
