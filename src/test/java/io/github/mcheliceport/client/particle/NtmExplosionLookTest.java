@@ -5,6 +5,11 @@ import io.github.mcheliceport.config.ClientConfig.EffectBudget;
 import org.junit.jupiter.api.Test;
 
 class NtmExplosionLookTest {
+    @Test void vulkanCannotEnterTheNativeDriverCrashPath() {
+        assertFalse(NtmExplosionLook.acceleratedBackend("Vulkan"));
+        assertFalse(NtmExplosionLook.acceleratedBackend(null));
+        assertTrue(NtmExplosionLook.acceleratedBackend("OpenGL"));
+    }
     @Test void craterFootprintCanPromoteNarrowWarheadsWithoutChangingDamage() {
         assertTrue(NtmExplosionLook.profile(2,4).small());
         assertFalse(NtmExplosionLook.profile(2,16).small());

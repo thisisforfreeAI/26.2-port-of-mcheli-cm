@@ -45,7 +45,7 @@ jobs:
           mkdir -p .run/m8-preview/saves .run/m8-preview/config
           cp -a run/gametestserver/gametestworld .run/m8-preview/saves/M6Smoke
           printf 'earlyWindowControl = false\n' > .run/m8-preview/config/fml.toml
-          printf 'onboardAccessibility:false\nrenderDistance:2\nsimulationDistance:2\nguiScale:3\n' > .run/m8-preview/options.txt
+          printf 'onboardAccessibility:false\nrenderDistance:2\nsimulationDistance:5\nguiScale:3\n' > .run/m8-preview/options.txt
       - name: Native particles, ESC menu, burst bounds and cleanup
         env:
           ALSOFT_DRIVERS: 'null'
@@ -70,5 +70,6 @@ jobs:
             .run/m8-preview/screenshots/m8-ntm-*.png
             .run/m8-preview/logs/
             .run/m8-preview/crash-reports/
+            .run/m8-preview/hs_err_pid*.log
           include-hidden-files: true
           if-no-files-found: warn

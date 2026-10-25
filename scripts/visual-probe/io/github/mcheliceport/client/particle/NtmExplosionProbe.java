@@ -75,7 +75,11 @@ public final class NtmExplosionProbe {
             instanced=((java.util.List<?>)field.get(null)).size();
         }
         require(present || instanced>0,"Missing native/fallback class "+expected);
-        if(PRESENT && power>=4)System.out.println("M8_NTM accelerated_clouds="+instanced+" fallback_clouds="+present);
+        if(PRESENT && power>=4) {
+            if(!NtmExplosionLook.acceleratedBackend(mc.getWindow().backend().getName()))
+                require(present && instanced==0,"Vulkan entered unsupported native instancing");
+            System.out.println("M8_NTM accelerated_clouds="+instanced+" fallback_clouds="+present);
+        }
         if(PRESENT && power>=4)require(queued().stream().anyMatch(p->p.getClass().getName().equals("com.hbm.particle.ParticleMukeWave")),"Missing native wave");
         require(!PRESENT || queued().stream().noneMatch(p->p.getClass().getSimpleName().equals("BlastCloudParticle")),"Mixed native and M8 clouds");
         System.out.println("M8_NTM power="+power+" footprint="+footprint+" class="+expected+" faces="+liveFaces());

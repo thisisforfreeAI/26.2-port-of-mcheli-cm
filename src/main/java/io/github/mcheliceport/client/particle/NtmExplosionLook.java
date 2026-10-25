@@ -5,6 +5,8 @@ import io.github.mcheliceport.config.ClientConfig.EffectBudget;
 /** Size mapping for the native NTM particles, independent of damage and crater generation. */
 public final class NtmExplosionLook {
     private NtmExplosionLook() {}
+    /** The native Vulkan instancing path crashed in Mesa validation; keep its portable group. */
+    public static boolean acceleratedBackend(String backend) {return "OpenGL".equalsIgnoreCase(backend);}
     public record Profile(boolean small, int clouds, float scale, float speed, float wave, int life) {
         public int faces() { return small ? 1 : 10; }
     }

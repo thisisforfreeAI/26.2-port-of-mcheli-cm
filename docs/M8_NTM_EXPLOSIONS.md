@@ -17,8 +17,10 @@ Underwater impacts retain their separate splash effects.
 
 This is native particle integration, not a newly painted imitation. The adapter constructs
 NTM's public `ParticleExplosionSmall` and `ParticleMukeWave`, and calls its public
-`ClientEffects.spawnRocketFlame` helper for large clouds. That preserves NTM's accelerated
-cloud rendering where supported, with NTM choosing its own particle fallback. NTM owns
+`ClientEffects.spawnRocketFlame` helper for large clouds on OpenGL. On Vulkan it constructs
+NTM's `ParticleRocketFlame` instead: the helper's accelerated path caused a native Mesa
+Vulkan crash during validation, while the portable NTM particle group passed. This keeps
+NTM artwork and curves on both backends without exposing that tested crash path. NTM owns
 their motion, rolling cloud layers, fire-to-smoke colors, alpha curves, textures, group
 rendering and wave growth. Reflection is resolved once, only when HBM is installed. No NTM
 source, artwork or binaries are copied or redistributed in McHeli.
@@ -72,7 +74,7 @@ backend log, restarts the JVM to verify persistence, and uploads native screensh
 Local missing-mod checks use the same probe without NTM. These are functional/cleanup checks;
 performance acceptance needs the target PC. Native validation results are recorded with the PR.
 
-Local release and all 292 unit tests pass. Vulkan/OpenGL missing-mod UI/fallback and separate
+Local release and all 293 unit tests pass. Vulkan/OpenGL missing-mod UI/fallback and separate
 JVM persistence pass, as does the complete existing Modern-menu regression. A newly copied
 GameTest world also passes the Vulkan bootstrap and missing-mod path. Native NTM 1.0.3 + Crankshaft 1.6.0+mc26.2 passed on both Vulkan and OpenGL: actual
 native classes/waves, 2048 overlapping requests, face bounds, final drain, ESC controls and
