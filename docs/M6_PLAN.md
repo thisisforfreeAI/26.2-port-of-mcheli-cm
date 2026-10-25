@@ -39,7 +39,7 @@ The counts above are the stock inventory from M2, not a limit on addon definitio
 - Flight tests compare 300 ticks per scenario against a transcription of upstream, including
   cruise, VTOL, transition, reverse, sweep speed, water, landing and target drones. GameTests
   exercise all 46 stock definitions, takeoff, persistence, authorization and movement authority.
-- All stock plane body models and textures are checked. The 79 part references absent in the
+- All stock plane body models and textures are checked. The 54 part references absent in the
   pinned upstream model files are recorded explicitly in the parity fixture; additional gaps fail.
 
 This does not complete stage 2. Remaining plane work includes equipment integration and broader
@@ -191,7 +191,7 @@ The isolated `.run/parachutes-opengl` and `.run/parachutes-vulkan` game director
 existing Xvfb/Mesa setup and explicit backend flags. `zz_parachute_probe` is a local test addon:
 it removes the exported-name prefixes from a copy of `parachute2.mqo` and moves the seat object
 before the canopy group, so the existing geometry has valid groups. This fixture is not shipped
-in the mod and does not change the pinned stock asset.
+in the mod. The shipped asset now has the same fix (see "Stock model fixes" below).
 
 With `/tick freeze`, summon models 1, 2 and 3 at `(-6, -57, 12)`, `(0, -57, 12)` and `(6, -57, 12)`.
 Give model 2 upward motion `(0, 2, 0)` to select its closed seat; model 3 selects the open canopy.
@@ -1406,6 +1406,22 @@ dedicated server, a non-operator OpenGL client joined Red and left it with the b
 ([server](screens/m6-team-join.png)). In a new singleplayer world M opened the manager, New team
 made Alpha, Join put the player in it, and holding L showed the lists
 ([singleplayer](screens/m6-team-join-singleplayer.png)).
+
+### Stock model fixes
+
+- `models/parachute2.mqo` now names its seat object `$seat` and its first canopy object
+  `$parachute`, with the other canopy and line objects after it so they merge into that group.
+  Upstream's file prefixed every name with `[Exported] [Imported]` and left `$parachute` empty.
+  `ParachuteModelsTest` pins the new file. Ejection seats show the seat while closed and the canopy
+  once open; transport chutes show the canopy.
+- The MXT-MV draws whole: its "missing canopy" was the `canopy` alias that upstream's TXT parser
+  adds next to every first canopy (`canopy0`), and its model names the part `$canopy0`. The model
+  checks now count the pair as present when either exists, which also clears the AH-1Z entry and
+  25 plane entries from the gap lists.
+
+Validation: JUnit passes. In game on OpenGL against a dedicated server, a pilot ejecting from the
+F-4 fell on the seat and then hung under the open canopy ([screen](screens/m6-ejection-seat.png)).
+The MXT-MV showed both doors and its full body from every side.
 
 ### Solid tank hull boxes
 

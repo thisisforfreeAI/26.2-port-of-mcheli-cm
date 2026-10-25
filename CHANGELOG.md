@@ -496,7 +496,9 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
   unchanged and is documented in KNOWN_ISSUES.md. Correctly grouped addon models render.
 
 ### Fixed
-
+- Ejection seats and transport chutes now draw, as upstream never did: the stock parachute model's group names are
+  repaired and its canopy is in the `$parachute` group. An ejected pilot now falls on the seat
+  and then hangs under the canopy.
 - Vehicles stay drawn as far as the client has them. Vanilla hid them past about 150 blocks
   (by their small bounding box), while upstream drew every vehicle the client had.
 - Wheeled tanks with a pivot-turn throttle (M1129, B1 Centauro) steer again: their turn rate

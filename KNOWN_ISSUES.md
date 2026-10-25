@@ -10,7 +10,7 @@ The current M6 development work also adds planes, ships, tanks and ground vehicl
 M6 stage in `docs/M6_PLAN.md` is now implemented; what remains is the broader hands-on gameplay
 pass below. Plane effects and destroyed-plane visual motion are now implemented;
 plane camera-position switching and the shared gunner camera are connected. Parachutes, plane
-ejection and transport-seat bailout are implemented, with the stock model limitation below.
+ejection and transport-seat bailout are implemented.
 Ship placement, water movement, steering, crew weapons and model submission are implemented.
 Tank/ground-vehicle placement, driving, wheel contacts, tracks, rollers, independent weapons
 and reactive armor state are implemented. Ground crushing/ramming, nearby fuel/ammunition supply,
@@ -51,8 +51,6 @@ Until then:
   walls. Each extra box is solid as the upright box around it, slightly larger when the tank turns
   diagonally; aircraft keep their extra boxes for hits only. Ground attitude is
   updated at a fixed simulation tick; it is not tied to the client's frame rate.
-- The stock MXT-MV definition references a canopy missing from its upstream model. That part
-  remains absent; the shipped definition and model are preserved.
 - The aircraft menu has the fuel slots, the trunk, the weapon list with its reload buttons and the
   command field with an Options button, on a plain container background rather than upstream's
   `gui.png`. Supported planes also expose parachute reserves.
@@ -621,10 +619,11 @@ its stock content from TXT to YAML lost or changed (the full list, checked by a 
   its sign flipped).
 - The stock helicopter HUD tests `hovering==1`, but `hovering` is true or false, so the HOVERING
   label never shows, as upstream.
-- The AH-1Z names a `canopy` part and the UH-1C a `camera0` part that their model files do not
-  have; nothing is drawn for them, as upstream.
-- Stock plane definitions contain 79 references to parts without matching geometry in the
-  upstream models (including empty rotor hubs/nozzles and mismatched canopy/gear names).
+- The UH-1C names a `camera0` part that its model file does not have; nothing is drawn for it,
+  as upstream. Upstream adds each first canopy twice, as `canopy0` and `canopy`, so a model may
+  name it either way; the unused name draws nothing, as upstream.
+- Stock plane definitions contain 54 references to parts without matching geometry in the
+  upstream models (empty rotor hubs and nozzles, and mismatched gear names).
   The exact list is in `src/test/resources/parity/plane-model-gaps.txt`; these missing parts
   are not invented or silently renamed by the renderer.
 - The stock planes each define only one camera position. Additional positions require addon
@@ -639,9 +638,7 @@ its stock content from TXT to YAML lost or changed (the full list, checked by a 
   any potion instead of requiring a 1.12 potion metadata value. Other restored recipes retain
   their legacy ingredients and patterns.
 
-- The stock `models/parachute2.mqo` has `[Exported] [Imported]` prefixes on every group name.
-  Upstream's whitespace parser truncates those names, so neither `$seat` nor `$parachute` exists
-  for rendering. Ejection seats and transport chutes therefore draw nothing with the stock model,
-  as upstream; movement, riders, landing and rescue still work. A replacement addon model with
-  correctly named groups renders both forms. The exact shipped asset is pinned by a SHA-256 test;
-  the stock hand parachute (`parachute1.obj`) renders normally.
+- Upstream's `models/parachute2.mqo` prefixed every group name with `[Exported] [Imported]`, which
+  its parser cut short, and its `$parachute` group was empty, so ejection seats and transport
+  chutes drew nothing. The port's copy names the seat `$seat` and puts the canopy and lines in
+  `$parachute`, so an ejected pilot falls on the seat and then hangs under the canopy.
