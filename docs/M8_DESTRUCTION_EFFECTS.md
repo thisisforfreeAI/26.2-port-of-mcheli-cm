@@ -7,7 +7,7 @@ RTX 3060 8GB / Ryzen 7 7800X3D at 1080p. Hardware FPS needs target-PC verificati
 | Step | Feature | Status |
 | --- | --- | --- |
 | 1 | Uneven damaged-engine smoke trails that stretch with movement | Complete |
-| 2 | Coolant/oil leaks and temporary ground stains | Pending |
+| 2 | Coolant/oil leaks and temporary ground stains | Complete |
 | 3 | Directional tumbling metal fragments | Pending |
 | 4 | Flickering/failing damaged lights and local sparks | Pending |
 | 5 | Wreck fires, embers and cooling smoke that die away | Pending |
@@ -27,3 +27,14 @@ shorter-lived wisps. Maximum radius is charged to existing particle admission; n
 queries are added. Native previews on M1A2/AH-64/F-35A and 301 local unit tests pass.
 
 ![F-35A engine trail](screens/m8-destruction-01-engine-trails.png)
+
+## 2. Fluid leaks
+
+Small oil/coolant drips leave growing, drying patches on surviving ground under slow or
+parked vehicles. Footprints clip to the sampled block face, including slabs. Water/air and
+removed supports are rejected. Four downward rays per tick, eight support validations,
+128 stored patches and one shared atlas bound the cost. Tank runoff uses already resident
+visual bounds without loading models. 303 local unit tests and native terrain/vehicle
+checks pass.
+
+![F-35A oil leak](screens/m8-destruction-02-fluid-leaks.png)

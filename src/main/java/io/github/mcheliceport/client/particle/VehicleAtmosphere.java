@@ -150,7 +150,6 @@ public final class VehicleAtmosphere {
         float severity = VehicleAtmosphereLook.damage(aircraft.getHP(), aircraft.getMaxHP());
         if (severity == 0) return;
         Vec3 position = origins.get(Math.floorMod((int) (now / 11 + aircraft.getId()), origins.size()));
-        Vec3 motion = aircraft.getDeltaMovement().scale(0.8);
         int period = 3 * (1 + EffectPerformance.pressure());
         if (Math.floorMod(now + aircraft.getId(), period) == 0
                 && VehicleAtmosphereLook.smokePulse(now, aircraft.getId(), severity)) {
@@ -177,12 +176,7 @@ public final class VehicleAtmosphere {
                 Minecraft.getInstance().particleEngine.add(smoke);
             }
         }
-        if (!aircraft.isDestroyed() && Math.floorMod(now + aircraft.getId(), 7 * (1 + EffectPerformance.pressure())) == 0) {
-            plume(level, position.add(0.15, -0.15, 0), motion.add(0, 0.015, 0), 0.24F, 0.25F, 18, 0.75F, 0.89F, 0.9F);
-            if (admit(level, position, 0.04F)) Minecraft.getInstance().particleEngine.add(new SurfaceDebrisParticle(level,
-                    position.x, position.y - 0.2, position.z, motion.x, -0.08, motion.z, 0.055F,
-                    0.45F, 0.82F, 0.87F, position.y - 3, 18, 0.1F));
-        }
+        FluidLeaks.emit(level,aircraft,position,severity,now);
         if (severity > 0.4F && EffectPerformance.optionalGlows()
                 && Math.floorMod(now + (long) aircraft.getId() * 3, 23) < 2 && admit(level, position, 0.07F)) {
             SparkParticle spark = new SparkParticle(level, position.x, position.y, position.z,
@@ -192,7 +186,7 @@ public final class VehicleAtmosphere {
         }
     }
 
-    private static boolean admit(ClientLevel level, Vec3 position, float radius) {
+    static boolean admit(ClientLevel level, Vec3 position, float radius) {
         if (emitted >= EngineExhaustLook.cap(ClientConfig.get(ClientConfig.EFFECT_BUDGET))) return false;
         BlockPos block = BlockPos.containing(position);
         if (!level.hasChunkAt(block) || !level.getFluidState(block).isEmpty()

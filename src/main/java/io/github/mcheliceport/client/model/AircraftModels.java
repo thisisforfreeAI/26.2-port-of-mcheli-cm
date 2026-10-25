@@ -91,6 +91,12 @@ public final class AircraftModels {
     private AircraftModels() {
     }
 
+    /** Read already resident visual bounds without starting a load or extending residency. */
+    public static @Nullable VehicleModels peek(AircraftInfo info) {
+        var entry=ENTRIES.get(McheliModel.key(info.getDirectoryName(),info.name));
+        return entry!=null&&entry.info==info?entry.models:null;
+    }
+
     /**
      * The models of a vehicle, or null while they load (or if its body model is missing). Marks
      * the vehicle as used, as upstream's {@code notifyRendered}.

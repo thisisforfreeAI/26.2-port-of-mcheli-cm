@@ -59,24 +59,49 @@ public final class DestructionPreviewProbe {
             ClientConfig.EFFECT_BUDGET.set(ClientConfig.EffectBudget.BALANCED);ClientConfig.ADAPTIVE_EFFECTS.set(false);
             ClientConfig.VEHICLE_DAMAGE_DETAILS.set(true);ClientConfig.ENGINE_STARTUP_EFFECTS.set(false);ClientConfig.ENGINE_HEAT_HAZE.set(false);
         }
+        if(STEP==2&&tick==100)commands(mc,"setblock -5 -60 10 stone_slab[type=bottom]","setblock 5 -60 10 water","fill 10 -64 10 10 -58 10 air");
+        if(STEP==2&&tick==120){
+            double slab=io.github.mcheliceport.client.effect.FluidStains.add(mc.level,new Vec3(-4.5,-58,10.5),false);
+            double water=io.github.mcheliceport.client.effect.FluidStains.add(mc.level,new Vec3(5.5,-58,10.5),false);
+            double air=io.github.mcheliceport.client.effect.FluidStains.add(mc.level,new Vec3(10.5,-58,10.5),false);
+            if(Math.abs(slab+59.5)>.01||Double.isFinite(water)||Double.isFinite(air))throw new IllegalStateException("Fluid terrain fit failed");
+            System.out.println("M8_DESTRUCTION fluid_slab_water_air=true");
+            commands(mc,"setblock -5 -60 10 air");
+        }
+        if(STEP==2&&tick==140){
+            if(io.github.mcheliceport.client.effect.FluidStains.count()!=0)throw new IllegalStateException("Removed support retained stain");
+            System.out.println("M8_DESTRUCTION fluid_removed_support=true");
+        }
         if(tick<160)return;
         int next=(tick-160)/220;age=(tick-160)%220;
         if(next>=NAMES.length){mc.stop();return;}
         if(next!=phase){
             phase=next;if(vehicle!=null)vehicle.discard();mc.particleEngine.clearParticles();VehicleAtmosphere.clear();VehicleImpactMarks.clear();
             vehicle=phase==0?new Tank(mc):phase==1?new Heli(mc):new Plane(mc);
-            vehicle.setId(970000+phase);vehicle.setAircraftTypeName(NAMES[phase]);vehicle.setTextureName(NAMES[phase]);vehicle.setPos(0,-59,20);
+            io.github.mcheliceport.client.effect.FluidStains.clear();
+            vehicle.setId(970000+(phase==2?4:phase));vehicle.setAircraftTypeName(NAMES[phase]);vehicle.setTextureName(NAMES[phase]);vehicle.setPos(0,-60,20);
             var parts=vehicle.getParts();for(int i=0;i<parts.length;i++)parts[i].setId(980000+phase*100+i);
             mc.level.addEntity(vehicle);System.out.println("M8_DESTRUCTION step="+STEP+" vehicle="+NAMES[phase]);
         }
         if(age==145||age==180)capture=NAMES[phase]+"-age"+age;
-        if(age==200)System.out.println("M8_DESTRUCTION state_count="+VehicleAtmosphere.stateCount()+" emitted="+VehicleAtmosphere.emitted());
+        if(age==200){
+            System.out.println("M8_DESTRUCTION state_count="+VehicleAtmosphere.stateCount()+" emitted="+VehicleAtmosphere.emitted());
+            if(STEP==2){
+                int stains=io.github.mcheliceport.client.effect.FluidStains.count();
+                if(stains==0||stains>128||io.github.mcheliceport.client.effect.FluidStains.rays()>4)throw new IllegalStateException("Missing/unbounded fluid stains");
+                System.out.println("M8_DESTRUCTION fluid_stains="+stains);
+            }
+        }
     }
     @SubscribeEvent public static void angles(ViewportEvent.ComputeCameraAngles e){
-        if(STEP==0||vehicle==null)return;e.setYaw(94);e.setPitch(17);e.setRoll(0);
+        if(STEP==0||vehicle==null)return;e.setYaw(STEP==2?64:94);e.setPitch(STEP==2?12:17);e.setRoll(0);
     }
     @SubscribeEvent public static void position(ViewportEvent.ComputeFov e){
-        if(STEP==0||vehicle==null)return;e.getCamera().setPosition(vehicle.position().add(15,5,1));
+        if(STEP==0||vehicle==null)return;
+        if(STEP==2){
+            var origin=VehicleAtmosphere.origins(vehicle).getFirst();
+            e.getCamera().setPosition(new Vec3(origin.x,vehicle.getY(),origin.z).add(5.2,1.2,-2.5));
+        }else e.getCamera().setPosition(vehicle.position().add(15,5,1));
     }
     @SubscribeEvent public static void frame(RenderFrameEvent.Post event){
         if(capture==null)return;var mc=Minecraft.getInstance();String name=capture;capture=null;
