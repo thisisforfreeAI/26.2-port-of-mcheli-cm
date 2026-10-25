@@ -41,6 +41,7 @@ public final class ServerConfig {
     public static final ModConfigSpec.BooleanValue NPC_BATTLES;
     public static final ModConfigSpec.BooleanValue PROJECTILE_CHUNK_LOAD;
     public static final ModConfigSpec.IntValue PROJECTILE_CHUNK_LEASE_TICKS;
+    public static final ModConfigSpec.IntValue LAG_COMPENSATION_MAX_MS;
     public static final ModConfigSpec.BooleanValue ENABLE_COMMAND;
     public static final ModConfigSpec.ConfigValue<List<? extends String>> COMMAND_PERMISSIONS;
     public static final ModConfigSpec.BooleanValue ENABLE_DEBUG_BOUNDING_BOX;
@@ -169,6 +170,11 @@ public final class ServerConfig {
                 .comment("Ticks a chunk stays loaded after the last projectile asked for it, so the shots of a burst",
                         "keep the same chunks loaded (20 ticks = 1 second). Upstream: ProjectileChunkLeaseTicks.")
                 .defineInRange("chunkLeaseTicks", 40, 0, 1200);
+        LAG_COMPENSATION_MAX_MS = builder
+                .comment("Lag compensation (a port addition): a player's shots test vehicles where that player saw them,",
+                        "up to this many milliseconds in the past (round trip plus interpolation). Higher favours shooters",
+                        "on slow connections, lower favours their targets. 0 turns it off.")
+                .defineInRange("lagCompensationMaxMs", 250, 0, 500);
         builder.pop();
 
         builder.comment("The /mcheli command.").push("commands");
@@ -200,6 +206,11 @@ public final class ServerConfig {
                 .define("playersChooseTeam", true);
         builder.pop();
         SPEC = builder.build();
+    }
+
+    /** The value, or its default before a server has loaded the config (unit tests, the main menu). */
+    public static <T> T get(ModConfigSpec.ConfigValue<T> value) {
+        return SPEC.isLoaded() ? value.get() : value.getDefault();
     }
 
     private ServerConfig() {}
