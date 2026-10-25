@@ -47,7 +47,7 @@ public final class ModNetwork {
     private static final Logger LOGGER = LogUtils.getLogger();
     /** Bump when payload encoding, menu layout or synchronized entity data changes. */
     // M8: independent, optional explosion audio with distance-delayed client playback.
-    public static final String VERSION = "30";
+    public static final String VERSION = "31";
 
     private ModNetwork() {
     }
@@ -160,11 +160,11 @@ public final class ModNetwork {
                 ModNetwork::handleAircraftCommand);
         registrar.playToServer(MultiplayActionPayload.TYPE, MultiplayActionPayload.CODEC, (p, context) -> {
             if (context.player() instanceof ServerPlayer player) {
-                io.github.mcheliceport.multiplay.MultiplayManager.handle(player, p.action());
+                io.github.mcheliceport.multiplay.MultiplayManager.handle(player, p.action(), p.team());
             }
         });
         registrar.playToClient(MultiplayStatePayload.TYPE, MultiplayStatePayload.CODEC,
-                (p, context) -> io.github.mcheliceport.multiplay.MultiplayManager.setClientPvp(p.pvp()));
+                (p, context) -> io.github.mcheliceport.multiplay.MultiplayManager.setClientState(p.pvp(), p.chooseTeam()));
         registrar.playToServer(AirburstDistPayload.TYPE, AirburstDistPayload.CODEC, ModNetwork::handleAirburstDist);
         registrar.playToClient(WeaponSyncPayload.TYPE, WeaponSyncPayload.CODEC, ModNetwork::handleWeaponSync);
         registrar.playToClient(NotifyAmmoPayload.TYPE, NotifyAmmoPayload.CODEC, (p, context) -> {

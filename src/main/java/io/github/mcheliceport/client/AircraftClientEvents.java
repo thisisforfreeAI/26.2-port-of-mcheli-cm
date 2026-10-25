@@ -91,7 +91,7 @@ public final class AircraftClientEvents {
         NeoForge.EVENT_BUS.addListener(AircraftHudLayer::onRenderLayer);
         NeoForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.LoggingOut event) -> {
             ServerSettings.setClient(ServerSettings.Values.DEFAULT);
-            io.github.mcheliceport.multiplay.MultiplayManager.setClientPvp(true);
+            io.github.mcheliceport.multiplay.MultiplayManager.setClientState(true, false);
             MouseFlight.reset();
             AircraftCameraClient.reset();
             WeaponClient.reset();

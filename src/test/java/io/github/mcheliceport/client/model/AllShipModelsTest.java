@@ -43,7 +43,7 @@ class AllShipModelsTest {
                 }
                 for (String part : AircraftModels.partNames(info)) {
                     parts++;
-                    if (models.part(part).isEmpty()) {
+                    if (CanopyAlias.missing(models::part, part)) {
                         problems.add(info.name + ": part " + part + " is neither in the body nor in a file");
                     }
                 }

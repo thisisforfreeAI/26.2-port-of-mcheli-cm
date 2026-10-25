@@ -19,9 +19,7 @@ Scene {
         }
     }
 }
-Object "[Exported] [Imported] $parachute" {
-}
-Object "[Exported] [Imported] $seat" {
+Object "$seat" {
     vertex 16 {
         -39.1923 -26.0256 -22.5048
         -39.1923 -44.2586 29.7517
@@ -63,7 +61,7 @@ Object "[Exported] [Imported] $seat" {
         3 V(13 15 12) M(-1) UV(0.16999 0.64619 0.19622 0.68396 0.19622 0.64619)
     }
 }
-Object "[Exported] [Imported] obj2" {
+Object "$parachute" {
     vertex 114 {
         22.2852 10.2243 -9.7794
         392.6521 501.1603 -9.7794
@@ -239,7 +237,7 @@ Object "[Exported] [Imported] obj2" {
         3 V(113 112 57) M(-1) UV(0.53601 0.04876 0.61743 0.04931 0.62005 0.98360)
     }
 }
-Object "[Exported] [Imported] obj3" {
+Object "obj3" {
     vertex 588 {
         0.0000 825.6365 -9.7794
         0.0000 825.6365 -9.7794
@@ -1505,7 +1503,7 @@ Object "[Exported] [Imported] obj3" {
         3 V(587 498 486) M(-1) UV(0.81316 0.12896 0.83356 0.01560 0.84218 0.01685)
     }
 }
-Object "[Exported] [Imported] obj4" {
+Object "obj4" {
     vertex 114 {
         22.2852 10.2243 -9.7794
         392.6521 501.1603 -9.7794
@@ -1681,7 +1679,7 @@ Object "[Exported] [Imported] obj4" {
         3 V(57 112 113) M(-1) UV(0.62005 0.98360 0.61743 0.04931 0.53601 0.04876)
     }
 }
-Object "[Exported] [Imported] obj7" {
+Object "obj7" {
     vertex 588 {
         0.0000 825.6365 -9.7794
         0.0000 825.6365 -9.7794

@@ -45,6 +45,7 @@ public final class ServerConfig {
     public static final ModConfigSpec.ConfigValue<List<? extends String>> COMMAND_PERMISSIONS;
     public static final ModConfigSpec.BooleanValue ENABLE_DEBUG_BOUNDING_BOX;
     public static final ModConfigSpec.BooleanValue LONG_DISTANCE_TRACKING;
+    public static final ModConfigSpec.BooleanValue PLAYERS_CHOOSE_TEAM;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -190,6 +191,13 @@ public final class ServerConfig {
                         "and ships), past the server's view distance and in chunks the player has not loaded.",
                         "false: vanilla's limit, the view distance. Upstream: ExperimentalRemoveClientTrackingRestrictions.")
                 .define("longDistance", true);
+        builder.pop();
+
+        builder.comment("The multiplay manager (M), a port addition.").push("teams");
+        PLAYERS_CHOOSE_TEAM = builder
+                .comment("true: every player can join a team, or leave theirs, with the manager's team buttons.",
+                        "false: only game masters can, as with /team join. Upstream had no such buttons.")
+                .define("playersChooseTeam", true);
         builder.pop();
         SPEC = builder.build();
     }

@@ -34,6 +34,10 @@ Weapons:
   Position: [3.93, 1.43, -3.48]
 - Type: egbu24
   Position: [-3.93, 1.43, -3.48]
+- Type: ntm_we177
+  Position: [3.93, 1.43, -3.48]
+- Type: ntm_we177
+  Position: [-3.93, 1.43, -3.48]
 Seats:
 - Position: [0.0, 1.65, 0.34]
   Hud: plane

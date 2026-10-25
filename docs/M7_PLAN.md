@@ -234,9 +234,9 @@ Path B (`client.render.baked`) uploads each model group once, as upstream's disp
   grey, less 128, sits in the spare fourth byte of its normal, and the shader uses it where path A
   would (Enhanced look, `effects.vehicleSurfaceShade` on, untinted vehicle). A group is baked again
   if the model loader replaces its shades.
-- Thermal vision, far vehicles, glowing outlines and the emissive exhaust flames stay on path A,
-  as does everything when `render.gpuModelBuffers` is off or the path fails once (it then logs and
-  turns itself off).
+- Glowing outlines and the emissive exhaust flames stay on path A, as does everything when
+  `render.gpuModelBuffers` is off or the path fails once (it then logs and turns itself off).
+  Thermal vision and far vehicles moved to path B later (see below).
 
 Validation: JUnit covers the vertex and uniform layouts and normal packing; all required
 GameTests pass. In game, screenshots with the option on and off match to within the frame-to-frame
@@ -252,3 +252,20 @@ On the Vulkan backend (Mesa lavapipe, started with `--graphicsBackend vulkan` an
 `earlyWindowControl = false`, as for M4 §5) the custom pipeline compiles and draws without errors,
 JFR shows path B drawing, and screenshots with the option on and off differ in 0.1 % of pixels
 (`docs/screens/m7-gpu-models-vulkan.png`).
+
+### Thermal vision and far vehicles on path B
+
+Thermal vision only swaps a vehicle's texture for upstream's white `test.png`, so path B draws it
+with that texture. Vehicles past the render distance use a second pipeline,
+`pipeline/baked_far_vehicle`, with the far pass's fog-less fragment shader
+(`core/far_vehicle.fsh`) over the same vertex shader; `BakedVehicleRenderer` opens one render pass
+for the near draws and one for the far ones. Only glowing outlines and emissive layers still take
+path A.
+
+Validation: JUnit and all required GameTests pass. In game on OpenGL against a dedicated server,
+28 M1A2s seen from an F-4 cockpit in thermal vision look the same on both paths apart from moving
+clouds (`docs/screens/m7-gpu-thermal.png`), and five M1A2s 185 blocks out, past the 160-block
+render distance, match to the pixel. JFR on the render thread over 20 seconds in thermal vision
+(software rendering): 664 samples with path A, 304 of them drawing vehicles; 190 with path B, 96
+drawing vehicles.
+

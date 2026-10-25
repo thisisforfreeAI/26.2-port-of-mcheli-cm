@@ -112,6 +112,20 @@ weapons/lau-68_logir.damageFactor: DamageFactor{tank=2.0} vs null
 weapons/m102_105mm.damageFactor: DamageFactor{helicopter=2.0, plane=2.0, vehicle=2.0, tank=2.0} vs null
 weapons/mw-1.bomblet: 2 vs 0
 weapons/mw-1.bombletSTime: 1 vs 10
+weapons/ntm_agent_orange: only in YAML
+weapons/ntm_b61: only in YAML
+weapons/ntm_b61_tactical: only in YAML
+weapons/ntm_b83: only in YAML
+weapons/ntm_balefire_bomb: only in YAML
+weapons/ntm_chlorine_bomb: only in YAML
+weapons/ntm_fat_man: only in YAML
+weapons/ntm_little_boy: only in YAML
+weapons/ntm_mini_nuke_bomb: only in YAML
+weapons/ntm_mk77_napalm: only in YAML
+weapons/ntm_odab500: only in YAML
+weapons/ntm_rn40: only in YAML
+weapons/ntm_we177: only in YAML
+weapons/ntm_wp_bomb: only in YAML
 weapons/pars_3_lr.damageFactor: DamageFactor{tank=2.0} vs null
 weapons/pom2.damageFactor: DamageFactor{tank=0.0, player=10.0, helicopter=0.0, vehicle=0.0} vs null
 weapons/rehinmetall_apfsds.damageFactor: DamageFactor{plane=3.0, helicopter=3.0} vs null
@@ -361,10 +375,22 @@ planes/an2.onGroundPitch: -12.31 vs 12.31
 planes/an2.bbZmax: -2.66 vs 2.68
 planes/an2.bbZ: -3.4099998 vs -0.7399999
 planes/an2.author: '' vs 'EMB4'
+planes/b-2a.partWeaponBay[0].weaponName: 'mk82_b2/ gbu38 / gbu28 / agm154 / gbu57 /agm158' vs 'mk82_b2/ gbu38 / gbu28 / agm154 / gbu57 /agm158 / ntm_b61 / ntm_b83 / ntm_balefire_bomb'
+planes/b-2a.partWeaponBay[0].weaponIds: length 6 vs 9
+planes/b-2a.partWeaponBay[1].weaponName: 'mk82_b2/ gbu38 / gbu28 / agm154 / gbu57 /agm158' vs 'mk82_b2/ gbu38 / gbu28 / agm154 / gbu57 /agm158 / ntm_b61 / ntm_b83 / ntm_balefire_bomb'
+planes/b-2a.partWeaponBay[1].weaponIds: length 6 vs 9
+planes/b-2a.partWeaponBay[2].weaponName: 'mk82_b2/ gbu38 / gbu28 / agm154 / gbu57 /agm158' vs 'mk82_b2/ gbu38 / gbu28 / agm154 / gbu57 /agm158 / ntm_b61 / ntm_b83 / ntm_balefire_bomb'
+planes/b-2a.partWeaponBay[2].weaponIds: length 6 vs 9
+planes/b-2a.partWeaponBay[3].weaponName: 'mk82_b2/ gbu38 / gbu28 / agm154 / gbu57 /agm158' vs 'mk82_b2/ gbu38 / gbu28 / agm154 / gbu57 /agm158 / ntm_b61 / ntm_b83 / ntm_balefire_bomb'
+planes/b-2a.partWeaponBay[3].weaponIds: length 6 vs 9
 planes/b-2a.itemID: 28738 vs 0
 planes/b-2a.bbZmax: -11.3 vs 1.7
 planes/b-2a.bbZ: -14.799999 vs -8.299999
 planes/b-2a.author: '' vs 'EMB4'
+planes/b29.partWeaponBay[0].weaponName: '250kg / anm17allc' vs '250kg / anm17allc / ntm_little_boy / ntm_fat_man'
+planes/b29.partWeaponBay[0].weaponIds: length 2 vs 4
+planes/b29.partWeaponBay[1].weaponName: '250kg / anm17allc' vs '250kg / anm17allc / ntm_little_boy / ntm_fat_man'
+planes/b29.partWeaponBay[1].weaponIds: length 2 vs 4
 planes/b29.itemID: 28729 vs 0
 planes/b29.bbZmax: -25.6 vs 0.4
 planes/b29.bbZ: -26.6 vs -13.6
@@ -403,6 +429,14 @@ planes/f-15s_mtd.itemID: 28734 vs 0
 planes/f-15s_mtd.bbZmax: -10.3 vs -1.3
 planes/f-15s_mtd.bbZ: -11.8 vs -7.3
 planes/f-15s_mtd.author: '' vs 'EMB4'
+planes/f-35a.partWeaponBay[0].weaponName: 'aim-9x / gbu-39_b_sdb' vs 'aim-9x / gbu-39_b_sdb / ntm_b61_tactical'
+planes/f-35a.partWeaponBay[0].weaponIds: length 2 vs 3
+planes/f-35a.partWeaponBay[1].weaponName: 'aim-9x / gbu-39_b_sdb' vs 'aim-9x / gbu-39_b_sdb / ntm_b61_tactical'
+planes/f-35a.partWeaponBay[1].weaponIds: length 2 vs 3
+planes/f-35a.partWeaponBay[2].weaponName: 'aim-9x / gbu-39_b_sdb' vs 'aim-9x / gbu-39_b_sdb / ntm_b61_tactical'
+planes/f-35a.partWeaponBay[2].weaponIds: length 2 vs 3
+planes/f-35a.partWeaponBay[3].weaponName: 'aim-9x / gbu-39_b_sdb' vs 'aim-9x / gbu-39_b_sdb / ntm_b61_tactical'
+planes/f-35a.partWeaponBay[3].weaponIds: length 2 vs 3
 planes/f-35a.itemID: 28723 vs 0
 planes/f-35a.bbZmax: -8.8 vs -1.3
 planes/f-35a.bbZ: -9.8 vs -6.05
@@ -557,6 +591,10 @@ planes/us-2.recipeString[0]: '"GPG",  "XIX",  "XXX",  X,IRON_BLOCK, G,DYE,4, P,G
 planes/us-2.bbZmax: 0.029999971 vs 12.03
 planes/us-2.bbZ: -1.47 vs 4.5299997
 planes/us-2.author: '' vs 'EMB4'
+planes/x-47b.partWeaponBay[0].weaponName: 'gbu-31' vs 'gbu-31 / ntm_mini_nuke_bomb'
+planes/x-47b.partWeaponBay[0].weaponIds: length 1 vs 2
+planes/x-47b.partWeaponBay[1].weaponName: 'gbu-31' vs 'gbu-31 / ntm_mini_nuke_bomb'
+planes/x-47b.partWeaponBay[1].weaponIds: length 1 vs 2
 planes/x-47b.itemID: 28728 vs 0
 planes/x-47b.bbZmax: -3.5 vs 2.5
 planes/x-47b.bbZ: -5.0 vs -2.0

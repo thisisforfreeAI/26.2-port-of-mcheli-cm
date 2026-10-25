@@ -42,16 +42,14 @@ public final class ModKeyMappings {
     };
 
     /**
-     * Upstream's multiplayer keys work outside vehicles too, but only off singleplayer (or with the
-     * debug log on), with no screen open.
+     * Upstream's multiplayer keys work outside vehicles too, with no screen open. Upstream kept them
+     * off singleplayer (unless the debug log was on); here they work there too.
      */
     public static final IKeyConflictContext MULTIPLAY = new IKeyConflictContext() {
         @Override
         public boolean isActive() {
             Minecraft mc = Minecraft.getInstance();
-            return mc.gui.screen() == null && mc.player != null
-                    && (!mc.hasSingleplayerServer() || io.github.mcheliceport.config.CommonConfig.SPEC.isLoaded()
-                            && io.github.mcheliceport.config.CommonConfig.DEBUG_LOG.get());
+            return mc.gui.screen() == null && mc.player != null;
         }
 
         @Override

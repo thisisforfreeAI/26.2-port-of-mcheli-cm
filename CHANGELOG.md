@@ -11,11 +11,29 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 ## [Unreleased] - M6 in progress
 
 ### Added
+- With NTM Next installed, 14 stock planes carry NTM bombs as selectable weapons after their own:
+  Little Boy and Fat Man on the B-29; B61, B83 and a balefire bomb on the B-2A; tactical nukes on
+  the F-15E, F-35A, Tornado IDS and MiG-29; ODAB-500 and chlorine bombs on the Su-37; Mk 77 napalm
+  on the F-4, F/A-18F and Harrier; white phosphorus on the A-10; mini-nuke bombs on the MQ-9 and
+  X-47B; and an Agent Orange sprayer on the PZL M-18. Without NTM Next they don't appear. Weapons
+  take a new `RequiredMod` key, which hides them when that mod isn't loaded.
+- The multiplay manager (M) has a Join button under each team's list and a Leave team button
+  under the players in no team, so players choose their own team without `/team join`. The
+  server setting `teams.playersChooseTeam` (on by default) limits them to game masters. The
+  manager and the team lists (L) now also work in singleplayer; there L keeps opening
+  Advancements until a team exists. Network protocol 31.
 - Looking at a vehicle in first person shows upstream's enter-seat prompt ("Press Right Button to
   enter seat 0") below the crosshair, naming the seat the use key would board. It hides behind a
   closed canopy, while sneaking or riding, and while holding a wrench or gunner spawn item.
 
 ### Changed
+- Vehicles in thermal vision and vehicles past the render distance are drawn from the graphics card
+  too, like other vehicles. With 28 tanks in thermal view the render thread spent about two thirds
+  less time on them.
+- A tank's extra hull boxes are now solid, so players, mobs and other vehicles stop at the whole
+  hull and turret instead of walking into long tanks. On the M1A2 a player now stops about 4 blocks
+  from the centre at the front, where before they reached about 1.3. The tank's crew, seats and
+  loads still pass through.
 - Default M8 effects gain clearer smoke cores/wisps and localized warm backlighting, baked
   vehicle surface contrast, varied terrain scars/tracks, patchier rotor wash and smoother
   distance detail. Existing effect budgets and original crater behavior are unchanged.
@@ -481,7 +499,9 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
   unchanged and is documented in KNOWN_ISSUES.md. Correctly grouped addon models render.
 
 ### Fixed
-
+- Ejection seats and transport chutes now draw, as upstream never did: the stock parachute model's group names are
+  repaired and its canopy is in the `$parachute` group. An ejected pilot now falls on the seat
+  and then hangs under the canopy.
 - Vehicles stay drawn as far as the client has them. Vanilla hid them past about 150 blocks
   (by their small bounding box), while upstream drew every vehicle the client had.
 - Wheeled tanks with a pivot-turn throttle (M1129, B1 Centauro) steer again: their turn rate

@@ -42,6 +42,7 @@ final class TankCollisionGameTests {
         ModGameTests.test("tank_ram_occupants_and_exclusions", 30, TankCollisionGameTests::exclusions);
         ModGameTests.test("tank_ram_vehicle_rules", 30, TankCollisionGameTests::vehicles);
         ModGameTests.test("tank_extra_box_crushing_ram_era", 30, TankCollisionGameTests::extraBoxes);
+        ModGameTests.test("tank_extra_box_solid", 30, TankCollisionGameTests::solidBoxes);
     }
 
     private static TankInfo info(int weight) {
@@ -241,5 +242,33 @@ final class TankCollisionGameTests {
         check(h, h.getBlockState(new BlockPos(18, 5, 12)).is(Blocks.OAK_PLANKS) && next.getHealth() == next.getMaxHealth(),
                 "popped tile no longer crushes or rams");
         next.discard(); tank.discard(); h.succeed();
+    }
+
+    private static void solidBoxes(GameTestHelper h) {
+        TankInfo info = info(2);
+        info.extraBoundingBox.add(new BoundingBoxInfo(6, 0, 0, 2, 2, 1));
+        var era = new BoundingBoxInfo(-6, 0, 0, 2, 2, 1); era.isERA = true; era.eraMinDamage = 5;
+        info.extraBoundingBox.add(era);
+        var tank = tank(h, info); ticks(tank, 1);
+        var hull = tank.getHitBoxes()[0];
+        var cow = cow(h, tank.position().add(8.5, 0, 0));
+        cow.move(net.minecraft.world.entity.MoverType.SELF, new Vec3(-3, 0, 0));
+        double front = hull.getBoundingBox().maxX;
+        check(h, Math.abs(cow.getBoundingBox().minX - front) < 1.0E-3,
+                "a mob walking into the extra hull box stops at it: " + cow.getBoundingBox().minX + " vs " + front);
+        cow.setPos(hull.getBoundingBox().getCenter().x, cow.getY(), cow.getZ());
+        double inside = cow.getX();
+        cow.move(net.minecraft.world.entity.MoverType.SELF, new Vec3(3, 0, 0));
+        check(h, cow.getX() > inside + 2.9, "a mob already inside the box can move out of it");
+        var rider = GameTestSupport.player(h, GameType.SURVIVAL, new Vec3(12, 7, 12)); rider.startRiding(tank, true, true);
+        check(h, hull.canBeCollidedWith(cow) && !hull.canBeCollidedWith(tank) && !hull.canBeCollidedWith(rider)
+                && !hull.canBeCollidedWith(tank.getHitBoxes()[1]), "the box is solid for others, not for the tank and its crew");
+        var popped = tank.getHitBoxes()[1];
+        check(h, popped.canBeCollidedWith(cow), "an intact ERA tile is solid");
+        tank.hurtFromHitBox(h.getLevel(), popped, h.getLevel().damageSources().generic(), 20);
+        check(h, !popped.canBeCollidedWith(cow), "a popped ERA tile is not");
+        var plane = new io.github.mcheliceport.entity.plane.PlaneEntity(ModEntityTypes.PLANE.get(), h.getLevel());
+        check(h, !plane.hasSolidHitBoxes(), "aircraft keep their extra boxes for hits only");
+        rider.stopRiding(); rider.discard(); cow.discard(); tank.discard(); h.succeed();
     }
 }

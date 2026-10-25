@@ -34,10 +34,13 @@ import org.junit.jupiter.api.Test;
  * To regenerate the list after a deliberate change, run the tests with
  * {@code -Dmcheli.updateParity=true} and review the diff.
  */
-class ContentParityTest {
+public class ContentParityTest {
 
     static final double TXT_CAMERA_OFFSET = 0.35;
     private static final String KNOWN_DIFFERENCES = "src/test/resources/parity/known-differences.txt";
+
+    /** The port's NTM Next bombs (weapons/ntm_*.yml), which upstream did not ship. */
+    public static final int NTM_BOMBS = 14;
 
     /** Stock content counts, from PORTING_PLAN.md section 3.3. */
     private static final Map<String, Integer> EXPECTED_COUNTS = Map.of("helicopters", 34, "planes", 46, "ships", 5,
@@ -62,12 +65,12 @@ class ContentParityTest {
 
     @Test
     void everyStockDefinitionLoadsFromTxt() {
-        assertCounts(txt);
+        assertCounts(txt, 0);
     }
 
     @Test
     void everyStockDefinitionLoadsFromYaml() {
-        assertCounts(yml);
+        assertCounts(yml, NTM_BOMBS);
     }
 
     @Test
@@ -127,14 +130,15 @@ class ContentParityTest {
         }
     }
 
-    private static void assertCounts(ContentRegistries.Snapshot s) {
+    /** {@code extraWeapons}: the port's own stock weapons, which only the YAML pack has. */
+    private static void assertCounts(ContentRegistries.Snapshot s, int extraWeapons) {
         Map<String, Integer> actual = new TreeMap<>();
         actual.put("helicopters", s.heli().size());
         actual.put("planes", s.plane().size());
         actual.put("ships", s.ship().size());
         actual.put("tanks", s.tank().size());
         actual.put("vehicles", s.vehicle().size());
-        actual.put("weapons", s.weapon().size());
+        actual.put("weapons", s.weapon().size() - extraWeapons);
         actual.put("throwable", s.throwable().size());
         actual.put("hud", s.hud().size());
         assertEquals(new TreeMap<>(EXPECTED_COUNTS), actual);

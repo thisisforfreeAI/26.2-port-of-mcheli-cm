@@ -39,7 +39,7 @@ The counts above are the stock inventory from M2, not a limit on addon definitio
 - Flight tests compare 300 ticks per scenario against a transcription of upstream, including
   cruise, VTOL, transition, reverse, sweep speed, water, landing and target drones. GameTests
   exercise all 46 stock definitions, takeoff, persistence, authorization and movement authority.
-- All stock plane body models and textures are checked. The 79 part references absent in the
+- All stock plane body models and textures are checked. The 54 part references absent in the
   pinned upstream model files are recorded explicitly in the parity fixture; additional gaps fail.
 
 This does not complete stage 2. Remaining plane work includes equipment integration and broader
@@ -191,7 +191,7 @@ The isolated `.run/parachutes-opengl` and `.run/parachutes-vulkan` game director
 existing Xvfb/Mesa setup and explicit backend flags. `zz_parachute_probe` is a local test addon:
 it removes the exported-name prefixes from a copy of `parachute2.mqo` and moves the seat object
 before the canopy group, so the existing geometry has valid groups. This fixture is not shipped
-in the mod and does not change the pinned stock asset.
+in the mod. The shipped asset now has the same fix (see "Stock model fixes" below).
 
 With `/tick freeze`, summon models 1, 2 and 3 at `(-6, -57, 12)`, `(0, -57, 12)` and `(6, -57, 12)`.
 Give model 2 upward motion `(0, 2, 0)` to select its closed seat; model 3 selects the open canopy.
@@ -1387,6 +1387,72 @@ non-operator PVP and Team shuffle changed nothing; as an operator PVP turned OFF
 moved Dev from Red to Blue, New team created a dark green team Green with friendly fire off
 ([new team](screens/m6-create-team.png)) and the lists made room for it, Jump spawn pos took Dev
 to the world spawn, and Destroy All removed an AH-64 in view. Not run: Vulkan, a second player.
+
+### Team join buttons and singleplayer
+
+- `MultiplayManagerScreen` puts a Join button under each team's list ("Joined" and greyed out for
+  the player's own team) and a Leave team button under the players in no team, below the action
+  buttons. They send `MultiplayActionPayload` `JOIN_TEAM` (with the team's name) and `LEAVE_TEAM`;
+  `MultiplayManager.joinTeam` and `leaveTeam` act when the team exists and the player may choose
+  (`teams.playersChooseTeam`, on by default, or a game master). `MultiplayStatePayload` tells the
+  client whether to show the buttons. The screen lays itself out again when the player's team,
+  the list rows or that answer change. Network protocol 31.
+- The multiplay keys now work in singleplayer. There L takes over from Advancements only once a
+  team exists.
+
+Validation: the `multiplay_join_and_leave_team` GameTest joins, moves, leaves, refuses a missing
+team and checks the setting with and without game master; all 258 required GameTests pass. On a
+dedicated server, a non-operator OpenGL client joined Red and left it with the buttons
+([server](screens/m6-team-join.png)). In a new singleplayer world M opened the manager, New team
+made Alpha, Join put the player in it, and holding L showed the lists
+([singleplayer](screens/m6-team-join-singleplayer.png)).
+
+### Stock model fixes
+
+- `models/parachute2.mqo` now names its seat object `$seat` and its first canopy object
+  `$parachute`, with the other canopy and line objects after it so they merge into that group.
+  Upstream's file prefixed every name with `[Exported] [Imported]` and left `$parachute` empty.
+  `ParachuteModelsTest` pins the new file. Ejection seats show the seat while closed and the canopy
+  once open; transport chutes show the canopy.
+- The MXT-MV draws whole: its "missing canopy" was the `canopy` alias that upstream's TXT parser
+  adds next to every first canopy (`canopy0`), and its model names the part `$canopy0`. The model
+  checks now count the pair as present when either exists, which also clears the AH-1Z entry and
+  25 plane entries from the gap lists.
+
+Validation: JUnit passes. In game on OpenGL against a dedicated server, a pilot ejecting from the
+F-4 fell on the seat and then hung under the open canopy ([screen](screens/m6-ejection-seat.png)).
+The MXT-MV showed both doors and its full body from every side.
+
+### Solid tank hull boxes
+
+- `AircraftHitBox.canBeCollidedWith` makes a vehicle's extra boxes solid when
+  `AircraftEntity.hasSolidHitBoxes()`, which only `TankEntity` returns true for. It is not solid for
+  the vehicle itself, its other boxes, or anything with the same root vehicle (crew, seats, loads,
+  the carrier it rides on). Inactive ERA tiles aren't solid. NeoForge's `Level.getEntities` lists
+  part entities, so vanilla's entity collisions pick the boxes up on server and client.
+- The tank's wheel probes skip their own tank's parts (`other.is(parent)`).
+
+Validation: the `tank_extra_box_solid` GameTest stops a mob at an extra box, lets one inside move
+out, and checks crew, popped ERA and aircraft; all 260 required GameTests pass. In game on OpenGL
+against a dedicated server, a survival player walking at an M1A2 stopped 4.2 blocks from its
+centre at the front, 6.0 at the rear and 2.2 at the side; its main box alone stops them at 1.3
+([screen](screens/m6-tank-solid-hull.png)).
+
+### NTM bombs on stock planes
+
+- 14 new `ntm_*` weapons in `assets/mcheli/weapons/` (see `docs/NTM_NEXT_WEAPONS.md`) carry
+  `RequiredMod: hbm`. `WeaponInfo.requiredMod` is parsed and emitted, and
+  `ContentRegistries.dropWeaponsOfMissingMods` removes weapon sets of mods that aren't loaded
+  after the content is read, so planes without NTM Next keep their old list.
+- The planes list the bombs at the end of `Weapons:`, so saved weapon indices don't move, and bay
+  `WeaponName:` lines name them so the doors open. `BuiltinAddonPack.CONTENT_REVISION` is 4, so
+  existing installs pick up the new stock files.
+
+Validation: `ntm_bombs_only_with_ntm_next` checks the 14 planes with and without NTM Next and
+`ntm_little_boy` checks Little Boy's MK5 blast and cloud; 259 GameTests pass without NTM Next and
+267 with it. On an OpenGL client of a dedicated server with NTM Next, the B-29 dropped Little Boy
+and Fat Man, which left mushroom clouds, craters and fallout, and the F-4 dropped Mk 77 napalm,
+which burned on the ground ([screens](screens/ntm-bombs-opengl.png)).
 
 ## Mobs in seats increment
 

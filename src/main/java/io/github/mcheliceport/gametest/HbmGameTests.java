@@ -46,6 +46,7 @@ final class HbmGameTests {
         ModGameTests.test("ntm_mist", 20, HbmGameTests::mist);
         ModGameTests.test("ntm_chemical", 20, HbmGameTests::chemical);
         ModGameTests.testAlone("ntm_nuke", 20, HbmGameTests::nuke);
+        ModGameTests.testAlone("ntm_little_boy", 20, HbmGameTests::littleBoy);
         ModGameTests.testAlone("ntm_mini_nuke", 40, HbmGameTests::miniNuke);
         ModGameTests.testAlone("ntm_vnt", 40, HbmGameTests::vnt);
         ModGameTests.testAlone("ntm_nt", 40, HbmGameTests::nt);
@@ -158,6 +159,29 @@ final class HbmGameTests {
         List<EntityNukeTorex> cloudOnly = around(h, EntityNukeTorex.class, spot);
         check(h, cloudOnly.size() == 1, "an effect-only nuke should still show its cloud");
         discardAll(cloudOnly);
+        h.succeed();
+    }
+
+    /**
+     * The stock Little Boy's impact starts a 60-block MK5 blast and its cloud: its
+     * {@code DestructionPower} sizes the nuke while {@code Radio} keeps McHeli's own blast small.
+     * The blast is removed before it runs.
+     */
+    private static void littleBoy(GameTestHelper h) {
+        Vec3 spot = new Vec3(12.5, 2, 12.5);
+        WeaponInfo info = io.github.mcheliceport.content.ContentRegistries.weapon().get("ntm_little_boy");
+        check(h, info != null, "no Little Boy");
+        RocketEntity bomb = NtmGameTests.rocket(h, info, spot);
+        Vec3 at = bomb.position();
+        bomb.newExplosion(at.x, at.y, at.z, info.explosion, info.explosionBlock, false);
+        List<EntityNukeExplosionMK5> blasts = around(h, EntityNukeExplosionMK5.class, spot);
+        List<EntityNukeTorex> clouds = around(h, EntityNukeTorex.class, spot);
+        discardAll(blasts);
+        discardAll(clouds);
+        bomb.discard();
+        check(h, blasts.size() == 1 && blasts.get(0).getRadius() == 60, "one 60-block MK5 blast expected, got "
+                + blasts.stream().map(EntityNukeExplosionMK5::getRadius).toList());
+        check(h, clouds.size() == 1, "one torex cloud expected, got " + clouds.size());
         h.succeed();
     }
 

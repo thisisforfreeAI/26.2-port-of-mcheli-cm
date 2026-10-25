@@ -33,6 +33,10 @@ Weapons:
   Position: [0.0, 1.7, 5.2]
 - Type: targeting_pod_block
   Position: [0.0, 1.7, 5.2]
+- Type: ntm_mini_nuke_bomb
+  Position: [1.15, 1.97, -3.55]
+- Type: ntm_mini_nuke_bomb
+  Position: [-1.15, 1.97, -3.55]
 Seats:
 - Position: [0.0, 0.0, 0.0]
   Hud: plane
@@ -73,12 +77,12 @@ Components:
   - Position: [-0.62, 1.22, -1.45]
     Rotation: [0.0, -0.02, 1.0]
     PartName: wb0
-    WeaponName: gbu-31
+    WeaponName: gbu-31 / ntm_mini_nuke_bomb
     MaxRotation: 1.0
   - Position: [0.62, 1.22, -1.45]
     Rotation: [0.0, -0.02, 1.0]
     PartName: wb1
-    WeaponName: gbu-31
+    WeaponName: gbu-31 / ntm_mini_nuke_bomb
     MaxRotation: -1.0
   LandingGear:
   - Position: [0.0, 1.8, 1.99]
