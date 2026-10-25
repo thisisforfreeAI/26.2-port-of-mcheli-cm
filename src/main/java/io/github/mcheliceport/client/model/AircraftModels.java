@@ -211,7 +211,9 @@ public final class AircraftModels {
                 continue;
             }
             try (InputStream in = resource.get().open()) {
-                return ext.equals(".obj") ? ObjParser.parse(id.toString(), in) : MqoParser.parse(id.toString(), in);
+                McheliModel model=ext.equals(".obj") ? ObjParser.parse(id.toString(), in) : MqoParser.parse(id.toString(), in);
+                VehicleImpactSurface.prepare(model);
+                return model;
             } catch (IOException | ModelFormatException e) {
                 LOGGER.error("load model error '{}'", id, e);
                 return null;
@@ -273,6 +275,7 @@ public final class AircraftModels {
 
         @Override
         protected Map<String, Entry> prepare(ResourceManager manager, ProfilerFiller profiler) {
+            VehicleImpactSurface.clear();
             if (ClientConfig.get(ClientConfig.ON_DEMAND_MODELS)) {
                 return Map.of();
             }

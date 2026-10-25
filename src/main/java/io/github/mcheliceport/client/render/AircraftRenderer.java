@@ -73,6 +73,7 @@ public abstract class AircraftRenderer<T extends AircraftEntity> extends EntityR
         }
         super.extractRenderState(entity, state, partialTicks);
         state.draws.clear();
+        state.impactDraws.clear();
         state.emissiveDraws.clear();
         state.searchLights.clear();
         state.boxes.clear();
@@ -139,6 +140,7 @@ public abstract class AircraftRenderer<T extends AircraftEntity> extends EntityR
                 eraIndex++;
             }
         }
+        VehicleImpactMarks.extract(entity,state);
     }
 
     protected abstract String directory();
@@ -270,6 +272,25 @@ public abstract class AircraftRenderer<T extends AircraftEntity> extends EntityR
                     PoseStack.Pose p = pose.copy();
                     p.mulPose(draw.pose());
                     ModelVertices.emit(buffer, p, draw.groups(), color, light, flat, surfaceShade);
+                }
+            });
+        }
+        if(!state.impactDraws.isEmpty()) {
+            var marks=List.copyOf(state.impactDraws);
+            int impactLight=state.lightCoords;
+            collector.submitCustomGeometry(poseStack,net.minecraft.client.renderer.rendertype.RenderTypes.entityTranslucent(VehicleImpactMarks.TEXTURE,false),
+                    (pose,buffer)->{
+                for(var mark:marks){
+                    PoseStack.Pose local=pose.copy();local.mulPose(mark.pose());
+                    var vertices=mark.mesh().vertices();var normal=mark.mesh().normal();
+                    int color=((int)(255*mark.opacity())<<24)|0xFFFFFF;
+                    for(int t=0;t+2<vertices.size();t+=3)for(int k=0;k<4;k++){
+                        var v=vertices.get(t+Math.min(2,k));
+                        buffer.addVertex(local,v.x(),v.y(),v.z()).setColor(color)
+                                .setUv((mark.tile()%4+v.u())/4F,(mark.tile()/4+v.v())/2F)
+                                .setOverlay(net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY)
+                                .setLight(impactLight).setNormal(local,normal.x,normal.y,normal.z);
+                    }
                 }
             });
         }

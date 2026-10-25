@@ -11,6 +11,8 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 ## [Unreleased] - M6 in progress
 
 ### Added
+- Enhanced vehicle damage details add panel-fitted gun chips, cannon scorch marks and cracks
+  on named window/glass groups. Marks follow moving parts and fade as repairs restore health.
 - Looking at a vehicle in first person shows upstream's enter-seat prompt ("Press Right Button to
   enter seat 0") below the crosshair, naming the seat the use key would board. It hides behind a
   closed canopy, while sneaking or riding, and while holding a wrench or gunner spawn item.
