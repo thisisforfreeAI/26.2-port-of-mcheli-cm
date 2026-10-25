@@ -45,6 +45,11 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
   Gameplay and global effect caps are unchanged. See `docs/M8_COMPLETION.md` for validation
   and target-hardware acceptance limits.
 
+- M7 NTM Next client validation: all six payloads checked in game on OpenGL and Vulkan clients
+  of a dedicated server. `-PwithHbm` now also adds CrankShaft, so the dev client starts with NTM
+  Next. `scripts/make-ntm-validation-pack.sh` writes the test pack. On Mesa's software Vulkan
+  driver CrankShaft crashes the client unless its renderer is off (KNOWN_ISSUES 7).
+
 - M7 NTM Next follow-up: add configurable native chlorine, standard, pink and orange chemical
   clouds with count/speed controls and EffectOnly suppression. Preserve every NTM setting during
   YAML export/reload, including nested VNT processors, mini-nuke presets and legacy attributes.
@@ -53,7 +58,7 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 - M7 optional NTM Next warhead bridge: adapt mini-nukes, nuclear clouds, VNT processors,
   lingering fire and fluid mist to the NeoForge 26.2 APIs. Preserve ordinary explosions and
   EffectOnly behavior when HBM is absent or unsupported. Add fallback/API regression coverage;
-  server GameTests pass with and without NTM Next; client validation remains pending.
+  server GameTests pass with and without NTM Next.
 
 - M8 impacts: fuller growing rocket/missile smoke, wider billow spread and longer smoke retention
   inside existing primary caps. Large general warheads devote more of their cloud to smoke.

@@ -53,19 +53,37 @@ then passed the standard build, 252 default and 253 installed-mod GameTests afte
 long-distance increment and adding nuclear factory/EffectOnly coverage. Six reflection-boundary
 tests pass locally on Java 25. The chemical/export follow-up adds five YAML regression tests and
 one installed-mod chemical test; current CI results are attached to PR #74.
-Local standard Gradle validation remains blocked by the environment's denial of the existing
-JEI Maven host; CI downloads dependencies normally. OpenGL/Vulkan and multiplayer presentation
-with NTM Next have not been checked.
+That session's environment could not reach the JEI Maven host, so it relied on CI for the
+standard Gradle build.
 
 Run the normal `./gradlew build runGameTestServer` without HBM, and
 `./gradlew runGameTestServer -PwithHbm` for the pinned official release. `-PhbmFile=<file ID>`
 selects another published NeoForge file. HBM is a test runtime dependency only and remains
-optional for users. Client runs with HBM also need its required CrankShaft dependency, as listed
-on the official download page. The default GameTest checks normal blast/EffectOnly behavior
+optional for users. `-PwithHbm` also adds NTM Next's required client dependency, CrankShaft
+(neoforge-1.6.1+mc26.2 from Modrinth; `-PcrankshaftVersion=<Modrinth version ID>` selects
+another), so `runClient` starts with HBM too. The default GameTest checks normal blast/EffectOnly behavior
 without HBM; the additional installed-mod test checks actual fire/mist entities, safe mini-nuke
 parameters, visual-only packets, VNT calls and nuclear entity factories (discarded before their
 first tick). The chemical test verifies all four real cloud types, count, motion, zero count and
 EffectOnly suppression, cleaning up clouds before they tick.
+
+In-game check: `scripts/make-ntm-validation-pack.sh` writes an addon pack that gives six stock
+rockets a payload each (chemical, fire, mist, mini-nuke, VNT, nuke). With `-PwithHbm`, a
+dedicated server and a separate client, each was fired from its vehicle against a stone wall on
+the OpenGL backend (Mesa llvmpipe) and again on Vulkan (lavapipe); the mini-nuke and VNT runs
+were repeated with `--effect-only`. The client showed every payload's NTM visuals: chlorine
+clouds, phosphorus fire, water mist, the mini-nuke fireball, the VNT cloud and the nuke's flash
+and crater (`docs/screens/m7-ntm-opengl.png`, `docs/screens/m7-ntm-vulkan.png`). With
+`EffectOnly` the wall stayed whole. Neither side logged an error from the bridge, and the client
+kept its connection through each blast. Sound could not be checked (no audio device), and only
+one player was connected, so another player watching the shooter was not covered.
+
+On lavapipe, the client crashed natively in the driver twice during these runs, a few seconds
+after a payload's effects appeared. Summoning NTM's own clouds and nuke effect with `/summon`,
+with no McHeli entity in the world, crashed it the same way. With CrankShaft's renderer turned
+off (`backend = "flywheel:off"` in `crankshaft-client.toml`) neither happened, and the six
+payloads ran on Vulkan as above (KNOWN_ISSUES 7). NTM's nuke cloud then draws as dark blocks,
+also NTM's own rendering. OpenGL ran with CrankShaft on and did not crash.
 
 ## `/mcheli` command increment
 
