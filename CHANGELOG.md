@@ -8,7 +8,9 @@ Versions stay below 1.0.0 until the port is feature-complete, and each milestone
 McHeli CE 1.5.1 (`master` @ `cbaff7f`). Where it deliberately differs from upstream, the difference is
 listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 
-## [Unreleased] - M6 in progress
+## [Unreleased]
+
+## [0.6.0] - 2026-10-25 (M6 preview: gameplay and multiplayer)
 
 ### Added
 - With NTM Next installed, 14 stock planes carry NTM bombs as selectable weapons after their own:
