@@ -89,9 +89,11 @@ public final class VehicleImpactProbe {
         }
         if(tick==690){check(VehicleImpactMarks.stored()>0&&VehicleImpactMarks.stored()<=16,"Burst exceeded per-vehicle cap");
             System.out.println("M8_IMPACTS burst_bounds=true stored="+VehicleImpactMarks.stored()+" pending="+VehicleImpactMarks.pending());}
+        if(tick==692)ClientConfig.EFFECT_BUDGET.set(ClientConfig.EffectBudget.LOW);
+        if(tick==696){check(VehicleImpactMarks.stored()<=8,"Low quality retained excess marks");System.out.println("M8_IMPACTS low_releases_excess=true stored="+VehicleImpactMarks.stored());}
         if(tick==700)ClientConfig.VEHICLE_DAMAGE_DETAILS.set(false);
         if(tick==710){check(VehicleImpactMarks.stored()==0&&VehicleImpactMarks.pending()==0,"Disable did not clear burst state");System.out.println("M8_IMPACTS burst_cleanup=true");}
-        if(tick==730){ClientConfig.VEHICLE_DAMAGE_DETAILS.set(true);mc.stop();}
+        if(tick==730){ClientConfig.VEHICLE_DAMAGE_DETAILS.set(true);ClientConfig.EFFECT_BUDGET.set(ClientConfig.EffectBudget.BALANCED);mc.stop();}
         check(VehicleImpactMarks.stored()<=512&&VehicleImpactMarks.pending()<=256,"Unbounded marks/pending");
     }
     private static void shoot(Minecraft mc,boolean cannon,int index){

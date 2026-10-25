@@ -62,9 +62,12 @@ public final class VehicleImpactMarks {
         if(level!=world||!enabled()){clear();world=level;}
         if(level==null)return;
         long now=level.getGameTime();
+        var quality=ClientConfig.get(ClientConfig.EFFECT_BUDGET);
+        int cap=quality==ClientConfig.EffectBudget.LOW?8:quality==ClientConfig.EffectBudget.HIGH?24:16;
         for(var iterator=STATES.entrySet().iterator();iterator.hasNext();){
             var entry=iterator.next();var ac=entry.getKey();var state=entry.getValue();
             if(ac.isRemoved()||ac.level()!=level){iterator.remove();continue;}
+            while(state.marks.size()>cap)state.marks.removeFirst();
             int damage=ac.getDamageTaken(),healed=Math.max(0,state.lastDamage-damage);
             for(var mark:state.marks){
                 if(healed>0)mark.target=VehicleImpactLook.repaired(mark.target,healed,ac.getMaxHP(),damage==0);
