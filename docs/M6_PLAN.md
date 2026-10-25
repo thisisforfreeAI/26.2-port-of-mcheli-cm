@@ -1407,6 +1407,22 @@ dedicated server, a non-operator OpenGL client joined Red and left it with the b
 made Alpha, Join put the player in it, and holding L showed the lists
 ([singleplayer](screens/m6-team-join-singleplayer.png)).
 
+### NTM bombs on stock planes
+
+- 14 new `ntm_*` weapons in `assets/mcheli/weapons/` (see `docs/NTM_NEXT_WEAPONS.md`) carry
+  `RequiredMod: hbm`. `WeaponInfo.requiredMod` is parsed and emitted, and
+  `ContentRegistries.dropWeaponsOfMissingMods` removes weapon sets of mods that aren't loaded
+  after the content is read, so planes without NTM Next keep their old list.
+- The planes list the bombs at the end of `Weapons:`, so saved weapon indices don't move, and bay
+  `WeaponName:` lines name them so the doors open. `BuiltinAddonPack.CONTENT_REVISION` is 4, so
+  existing installs pick up the new stock files.
+
+Validation: `ntm_bombs_only_with_ntm_next` checks the 14 planes with and without NTM Next and
+`ntm_little_boy` checks Little Boy's MK5 blast and cloud; 259 GameTests pass without NTM Next and
+267 with it. On an OpenGL client of a dedicated server with NTM Next, the B-29 dropped Little Boy
+and Fat Man, which left mushroom clouds, craters and fallout, and the F-4 dropped Mk 77 napalm,
+which burned on the ground ([screens](screens/ntm-bombs-opengl.png)).
+
 ## Mobs in seats increment
 
 - `AircraftEntity.mountMobToSeats` ports upstream's: when a player boards as pilot through the

@@ -70,6 +70,9 @@ Weapons:
 - Type: targeting_pod_ph50s
   Position: [0.0, 3.4, 0.0]
   SeatID: 2
+- Type: ntm_b61_tactical
+  Position: [0.0, 1.18, -9.85]
+  SeatID: 2
 Seats:
 - Position: [0.0, 2.43, 0.0]
   Hud: plane

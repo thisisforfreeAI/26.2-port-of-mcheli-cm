@@ -42,6 +42,9 @@ Weapons:
   Pitch: -1.0
 - Type: targeting_pod_ph50s
   Position: [0.0, 3.1, -0.6]
+- Type: ntm_rn40
+  Position: [3.66, 1.65, -5.65]
+  Pitch: -1.0
 Seats:
 - Position: [0.0, 2.15, -0.6]
   Hud: plane

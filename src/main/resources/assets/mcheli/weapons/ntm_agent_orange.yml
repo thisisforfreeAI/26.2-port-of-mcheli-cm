@@ -1,0 +1,36 @@
+DisplayName: Agent Orange sprayer
+Type: bomb
+RequiredMod: hbm
+BaseDamage: 0
+Ballistics:
+  Acceleration: 0.05
+  AccelerationInWater: 1.0
+  Gravity: -0.03
+  GravityInWater: -0.03
+  VelocityInWater: 0.999
+Explosion:
+  Power: 0
+  DestructionPower: 0
+  CanDestroyBlocks: false
+NTM:
+  PayloadType: CHEMICAL
+  EffectOnly: true
+  Chemical:
+    Type: ORANGE
+    Count: 3
+    Speed: 0.3
+Ammo:
+  ReloadTime: 100
+  MagSize: 60
+  MaxAmmo: 240
+  ResupplyCount: 60
+  AmmoItems:
+  - Count: 1
+    Name: hbm:powder_poison
+    Meta: 0
+  - Count: 8
+    Name: minecraft:bone_meal
+    Meta: 0
+FireCooldown: 2
+Render:
+  BulletModel: cbc

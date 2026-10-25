@@ -92,6 +92,7 @@ public final class WeaponParser {
         for (Map.Entry<String, Object> entry : root.entrySet()) {
             switch (entry.getKey()) {
                 case "DisplayName" -> info.displayName = ((String) entry.getValue()).trim();
+                case "RequiredMod" -> info.requiredMod = ((String) entry.getValue()).trim().toLowerCase(Locale.ROOT);
                 case "BaseDamage" -> info.power = ((Number) entry.getValue()).intValue();
                 case "Ballistics" -> parseBallisitcs(info, (Map<String, Object>) entry.getValue());
                 case "Camera" -> parseCam(info, (Map<String, Object>) entry.getValue());

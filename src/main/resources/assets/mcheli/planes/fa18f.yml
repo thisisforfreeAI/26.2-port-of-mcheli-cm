@@ -78,6 +78,22 @@ Weapons:
 - Type: targeting_pod_ph50s
   Position: [0.0, 2.7, 1.1]
   SeatID: 2
+- Type: ntm_mk77_napalm
+  Position: [3.56, 1.23, -6.2]
+  Yaw: 1.0
+  Pitch: -3.0
+- Type: ntm_mk77_napalm
+  Position: [-3.56, 1.23, -6.2]
+  Yaw: -1.0
+  Pitch: -3.0
+- Type: ntm_mk77_napalm
+  Position: [4.08, 1.23, -6.2]
+  Yaw: 1.0
+  Pitch: -3.0
+- Type: ntm_mk77_napalm
+  Position: [-4.08, 1.23, -6.2]
+  Yaw: -1.0
+  Pitch: -3.0
 Seats:
 - Position: [0.0, 1.95, 2.2]
   Hud: plane

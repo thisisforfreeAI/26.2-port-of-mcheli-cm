@@ -11,6 +11,12 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 ## [Unreleased] - M6 in progress
 
 ### Added
+- With NTM Next installed, 14 stock planes carry NTM bombs as selectable weapons after their own:
+  Little Boy and Fat Man on the B-29; B61, B83 and a balefire bomb on the B-2A; tactical nukes on
+  the F-15E, F-35A, Tornado IDS and MiG-29; ODAB-500 and chlorine bombs on the Su-37; Mk 77 napalm
+  on the F-4, F/A-18F and Harrier; white phosphorus on the A-10; mini-nuke bombs on the MQ-9 and
+  X-47B; and an Agent Orange sprayer on the PZL M-18. Without NTM Next they don't appear. Weapons
+  take a new `RequiredMod` key, which hides them when that mod isn't loaded.
 - The multiplay manager (M) has a Join button under each team's list and a Leave team button
   under the players in no team, so players choose their own team without `/team join`. The
   server setting `teams.playersChooseTeam` (on by default) limits them to game masters. The

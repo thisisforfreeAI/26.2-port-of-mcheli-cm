@@ -42,6 +42,14 @@ Weapons:
   Position: [2.57, 1.15, -5.48]
 - Type: mk62
   Position: [-2.57, 1.15, -5.48]
+- Type: ntm_mk77_napalm
+  Position: [2.12, 1.15, -5.48]
+- Type: ntm_mk77_napalm
+  Position: [-2.12, 1.15, -5.48]
+- Type: ntm_mk77_napalm
+  Position: [2.57, 1.15, -5.48]
+- Type: ntm_mk77_napalm
+  Position: [-2.57, 1.15, -5.48]
 Seats:
 - Position: [0.0, 1.57, 0.22]
   Hud: plane

@@ -86,8 +86,8 @@ These follow from how Minecraft 26.2 works or from decisions approved in PORTING
    fire, mist, chemical, mini-nuke, nuke, VNT and legacy NT (see `docs/NTM_NEXT_WEAPONS.md`). NTM Next
    removed `ExplosionNT`, mini-nuke attributes and the configurable large explosion effect, so NT
    payloads are rebuilt from VNT parts, mini-nuke attributes are ignored and VNT effects use NTM
-   Next's nearest fixed size. No stock weapon has a payload. Without NTM Next, payload weapons
-   explode normally. On Mesa's software Vulkan driver, CrankShaft (NTM Next's renderer) crashed the
+   Next's nearest fixed size. With NTM Next, 14 stock planes also carry NTM bombs, which upstream
+   never had; without it those bombs are hidden and other payload weapons explode normally. On Mesa's software Vulkan driver, CrankShaft (NTM Next's renderer) crashed the
    client when NTM effects appeared, also without McHeli; OpenGL is the supported backend.
 8. Vehicles past the render distance are drawn full size and without fog in the normal entity pass,
    not in a second pass with upstream's own 3,000-block projection, so they disappear past vanilla's
