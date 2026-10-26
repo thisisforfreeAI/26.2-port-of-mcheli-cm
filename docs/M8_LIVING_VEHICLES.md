@@ -11,7 +11,7 @@ legacy craters and Claude's NTM integration. Target 60 FPS on RTX 3060 8GB / 780
 | 2 | Chipped/bent rotor variants and restrained wobble | Complete |
 | 3 | Exposed interiors and torn edges behind missing panels | Complete |
 | 4 | Weapon heat, discoloration, shimmer and cooling smoke | Complete |
-| 5 | Wet paint, parked snow accumulation and shedding | Pending |
+| 5 | Wet paint, parked snow accumulation and shedding | Complete |
 | 6 | Stronger wakes, shallow-water spray and debris splashes | Pending |
 | 7 | Terrain buildup on lower panels and exhaust soot | Pending |
 | 8 | Flexible antennas, vibrating covers and loose cables | Pending |
@@ -53,3 +53,13 @@ small cooling puffs follow the posed barrel tip after firing stops. No barrel or
 overheating damage or firing changes. Thirty-two warm mounts, four cooling puffs per tick and
 shared particle/geometry admission bound cost. `effects.weaponHeat` controls this layer.
 Native M1A2/AH-64/T-90 warmup and cooling previews pass.
+
+## 5. Weather
+
+Exposed paint wets and dries gradually without losing its baked panel/vent contrast on either
+rendering path. Cold precipitation coats parked upper surfaces; movement shakes loose small
+white flakes. Covered vehicles do not accumulate fresh weathering. Sixty-four states, eight
+climate samples per tick, four shedding particles and shared geometry admission cap the work.
+`effects.vehicleWeather` controls this layer. Native rain/snow/movement checks pass on the
+M1A2/AH-64/F-35A. All new atmosphere particles share a world-tick allowance regardless of
+subscriber order.

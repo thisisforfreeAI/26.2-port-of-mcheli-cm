@@ -42,7 +42,7 @@ void main() {
     vec3 normal = normalize(mat3(NormalMat) * ((Flags & 1) != 0 ? FlatNormal : Normal.xyz));
     vec4 color = PartColor;
     if ((Flags & 2) != 0 && Normal.w >= 0.0) {
-        color = vec4(vec3((round(Normal.w * 127.0) + 128.0) / 255.0), PartColor.a);
+        color = vec4(vec3((round(Normal.w * 127.0) + 128.0) / 255.0) * PartColor.rgb / (191.0 / 255.0), PartColor.a);
     }
     vertexColor = minecraft_mix_light(Light0_Direction, Light1_Direction, normal, color);
     lightMapColor = sample_lightmap(Sampler2, PartLight);

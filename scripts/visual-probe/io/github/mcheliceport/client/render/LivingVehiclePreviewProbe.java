@@ -23,9 +23,10 @@ public final class LivingVehiclePreviewProbe {
     private static final String[] NAMES=STEP==2?new String[]{"ah-64","mh-60l_dap","mh-6"}
             :STEP==3?new String[]{"f-35a","f-15e","a-10"}:STEP==4?new String[]{"m1a2","ah-64","t-90"}:new String[]{"m1a2","ah-64","f-35a"};
     private static int ticks,phase=-1,age,lastPops,captureTick=-1;
+    private static float snowAt180;
     private static AircraftEntity vehicle;private static String capture;
     private static int damage(AircraftEntity e){return (int)(e.getMaxHP()*(STEP==1?(age>40?1:.3):STEP==2?(age<100?.05:.92):STEP==3?(age<130?.5:age<190?.96:0):.05));}
-    private static void held(AircraftEntity e){e.xo=e.getX();e.yo=e.getY();e.zo=e.getZ();e.setPos(0,-60,20);e.setDeltaMovement(Vec3.ZERO);}
+    private static void held(AircraftEntity e){e.xo=e.getX();e.yo=e.getY();e.zo=e.getZ();double movement=STEP==5&&age>185?(age-185)*.12:0;e.setPos(movement,-60,20);e.setDeltaMovement(STEP==5&&age>185?new Vec3(.12,0,0):Vec3.ZERO);}
     private static final class Tank extends TankEntity {
         Tank(Minecraft mc){super(ModEntityTypes.TANK.get(),mc.level);}
         @Override public void tick(){held(this);}
@@ -53,6 +54,7 @@ public final class LivingVehiclePreviewProbe {
             command(mc,"fill -30 -64 -30 30 -61 40 stone","tp @s 12 -53 8 55 18");
             mc.getWindow().setWindowed(1280,720);mc.options.enableVsync().set(false);mc.options.framerateLimit().set(120);
             if(!mc.gui.hud.isHidden())mc.gui.hud.toggle();
+            ClientConfig.VEHICLE_WEATHER.set(true);ClientConfig.GPU_MODEL_BUFFERS.set(true);
             ClientConfig.EFFECT_QUALITY.set(EffectQuality.ENHANCED);ClientConfig.EFFECT_STYLE.set(ClientConfig.EffectStyle.POLISHED);
             ClientConfig.EFFECT_BUDGET.set(ClientConfig.EffectBudget.BALANCED);ClientConfig.ADAPTIVE_EFFECTS.set(false);
             ClientConfig.VEHICLE_DAMAGE_DETAILS.set(true);ClientConfig.ENGINE_STARTUP_EFFECTS.set(false);ClientConfig.ENGINE_HEAT_HAZE.set(STEP==4);ClientConfig.WEAPON_HEAT.set(true);
@@ -60,15 +62,24 @@ public final class LivingVehiclePreviewProbe {
         if(ticks<160)return;int next=(ticks-160)/220;age=(ticks-160)%220;
         if(next>=NAMES.length){mc.stop();return;}
         if(phase!=next){
-            phase=next;if(vehicle!=null)vehicle.discard();mc.particleEngine.clearParticles();VehicleAtmosphere.clear();VehicleWeaponHeat.clear();VehicleImpactMarks.clear();LoosePanels.clear();PanelInteriors.clear();
+            phase=next;if(vehicle!=null)vehicle.discard();mc.particleEngine.clearParticles();VehicleAtmosphere.clear();VehicleWeaponHeat.clear();VehicleImpactMarks.clear();LoosePanels.clear();PanelInteriors.clear();VehicleWeather.clear();
             vehicle=ContentRegistries.plane().get(NAMES[phase])!=null?new Plane(mc):ContentRegistries.heli().get(NAMES[phase])!=null?new Heli(mc):new Tank(mc);
             vehicle.setId(975000+phase);vehicle.setAircraftTypeName(NAMES[phase]);vehicle.setTextureName(NAMES[phase]);vehicle.setPos(0,-60,20);
             var parts=vehicle.getParts();for(int i=0;i<parts.length;i++)parts[i].setId(985000+phase*100+i);
             for(int i=0;i<vehicle.getWeaponNum();i++){var set=vehicle.getWeapon(i);if(set!=null)set.setReserveAmmo(200);}
             mc.level.addEntity(vehicle);lastPops=0;captureTick=-1;
+            if(STEP==5)command(mc,"weather clear","fillbiome -16 -60 8 16 -48 36 plains");
             System.out.println("M8_LIVING stage="+STEP+" vehicle="+NAMES[phase]);
         }
-        if(age==95||age==145||age==180||STEP==3&&age==205)capture=NAMES[phase]+"-age"+age;
+        if(age==95||age==145||age==180||(STEP==3||STEP==5)&&age==205)capture=NAMES[phase]+"-age"+age;
+        if(STEP==5){
+            if(age==40)command(mc,"weather rain");
+            if(age==105)command(mc,"fillbiome -16 -60 8 16 -48 36 snowy_plains");
+            if(age==95&&VehicleWeather.wet(vehicle)<.2F)throw new IllegalStateException("Missing wet paint");
+            if(age==180){snowAt180=VehicleWeather.snow(vehicle);if(snowAt180<.4F||VehicleWeather.samples()>8)throw new IllegalStateException("Missing/unbounded snow");}
+            if(age==205){if(VehicleWeather.snow(vehicle)>=snowAt180)throw new IllegalStateException("Snow did not shed");System.out.println("M8_LIVING wet="+VehicleWeather.wet(vehicle)+" parked_snow="+snowAt180+" moving_snow="+VehicleWeather.snow(vehicle));}
+            if(age==209)command(mc,"weather clear","fillbiome -16 -60 8 16 -48 36 plains");
+        }
         if(STEP==4){
             if(age>=50&&age<130&&age%3==0)for(int i=0;i<vehicle.getWeaponNum();i++){
                 var set=vehicle.getWeapon(i);if(set==null||set.getFirstWeapon()==null)continue;

@@ -1,0 +1,27 @@
+{
+  "stage": 5,
+  "unit_tests": 355,
+  "failures": 0,
+  "native_build_successful": true,
+  "checks": [
+    "M8_LIVING stage=5 vehicle=m1a2",
+    "M8_LIVING Saved screenshot as m8-living-5-m1a2-age95.png",
+    "M8_LIVING Saved screenshot as m8-living-5-m1a2-age145.png",
+    "M8_LIVING Saved screenshot as m8-living-5-m1a2-age180.png",
+    "M8_LIVING wet=0.41340095 parked_snow=0.67999965 moving_snow=0.2399998",
+    "M8_LIVING Saved screenshot as m8-living-5-m1a2-age205.png",
+    "M8_LIVING stage=5 vehicle=ah-64",
+    "M8_LIVING Saved screenshot as m8-living-5-ah-64-age95.png",
+    "M8_LIVING Saved screenshot as m8-living-5-ah-64-age145.png",
+    "M8_LIVING Saved screenshot as m8-living-5-ah-64-age180.png",
+    "M8_LIVING wet=0.9521986 parked_snow=0.68999964 moving_snow=0.21999979",
+    "M8_LIVING Saved screenshot as m8-living-5-ah-64-age205.png",
+    "M8_LIVING stage=5 vehicle=f-35a",
+    "M8_LIVING Saved screenshot as m8-living-5-f-35a-age95.png",
+    "M8_LIVING Saved screenshot as m8-living-5-f-35a-age145.png",
+    "M8_LIVING Saved screenshot as m8-living-5-f-35a-age180.png",
+    "M8_LIVING wet=0.8819985 parked_snow=0.67999965 moving_snow=0.2099998",
+    "M8_LIVING Saved screenshot as m8-living-5-f-35a-age205.png"
+  ],
+  "target_pc_fps_verified": false
+}
