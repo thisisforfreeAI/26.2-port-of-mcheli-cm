@@ -1,5 +1,7 @@
 # Destruction effects follow-ups
 
+[View all 24 native vehicle screenshots](M8_DESTRUCTION_GALLERY.md).
+
 Implement in order, with native in-game previews on three stock vehicles for each feature.
 Keep the original crater and damage rules, preserve Claude's NTM work and target 60 FPS on
 RTX 3060 8GB / Ryzen 7 7800X3D at 1080p. Hardware FPS needs target-PC verification.
