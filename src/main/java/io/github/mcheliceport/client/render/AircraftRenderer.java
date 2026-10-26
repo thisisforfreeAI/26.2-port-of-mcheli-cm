@@ -92,11 +92,13 @@ public abstract class AircraftRenderer<T extends AircraftEntity> extends EntityR
         state.pitch = ypr[1];
         state.roll = ypr[2];
         if (entity.isSearchLightOn()) {
-            for (var light : info.searchLights) {
-                if (io.github.mcheliceport.entity.aircraft.SearchLightBeam.usable(light)) {
+            for (int lamp = 0; lamp < info.searchLights.size(); lamp++) {
+                var light = info.searchLights.get(lamp);
+                float strength = VehicleLightDamage.strength(entity, lamp);
+                if (strength > 0 && io.github.mcheliceport.entity.aircraft.SearchLightBeam.usable(light)) {
                     state.searchLights.add(io.github.mcheliceport.entity.aircraft.SearchLightBeam.of(light,
                             ypr[0], ypr[1], ypr[2], entity.searchLightYaw(partialTicks), entity.searchLightPitch(partialTicks),
-                            Mth.lerp(partialTicks, entity.previousSteeringYaw, entity.steeringYaw)));
+                            Mth.lerp(partialTicks, entity.previousSteeringYaw, entity.steeringYaw)).dim(strength));
                 }
             }
         }

@@ -9,7 +9,7 @@ RTX 3060 8GB / Ryzen 7 7800X3D at 1080p. Hardware FPS needs target-PC verificati
 | 1 | Uneven damaged-engine smoke trails that stretch with movement | Complete |
 | 2 | Coolant/oil leaks and temporary ground stains | Complete |
 | 3 | Directional tumbling metal fragments | Complete |
-| 4 | Flickering/failing damaged lights and local sparks | Pending |
+| 4 | Flickering/failing damaged lights and local sparks | Complete |
 | 5 | Wreck fires, embers and cooling smoke that die away | Pending |
 | 6 | Localized blast soot, exposed metal and panel smoke | Pending |
 | 7 | Rattling and detachable small authored panels | Pending |
@@ -49,3 +49,13 @@ block scans or extra packets. Delayed model loads do not replay old fragments. N
 M1A2/AH-64/F-35A previews and 305 local unit tests pass.
 
 ![M1A2 metal fragments](screens/m8-destruction-03-metal-fragments.png)
+
+## 4. Damaged lights
+
+Authored searchlights/headlights dim, flicker independently or fail as damage grows. Cones
+and living-entity highlights share the same deterministic intensity; repairs restore them.
+Occasional tiny sparks originate at actual lamp anchors and use the existing particle cap.
+No world light-engine work. Native healthy/damaged Growler, Mi-24PS and An-2 comparisons
+and 308 local unit tests pass.
+
+![Growler damaged lamps](screens/m8-destruction-04-damaged-lights.png)

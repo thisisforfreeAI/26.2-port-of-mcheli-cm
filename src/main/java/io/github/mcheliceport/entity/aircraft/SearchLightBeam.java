@@ -6,7 +6,10 @@ import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
 /** The stock searchlight's cone frame, shared by rendering, culling and living-entity lighting. */
-public record SearchLightBeam(Matrix4f pose, AircraftInfo.SearchLight light) {
+public record SearchLightBeam(Matrix4f pose, AircraftInfo.SearchLight light, float strength) {
+    public SearchLightBeam { strength = Float.isFinite(strength) ? Math.clamp(strength, 0, 1) : 0; }
+    public SearchLightBeam(Matrix4f pose, AircraftInfo.SearchLight light) { this(pose, light, 1); }
+    public SearchLightBeam dim(float value) { return new SearchLightBeam(pose, light, value); }
     public static boolean usable(AircraftInfo.SearchLight light) {
         return light.height > 0 && light.width > 0 && Float.isFinite(light.height) && Float.isFinite(light.width)
                 && Float.isFinite(light.yaw) && Float.isFinite(light.pitch) && Float.isFinite(light.stRot)
@@ -43,6 +46,6 @@ public record SearchLightBeam(Matrix4f pose, AircraftInfo.SearchLight light) {
         Vec3 axis = point(0, light.height, 0).subtract(point(0, 0, 0)).normalize();
         double angle = Math.toDegrees(Math.acos(Math.clamp(axis.dot(offset.normalize()), -1, 1)));
         double limit = light.angle * 3;
-        return limit > 0 ? (int) Math.clamp(90 * (1 - angle / limit), 0, 15) : 0;
+        return limit > 0 ? (int) (Math.clamp(90 * (1 - angle / limit), 0, 15) * strength) : 0;
     }
 }

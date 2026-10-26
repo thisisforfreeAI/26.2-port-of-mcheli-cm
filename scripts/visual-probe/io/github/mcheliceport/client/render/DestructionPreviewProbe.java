@@ -21,11 +21,11 @@ import net.neoforged.neoforge.client.event.ViewportEvent;
 @EventBusSubscriber(modid="mcheli_ce_port",value=Dist.CLIENT)
 public final class DestructionPreviewProbe {
     private static final int STEP=Integer.getInteger("mcheli.destructionPreview",0);
-    private static final String[] NAMES={"m1a2","ah-64","f-35a"};
+    private static final String[] NAMES=STEP==4?new String[]{"growler","mi-24ps","an2"}:new String[]{"m1a2","ah-64","f-35a"};
     private static int tick,phase=-1,age;
     private static AircraftEntity vehicle;
     private static String capture;
-    private static int damage(AircraftEntity e){return (int)(e.getMaxHP()*(STEP==3?.05:STEP==5?1:STEP==7?.94:.78));}
+    private static int damage(AircraftEntity e){return (int)(e.getMaxHP()*(STEP==4?(age<120?.05:.9):STEP==3?.05:STEP==5?1:STEP==7?.94:.78));}
     private static void move(AircraftEntity e){
         e.xo=e.getX();e.yo=e.getY();e.zo=e.getZ();
         double speed=STEP==1?(phase==2?.5:phase==1?.25:.1):0;
@@ -35,22 +35,25 @@ public final class DestructionPreviewProbe {
         Tank(Minecraft mc){super(ModEntityTypes.TANK.get(),mc.level);}
         @Override public void tick(){DestructionPreviewProbe.move(this);}
         @Override public int getDamageTaken(){return DestructionPreviewProbe.damage(this);}
+        @Override public boolean isSearchLightOn(){return STEP==4 || super.isSearchLightOn();}
     }
     private static final class Heli extends HeliEntity {
         Heli(Minecraft mc){super(ModEntityTypes.HELICOPTER.get(),mc.level);}
         @Override public void tick(){DestructionPreviewProbe.move(this);}
         @Override public int getDamageTaken(){return DestructionPreviewProbe.damage(this);}
+        @Override public boolean isSearchLightOn(){return STEP==4 || super.isSearchLightOn();}
     }
     private static final class Plane extends PlaneEntity {
         Plane(Minecraft mc){super(ModEntityTypes.PLANE.get(),mc.level);}
         @Override public void tick(){DestructionPreviewProbe.move(this);}
         @Override public int getDamageTaken(){return DestructionPreviewProbe.damage(this);}
+        @Override public boolean isSearchLightOn(){return STEP==4 || super.isSearchLightOn();}
     }
     private static void commands(Minecraft mc,String...c){for(String s:c)mc.player.connection.sendCommand(s);}
     @SubscribeEvent public static void tick(ClientTickEvent.Post event){
         if(STEP==0)return;var mc=Minecraft.getInstance();if(mc.level==null||mc.player==null||mc.isPaused())return;
         if(++tick==40){
-            commands(mc,"kill @e[type=!minecraft:player]","gamemode spectator","time set noon","weather clear","gamerule minecraft:advance_time false");
+            commands(mc,"kill @e[type=!minecraft:player]","gamemode spectator",STEP==4?"time set 13000":"time set noon","weather clear","gamerule minecraft:advance_time false");
             for(int y=-60;y<4;y+=7)commands(mc,"fill -30 "+y+" -30 30 "+(y+6)+" 40 air");
             commands(mc,"fill -30 -64 -30 30 -61 40 stone","tp @s 12 -53 8 55 18");
             mc.getWindow().setWindowed(1280,720);mc.options.enableVsync().set(false);mc.options.framerateLimit().set(120);
@@ -83,7 +86,7 @@ public final class DestructionPreviewProbe {
             var parts=vehicle.getParts();for(int i=0;i<parts.length;i++)parts[i].setId(980000+phase*100+i);
             mc.level.addEntity(vehicle);System.out.println("M8_DESTRUCTION step="+STEP+" vehicle="+NAMES[phase]);
         }
-        if(age==145||age==180)capture=NAMES[phase]+"-age"+age;
+        if(age==145||age==180||STEP==4&&age==95)capture=NAMES[phase]+"-age"+age;
         if(STEP==3&&(age==140||age==175)){
             for(int i=0;i<3;i++)VehicleImpactMarks.receive(new io.github.mcheliceport.net.VehicleImpactPayload(
                     vehicle.getId(),vehicle.getUUID(),2.8F,.8F+i*.5F,(i-1)*.8F,-1,0,0,.3F,true,tick*3+i));
@@ -92,6 +95,12 @@ public final class DestructionPreviewProbe {
             int fragments=io.github.mcheliceport.client.particle.VehicleShrapnel.liveCount();
             if(fragments==0||fragments>32)throw new IllegalStateException("Missing/unbounded metal fragments");
             System.out.println("M8_DESTRUCTION metal_fragments="+fragments);
+        }
+        if(STEP==4&&(age==95||age==145||age==180)){
+            String strengths=java.util.stream.IntStream.range(0,vehicle.getAcInfo().searchLights.size())
+                    .mapToObj(i->Float.toString(VehicleLightDamage.strength(vehicle,i))).collect(java.util.stream.Collectors.joining(","));
+            if(strengths.isEmpty())throw new IllegalStateException("No authored lamps");
+            System.out.println("M8_DESTRUCTION lamps_age="+age+" strength="+strengths);
         }
         if(age==200){
             System.out.println("M8_DESTRUCTION state_count="+VehicleAtmosphere.stateCount()+" emitted="+VehicleAtmosphere.emitted());
@@ -103,14 +112,14 @@ public final class DestructionPreviewProbe {
         }
     }
     @SubscribeEvent public static void angles(ViewportEvent.ComputeCameraAngles e){
-        if(STEP==0||vehicle==null)return;e.setYaw(STEP==2?64:STEP==3?90:94);e.setPitch(STEP==2?12:STEP==3?20:17);e.setRoll(0);
+        if(STEP==0||vehicle==null)return;e.setYaw(STEP==4?147:STEP==2?64:STEP==3?90:94);e.setPitch(STEP==4?10:STEP==2?12:STEP==3?20:17);e.setRoll(0);
     }
     @SubscribeEvent public static void position(ViewportEvent.ComputeFov e){
         if(STEP==0||vehicle==null)return;
         if(STEP==2){
             var origin=VehicleAtmosphere.origins(vehicle).getFirst();
             e.getCamera().setPosition(new Vec3(origin.x,vehicle.getY(),origin.z).add(5.2,1.2,-2.5));
-        }else e.getCamera().setPosition(vehicle.position().add(STEP==3?new Vec3(6,2.3,0):new Vec3(15,5,1)));
+        }else e.getCamera().setPosition(vehicle.position().add(STEP==4?(phase==0?new Vec3(5,2,8):new Vec3(12,5,18)):STEP==3?new Vec3(6,2.3,0):new Vec3(15,5,1)));
     }
     @SubscribeEvent public static void frame(RenderFrameEvent.Post event){
         if(capture==null)return;var mc=Minecraft.getInstance();String name=capture;capture=null;

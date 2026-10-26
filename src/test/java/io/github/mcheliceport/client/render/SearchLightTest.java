@@ -58,6 +58,13 @@ class SearchLightTest {
         assertEquals(0, beam.blockLight(beam.point(50, 20, 0)));
         assertEquals(0, beam.blockLight(beam.point(0, 0, 0)));
     }
+    @Test void FailedAndDimConesMatchTheirLivingEntityHighlight() {
+        var beam=SearchLightBeam.of(lamp(false,false,0,0,0),0,0,0,0,0,0);
+        var target=beam.point(0,20,0);
+        assertEquals(15,beam.blockLight(target));
+        assertEquals(3,beam.dim(.2F).blockLight(target));
+        assertEquals(0,beam.dim(0).blockLight(target));
+    }
     @Test void stockLampAlphaMatchesLegacy() {
         var stock = ContentTestSupport.load(ContentTestSupport.stockPack());
         var legacy = ContentTestSupport.load(ContentTestSupport.legacyPack());

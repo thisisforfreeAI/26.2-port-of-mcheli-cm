@@ -149,6 +149,24 @@ public final class VehicleAtmosphere {
     private static void damage(ClientLevel level, AircraftEntity aircraft, List<Vec3> origins, long now) {
         float severity = VehicleAtmosphereLook.damage(aircraft.getHP(), aircraft.getMaxHP());
         if (severity == 0) return;
+        if (aircraft.isSearchLightOn() && severity > .4F && EffectPerformance.optionalGlows()
+                && Math.floorMod(now + aircraft.getId(), 13) == 0) {
+            var lights = aircraft.getAcInfo().searchLights;
+            if (!lights.isEmpty()) {
+                int lamp = Math.floorMod((int) (now / 13 + aircraft.getId()), lights.size());
+                var light = lights.get(lamp);
+                if (io.github.mcheliceport.entity.aircraft.SearchLightBeam.usable(light)
+                        && io.github.mcheliceport.client.render.VehicleLightDamage.strength(aircraft, lamp) < .4F) {
+                    Vec3 pos = aircraft.position().add(McheliMath.rotVec3(light.pos, -aircraft.getYaw(),
+                            -aircraft.getPitch(), -aircraft.getRoll())).add(0,
+                            io.github.mcheliceport.content.aircraft.AircraftInfo.GLOBAL_Y_OFFSET, 0);
+                    if (admit(level, pos, .05F)) {
+                        var spark = new SparkParticle(level, pos.x, pos.y, pos.z, .03, -.01, .02, 5, .045F);
+                        spark.setColor(.65F, .82F, 1); Minecraft.getInstance().particleEngine.add(spark);
+                    }
+                }
+            }
+        }
         Vec3 position = origins.get(Math.floorMod((int) (now / 11 + aircraft.getId()), origins.size()));
         int period = 3 * (1 + EffectPerformance.pressure());
         if (Math.floorMod(now + aircraft.getId(), period) == 0

@@ -47,15 +47,19 @@ public final class SearchLightRenderer {
                 var p = pose.copy(); p.mulPose(beam.pose());
                 float radius = beam.light().width / 2;
                 for (int i = 0; i < 24; i++) {
-                    buffer.addVertex(p, 0, 0, 0).setColor(beam.light().colorStart);
+                    buffer.addVertex(p, 0, 0, 0).setColor(dim(beam.light().colorStart, beam.strength()));
                     for (int n = i; n <= i + 1; n++) {
                         double angle = Math.toRadians(n * 15);
                         buffer.addVertex(p, (float) Math.sin(angle) * radius, beam.light().height,
-                                (float) Math.cos(angle) * radius).setColor(beam.light().colorEnd);
+                                (float) Math.cos(angle) * radius).setColor(dim(beam.light().colorEnd, beam.strength()));
                     }
                 }
             }
         });
+    }
+
+    private static int dim(int color, float strength) {
+        return ((int) ((color >>> 24) * strength) << 24) | (color & 0xFFFFFF);
     }
 
     public static void registerModifiers(RegisterRenderStateModifiersEvent event) {
@@ -88,11 +92,13 @@ public final class SearchLightRenderer {
             if (!(entity instanceof AircraftEntity ac) || !ac.isSearchLightOn() || ac.getAcInfo() == null) { continue; }
             float[] ypr = McheliMath.slerpOrientationYPR(ac.yRotO, ac.xRotO, ac.prevRoll,
                     ac.getYaw(), ac.getPitch(), ac.getRoll(), partial);
-            for (var light : ac.getAcInfo().searchLights) {
-                if (!SearchLightBeam.usable(light)) { continue; }
+            for (int lamp = 0; lamp < ac.getAcInfo().searchLights.size(); lamp++) {
+                var light = ac.getAcInfo().searchLights.get(lamp);
+                float strength = VehicleLightDamage.strength(ac, lamp);
+                if (strength <= 0 || !SearchLightBeam.usable(light)) { continue; }
                 FRAME_LIGHTS.add(new WorldBeam(ac.getPosition(partial), SearchLightBeam.of(light,
                         ypr[0], ypr[1], ypr[2], ac.searchLightYaw(partial), ac.searchLightPitch(partial),
-                        Mth.lerp(partial, ac.previousSteeringYaw, ac.steeringYaw))));
+                        Mth.lerp(partial, ac.previousSteeringYaw, ac.steeringYaw)).dim(strength)));
             }
         }
         return FRAME_LIGHTS;
