@@ -1,0 +1,33 @@
+{
+  "stage": 3,
+  "unit_tests": 351,
+  "failures": 0,
+  "native_build_successful": true,
+  "checks": [
+    "M8_LIVING stage=3 vehicle=f-35a",
+    "M8_LIVING Saved screenshot as m8-living-3-f-35a-age95.png",
+    "M8_LIVING interior_age=145 detached=true interior_vertices=252",
+    "M8_LIVING Saved screenshot as m8-living-3-f-35a-age145.png",
+    "M8_LIVING interior_age=180 detached=true interior_vertices=252",
+    "M8_LIVING Saved screenshot as m8-living-3-f-35a-age180.png",
+    "M8_LIVING interior_age=205 detached=false interior_vertices=252",
+    "M8_LIVING Saved screenshot as m8-living-3-f-35a-age205.png",
+    "M8_LIVING stage=3 vehicle=f-15e",
+    "M8_LIVING Saved screenshot as m8-living-3-f-15e-age95.png",
+    "M8_LIVING interior_age=145 detached=true interior_vertices=540",
+    "M8_LIVING Saved screenshot as m8-living-3-f-15e-age145.png",
+    "M8_LIVING interior_age=180 detached=true interior_vertices=540",
+    "M8_LIVING Saved screenshot as m8-living-3-f-15e-age180.png",
+    "M8_LIVING interior_age=205 detached=false interior_vertices=540",
+    "M8_LIVING Saved screenshot as m8-living-3-f-15e-age205.png",
+    "M8_LIVING stage=3 vehicle=a-10",
+    "M8_LIVING Saved screenshot as m8-living-3-a-10-age95.png",
+    "M8_LIVING interior_age=145 detached=true interior_vertices=252",
+    "M8_LIVING Saved screenshot as m8-living-3-a-10-age145.png",
+    "M8_LIVING interior_age=180 detached=true interior_vertices=252",
+    "M8_LIVING Saved screenshot as m8-living-3-a-10-age180.png",
+    "M8_LIVING interior_age=205 detached=false interior_vertices=252",
+    "M8_LIVING Saved screenshot as m8-living-3-a-10-age205.png"
+  ],
+  "target_pc_fps_verified": false
+}

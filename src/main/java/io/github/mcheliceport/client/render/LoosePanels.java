@@ -53,7 +53,7 @@ public final class LoosePanels {
     }
     public static void extract(AircraftEntity entity,AircraftRenderState render){
         var mc=Minecraft.getInstance();if(mc.level!=world){clear();world=mc.level;}
-        if(!enabled()||render.far||entity.isDestroyed()||render.texture==null
+        if(!enabled()||render.far||render.texture==null
                 ||mc.gameRenderer.mainCamera().position().distanceToSqr(entity.position())>32*32)return;
         if(STATES.size()>=64&&!STATES.containsKey(entity))return;
         var state=STATES.computeIfAbsent(entity,k->new State());long tick=world.getGameTime();
@@ -85,7 +85,7 @@ public final class LoosePanels {
             var unchanged=new ArrayList<McheliModel.Group>();
             for(var group:draw.groups()){
                 int occurrence=occurrences.getOrDefault(group,0);occurrences.put(group,occurrence+1);
-                if(group==state.detached&&occurrence==state.occurrence)continue;
+                if(group==state.detached&&occurrence==state.occurrence){PanelInteriors.add(render,draw.pose(),group);continue;}
                 var s=spec(group);
                 if(s==null){unchanged.add(group);continue;}
                 float angle=LoosePanelLook.rattle(fraction,tick,entity.getId()+group.name().hashCode());

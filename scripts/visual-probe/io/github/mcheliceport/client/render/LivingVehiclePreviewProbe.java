@@ -24,25 +24,25 @@ public final class LivingVehiclePreviewProbe {
             :STEP==3?new String[]{"f-35a","f-15e","a-10"}:new String[]{"m1a2","ah-64","f-35a"};
     private static int ticks,phase=-1,age,lastPops,captureTick=-1;
     private static AircraftEntity vehicle;private static String capture;
-    private static int damage(AircraftEntity e){return (int)(e.getMaxHP()*(STEP==1?(age>40?1:.3):STEP==2?(age<100?.05:.92):STEP==3?(age<130?.5:.96):.05));}
+    private static int damage(AircraftEntity e){return (int)(e.getMaxHP()*(STEP==1?(age>40?1:.3):STEP==2?(age<100?.05:.92):STEP==3?(age<130?.5:age<190?.96:0):.05));}
     private static void held(AircraftEntity e){e.xo=e.getX();e.yo=e.getY();e.zo=e.getZ();e.setPos(0,-60,20);e.setDeltaMovement(Vec3.ZERO);}
     private static final class Tank extends TankEntity {
         Tank(Minecraft mc){super(ModEntityTypes.TANK.get(),mc.level);}
         @Override public void tick(){held(this);}
         @Override public int getDamageTaken(){return damage(this);}
-        @Override public boolean isDestroyed(){return STEP==1&&age>40||super.isDestroyed();}
+        @Override public boolean isDestroyed(){return STEP==1&&age>40||STEP==3&&age>130&&age<190||super.isDestroyed();}
     }
     private static final class Heli extends HeliEntity {
         Heli(Minecraft mc){super(ModEntityTypes.HELICOPTER.get(),mc.level);}
         @Override public void tick(){held(this);for(var rotor:getRotors())rotor.update(25);}
         @Override public int getDamageTaken(){return damage(this);}
-        @Override public boolean isDestroyed(){return STEP==1&&age>40||super.isDestroyed();}
+        @Override public boolean isDestroyed(){return STEP==1&&age>40||STEP==3&&age>130&&age<190||super.isDestroyed();}
     }
     private static final class Plane extends PlaneEntity {
         Plane(Minecraft mc){super(ModEntityTypes.PLANE.get(),mc.level);}
         @Override public void tick(){held(this);}
         @Override public int getDamageTaken(){return damage(this);}
-        @Override public boolean isDestroyed(){return STEP==1&&age>40||super.isDestroyed();}
+        @Override public boolean isDestroyed(){return STEP==1&&age>40||STEP==3&&age>130&&age<190||super.isDestroyed();}
     }
     private static void command(Minecraft mc,String...commands){for(var c:commands)mc.player.connection.sendCommand(c);}
     @SubscribeEvent public static void tick(ClientTickEvent.Post event){
@@ -60,7 +60,7 @@ public final class LivingVehiclePreviewProbe {
         if(ticks<160)return;int next=(ticks-160)/220;age=(ticks-160)%220;
         if(next>=NAMES.length){mc.stop();return;}
         if(phase!=next){
-            phase=next;if(vehicle!=null)vehicle.discard();mc.particleEngine.clearParticles();VehicleAtmosphere.clear();VehicleImpactMarks.clear();LoosePanels.clear();
+            phase=next;if(vehicle!=null)vehicle.discard();mc.particleEngine.clearParticles();VehicleAtmosphere.clear();VehicleImpactMarks.clear();LoosePanels.clear();PanelInteriors.clear();
             vehicle=ContentRegistries.plane().get(NAMES[phase])!=null?new Plane(mc):ContentRegistries.heli().get(NAMES[phase])!=null?new Heli(mc):new Tank(mc);
             vehicle.setId(975000+phase);vehicle.setAircraftTypeName(NAMES[phase]);vehicle.setTextureName(NAMES[phase]);vehicle.setPos(0,-60,20);
             var parts=vehicle.getParts();for(int i=0;i<parts.length;i++)parts[i].setId(985000+phase*100+i);
@@ -68,7 +68,12 @@ public final class LivingVehiclePreviewProbe {
             mc.level.addEntity(vehicle);lastPops=0;captureTick=-1;
             System.out.println("M8_LIVING stage="+STEP+" vehicle="+NAMES[phase]);
         }
-        if(age==95||age==145||age==180)capture=NAMES[phase]+"-age"+age;
+        if(age==95||age==145||age==180||STEP==3&&age==205)capture=NAMES[phase]+"-age"+age;
+        if(STEP==3&&(age==145||age==180||age==205)){
+            if(age<190&&(!LoosePanels.detached(vehicle)||PanelInteriors.renderedVertices()==0))throw new IllegalStateException("Missing exposed interior");
+            if(age==205&&LoosePanels.detached(vehicle))throw new IllegalStateException("Repair retained interior");
+            System.out.println("M8_LIVING interior_age="+age+" detached="+LoosePanels.detached(vehicle)+" interior_vertices="+PanelInteriors.renderedVertices());
+        }
         if(STEP==2&&(age==145||age==180)){
             if(!(vehicle instanceof HeliEntity heli)||RotorDamage.applied(heli)==0)throw new IllegalStateException("Missing rotor variant");
             System.out.println("M8_LIVING damaged_rotors="+RotorDamage.applied((HeliEntity)vehicle));
@@ -86,10 +91,17 @@ public final class LivingVehiclePreviewProbe {
     @SubscribeEvent public static void camera(ViewportEvent.ComputeFov event){
         if(STEP==0||vehicle==null)return;
         Vec3 at=STEP==1?VehicleAtmosphere.wreckOrigins(vehicle).getFirst():vehicle.position().add(0,3,0);
-        event.getCamera().setPosition(at.add(STEP==1?new Vec3(7,3,-6):STEP==2?new Vec3(10,10,7):new Vec3(8,3,5)));
+        if(STEP==3){
+            var models=io.github.mcheliceport.client.model.AircraftModels.peek(vehicle.getAcInfo());
+            if(models!=null){LoosePanelLook.Spec best=null;
+                for(var group:models.body().groups){var spec=LoosePanelLook.spec(group);if(spec!=null&&(best==null||spec.rank()<best.rank()))best=spec;}
+                if(best!=null){var c=best.center();at=vehicle.position().add(c.x,c.y,c.z);}
+            }
+        }
+        event.getCamera().setPosition(at.add(STEP==1?new Vec3(7,3,-6):STEP==2?new Vec3(10,10,7):STEP==3?new Vec3(4.5,2.5,3.5):new Vec3(8,3,5)));
     }
     @SubscribeEvent public static void angles(ViewportEvent.ComputeCameraAngles event){
-        if(STEP==0||vehicle==null)return;event.setYaw(STEP==1?49:STEP==2?125:122);event.setPitch(STEP==1?18:STEP==2?39:17);event.setRoll(0);
+        if(STEP==0||vehicle==null)return;event.setYaw(STEP==1?49:STEP==2?125:STEP==3?128:122);event.setPitch(STEP==1?18:STEP==2?39:STEP==3?21:17);event.setRoll(0);
     }
     @SubscribeEvent public static void frame(RenderFrameEvent.Post event){
         if(capture==null)return;var mc=Minecraft.getInstance();String name=capture;capture=null;

@@ -9,7 +9,7 @@ legacy craters and Claude's NTM integration. Target 60 FPS on RTX 3060 8GB / 780
 | --- | --- | --- |
 | 1 | Finite ammunition cook-off flashes, sparks and pops | Complete |
 | 2 | Chipped/bent rotor variants and restrained wobble | Complete |
-| 3 | Exposed interiors and torn edges behind missing panels | Pending |
+| 3 | Exposed interiors and torn edges behind missing panels | Complete |
 | 4 | Weapon heat, discoloration, shimmer and cooling smoke | Pending |
 | 5 | Wet paint, parked snow accumulation and shedding | Pending |
 | 6 | Stronger wakes, shallow-water spray and debris splashes | Pending |
@@ -34,3 +34,12 @@ less than half a degree of wobble. One authored blade instance is affected per r
 combined rotor mesh damages one arm. Original geometry, lift and control remain unchanged.
 Eight cached groups, four pending jobs and 24,000 vertices per source group bound the work.
 Native AH-64/MH-60L DAP/MH-6 previews show two damaged rotor assemblies each.
+
+## 3. Exposed interiors
+
+Removed canopies gain torn rails and exposed hinges while preserving the existing cockpit.
+Suitable flat hatches reveal dark recessed backing, sidewalls and mechanical crosspieces.
+Geometry builds off-thread; 32 cached panels and four pending jobs bound loading. Shared
+per-view detail geometry is capped at 4,096/12,288/24,576 vertices and sheds with pressure.
+Native F-35A/F-15E/A-10 checks cover wreck detachment, inserted geometry and repair removal.
+Unknown/oversized parts retain their authored geometry, and gameplay canopy access is unchanged.
