@@ -26,27 +26,35 @@ public final class LivingVehiclePreviewProbe {
     private static float snowAt180;
     private static AircraftEntity vehicle;private static String capture;
     private static int damage(AircraftEntity e){return (int)(e.getMaxHP()*(STEP==1?(age>40?1:.3):STEP==2?(age<100?.05:.92):STEP==3?(age<130?.5:age<190?.96:0):.05));}
-    private static void held(AircraftEntity e){e.xo=e.getX();e.yo=e.getY();e.zo=e.getZ();double movement=STEP==5&&age>185?(age-185)*.12:0;e.setPos(movement,STEP==6?-59.7:-60,STEP==6?12+age*.08:20);e.setDeltaMovement(STEP==6?new Vec3(0,0,.08):STEP==5&&age>185?new Vec3(.12,0,0):Vec3.ZERO);}
+    private static void held(AircraftEntity e){e.xo=e.getX();e.yo=e.getY();e.zo=e.getZ();double movement=STEP==5&&age>185?(age-185)*.12:0;e.setPos(movement,STEP==6?-59.7:-60,STEP==6?12+age*.08:STEP==7?20+age*.08:20);e.setDeltaMovement(STEP==6||STEP==7?new Vec3(0,0,.08):STEP==5&&age>185?new Vec3(.12,0,0):Vec3.ZERO);}
     private static final class Tank extends TankEntity {
         Tank(Minecraft mc){super(ModEntityTypes.TANK.get(),mc.level);}
         @Override public void tick(){held(this);}
+        @Override public double getCurrentThrottle(){return STEP>=7?.75:super.getCurrentThrottle();}
+        @Override public boolean canUseFuel(){return STEP>=7||super.canUseFuel();}
         @Override public int getDamageTaken(){return damage(this);}
         @Override public boolean isDestroyed(){return STEP==1&&age>40||STEP==3&&age>130&&age<190||super.isDestroyed();}
     }
     private static final class Heli extends HeliEntity {
         Heli(Minecraft mc){super(ModEntityTypes.HELICOPTER.get(),mc.level);}
         @Override public void tick(){held(this);for(var rotor:getRotors())rotor.update(25);}
+        @Override public double getCurrentThrottle(){return STEP>=7?.75:super.getCurrentThrottle();}
+        @Override public boolean canUseFuel(){return STEP>=7||super.canUseFuel();}
         @Override public int getDamageTaken(){return damage(this);}
         @Override public boolean isDestroyed(){return STEP==1&&age>40||STEP==3&&age>130&&age<190||super.isDestroyed();}
     }
     private static final class Boat extends io.github.mcheliceport.entity.ship.ShipEntity {
         Boat(Minecraft mc){super(ModEntityTypes.SHIP.get(),mc.level);}
         @Override public void tick(){held(this);}
+        @Override public double getCurrentThrottle(){return STEP>=7?.75:super.getCurrentThrottle();}
+        @Override public boolean canUseFuel(){return STEP>=7||super.canUseFuel();}
         @Override public int getDamageTaken(){return damage(this);}
     }
     private static final class Plane extends PlaneEntity {
         Plane(Minecraft mc){super(ModEntityTypes.PLANE.get(),mc.level);}
         @Override public void tick(){held(this);}
+        @Override public double getCurrentThrottle(){return STEP>=7?.75:super.getCurrentThrottle();}
+        @Override public boolean canUseFuel(){return STEP>=7||super.canUseFuel();}
         @Override public int getDamageTaken(){return damage(this);}
         @Override public boolean isDestroyed(){return STEP==1&&age>40||STEP==3&&age>130&&age<190||super.isDestroyed();}
     }
@@ -57,10 +65,11 @@ public final class LivingVehiclePreviewProbe {
             command(mc,"kill @e[type=!minecraft:player]","gamemode spectator","time set noon","weather clear","gamerule minecraft:advance_time false");
             for(int y=-60;y<4;y+=7)command(mc,"fill -30 "+y+" -30 30 "+(y+6)+" 40 air");
             command(mc,"fill -30 -64 -30 30 -61 40 stone","tp @s 12 -53 8 55 18");
+            if(STEP==7)command(mc,"fill -30 -61 -30 30 -61 60 coarse_dirt");
             if(STEP==6)command(mc,"fillbiome -16 -60 8 16 -48 36 plains","fill -16 -62 -16 16 -60 40 water");
             mc.getWindow().setWindowed(1280,720);mc.options.enableVsync().set(false);mc.options.framerateLimit().set(120);
             if(!mc.gui.hud.isHidden())mc.gui.hud.toggle();
-            ClientConfig.VEHICLE_WATER_DETAILS.set(true);ClientConfig.VEHICLE_WEATHER.set(true);ClientConfig.GPU_MODEL_BUFFERS.set(true);
+            ClientConfig.VEHICLE_SURFACE_BUILDUP.set(true);ClientConfig.VEHICLE_WATER_DETAILS.set(true);ClientConfig.VEHICLE_WEATHER.set(true);ClientConfig.GPU_MODEL_BUFFERS.set(true);
             ClientConfig.EFFECT_QUALITY.set(EffectQuality.ENHANCED);ClientConfig.EFFECT_STYLE.set(ClientConfig.EffectStyle.POLISHED);
             ClientConfig.EFFECT_BUDGET.set(ClientConfig.EffectBudget.BALANCED);ClientConfig.ADAPTIVE_EFFECTS.set(false);
             ClientConfig.VEHICLE_DAMAGE_DETAILS.set(true);ClientConfig.ENGINE_STARTUP_EFFECTS.set(false);ClientConfig.ENGINE_HEAT_HAZE.set(STEP==4);ClientConfig.WEAPON_HEAT.set(true);
@@ -68,7 +77,7 @@ public final class LivingVehiclePreviewProbe {
         if(ticks<160)return;int next=(ticks-160)/220;age=(ticks-160)%220;
         if(next>=NAMES.length){mc.stop();return;}
         if(phase!=next){
-            phase=next;if(vehicle!=null)vehicle.discard();mc.particleEngine.clearParticles();VehicleAtmosphere.clear();VehicleWeaponHeat.clear();VehicleImpactMarks.clear();LoosePanels.clear();PanelInteriors.clear();VehicleWeather.clear();VehicleWaterEffects.clear();
+            phase=next;if(vehicle!=null)vehicle.discard();mc.particleEngine.clearParticles();VehicleAtmosphere.clear();VehicleWeaponHeat.clear();VehicleImpactMarks.clear();LoosePanels.clear();PanelInteriors.clear();VehicleWeather.clear();VehicleWaterEffects.clear();VehicleSurfaceBuildup.clear();
             vehicle=ContentRegistries.plane().get(NAMES[phase])!=null?new Plane(mc):ContentRegistries.heli().get(NAMES[phase])!=null?new Heli(mc):ContentRegistries.ship().get(NAMES[phase])!=null?new Boat(mc):new Tank(mc);
             vehicle.setId(975000+phase);vehicle.setAircraftTypeName(NAMES[phase]);vehicle.setTextureName(NAMES[phase]);vehicle.setPos(0,-60,20);
             var parts=vehicle.getParts();for(int i=0;i<parts.length;i++)parts[i].setId(985000+phase*100+i);
@@ -78,6 +87,10 @@ public final class LivingVehiclePreviewProbe {
             System.out.println("M8_LIVING stage="+STEP+" vehicle="+NAMES[phase]);
         }
         if(age==95||age==145||age==180||(STEP==3||STEP==5)&&age==205)capture=NAMES[phase]+"-age"+age;
+        if(STEP==7&&age==180){
+            if(VehicleSurfaceBuildup.dirt(vehicle)<.3F||VehicleSurfaceBuildup.soot(vehicle)<.2F||VehicleSurfaceBuildup.probes()>4)throw new IllegalStateException("Missing/unbounded surface buildup");
+            System.out.println("M8_LIVING dirt="+VehicleSurfaceBuildup.dirt(vehicle)+" soot="+VehicleSurfaceBuildup.soot(vehicle)+" probes="+VehicleSurfaceBuildup.probes());
+        }
         if(STEP==6&&age==180){
             if(VehicleWaterEffects.wakes()==0||VehicleWaterEffects.wakes()>64||VehicleWaterEffects.reads()>12)throw new IllegalStateException("Missing/unbounded wake");
             System.out.println("M8_LIVING water_wakes="+VehicleWaterEffects.wakes()+" reads="+VehicleWaterEffects.reads());

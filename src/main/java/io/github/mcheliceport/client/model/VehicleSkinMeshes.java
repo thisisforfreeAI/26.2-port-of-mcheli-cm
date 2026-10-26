@@ -8,7 +8,29 @@ public final class VehicleSkinMeshes {
     public record Skin(McheliModel.Group raised,McheliModel.Group top,McheliModel.Group lower){}
     private static final Map<McheliModel.Group,CompletableFuture<Skin>> CACHE=new LinkedHashMap<>();
     private static final ExecutorService LOADER=Executors.newSingleThreadExecutor(r->{var t=new Thread(r,"mcheli-vehicle-skin");t.setDaemon(true);return t;});
+    private record Region(McheliModel.Group group,net.minecraft.world.phys.Vec3 point,float radius){}
+    private static final Map<Region,CompletableFuture<McheliModel.Group>> REGIONS=new LinkedHashMap<>();
     private static int pending;
+    public static McheliModel.Group region(McheliModel.Group group,net.minecraft.world.phys.Vec3 point,float radius){
+        var key=new Region(group,point,radius);CompletableFuture<McheliModel.Group> future;
+        synchronized(CACHE){future=REGIONS.get(key);if(future==null){
+            if(pending>=4||group.vertexCount()>60000)return null;
+            if(REGIONS.size()>=32){var it=REGIONS.entrySet().iterator();boolean removed=false;while(it.hasNext())if(it.next().getValue().isDone()){it.remove();removed=true;break;}if(!removed)return null;}
+            future=new CompletableFuture<>();REGIONS.put(key,future);pending++;var result=future;
+            LOADER.execute(()->{McheliModel.Group mesh=null;try{mesh=regionMesh(group,point,radius);}finally{result.complete(mesh);synchronized(CACHE){pending--;}}});
+        }}return future.getNow(null);
+    }
+    static McheliModel.Group regionMesh(McheliModel.Group group,net.minecraft.world.phys.Vec3 p,float radius){
+        var out=new java.util.ArrayList<Float>();var d=group.data();
+        for(int t=0;t+23<d.length&&out.size()<24000;t+=24){
+            double x=(d[t]+d[t+8]+d[t+16])/3,y=(d[t+1]+d[t+9]+d[t+17])/3,z=(d[t+2]+d[t+10]+d[t+18])/3;
+            if(p.distanceToSqr(x,y,z)>radius*radius)continue;
+            for(int k=0;k<3;k++){int i=t+k*8;for(int a=0;a<3;a++)out.add(d[i+a]+d[i+5+a]*.006F);
+                out.add((float)(.5+(d[i]-p.x)/(radius*2)));out.add((float)(.5+(d[i+2]-p.z)/(radius*2)));
+                for(int a=5;a<8;a++)out.add(d[i+a]);}
+        }
+        float[] data=new float[out.size()];for(int i=0;i<data.length;i++)data[i]=out.get(i);return new McheliModel.Group(group.name()+"_soot",data);
+    }
     private VehicleSkinMeshes(){}
     public static Skin get(McheliModel.Group group){
         CompletableFuture<Skin> future;
@@ -39,5 +61,5 @@ public final class VehicleSkinMeshes {
         }
         return new Skin(new McheliModel.Group(group.name()+"_raised",raised),new McheliModel.Group(group.name()+"_snow",Arrays.copyOf(top,nt)),new McheliModel.Group(group.name()+"_dirt",Arrays.copyOf(lower,nl)));
     }
-    public static void clear(){synchronized(CACHE){CACHE.clear();}}
+    public static void clear(){synchronized(CACHE){CACHE.clear();REGIONS.clear();}}
 }

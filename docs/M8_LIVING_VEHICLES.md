@@ -13,7 +13,7 @@ legacy craters and Claude's NTM integration. Target 60 FPS on RTX 3060 8GB / 780
 | 4 | Weapon heat, discoloration, shimmer and cooling smoke | Complete |
 | 5 | Wet paint, parked snow accumulation and shedding | Complete |
 | 6 | Stronger wakes, shallow-water spray and debris splashes | Complete |
-| 7 | Terrain buildup on lower panels and exhaust soot | Pending |
+| 7 | Terrain buildup on lower panels and exhaust soot | Complete |
 | 8 | Flexible antennas, vibrating covers and loose cables | Pending |
 
 No new damage, secondary craters, gameplay entities or world-light updates. Prefer authored
@@ -71,3 +71,10 @@ checks trigger a splash when debris enters water. Sixty-four short-lived wakes, 
 twelve source-fluid reads and four support checks per tick bound work; shared particle admission
 also applies. No buoyancy, water blocks or gameplay collisions change.
 `effects.vehicleWaterDetails` controls it. Native M1A2/Growler/Zodiac previews pass.
+
+## 7. Terrain buildup
+
+Lower panels gradually collect irregular dust/mud on loose soil and sand. Parking preserves it;
+rain and water wash it away. Running engines leave restrained soot near authored outlets, with
+a rear-deck fallback on tanks. Four ground probes per tick, 64 states and cached overlay meshes
+bound cost. `effects.vehicleSurfaceBuildup` controls it. M1A2/AH-64/F-35A native previews pass.
