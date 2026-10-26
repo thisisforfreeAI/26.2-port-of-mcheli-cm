@@ -28,14 +28,16 @@ public final class VehicleBlastScars {
                     || Minecraft.getInstance().gameRenderer.mainCamera().position().distanceToSqr(ac.position())>48*48) continue;
             var models=io.github.mcheliceport.client.model.AircraftModels.peek(ac.getAcInfo());
             double height=models==null?1.5:Math.clamp(models.body().maxY*.4+.35,1,3);
-            Vec3 target=ac.position().add(0,height,0), direction=target.subtract(origin).normalize();
+            var body=VehicleImpactLook.body(ac.getYaw(),ac.getPitch(),ac.getRoll());
+            var center=body.transformPosition(new Vector3f(0,(float)height-.35F,0));
+            Vec3 target=ac.position().add(center.x,center.y,center.z), direction=target.subtract(origin).normalize();
             if (direction.lengthSqr()<.5 || !level.hasChunkAt(BlockPos.containing(origin))
                     || !level.hasChunkAt(BlockPos.containing(target))) continue;
             rays++;
             if (level.clip(new ClipContext(origin,target,ClipContext.Block.COLLIDER,ClipContext.Fluid.ANY,
                     CollisionContext.empty())).getType()!=HitResult.Type.MISS) continue;
-            var inverse=VehicleImpactLook.body(ac.getYaw(),ac.getPitch(),ac.getRoll()).invert();
-            var point=inverse.transformPosition(new Vector3f(0,(float)height,0));
+            var inverse=new org.joml.Matrix4f(body).invert();
+            var point=inverse.transformPosition(new Vector3f(center));
             var incoming=inverse.transformDirection(new Vector3f((float)direction.x,(float)direction.y,(float)direction.z)).normalize();
             var tangent=new Vector3f(incoming).cross(0,1,0);
             if(tangent.lengthSquared()<.01F)tangent.set(1,0,0);else tangent.normalize();

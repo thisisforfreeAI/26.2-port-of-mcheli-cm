@@ -45,12 +45,15 @@ public final class LoosePanels {
     private static boolean enabled(){return EffectQuality.enhanced()&&ClientConfig.get(ClientConfig.VEHICLE_DAMAGE_DETAILS);}
     public static void clear(){STATES.clear();PIECES.clear();world=null;birthTick=Long.MIN_VALUE;births=0;collisionCursor=0;}
     private static LoosePanelLook.Spec spec(McheliModel.Group group){
+        String name=group.name();
+        if(!(name.regionMatches(true,0,"$hatch",0,6)||name.regionMatches(true,0,"$canopy",0,7)
+                ||name.regionMatches(true,0,"$panel",0,6)||name.regionMatches(true,0,"$wb",0,3)))return null;
         if(!SPECS.containsKey(group)){if(SPECS.size()>=1024)SPECS.clear();SPECS.put(group,LoosePanelLook.spec(group));}
         return SPECS.get(group);
     }
     public static void extract(AircraftEntity entity,AircraftRenderState render){
         var mc=Minecraft.getInstance();if(mc.level!=world){clear();world=mc.level;}
-        if(!enabled()||render.thermal||render.far||entity.isDestroyed()||render.texture==null
+        if(!enabled()||render.far||entity.isDestroyed()||render.texture==null
                 ||mc.gameRenderer.mainCamera().position().distanceToSqr(entity.position())>32*32)return;
         if(STATES.size()>=64&&!STATES.containsKey(entity))return;
         var state=STATES.computeIfAbsent(entity,k->new State());long tick=world.getGameTime();
@@ -83,8 +86,10 @@ public final class LoosePanels {
             for(var group:draw.groups()){
                 int occurrence=occurrences.getOrDefault(group,0);occurrences.put(group,occurrence+1);
                 if(group==state.detached&&occurrence==state.occurrence)continue;
-                var s=spec(group);float angle=LoosePanelLook.rattle(fraction,tick,entity.getId()+group.name().hashCode());
-                if(s==null||angle==0){unchanged.add(group);continue;}
+                var s=spec(group);
+                if(s==null){unchanged.add(group);continue;}
+                float angle=LoosePanelLook.rattle(fraction,tick,entity.getId()+group.name().hashCode());
+                if(angle==0){unchanged.add(group);continue;}
                 var c=s.center();var pose=new Matrix4f(draw.pose()).translate(c).rotateZ(angle).rotateX(angle*.45F).translate(-c.x,-c.y,-c.z);
                 draws.add(new AircraftPartPoses.Draw(pose,List.of(group)));
             }
@@ -120,9 +125,12 @@ public final class LoosePanels {
             Vec3 at=p.previous.lerp(p.position,partial).subtract(camera);float age=p.age+partial;
             var transform=new Matrix4f().translation((float)at.x,(float)at.y,(float)at.z)
                     .rotateXYZ((p.settled?p.restAge:age)*.09F+p.phase,(p.settled?p.restAge:age)*.05F,(p.settled?p.restAge:age)*.025F).mul(p.local);
-            int color=((int)(255*Math.clamp((60-age)/15,0,1))<<24)|0xDADADA;
-            event.getSubmitNodeCollector().submitCustomGeometry(event.getPoseStack(),RenderTypes.entityTranslucent(p.texture,false),(pose,buffer)->{
-                var local=pose.copy();local.mulPose(transform);ModelVertices.emit(buffer,local,List.of(p.group),color,p.light,false);
+            boolean thermal=ThermalVision.drawsWhite(p.owner);
+            Identifier texture=thermal?ThermalVision.WHITE:p.texture;
+            int pieceLight=thermal?LightCoordsUtil.FULL_BRIGHT:p.light;
+            int color=((int)(255*Math.clamp((60-age)/15,0,1))<<24)|(thermal?0xFFFFFF:0xDADADA);
+            event.getSubmitNodeCollector().submitCustomGeometry(event.getPoseStack(),RenderTypes.entityTranslucent(texture,false),(pose,buffer)->{
+                var local=pose.copy();local.mulPose(transform);ModelVertices.emit(buffer,local,List.of(p.group),color,pieceLight,false);
             });
         }
     }

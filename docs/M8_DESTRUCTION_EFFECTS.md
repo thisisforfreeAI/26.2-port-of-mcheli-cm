@@ -15,6 +15,12 @@ RTX 3060 8GB / Ryzen 7 7800X3D at 1080p. Hardware FPS needs target-PC verificati
 | 7 | Rattling and detachable small authored panels | Complete |
 | 8 | Progressive cracks on identifiable glazing | Complete |
 
+Enabled by default with `effects.effectQuality = ENHANCED` and
+`effects.vehicleDamageDetails = true`. Open ESC → MC Heli Effects → Full settings to
+change these options; Detail and Adaptive controls still bound presentation cost.
+Authored lamps and small removable model groups are required for light/panel effects.
+Mixed canopy glazing uses source alpha; unknown or oversized textures keep paint marks.
+
 All additions are cosmetic and respect the existing damage-details switch, distance and
 quality controls. Avoid unbounded particles, repeated full-model scans, world lighting
 updates and new gameplay entities. Temporary previews use controlled vehicle states;
@@ -106,3 +112,20 @@ on the render thread. Native checks cover first hit, four-hit progression and re
 Native previews on three stock vehicles and 316 local unit tests pass.
 
 ![Progressive glazing damage](screens/m8-destruction-08-progressive-glass.png)
+
+## Reproducing the previews
+
+Use JDK 25 and a graphical client with the development-only visual-probe source set:
+
+```sh
+./gradlew -I scripts/visual-probe.init.gradle --no-configuration-cache \
+  -Dmcheli.destructionPreview=8 -Dmcheli.probeBackend=VULKAN test runClient
+```
+
+Choose stages 1–8. The disposable `M6Smoke` preview world must exist; never point the
+fixture at a valued save. Screenshots are native 1280×720 captures in the preview run's
+`screenshots` directory. Stage 4 includes healthy/damaged lamps, stage 7 checks repaired
+panels, and stage 8 checks opaque frames, repeated fractures and repaired glass.
+Stages 2 and 6 also assert terrain fitting/removal and blast occlusion respectively.
+Local previews used JDK 25/Mesa with optional integration dependency exclusions;
+GitHub CI validates the normal build and dedicated GameTests with and without NTM Next.

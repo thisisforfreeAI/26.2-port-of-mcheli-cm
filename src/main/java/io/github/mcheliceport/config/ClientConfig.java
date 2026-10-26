@@ -171,7 +171,7 @@ public final class ClientConfig {
                 .define("rotorWashDebris", true);
         ENGINE_STARTUP_EFFECTS = builder.comment("Enhanced engine startup puffs, spooling turbine whine and gradual heat buildup.")
                 .define("engineStartupEffects", true);
-        VEHICLE_DAMAGE_DETAILS = builder.comment("Cosmetic impact chips, cannon scars, named-window cracks, coolant leaks, sparks and damage smoke.")
+        VEHICLE_DAMAGE_DETAILS = builder.comment("Cosmetic impact/blast scars, progressive glass cracks, fluid leaks, damaged lamps, loose panels and cooling wrecks.")
                 .define("vehicleDamageDetails", true);
         WEAPON_GROUND_EFFECTS = builder.comment("Brief muzzle illumination and ground dust beneath large guns.")
                 .define("weaponGroundEffects", true);

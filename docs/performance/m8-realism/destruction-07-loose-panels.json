@@ -1,7 +1,7 @@
 {
   "stage": 7,
   "name": "loose-panels",
-  "unit_tests": 313,
+  "unit_tests": 316,
   "failures": 0,
   "native_build_successful": true,
   "checks": [

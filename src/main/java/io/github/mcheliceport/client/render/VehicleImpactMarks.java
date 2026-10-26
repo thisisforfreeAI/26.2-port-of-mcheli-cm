@@ -109,14 +109,14 @@ public final class VehicleImpactMarks {
         int sceneCap=quality==ClientConfig.EffectBudget.LOW?32:quality==ClientConfig.EffectBudget.HIGH?128:96;
         if(pressure>0)sceneCap/=1+pressure;
         float fade=Math.clamp((range-(float)Math.sqrt(distance))/(range*.3F),0,1);fade=fade*fade*(3-2*fade);
-        int count=0;
+        int count=0;boolean smokeChosen=false;
         for(var iterator=state.marks.descendingIterator();iterator.hasNext()&&count<cap&&visible<sceneCap;){
             Mark mark=iterator.next();Matrix4f pose=partPose(render.draws,mark.group,mark.occurrence,mark.instances);
             // Hidden/replaced instances must not transfer a mark to a different moving part.
             if(pose==null){iterator.remove();continue;}
-            if(mark.blast&&mark.opacity>.25F&&world.getGameTime()-mark.born<400){
+            if(!smokeChosen&&mark.blast&&mark.opacity>.25F&&world.getGameTime()-mark.born<400){
                 var at=pose.transformPosition(new Vector3f(mark.contact));
-                state.smokeOrigin=entity.position().add(at.x,at.y,at.z);state.smokeTick=world.getGameTime();
+                state.smokeOrigin=entity.position().add(at.x,at.y,at.z);state.smokeTick=world.getGameTime();smokeChosen=true;
             }
             render.impactDraws.add(new Draw(new Matrix4f(pose),mark.mesh,mark.tile,mark.opacity*fade));count++;visible++;
         }
@@ -165,7 +165,7 @@ public final class VehicleImpactMarks {
         }
         Mark previous=null;
         if(glass&&!pending.blast)for(var m:state.marks){
-            if(m.tile>=6&&m.group==chosen&&m.occurrence==chosenOccurrence&&m.target>.25F
+            if(m.tile>=6&&m.group==chosen&&m.occurrence==chosenOccurrence&&m.instances==occurrences.get(chosen)&&m.target>.25F
                     &&m.contact.distanceSquared(localContact)<Math.max(.2F,m.radius)*Math.max(.2F,m.radius))previous=m;
         }
         float radius=glass&&!pending.blast?io.github.mcheliceport.client.model.VehicleGlassLook.radius(previous==null?0:previous.radius,p.radius()):p.radius();

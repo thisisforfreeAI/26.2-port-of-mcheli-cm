@@ -149,8 +149,20 @@ public final class VehicleAtmosphere {
         return result;
     }
 
+    /** Rear-deck fallback for tanks; aircraft retain their authored engine/nozzle anchors. */
+    public static List<Vec3> wreckOrigins(AircraftEntity aircraft) {
+        if(aircraft instanceof io.github.mcheliceport.entity.tank.TankEntity&&aircraft.getAcInfo().engineOutlets.isEmpty()){
+            var model=io.github.mcheliceport.client.model.AircraftModels.peek(aircraft.getAcInfo());
+            double top=model==null?1.8:Math.clamp(model.body().maxY*.4,1.2,2.1);
+            double rear=model==null?-1.7:Math.clamp(model.body().minZ*.82,-5,-.7);
+            return List.of(aircraft.position().add(McheliMath.rotVec3(.85,top+.35,rear,
+                    -aircraft.getYaw(),-aircraft.getPitch(),-aircraft.getRoll())));
+        }
+        return origins(aircraft);
+    }
+
     private static void damage(ClientLevel level, AircraftEntity aircraft, List<Vec3> origins, long now, WreckCoolingLook cooling) {
-        if (aircraft.isDestroyed()) { WreckEffects.emit(level,origins,cooling,aircraft,now); return; }
+        if (aircraft.isDestroyed()) { WreckEffects.emit(level,wreckOrigins(aircraft),cooling,aircraft,now); return; }
         float severity = VehicleAtmosphereLook.damage(aircraft.getHP(), aircraft.getMaxHP());
         if (severity == 0) return;
         if (aircraft.isSearchLightOn() && severity > .4F && EffectPerformance.optionalGlows()

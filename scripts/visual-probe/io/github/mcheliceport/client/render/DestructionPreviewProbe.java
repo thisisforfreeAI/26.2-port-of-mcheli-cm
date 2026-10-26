@@ -92,7 +92,7 @@ public final class DestructionPreviewProbe {
             var parts=vehicle.getParts();for(int i=0;i<parts.length;i++)parts[i].setId(980000+phase*100+i);
             mc.level.addEntity(vehicle);System.out.println("M8_DESTRUCTION step="+STEP+" vehicle="+NAMES[phase]);
         }
-        if(age==145||age==180||(STEP==4||STEP==7)&&age==95||(STEP==7||STEP==8)&&age==205||STEP==8&&age==95)capture=NAMES[phase]+"-age"+age;
+        if(age==145||age==180||(STEP==4||STEP==7)&&age==95||(STEP==7||STEP==8)&&age==205||(STEP==8||STEP==5)&&age==95)capture=NAMES[phase]+"-age"+age;
         if(STEP==8){
             if(glassPoint==null&&age>50)findGlass();
             if(age==70){
@@ -189,7 +189,7 @@ public final class DestructionPreviewProbe {
         return bestPoint;
     }
     @SubscribeEvent public static void angles(ViewportEvent.ComputeCameraAngles e){
-        if(STEP==0||vehicle==null)return;e.setYaw(STEP==8?102:STEP==7?122:STEP==4?147:STEP==2?64:(STEP==3||STEP==6)?90:94);e.setPitch(STEP==8?16:STEP==7?12:STEP==4?10:STEP==2?12:(STEP==3||STEP==6)?20:17);e.setRoll(0);
+        if(STEP==0||vehicle==null)return;e.setYaw(STEP==5?49:STEP==8?102:STEP==7?(phase==2?58:122):STEP==4?147:STEP==2?64:(STEP==3||STEP==6)?90:94);e.setPitch(STEP==5?18:STEP==8?16:STEP==7?12:STEP==4?10:STEP==2?12:(STEP==3||STEP==6)?20:17);e.setRoll(0);
     }
     @SubscribeEvent public static void position(ViewportEvent.ComputeFov e){
         if(STEP==0||vehicle==null)return;
@@ -201,15 +201,15 @@ public final class DestructionPreviewProbe {
             if(models!=null){
                 LoosePanelLook.Spec best=null;
                 for(var group:models.body().groups){var s=LoosePanelLook.spec(group);if(s!=null&&(best==null||s.rank()<best.rank()))best=s;}
-                if(best!=null){var c=best.center();e.getCamera().setPosition(vehicle.position().add(c.x,c.y,c.z).add(8,2,5));return;}
+                if(best!=null){var c=best.center();e.getCamera().setPosition(vehicle.position().add(c.x,c.y,c.z).add(8,2,phase==2?-5:5));return;}
             }
         }
         if(STEP==2){
             var origin=VehicleAtmosphere.origins(vehicle).getFirst();
             e.getCamera().setPosition(new Vec3(origin.x,vehicle.getY(),origin.z).add(5.2,1.2,-2.5));
         }else if(STEP==5){
-            var origin=VehicleAtmosphere.origins(vehicle).getFirst();
-            e.getCamera().setPosition(new Vec3(origin.x,vehicle.getY()+4,origin.z).add(9,0,.5));
+            var origin=VehicleAtmosphere.wreckOrigins(vehicle).getFirst();
+            e.getCamera().setPosition(origin.add(7,3,-6));
         }else e.getCamera().setPosition(vehicle.position().add(STEP==4?(phase==0?new Vec3(5,2,8):new Vec3(12,5,18)):(STEP==3||STEP==6)?new Vec3(6,2.3,0):new Vec3(15,5,1)));
     }
     @SubscribeEvent public static void frame(RenderFrameEvent.Post event){

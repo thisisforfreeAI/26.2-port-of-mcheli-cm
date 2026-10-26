@@ -14,12 +14,6 @@ final class WreckEffects {
         if (density<=0) return;
         var engine=Minecraft.getInstance().particleEngine;
         Vec3 origin=origins.get(Math.floorMod((int)(tick/9+id),origins.size()));
-        if(aircraft instanceof io.github.mcheliceport.entity.tank.TankEntity&&aircraft.getAcInfo().engineOutlets.isEmpty()){
-            var model=io.github.mcheliceport.client.model.AircraftModels.peek(aircraft.getAcInfo());
-            double top=model==null?1.8:Math.clamp(model.body().maxY*.5,1.2,2.4);
-            origin=aircraft.position().add(io.github.mcheliceport.util.McheliMath.rotVec3(.25,top,-1.7,
-                    -aircraft.getYaw(),-aircraft.getPitch(),-aircraft.getRoll()));
-        }
         Vec3 pos=origin.add(Math.sin(tick*.7+id)*.22,.2,Math.cos(tick*.43+id)*.22);
         int pressure=1+EffectPerformance.pressure();
         if (fire>0 && Math.floorMod(tick+id,5*pressure)==0) {
