@@ -18,5 +18,6 @@ public class HeliRenderer extends AircraftRenderer<HeliEntity> {
     protected void drawParts(HeliEntity entity, AircraftInfo info, AircraftModels.VehicleModels models,
             AircraftPartPoses.Input input, float partialTicks, List<AircraftPartPoses.Draw> draws) {
         AircraftPartPoses.heli((HeliInfo) info, models, input, draws);
+        RotorDamage.apply(entity,(HeliInfo)info,models,input,draws);
     }
 }

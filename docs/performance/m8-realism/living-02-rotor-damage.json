@@ -1,0 +1,26 @@
+{
+  "stage": 2,
+  "unit_tests": 349,
+  "native_build_successful": true,
+  "checks": [
+    "M8_LIVING stage=2 vehicle=ah-64",
+    "M8_LIVING Saved screenshot as m8-living-2-ah-64-age95.png",
+    "M8_LIVING damaged_rotors=2",
+    "M8_LIVING Saved screenshot as m8-living-2-ah-64-age145.png",
+    "M8_LIVING damaged_rotors=2",
+    "M8_LIVING Saved screenshot as m8-living-2-ah-64-age180.png",
+    "M8_LIVING stage=2 vehicle=mh-60l_dap",
+    "M8_LIVING Saved screenshot as m8-living-2-mh-60l_dap-age95.png",
+    "M8_LIVING damaged_rotors=2",
+    "M8_LIVING Saved screenshot as m8-living-2-mh-60l_dap-age145.png",
+    "M8_LIVING damaged_rotors=2",
+    "M8_LIVING Saved screenshot as m8-living-2-mh-60l_dap-age180.png",
+    "M8_LIVING stage=2 vehicle=mh-6",
+    "M8_LIVING Saved screenshot as m8-living-2-mh-6-age95.png",
+    "M8_LIVING damaged_rotors=2",
+    "M8_LIVING Saved screenshot as m8-living-2-mh-6-age145.png",
+    "M8_LIVING damaged_rotors=2",
+    "M8_LIVING Saved screenshot as m8-living-2-mh-6-age180.png"
+  ],
+  "target_pc_fps_verified": false
+}

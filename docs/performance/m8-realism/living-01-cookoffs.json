@@ -1,0 +1,32 @@
+{
+  "stage": 1,
+  "unit_tests": 347,
+  "native_build_successful": true,
+  "checks": [
+    "M8_LIVING stage=1 vehicle=m1a2",
+    "M8_LIVING Saved screenshot as m8-living-1-m1a2-pop1.png",
+    "M8_LIVING Saved screenshot as m8-living-1-m1a2-age95.png",
+    "M8_LIVING Saved screenshot as m8-living-1-m1a2-pop2.png",
+    "M8_LIVING Saved screenshot as m8-living-1-m1a2-age145.png",
+    "M8_LIVING Saved screenshot as m8-living-1-m1a2-pop3.png",
+    "M8_LIVING Saved screenshot as m8-living-1-m1a2-age180.png",
+    "M8_LIVING cookoffs=3 sound_requests=3 terrain_unchanged=true",
+    "M8_LIVING stage=1 vehicle=ah-64",
+    "M8_LIVING Saved screenshot as m8-living-1-ah-64-pop1.png",
+    "M8_LIVING Saved screenshot as m8-living-1-ah-64-age95.png",
+    "M8_LIVING Saved screenshot as m8-living-1-ah-64-pop2.png",
+    "M8_LIVING Saved screenshot as m8-living-1-ah-64-age145.png",
+    "M8_LIVING Saved screenshot as m8-living-1-ah-64-age180.png",
+    "M8_LIVING Saved screenshot as m8-living-1-ah-64-pop3.png",
+    "M8_LIVING cookoffs=3 sound_requests=3 terrain_unchanged=true",
+    "M8_LIVING stage=1 vehicle=f-35a",
+    "M8_LIVING Saved screenshot as m8-living-1-f-35a-pop1.png",
+    "M8_LIVING Saved screenshot as m8-living-1-f-35a-age95.png",
+    "M8_LIVING Saved screenshot as m8-living-1-f-35a-pop2.png",
+    "M8_LIVING Saved screenshot as m8-living-1-f-35a-age145.png",
+    "M8_LIVING Saved screenshot as m8-living-1-f-35a-age180.png",
+    "M8_LIVING Saved screenshot as m8-living-1-f-35a-pop3.png",
+    "M8_LIVING cookoffs=3 sound_requests=3 terrain_unchanged=true"
+  ],
+  "target_pc_fps_verified": false
+}

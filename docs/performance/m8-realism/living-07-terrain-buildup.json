@@ -1,0 +1,24 @@
+{
+  "stage": 7,
+  "unit_tests": 362,
+  "failures": 0,
+  "native_build_successful": true,
+  "checks": [
+    "M8_LIVING stage=7 vehicle=m1a2",
+    "M8_LIVING Saved screenshot as m8-living-7-m1a2-age95.png",
+    "M8_LIVING Saved screenshot as m8-living-7-m1a2-age145.png",
+    "M8_LIVING dirt=0.44249967 soot=0.3204001 probes=0",
+    "M8_LIVING Saved screenshot as m8-living-7-m1a2-age180.png",
+    "M8_LIVING stage=7 vehicle=ah-64",
+    "M8_LIVING Saved screenshot as m8-living-7-ah-64-age95.png",
+    "M8_LIVING Saved screenshot as m8-living-7-ah-64-age145.png",
+    "M8_LIVING dirt=0.44249967 soot=0.3204001 probes=0",
+    "M8_LIVING Saved screenshot as m8-living-7-ah-64-age180.png",
+    "M8_LIVING stage=7 vehicle=f-35a",
+    "M8_LIVING Saved screenshot as m8-living-7-f-35a-age95.png",
+    "M8_LIVING Saved screenshot as m8-living-7-f-35a-age145.png",
+    "M8_LIVING dirt=0.43749967 soot=0.3222001 probes=1",
+    "M8_LIVING Saved screenshot as m8-living-7-f-35a-age180.png"
+  ],
+  "target_pc_fps_verified": false
+}

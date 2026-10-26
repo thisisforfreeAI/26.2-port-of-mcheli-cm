@@ -74,7 +74,7 @@ public abstract class AircraftRenderer<T extends AircraftEntity> extends EntityR
         super.extractRenderState(entity, state, partialTicks);
         state.draws.clear();
         state.impactDraws.clear();
-        state.emissiveDraws.clear();
+        state.emissiveDraws.clear();state.detailDraws.clear();
         state.searchLights.clear();
         state.boxes.clear();
         state.ropeHooks.clear(); state.ropeLength = 0;
@@ -142,8 +142,12 @@ public abstract class AircraftRenderer<T extends AircraftEntity> extends EntityR
                 eraIndex++;
             }
         }
+        SmallVehicleMotion.apply(entity,state,partialTicks);
         LoosePanels.extract(entity,state);
+        io.github.mcheliceport.client.particle.VehicleWeather.extract(entity,state);
+        io.github.mcheliceport.client.particle.VehicleSurfaceBuildup.extract(entity,state);
         VehicleImpactMarks.extract(entity,state);
+        io.github.mcheliceport.client.particle.VehicleWeaponHeat.extract(entity,state);
     }
 
     protected abstract String directory();
@@ -277,6 +281,17 @@ public abstract class AircraftRenderer<T extends AircraftEntity> extends EntityR
                     ModelVertices.emit(buffer, p, draw.groups(), color, light, flat, surfaceShade);
                 }
             });
+        }
+        if(!state.detailDraws.isEmpty()){
+            var batches=new java.util.LinkedHashMap<Identifier,java.util.List<AircraftRenderState.DetailDraw>>();
+            for(var detail:state.detailDraws)batches.computeIfAbsent(detail.texture(),k->new java.util.ArrayList<>()).add(detail);
+            int detailLight=state.lightCoords;
+            for(var batch:batches.entrySet()){
+                var details=List.copyOf(batch.getValue());
+                collector.submitCustomGeometry(poseStack,net.minecraft.client.renderer.rendertype.RenderTypes.entityTranslucent(batch.getKey(),false),(pose,buffer)->{
+                    for(var detail:details){var local=pose.copy();local.mulPose(detail.pose());ModelVertices.emit(buffer,local,detail.groups(),detail.color(),detailLight,false);}
+                });
+            }
         }
         if(!state.impactDraws.isEmpty()) {
             var marks=List.copyOf(state.impactDraws);

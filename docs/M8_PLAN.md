@@ -395,3 +395,14 @@ blast-fitted soot and panel smoke; small authored loose panels; progressive glaz
 See [implementation, limits and native examples](M8_DESTRUCTION_EFFECTS.md).
 These stay behind the existing damage-details option and leave damage, craters and NTM
 integration unchanged. Target-PC verification of 60 FPS remains outstanding.
+
+## Living vehicle, weather and wreck details
+
+All eight approved follow-ups are implemented: finite ammunition cook-offs; damaged rotor
+variants; exposed panel interiors; gun heat; wet paint and parked snow; water wakes/splashes;
+washable terrain buildup and exhaust soot; restrained antenna, nozzle and exposed cable motion.
+See [implementation and limits](M8_LIVING_VEHICLES.md) and the
+[native vehicle gallery](M8_LIVING_VEHICLES_GALLERY.md). Each stays cosmetic, with bounded
+client work and shared geometry/particle admission. Original craters, handling and gameplay
+damage are unchanged; Claude's NTM integration remains separate. Target-PC 60 FPS acceptance
+remains open.

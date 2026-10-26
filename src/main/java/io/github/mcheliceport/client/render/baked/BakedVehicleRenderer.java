@@ -46,7 +46,7 @@ final class BakedVehicleRenderer implements FeatureRenderer<BakedVehicles.Submit
                 AbstractTexture texture = context.textureManager().getTexture(submit.texture());
                 // As ModelVertices: baked shade colours replace only the base colour.
                 int flags = (submit.flat() ? BakedVehicles.FLAG_FLAT : 0)
-                        | (submit.surfaceShade() && submit.color() == VehicleSurfaceShade.BASE_COLOR
+                        | (submit.surfaceShade()
                                 ? BakedVehicles.FLAG_SURFACE_SHADE : 0);
                 for (BakedVehicles.Part part : submit.parts()) {
                     GpuBufferSlice uniform = null;

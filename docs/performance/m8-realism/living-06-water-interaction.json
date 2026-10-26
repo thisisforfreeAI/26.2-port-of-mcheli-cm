@@ -1,0 +1,24 @@
+{
+  "stage": 6,
+  "unit_tests": 362,
+  "failures": 0,
+  "native_build_successful": true,
+  "checks": [
+    "M8_LIVING stage=6 vehicle=m1a2",
+    "M8_LIVING Saved screenshot as m8-living-6-m1a2-age95.png",
+    "M8_LIVING Saved screenshot as m8-living-6-m1a2-age145.png",
+    "M8_LIVING water_wakes=10 reads=0",
+    "M8_LIVING Saved screenshot as m8-living-6-m1a2-age180.png",
+    "M8_LIVING stage=6 vehicle=growler",
+    "M8_LIVING Saved screenshot as m8-living-6-growler-age95.png",
+    "M8_LIVING Saved screenshot as m8-living-6-growler-age145.png",
+    "M8_LIVING water_wakes=10 reads=0",
+    "M8_LIVING Saved screenshot as m8-living-6-growler-age180.png",
+    "M8_LIVING stage=6 vehicle=zodiac",
+    "M8_LIVING Saved screenshot as m8-living-6-zodiac-age95.png",
+    "M8_LIVING Saved screenshot as m8-living-6-zodiac-age145.png",
+    "M8_LIVING water_wakes=10 reads=0",
+    "M8_LIVING Saved screenshot as m8-living-6-zodiac-age180.png"
+  ],
+  "target_pc_fps_verified": false
+}

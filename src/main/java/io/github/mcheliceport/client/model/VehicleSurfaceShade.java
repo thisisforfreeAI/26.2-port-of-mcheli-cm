@@ -66,6 +66,13 @@ public final class VehicleSurfaceShade {
     private static Position position(float[] d, int i) {
         return new Position(d[i] == 0 ? 0 : d[i], d[i + 1] == 0 ? 0 : d[i + 1], d[i + 2] == 0 ? 0 : d[i + 2]);
     }
+    /** Apply a material tint while retaining the baked panel/crease contrast. */
+    public static int multiply(int shade,int tint){
+        int r=Math.clamp((((shade>>>16)&255)*((tint>>>16)&255)+95)/191,0,255);
+        int g=Math.clamp((((shade>>>8)&255)*((tint>>>8)&255)+95)/191,0,255);
+        int b=Math.clamp(((shade&255)*(tint&255)+95)/191,0,255);
+        return (tint&0xFF000000)|(r<<16)|(g<<8)|b;
+    }
     public static int tint(int color, float shade) {
         int r = Math.clamp(Math.round(((color >>> 16) & 255) * shade), 0, 255);
         int g = Math.clamp(Math.round(((color >>> 8) & 255) * shade), 0, 255);

@@ -29,6 +29,8 @@ public final class VehicleAtmosphere {
     private static ClientLevel world;
     private static long lastTick = Long.MIN_VALUE;
     private static int emitted;
+    private static long admissionTick=Long.MIN_VALUE;
+    private static java.lang.ref.WeakReference<ClientLevel> admissionWorld=new java.lang.ref.WeakReference<>(null);
     private static final class State {
         final VehicleAtmosphereLook engine = new VehicleAtmosphereLook();
         final WreckCoolingLook cooling = new WreckCoolingLook();
@@ -45,10 +47,10 @@ public final class VehicleAtmosphere {
 
     public static void clear() {
         STATES.values().forEach(State::stop); STATES.clear(); world = null;
-        lastTick = Long.MIN_VALUE; emitted = 0;
+        lastTick = Long.MIN_VALUE; CookoffEffects.clear();
     }
     public static int stateCount() { return STATES.size(); }
-    public static int emitted() { return emitted; }
+    public static int emitted() { return world!=null&&admissionWorld.get()==world&&admissionTick==world.getGameTime()?emitted:0; }
     public static int wreckAge(AircraftEntity ac) { var state=STATES.get(ac);return state==null?-1:state.cooling.age(); }
     public static long startupVoiceCount() {
         return STATES.values().stream().filter(s -> s.whine != null
@@ -66,7 +68,7 @@ public final class VehicleAtmosphere {
         if (level == null || !EffectQuality.enhanced() || mc.player == null || mc.isPaused()) return;
         long now = level.getGameTime();
         if (now == lastTick) return;
-        lastTick = now; emitted = 0;
+        lastTick = now; prepareAdmission(level);
         STATES.entrySet().removeIf(entry -> {
             AircraftEntity aircraft = entry.getKey();
             if (aircraft.isRemoved() || aircraft.level() != level
@@ -228,7 +230,13 @@ public final class VehicleAtmosphere {
         }
     }
 
+    private static void prepareAdmission(ClientLevel level){
+        if(admissionWorld.get()!=level||admissionTick!=level.getGameTime()){
+            admissionWorld=new java.lang.ref.WeakReference<>(level);admissionTick=level.getGameTime();emitted=0;
+        }
+    }
     static boolean admit(ClientLevel level, Vec3 position, float radius) {
+        prepareAdmission(level);
         if (emitted >= EngineExhaustLook.cap(ClientConfig.get(ClientConfig.EFFECT_BUDGET))) return false;
         BlockPos block = BlockPos.containing(position);
         if (!level.hasChunkAt(block) || !level.getFluidState(block).isEmpty()

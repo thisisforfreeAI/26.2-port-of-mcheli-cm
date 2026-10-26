@@ -25,7 +25,7 @@ public final class ModelVertices {
     public static void emit(VertexConsumer buffer, PoseStack.Pose pose, List<McheliModel.Group> groups, int color,
             int light, boolean flat, boolean surfaceShade) {
         for (McheliModel.Group group : groups) {
-            int[] shades = surfaceShade && color == io.github.mcheliceport.client.model.VehicleSurfaceShade.BASE_COLOR ? io.github.mcheliceport.client.model.VehicleSurfaceShade.get(group) : null;
+            int[] shades = surfaceShade ? io.github.mcheliceport.client.model.VehicleSurfaceShade.get(group) : null;
             float[] d = group.data();
             int stride = McheliModel.STRIDE;
             for (int t = 0; t + 3 * stride <= d.length; t += 3 * stride) {
@@ -34,7 +34,7 @@ public final class ModelVertices {
                     int i = t + Math.min(k, 2) * stride;
                     int n = flat ? last : i;
                     buffer.addVertex(pose, d[i], d[i + 1], d[i + 2])
-                            .setColor(shades == null ? color : shades[i / stride])
+                            .setColor(shades == null ? color : io.github.mcheliceport.client.model.VehicleSurfaceShade.multiply(shades[i / stride],color))
                             .setUv(d[i + 3], d[i + 4])
                             .setOverlay(OverlayTexture.NO_OVERLAY)
                             .setLight(light)

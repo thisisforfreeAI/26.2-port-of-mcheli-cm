@@ -304,6 +304,7 @@ public class WeaponSet {
         if (isUsed && shooter.level().isClientSide() && current != null) {
             WeaponClientHooks.weaponShot(shooter.level(), shooter.position().add(current.getShotPos(shooter)),
                     shooter.getDeltaMovement(), current.getInfo(), shooter.getYRot() + this.yaw, shooter.getXRot() + this.pitch);
+            WeaponClientHooks.weaponHeat(shooter,index,current.getInfo(),shooter.position().add(current.getShotPos(shooter)),shooter.getYRot()+this.yaw,shooter.getXRot()+this.pitch);
         }
         if (isUsed && shooter.level().isClientSide() && current != null && current.cartridge != null) {
             Vec3 offset = current.getShotPos(shooter);

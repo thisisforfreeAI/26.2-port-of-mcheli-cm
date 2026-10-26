@@ -1,0 +1,24 @@
+{
+  "stage": 4,
+  "unit_tests": 353,
+  "failures": 0,
+  "native_build_successful": true,
+  "checks": [
+    "M8_LIVING stage=4 vehicle=m1a2",
+    "M8_LIVING Saved screenshot as m8-living-4-m1a2-age95.png",
+    "M8_LIVING weapon_heat=0.9416511",
+    "M8_LIVING Saved screenshot as m8-living-4-m1a2-age145.png",
+    "M8_LIVING Saved screenshot as m8-living-4-m1a2-age180.png",
+    "M8_LIVING stage=4 vehicle=ah-64",
+    "M8_LIVING Saved screenshot as m8-living-4-ah-64-age95.png",
+    "M8_LIVING weapon_heat=0.9416511",
+    "M8_LIVING Saved screenshot as m8-living-4-ah-64-age145.png",
+    "M8_LIVING Saved screenshot as m8-living-4-ah-64-age180.png",
+    "M8_LIVING stage=4 vehicle=t-90",
+    "M8_LIVING Saved screenshot as m8-living-4-t-90-age95.png",
+    "M8_LIVING weapon_heat=0.9416511",
+    "M8_LIVING Saved screenshot as m8-living-4-t-90-age145.png",
+    "M8_LIVING Saved screenshot as m8-living-4-t-90-age180.png"
+  ],
+  "target_pc_fps_verified": false
+}
