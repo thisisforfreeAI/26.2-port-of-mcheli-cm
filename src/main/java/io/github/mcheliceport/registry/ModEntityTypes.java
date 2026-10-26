@@ -97,19 +97,19 @@ public final class ModEntityTypes {
     public static final DeferredHolder<EntityType<?>, EntityType<RocketEntity>> ROCKET = weapon("rocket",
             RocketEntity::new, 1.0f, 1.0f, 530, 5);
     public static final DeferredHolder<EntityType<?>, EntityType<TvMissileEntity>> TV_MISSILE = weapon("tv_missile",
-            TvMissileEntity::new, 1.0f, 1.0f, 530, 5);
+            TvMissileEntity::new, 1.0f, 1.0f, 530, 2);
     public static final DeferredHolder<EntityType<?>, EntityType<BulletEntity>> BULLET = weapon("bullet",
             BulletEntity::new, 1.0f, 1.0f, 530, 5);
     public static final DeferredHolder<EntityType<?>, EntityType<A10Entity>> A10 = weapon("a10",
             A10Entity::new, 5.0f, 3.0f, 530, 5);
     public static final DeferredHolder<EntityType<?>, EntityType<AAMissileEntity>> AA_MISSILE = weapon("aa_missile",
-            AAMissileEntity::new, 1.0f, 1.0f, 530, 5);
+            AAMissileEntity::new, 1.0f, 1.0f, 530, 2);
     public static final DeferredHolder<EntityType<?>, EntityType<ASMissileEntity>> AS_MISSILE = weapon("as_missile",
-            ASMissileEntity::new, 1.0f, 1.0f, 530, 5);
+            ASMissileEntity::new, 1.0f, 1.0f, 530, 2);
     public static final DeferredHolder<EntityType<?>, EntityType<TorpedoEntity>> TORPEDO = weapon("torpedo",
             TorpedoEntity::new, 1.0f, 1.0f, 530, 5);
     public static final DeferredHolder<EntityType<?>, EntityType<ATMissileEntity>> AT_MISSILE = weapon("at_missile",
-            ATMissileEntity::new, 1.0f, 1.0f, 530, 5);
+            ATMissileEntity::new, 1.0f, 1.0f, 530, 2);
     public static final DeferredHolder<EntityType<?>, EntityType<BombEntity>> BOMB = weapon("bomb",
             BombEntity::new, 1.0f, 1.0f, 530, 5);
     public static final DeferredHolder<EntityType<?>, EntityType<MarkerRocketEntity>> MARKER_ROCKET = weapon("marker_rocket",
@@ -148,7 +148,8 @@ public final class ModEntityTypes {
     }
 
     /**
-     * A projectile, flare or chaff (M5). The server sends their velocity, which they keep moving
+     * A projectile, flare or chaff (M5). Guided missiles update every 2 ticks (M9) because they
+     * turn, which velocity alone does not carry; ballistic rounds, rockets and bombs every 5. The server sends their velocity, which they keep moving
      * with between updates; each entity decides whether it is saved (only mines are).
      */
     private static <T extends net.minecraft.world.entity.Entity> DeferredHolder<EntityType<?>, EntityType<T>> weapon(
