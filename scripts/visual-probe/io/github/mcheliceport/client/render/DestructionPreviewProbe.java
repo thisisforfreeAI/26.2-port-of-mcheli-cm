@@ -90,6 +90,18 @@ public final class DestructionPreviewProbe {
             mc.level.addEntity(vehicle);System.out.println("M8_DESTRUCTION step="+STEP+" vehicle="+NAMES[phase]);
         }
         if(age==145||age==180||STEP==4&&age==95)capture=NAMES[phase]+"-age"+age;
+        if(STEP==6&&age==80)commands(mc,"fill 3 -60 15 3 -54 25 stone");
+        if(STEP==6&&age==95)VehicleBlastScars.blast(mc.level,vehicle.position().add(6,1,0),5);
+        if(STEP==6&&age==110){
+            if(VehicleImpactMarks.stored()!=0)throw new IllegalStateException("Blast scars crossed solid occlusion");
+            System.out.println("M8_DESTRUCTION blast_occlusion=true");
+            commands(mc,"fill 3 -60 15 3 -54 25 air");
+        }
+        if(STEP==6&&age==120)VehicleBlastScars.blast(mc.level,vehicle.position().add(6,1,0),5);
+        if(STEP==6&&age==180){
+            if(VehicleImpactMarks.stored()==0||VehicleBlastScars.rays()>6)throw new IllegalStateException("Missing/unbounded blast scars");
+            System.out.println("M8_DESTRUCTION blast_marks="+VehicleImpactMarks.stored()+" rays="+VehicleBlastScars.rays()+" panel_smoke="+(VehicleImpactMarks.damageOrigin(vehicle)!=null));
+        }
         if(STEP==3&&(age==140||age==175)){
             for(int i=0;i<3;i++)VehicleImpactMarks.receive(new io.github.mcheliceport.net.VehicleImpactPayload(
                     vehicle.getId(),vehicle.getUUID(),2.8F,.8F+i*.5F,(i-1)*.8F,-1,0,0,.3F,true,tick*3+i));
@@ -120,7 +132,7 @@ public final class DestructionPreviewProbe {
         }
     }
     @SubscribeEvent public static void angles(ViewportEvent.ComputeCameraAngles e){
-        if(STEP==0||vehicle==null)return;e.setYaw(STEP==4?147:STEP==2?64:STEP==3?90:94);e.setPitch(STEP==4?10:STEP==2?12:STEP==3?20:17);e.setRoll(0);
+        if(STEP==0||vehicle==null)return;e.setYaw(STEP==4?147:STEP==2?64:(STEP==3||STEP==6)?90:94);e.setPitch(STEP==4?10:STEP==2?12:(STEP==3||STEP==6)?20:17);e.setRoll(0);
     }
     @SubscribeEvent public static void position(ViewportEvent.ComputeFov e){
         if(STEP==0||vehicle==null)return;
@@ -130,7 +142,7 @@ public final class DestructionPreviewProbe {
         }else if(STEP==5){
             var origin=VehicleAtmosphere.origins(vehicle).getFirst();
             e.getCamera().setPosition(new Vec3(origin.x,vehicle.getY()+4,origin.z).add(9,0,.5));
-        }else e.getCamera().setPosition(vehicle.position().add(STEP==4?(phase==0?new Vec3(5,2,8):new Vec3(12,5,18)):STEP==3?new Vec3(6,2.3,0):new Vec3(15,5,1)));
+        }else e.getCamera().setPosition(vehicle.position().add(STEP==4?(phase==0?new Vec3(5,2,8):new Vec3(12,5,18)):(STEP==3||STEP==6)?new Vec3(6,2.3,0):new Vec3(15,5,1)));
     }
     @SubscribeEvent public static void frame(RenderFrameEvent.Post event){
         if(capture==null)return;var mc=Minecraft.getInstance();String name=capture;capture=null;

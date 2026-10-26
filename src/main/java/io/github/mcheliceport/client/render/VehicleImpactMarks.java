@@ -29,19 +29,21 @@ public final class VehicleImpactMarks {
     private static int fits,visible;
     private static final class State {
         int lastDamage;
+        net.minecraft.world.phys.Vec3 smokeOrigin; long smokeTick;
         final ArrayDeque<Pending> pending=new ArrayDeque<>();
         final ArrayDeque<Mark> marks=new ArrayDeque<>();
         State(int damage){lastDamage=damage;}
     }
-    private record Pending(VehicleImpactPayload payload,long born) {}
+    private record Pending(VehicleImpactPayload payload,long born,boolean blast) {}
     private static final class Mark {
         final McheliModel.Group group;
         final int occurrence,instances,tile;
         final VehicleImpactSurface.Mesh mesh;
         final long born;
+        final boolean blast; final Vector3f contact;
         float opacity=1,target=1;
-        Mark(McheliModel.Group group,int occurrence,int instances,int tile,VehicleImpactSurface.Mesh mesh,long born){
-            this.group=group;this.occurrence=occurrence;this.instances=instances;this.tile=tile;this.mesh=mesh;this.born=born;
+        Mark(McheliModel.Group group,int occurrence,int instances,int tile,VehicleImpactSurface.Mesh mesh,long born,boolean blast,Vector3f contact){
+            this.group=group;this.occurrence=occurrence;this.instances=instances;this.tile=tile;this.mesh=mesh;this.born=born;this.blast=blast;this.contact=contact;
         }
     }
     public record Draw(Matrix4f pose,VehicleImpactSurface.Mesh mesh,int tile,float opacity) {}
@@ -49,14 +51,16 @@ public final class VehicleImpactMarks {
     public static boolean enabled(){return EffectQuality.enhanced()&&ClientConfig.get(ClientConfig.VEHICLE_DAMAGE_DETAILS);}
     public static void clear(){STATES.clear();world=null;}
     @SubscribeEvent public static void frame(RenderFrameEvent.Pre event){fits=0;visible=0;}
-    public static void receive(VehicleImpactPayload payload){
+    public static void receive(VehicleImpactPayload payload){ receive(payload,false); }
+    static void receiveBlast(VehicleImpactPayload payload){ receive(payload,true); }
+    private static void receive(VehicleImpactPayload payload,boolean blast){
         var mc=Minecraft.getInstance();if(mc.level==null||!enabled()||!payload.valid())return;
         if(world!=mc.level){clear();world=mc.level;}
         if(!(world.getEntity(payload.entityId()) instanceof AircraftEntity ac)||!ac.getUUID().equals(payload.vehicle())
                 ||mc.player==null||mc.player.distanceToSqr(ac)>96*96)return;
         if(STATES.size()>=64&&!STATES.containsKey(ac))STATES.remove(STATES.keySet().iterator().next());
         var s=STATES.computeIfAbsent(ac,k->new State(ac.getDamageTaken()));
-        if(s.pending.size()>=4)s.pending.removeFirst();s.pending.addLast(new Pending(payload,world.getGameTime()));
+        if(s.pending.size()>=4)s.pending.removeFirst();s.pending.addLast(new Pending(payload,world.getGameTime(),blast));
     }
     public static void tick(ClientLevel level){
         if(level!=world||!enabled()){clear();world=level;}
@@ -109,6 +113,10 @@ public final class VehicleImpactMarks {
             Mark mark=iterator.next();Matrix4f pose=partPose(render.draws,mark.group,mark.occurrence,mark.instances);
             // Hidden/replaced instances must not transfer a mark to a different moving part.
             if(pose==null){iterator.remove();continue;}
+            if(mark.blast&&mark.opacity>.25F&&world.getGameTime()-mark.born<400){
+                var at=pose.transformPosition(new Vector3f(mark.contact));
+                state.smokeOrigin=entity.position().add(at.x,at.y,at.z);state.smokeTick=world.getGameTime();
+            }
             render.impactDraws.add(new Draw(new Matrix4f(pose),mark.mesh,mark.tile,mark.opacity*fade));count++;visible++;
         }
     }
@@ -124,7 +132,7 @@ public final class VehicleImpactMarks {
         Matrix4f body=VehicleImpactLook.body(render.yaw,render.pitch,render.roll);
         Vector3f point=body.transformPosition(new Vector3f(p.x(),p.y(),p.z()));
         Vector3f direction=body.transformDirection(new Vector3f(p.dx(),p.dy(),p.dz()));
-        Vector3f origin=new Vector3f(point).fma(-2,direction);
+        Vector3f origin=new Vector3f(point).fma(pending.blast?-32:-2,direction);
         McheliModel.Group chosen=null;VehicleImpactSurface.Hit hit=null;Vector3f localOrigin=null,localDirection=null;
         VehicleImpactSurface.Index chosenIndex=null;
         Matrix4f chosenPose=null;
@@ -140,7 +148,7 @@ public final class VehicleImpactMarks {
                 if(++groups>256||work[0]<=0)return null;
                 var index=VehicleImpactSurface.get(group);
                 if(index==null){waiting[0]|=VehicleImpactSurface.request(group);continue;}
-                var candidate=index.ray(group.data(),local,dir,hit==null?7:hit.distance(),work);
+                var candidate=index.ray(group.data(),local,dir,hit==null?(pending.blast?64:7):hit.distance(),work);
                 if(candidate!=null){chosen=group;chosenIndex=index;chosenPose=draw.pose();hit=candidate;localOrigin=local;localDirection=dir;chosenOccurrence=occurrence;}
             }
         }
@@ -148,19 +156,23 @@ public final class VehicleImpactMarks {
         var mesh=chosenIndex.decal(chosen.data(),hit,localOrigin,localDirection,p.radius(),
                 Math.floorMod(p.seed(),628)*.01F);
         if(mesh.vertices().isEmpty())return null;
-        int tile=tile(chosen.name(),p.cannon(),p.seed());
-        if(tile<6&&world.getGameTime()-pending.born<=6){
+        int tile=pending.blast?4+Math.floorMod(p.seed(),2):tile(chosen.name(),p.cannon(),p.seed());
+        if(tile<6&&!pending.blast&&world.getGameTime()-pending.born<=6){
             var contact=chosenPose.transformPosition(new Vector3f(localDirection).mul(hit.distance()).add(localOrigin));
             var normal=new org.joml.Matrix3f(chosenPose).invert().transpose().transform(new Vector3f(mesh.normal())).normalize();
             io.github.mcheliceport.client.particle.VehicleShrapnel.emit(world,
                     entity.position().add(contact.x,contact.y,contact.z),new net.minecraft.world.phys.Vec3(direction.x,direction.y,direction.z),
                     new net.minecraft.world.phys.Vec3(normal.x,normal.y,normal.z),entity.getDeltaMovement(),p.cannon(),p.seed());
         }
-        return new Mark(chosen,chosenOccurrence,occurrences.get(chosen),tile,mesh,pending.born);
+        return new Mark(chosen,chosenOccurrence,occurrences.get(chosen),tile,mesh,pending.born,pending.blast,new Vector3f(localDirection).mul(hit.distance()).add(localOrigin));
     }
     static int tile(String group,boolean cannon,int seed){
         return VehicleSurfaceFinish.material(group)==VehicleSurfaceFinish.Material.GLASS
                 ?6+Math.floorMod(seed,2):cannon?4+Math.floorMod(seed,2):Math.floorMod(seed,4);
+    }
+    public static net.minecraft.world.phys.Vec3 damageOrigin(AircraftEntity entity){
+        var state=STATES.get(entity);
+        return enabled()&&world==entity.level()&&state!=null&&world.getGameTime()-state.smokeTick<=4?state.smokeOrigin:null;
     }
     public static int stored(){return STATES.values().stream().mapToInt(s->s.marks.size()).sum();}
     public static int pending(){return STATES.values().stream().mapToInt(s->s.pending.size()).sum();}

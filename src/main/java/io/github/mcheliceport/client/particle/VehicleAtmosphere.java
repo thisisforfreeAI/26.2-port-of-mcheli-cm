@@ -171,6 +171,14 @@ public final class VehicleAtmosphere {
                 }
             }
         }
+        Vec3 panel=io.github.mcheliceport.client.render.VehicleImpactMarks.damageOrigin(aircraft);
+        if (panel!=null&&Math.floorMod(now+aircraft.getId(),9*(1+EffectPerformance.pressure()))==0&&admit(level,panel,.55F)) {
+            var smoke=new SmokeParticle(level,panel.x,panel.y,panel.z,0,.018,0);
+            smoke.enhanced=true;smoke.coherentDrift=true;smoke.disableCollision();
+            smoke.setColor(.35F,.34F,.32F);smoke.setAlphaF(.36F);smoke.setParticleMaxAge(25);
+            smoke.motionYUpAge=.6F;smoke.diffusible=true;smoke.particleScale=1.5F;smoke.particleMaxScale=5.5F;
+            Minecraft.getInstance().particleEngine.add(smoke);
+        }
         Vec3 position = origins.get(Math.floorMod((int) (now / 11 + aircraft.getId()), origins.size()));
         int period = 3 * (1 + EffectPerformance.pressure());
         if (Math.floorMod(now + aircraft.getId(), period) == 0

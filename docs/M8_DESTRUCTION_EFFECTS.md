@@ -11,7 +11,7 @@ RTX 3060 8GB / Ryzen 7 7800X3D at 1080p. Hardware FPS needs target-PC verificati
 | 3 | Directional tumbling metal fragments | Complete |
 | 4 | Flickering/failing damaged lights and local sparks | Complete |
 | 5 | Wreck fires, embers and cooling smoke that die away | Complete |
-| 6 | Localized blast soot, exposed metal and panel smoke | Pending |
+| 6 | Localized blast soot, exposed metal and panel smoke | Complete |
 | 7 | Rattling and detachable small authored panels | Pending |
 | 8 | Progressive cracks on identifiable glazing | Pending |
 
@@ -70,3 +70,15 @@ vehicle starts with cooling smoke, avoiding replayed fire. Flames/smoke share th
 Native previews on three stock vehicles and 310 local unit tests pass.
 
 ![Cooling wrecks](screens/m8-destruction-05-cooling-wrecks.png)
+
+## 6. Blast scars and panel smoke
+
+Nearby blast notifications fit irregular soot and exposed-metal centers to facing vehicle
+surfaces, with local panel smoke following the current part pose. Solid terrain occludes the
+blast notification. Six occlusion rays and eighteen pending patches per tick; normal mark,
+fitting and particle caps apply. No extra packets or gameplay damage. Native checks cover
+wall occlusion and successful exposed-panel marks.
+
+Native previews on three stock vehicles and 310 local unit tests pass.
+
+![Blast scars and panel smoke](screens/m8-destruction-06-blast-scars.png)
