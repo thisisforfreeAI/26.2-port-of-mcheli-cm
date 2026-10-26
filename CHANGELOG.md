@@ -13,6 +13,7 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 ## [0.6.0] - 2026-10-25 (M6 preview: gameplay and multiplayer)
 
 ### Added
+- Loose authored panels add bounded cosmetic vehicle destruction detail.
 - Blast scars and panel smoke add bounded cosmetic vehicle destruction detail.
 - Cooling wrecks add bounded cosmetic vehicle destruction detail.
 - Authored vehicle lamps flicker, dim or fail with damage, with local cosmetic sparks.

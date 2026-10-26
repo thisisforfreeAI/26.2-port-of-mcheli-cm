@@ -142,6 +142,7 @@ public abstract class AircraftRenderer<T extends AircraftEntity> extends EntityR
                 eraIndex++;
             }
         }
+        LoosePanels.extract(entity,state);
         VehicleImpactMarks.extract(entity,state);
     }
 

@@ -21,11 +21,11 @@ import net.neoforged.neoforge.client.event.ViewportEvent;
 @EventBusSubscriber(modid="mcheli_ce_port",value=Dist.CLIENT)
 public final class DestructionPreviewProbe {
     private static final int STEP=Integer.getInteger("mcheli.destructionPreview",0);
-    private static final String[] NAMES=STEP==4?new String[]{"growler","mi-24ps","an2"}:new String[]{"m1a2","ah-64","f-35a"};
+    private static final String[] NAMES=STEP==7?new String[]{"f-35a","f-15e","ac-130"}:STEP==4?new String[]{"growler","mi-24ps","an2"}:new String[]{"m1a2","ah-64","f-35a"};
     private static int tick,phase=-1,age;
     private static AircraftEntity vehicle;
     private static String capture;
-    private static int damage(AircraftEntity e){return (int)(e.getMaxHP()*(STEP==4?(age<120?.05:.9):STEP==3?.05:STEP==5?1:STEP==7?.94:.78));}
+    private static int damage(AircraftEntity e){return (int)(e.getMaxHP()*(STEP==4?(age<120?.05:.9):STEP==3?.05:STEP==5?1:STEP==7?(age<140?.72:age<190?.95:0):.78));}
     private static void move(AircraftEntity e){
         e.xo=e.getX();e.yo=e.getY();e.zo=e.getZ();
         double speed=STEP==1?(phase==2?.5:phase==1?.25:.1):0;
@@ -83,13 +83,20 @@ public final class DestructionPreviewProbe {
         if(next>=NAMES.length){mc.stop();return;}
         if(next!=phase){
             phase=next;if(vehicle!=null)vehicle.discard();mc.particleEngine.clearParticles();VehicleAtmosphere.clear();VehicleImpactMarks.clear();
-            vehicle=phase==0?new Tank(mc):phase==1?new Heli(mc):new Plane(mc);
+            vehicle=io.github.mcheliceport.content.ContentRegistries.plane().get(NAMES[phase])!=null?new Plane(mc)
+                    :io.github.mcheliceport.content.ContentRegistries.heli().get(NAMES[phase])!=null?new Heli(mc):new Tank(mc);
+            LoosePanels.clear();
             io.github.mcheliceport.client.effect.FluidStains.clear();
             vehicle.setId(970000+(phase==2?4:phase));vehicle.setAircraftTypeName(NAMES[phase]);vehicle.setTextureName(NAMES[phase]);vehicle.setPos(0,-60,20);
             var parts=vehicle.getParts();for(int i=0;i<parts.length;i++)parts[i].setId(980000+phase*100+i);
             mc.level.addEntity(vehicle);System.out.println("M8_DESTRUCTION step="+STEP+" vehicle="+NAMES[phase]);
         }
-        if(age==145||age==180||STEP==4&&age==95)capture=NAMES[phase]+"-age"+age;
+        if(age==145||age==180||(STEP==4||STEP==7)&&age==95||STEP==7&&age==205)capture=NAMES[phase]+"-age"+age;
+        if(STEP==7&&(age==145||age==205)){
+            if(age==145&&(!LoosePanels.detached(vehicle)||LoosePanels.pieces()==0||LoosePanels.pieces()>8))throw new IllegalStateException("Missing/unbounded loose panel");
+            if(age==205&&LoosePanels.detached(vehicle))throw new IllegalStateException("Repair did not restore panel");
+            System.out.println("M8_DESTRUCTION loose_age="+age+" detached="+LoosePanels.detached(vehicle)+" pieces="+LoosePanels.pieces());
+        }
         if(STEP==6&&age==80)commands(mc,"fill 3 -60 15 3 -54 25 stone");
         if(STEP==6&&age==95)VehicleBlastScars.blast(mc.level,vehicle.position().add(6,1,0),5);
         if(STEP==6&&age==110){
@@ -132,10 +139,18 @@ public final class DestructionPreviewProbe {
         }
     }
     @SubscribeEvent public static void angles(ViewportEvent.ComputeCameraAngles e){
-        if(STEP==0||vehicle==null)return;e.setYaw(STEP==4?147:STEP==2?64:(STEP==3||STEP==6)?90:94);e.setPitch(STEP==4?10:STEP==2?12:(STEP==3||STEP==6)?20:17);e.setRoll(0);
+        if(STEP==0||vehicle==null)return;e.setYaw(STEP==7?122:STEP==4?147:STEP==2?64:(STEP==3||STEP==6)?90:94);e.setPitch(STEP==7?12:STEP==4?10:STEP==2?12:(STEP==3||STEP==6)?20:17);e.setRoll(0);
     }
     @SubscribeEvent public static void position(ViewportEvent.ComputeFov e){
         if(STEP==0||vehicle==null)return;
+        if(STEP==7){
+            var models=io.github.mcheliceport.client.model.AircraftModels.peek(vehicle.getAcInfo());
+            if(models!=null){
+                LoosePanelLook.Spec best=null;
+                for(var group:models.body().groups){var s=LoosePanelLook.spec(group);if(s!=null&&(best==null||s.rank()<best.rank()))best=s;}
+                if(best!=null){var c=best.center();e.getCamera().setPosition(vehicle.position().add(c.x,c.y,c.z).add(8,2,5));return;}
+            }
+        }
         if(STEP==2){
             var origin=VehicleAtmosphere.origins(vehicle).getFirst();
             e.getCamera().setPosition(new Vec3(origin.x,vehicle.getY(),origin.z).add(5.2,1.2,-2.5));

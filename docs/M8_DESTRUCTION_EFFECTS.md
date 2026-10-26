@@ -12,7 +12,7 @@ RTX 3060 8GB / Ryzen 7 7800X3D at 1080p. Hardware FPS needs target-PC verificati
 | 4 | Flickering/failing damaged lights and local sparks | Complete |
 | 5 | Wreck fires, embers and cooling smoke that die away | Complete |
 | 6 | Localized blast soot, exposed metal and panel smoke | Complete |
-| 7 | Rattling and detachable small authored panels | Pending |
+| 7 | Rattling and detachable small authored panels | Complete |
 | 8 | Progressive cracks on identifiable glazing | Pending |
 
 All additions are cosmetic and respect the existing damage-details switch, distance and
@@ -82,3 +82,15 @@ wall occlusion and successful exposed-panel marks.
 Native previews on three stock vehicles and 310 local unit tests pass.
 
 ![Blast scars and panel smoke](screens/m8-destruction-06-blast-scars.png)
+
+## 7. Loose authored panels
+
+Small authored hatch/canopy/panel groups rattle as damage rises. A fresh critical-damage
+transition can detach one cosmetic piece; old damage never replays it. Repair restores the
+panel and clears its debris. Groups are limited to 600 vertices and 4.5 blocks across; the
+scene keeps at most eight pieces, two births and two swept collision rays per tick. Hitboxes,
+weapons, inventory and entities remain unchanged. Native checks cover detachment and repair.
+
+Native previews on three stock vehicles and 313 local unit tests pass.
+
+![Loose authored panels](screens/m8-destruction-07-loose-panels.png)
