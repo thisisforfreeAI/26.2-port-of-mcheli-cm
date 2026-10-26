@@ -1,6 +1,7 @@
 # M8 living vehicle details
 
-Implement the next eight additions separately, with native stock-vehicle examples.
+All eight additions are implemented in separate stages, with native stock-vehicle examples.
+See the [24-image native gallery](M8_LIVING_VEHICLES_GALLERY.md).
 Use the existing Enhanced, detail/adaptive budgets and cosmetic controls. Preserve gameplay,
 legacy craters and Claude's NTM integration. Target 60 FPS on RTX 3060 8GB / 7800X3D at
 1080p; software rendering validates correctness and bounded work, not target-PC FPS.
@@ -87,3 +88,26 @@ under power; absent parts are skipped. Two short segmented cables hang behind su
 panels, sharing the overlay vertex allowance. Sixteen cached groups and four pending jobs bound
 loading. `effects.vehicleSmallMotion` controls it. Native M1A2/T-90/F-35B checks pass; the F-35B
 has the authored nozzle assembly required for that example. Unknown add-on geometry stays intact.
+
+## Validation and controls
+
+New standalone layers default on in Enhanced quality. Weather, water, terrain buildup, weapon
+heat and small motion have separate client config switches listed above. Rotor damage, cook-offs
+and interiors use the existing vehicle damage-details control. The shared detail/adaptive budget
+continues to cap overlays and atmosphere particles. No target-PC frame-rate claim is made.
+
+The non-shipping fixture is `LivingVehiclePreviewProbe`, enabled only through
+`scripts/visual-probe.init.gradle` with `-Dmcheli.livingPreview=1..8`. It renders controlled
+cosmetic states through production renderers, asserts behavior and writes unedited screenshots.
+Evidence is recorded in `docs/performance/m8-realism/living-*.json`. Native local checks use
+compile-only stand-ins for unavailable optional JEI/NTM dependency signatures; they are not
+a distributable build or an NTM runtime test. Repository CI builds the normal integration and
+runs GameTests both with and without NTM Next.
+
+Final polish replaces regular wake lines with softer irregular foam, clips soot to a bounded
+region even on large hull triangles, and excludes all parsed NTM payloads from cook-offs.
+
+Final local validation: 362 unit tests pass; all eight Vulkan stages pass on three vehicles
+each. OpenGL also passes wet-paint/snow checks through CPU model submission and moving-detail
+checks through GPU model buffers. These are Mesa correctness checks at 1280×720, not RTX 3060
+performance measurements. The gallery contains 24 original PNGs with recorded hashes.

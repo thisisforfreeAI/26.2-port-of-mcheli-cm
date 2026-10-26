@@ -1,0 +1,77 @@
+{
+  "local_unit_tests": 362,
+  "failures": 0,
+  "vulkan_stages_passed": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8
+  ],
+  "compatibility": [
+    {
+      "case": "weather-opengl-cpu",
+      "stage": 5,
+      "backend": "OpenGL",
+      "cpu_model_buffers": true,
+      "success": true,
+      "log_sha256": "992972888490de68493efb6502346bff2d1947b9a7250458d606424e39714796",
+      "checks": [
+        "M8_LIVING stage=5 vehicle=m1a2",
+        "M8_LIVING Saved screenshot as m8-living-5-m1a2-age95.png",
+        "M8_LIVING Saved screenshot as m8-living-5-m1a2-age145.png",
+        "M8_LIVING Saved screenshot as m8-living-5-m1a2-age180.png",
+        "M8_LIVING wet=0.38160098 parked_snow=0.66999966 moving_snow=0.19999978",
+        "M8_LIVING Saved screenshot as m8-living-5-m1a2-age205.png",
+        "M8_LIVING stage=5 vehicle=ah-64",
+        "M8_LIVING Saved screenshot as m8-living-5-ah-64-age95.png",
+        "M8_LIVING Saved screenshot as m8-living-5-ah-64-age145.png",
+        "M8_LIVING Saved screenshot as m8-living-5-ah-64-age180.png",
+        "M8_LIVING wet=0.8999985 parked_snow=0.68999964 moving_snow=0.24999979",
+        "M8_LIVING Saved screenshot as m8-living-5-ah-64-age205.png",
+        "M8_LIVING stage=5 vehicle=f-35a",
+        "M8_LIVING Saved screenshot as m8-living-5-f-35a-age95.png",
+        "M8_LIVING Saved screenshot as m8-living-5-f-35a-age145.png",
+        "M8_LIVING Saved screenshot as m8-living-5-f-35a-age180.png",
+        "M8_LIVING wet=0.9191985 parked_snow=0.68999964 moving_snow=0.21999979",
+        "M8_LIVING Saved screenshot as m8-living-5-f-35a-age205.png"
+      ],
+      "backend_log": [
+        "[04:29:29] [Render thread/INFO] [minecraft/Minecraft]: Using graphics backend OpenGL, using drivers: 4.5 (Core Profile) Mesa 25.0.7-2+deb13u1"
+      ]
+    },
+    {
+      "case": "motion-opengl-gpu",
+      "stage": 8,
+      "backend": "OpenGL",
+      "cpu_model_buffers": false,
+      "success": true,
+      "log_sha256": "c9b989f2bf9a53415700c38c8d87350481686e46263b58b62239c07b3afb1a21",
+      "checks": [
+        "M8_LIVING stage=8 vehicle=m1a2",
+        "M8_LIVING Saved screenshot as m8-living-8-m1a2-age95.png",
+        "M8_LIVING Saved screenshot as m8-living-8-m1a2-age145.png",
+        "M8_LIVING moving_parts=2 cable_segments=0",
+        "M8_LIVING Saved screenshot as m8-living-8-m1a2-age180.png",
+        "M8_LIVING stage=8 vehicle=t-90",
+        "M8_LIVING Saved screenshot as m8-living-8-t-90-age95.png",
+        "M8_LIVING Saved screenshot as m8-living-8-t-90-age145.png",
+        "M8_LIVING moving_parts=1 cable_segments=0",
+        "M8_LIVING Saved screenshot as m8-living-8-t-90-age180.png",
+        "M8_LIVING stage=8 vehicle=f-35b",
+        "M8_LIVING Saved screenshot as m8-living-8-f-35b-age95.png",
+        "M8_LIVING Saved screenshot as m8-living-8-f-35b-age145.png",
+        "M8_LIVING moving_parts=1 cable_segments=8",
+        "M8_LIVING Saved screenshot as m8-living-8-f-35b-age180.png"
+      ],
+      "backend_log": [
+        "[04:30:48] [Render thread/INFO] [minecraft/Minecraft]: Using graphics backend OpenGL, using drivers: 4.5 (Core Profile) Mesa 25.0.7-2+deb13u1"
+      ]
+    }
+  ],
+  "target_pc_fps_verified": false,
+  "local_optional_dependencies": "Compile-only signature stand-ins; full integration validated by repository CI."
+}

@@ -1,0 +1,149 @@
+{
+  "native_unedited": true,
+  "images": [
+    {
+      "stage": 1,
+      "vehicle": "m1a2",
+      "file": "docs/screens/m8-living/m8-living-1-m1a2-pop2.png",
+      "sha256": "f42927b6bb404414b27294bce155fb532158456a8bd500eb27af346dd50cb34f"
+    },
+    {
+      "stage": 1,
+      "vehicle": "ah-64",
+      "file": "docs/screens/m8-living/m8-living-1-ah-64-pop2.png",
+      "sha256": "ec78037a069344133f56922ffa8a4eb2271b7a503f4de5dc3f2ba5ac1ea94ee7"
+    },
+    {
+      "stage": 1,
+      "vehicle": "f-35a",
+      "file": "docs/screens/m8-living/m8-living-1-f-35a-pop2.png",
+      "sha256": "8a582062f8a91e7f46d58e7083e47f8828f50aabb9f0cef17ba108b521143f90"
+    },
+    {
+      "stage": 2,
+      "vehicle": "ah-64",
+      "file": "docs/screens/m8-living/m8-living-2-ah-64-age145.png",
+      "sha256": "d72f039d242fbd12f4147467a766488204b14742d1cf23e6aa5e8622d334b52b"
+    },
+    {
+      "stage": 2,
+      "vehicle": "mh-60l_dap",
+      "file": "docs/screens/m8-living/m8-living-2-mh-60l_dap-age145.png",
+      "sha256": "d2adc8cd7b0c78cfe42a1d65d0dcc54d5bce892bb4ade5efc7351a5d7b00e2c7"
+    },
+    {
+      "stage": 2,
+      "vehicle": "mh-6",
+      "file": "docs/screens/m8-living/m8-living-2-mh-6-age145.png",
+      "sha256": "781576fb96090f57768fa24de7b64172e06f29d9c8e851a89f2a8cf745da18d0"
+    },
+    {
+      "stage": 3,
+      "vehicle": "f-35a",
+      "file": "docs/screens/m8-living/m8-living-3-f-35a-age180.png",
+      "sha256": "65b3753191ee14b88305087911fffb4a23090b25b1d37ff67f5791089c63cc6f"
+    },
+    {
+      "stage": 3,
+      "vehicle": "f-15e",
+      "file": "docs/screens/m8-living/m8-living-3-f-15e-age180.png",
+      "sha256": "7923e38d99bff991db3a02b165a5ba795f5daff27a215c373254ff9af6f72eee"
+    },
+    {
+      "stage": 3,
+      "vehicle": "a-10",
+      "file": "docs/screens/m8-living/m8-living-3-a-10-age180.png",
+      "sha256": "2a16225a0d83bbba0294e49dedafbe49695d1ea1205b4cab6ab0b6eb07615abd"
+    },
+    {
+      "stage": 4,
+      "vehicle": "m1a2",
+      "file": "docs/screens/m8-living/m8-living-4-m1a2-age145.png",
+      "sha256": "faabeb87557d44cba6d11cb69e15c7e4d5dbdeaae8ce25c000ead50128a79c89"
+    },
+    {
+      "stage": 4,
+      "vehicle": "ah-64",
+      "file": "docs/screens/m8-living/m8-living-4-ah-64-age145.png",
+      "sha256": "6d4abc85974b27347345a71a54ae74dbbb1f62d11985f001e60b74c8d5f1e7d0"
+    },
+    {
+      "stage": 4,
+      "vehicle": "t-90",
+      "file": "docs/screens/m8-living/m8-living-4-t-90-age145.png",
+      "sha256": "0fe3ab0582834ffbff36316db08ec4befff82e3a1369254c3b72a4e4022a94d1"
+    },
+    {
+      "stage": 5,
+      "vehicle": "m1a2",
+      "file": "docs/screens/m8-living/m8-living-5-m1a2-age180.png",
+      "sha256": "2cf40566257d3816b1876216fc4fdd7b4911b137ebbcd2e15a10641e06c3a1b6"
+    },
+    {
+      "stage": 5,
+      "vehicle": "ah-64",
+      "file": "docs/screens/m8-living/m8-living-5-ah-64-age180.png",
+      "sha256": "baa5ada217a69423a582b27c2c24adbd3c2df9b4fa125018c851d9f18c51932f"
+    },
+    {
+      "stage": 5,
+      "vehicle": "f-35a",
+      "file": "docs/screens/m8-living/m8-living-5-f-35a-age180.png",
+      "sha256": "23279bd273124e94eb4fdd7c8efe097c93de48ad562fb6b6f7f289ee54aa734e"
+    },
+    {
+      "stage": 6,
+      "vehicle": "m1a2",
+      "file": "docs/screens/m8-living/m8-living-6-m1a2-age180.png",
+      "sha256": "63d48aca73493ee8c58b890ffa2706ab257ceee478438b1cea019e7d1be6468e"
+    },
+    {
+      "stage": 6,
+      "vehicle": "growler",
+      "file": "docs/screens/m8-living/m8-living-6-growler-age180.png",
+      "sha256": "dfbf8d120dc88cd0eeed55bd25761adf74d28eeee0cd10b86300efd182d52cd1"
+    },
+    {
+      "stage": 6,
+      "vehicle": "zodiac",
+      "file": "docs/screens/m8-living/m8-living-6-zodiac-age180.png",
+      "sha256": "7b0025eb661a74dde231687db281c90ccace831e1b5e9c5fb38b5dc10f1ffa4d"
+    },
+    {
+      "stage": 7,
+      "vehicle": "m1a2",
+      "file": "docs/screens/m8-living/m8-living-7-m1a2-age180.png",
+      "sha256": "7b370e82de698a31277671185618f712ddd04ec9d5a9bd4e63398673c7d358ab"
+    },
+    {
+      "stage": 7,
+      "vehicle": "ah-64",
+      "file": "docs/screens/m8-living/m8-living-7-ah-64-age180.png",
+      "sha256": "f01245f8879a8d7bb47af6543ccda31fd5e4263d2d31ea4936524e58239f8812"
+    },
+    {
+      "stage": 7,
+      "vehicle": "f-35a",
+      "file": "docs/screens/m8-living/m8-living-7-f-35a-age180.png",
+      "sha256": "a2a0b2dfa1df71e98558ca1c7c4715d6a1ff9664f7d3d350fa2c17313228a3f6"
+    },
+    {
+      "stage": 8,
+      "vehicle": "m1a2",
+      "file": "docs/screens/m8-living/m8-living-8-m1a2-age180.png",
+      "sha256": "cc76154ed5087b905a1a4bc9906caa19b8bd7edf890b1170cb15b57491e36cc6"
+    },
+    {
+      "stage": 8,
+      "vehicle": "t-90",
+      "file": "docs/screens/m8-living/m8-living-8-t-90-age180.png",
+      "sha256": "ce1d1fe8bee44965b5f45725b6def423a8819fd0514117b1803cd8aef4b5df1a"
+    },
+    {
+      "stage": 8,
+      "vehicle": "f-35b",
+      "file": "docs/screens/m8-living/m8-living-8-f-35b-age180.png",
+      "sha256": "1037f97e04006e84142931385ab6a4f9152a8f38ada76b604bc4d667b2caa29b"
+    }
+  ]
+}
