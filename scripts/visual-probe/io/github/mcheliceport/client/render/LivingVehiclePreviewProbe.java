@@ -69,6 +69,10 @@ public final class LivingVehiclePreviewProbe {
             System.out.println("M8_LIVING stage="+STEP+" vehicle="+NAMES[phase]);
         }
         if(age==95||age==145||age==180)capture=NAMES[phase]+"-age"+age;
+        if(STEP==2&&(age==145||age==180)){
+            if(!(vehicle instanceof HeliEntity heli)||RotorDamage.applied(heli)==0)throw new IllegalStateException("Missing rotor variant");
+            System.out.println("M8_LIVING damaged_rotors="+RotorDamage.applied((HeliEntity)vehicle));
+        }
         if(STEP==1){
             int pops=CookoffEffects.events();if(pops>lastPops){lastPops=pops;captureTick=ticks+1;}
             if(ticks==captureTick)capture=NAMES[phase]+"-pop"+lastPops;

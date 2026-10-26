@@ -8,7 +8,7 @@ legacy craters and Claude's NTM integration. Target 60 FPS on RTX 3060 8GB / 780
 | Stage | Addition | Status |
 | --- | --- | --- |
 | 1 | Finite ammunition cook-off flashes, sparks and pops | Complete |
-| 2 | Chipped/bent rotor variants and restrained wobble | Pending |
+| 2 | Chipped/bent rotor variants and restrained wobble | Complete |
 | 3 | Exposed interiors and torn edges behind missing panels | Pending |
 | 4 | Weapon heat, discoloration, shimmer and cooling smoke | Pending |
 | 5 | Wet paint, parked snow accumulation and shedding | Pending |
@@ -26,3 +26,11 @@ pops, with three tiny sparks and a short puff. Empty stores and already old wrec
 sequence. Two pops per world tick, 40-block range and shared atmosphere/particle admission
 bound the work. NTM payloads are excluded. Native M1A2/AH-64/F-35A checks verify three
 pulses each, matching sound requests and untouched terrain. Audio needs an audible-client check.
+
+## 2. Rotor damage
+
+Badly damaged helicopters use loader-built bent and shortened/chipped rotor meshes, plus
+less than half a degree of wobble. One authored blade instance is affected per rotor; a
+combined rotor mesh damages one arm. Original geometry, lift and control remain unchanged.
+Eight cached groups, four pending jobs and 24,000 vertices per source group bound the work.
+Native AH-64/MH-60L DAP/MH-6 previews show two damaged rotor assemblies each.
