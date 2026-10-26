@@ -21,12 +21,12 @@ import net.neoforged.neoforge.client.event.*;
 public final class LivingVehiclePreviewProbe {
     private static final int STEP=Integer.getInteger("mcheli.livingPreview",0);
     private static final String[] NAMES=STEP==2?new String[]{"ah-64","mh-60l_dap","mh-6"}
-            :STEP==3?new String[]{"f-35a","f-15e","a-10"}:STEP==4?new String[]{"m1a2","ah-64","t-90"}:new String[]{"m1a2","ah-64","f-35a"};
+            :STEP==3?new String[]{"f-35a","f-15e","a-10"}:STEP==4?new String[]{"m1a2","ah-64","t-90"}:STEP==6?new String[]{"m1a2","growler","zodiac"}:new String[]{"m1a2","ah-64","f-35a"};
     private static int ticks,phase=-1,age,lastPops,captureTick=-1;
     private static float snowAt180;
     private static AircraftEntity vehicle;private static String capture;
     private static int damage(AircraftEntity e){return (int)(e.getMaxHP()*(STEP==1?(age>40?1:.3):STEP==2?(age<100?.05:.92):STEP==3?(age<130?.5:age<190?.96:0):.05));}
-    private static void held(AircraftEntity e){e.xo=e.getX();e.yo=e.getY();e.zo=e.getZ();double movement=STEP==5&&age>185?(age-185)*.12:0;e.setPos(movement,-60,20);e.setDeltaMovement(STEP==5&&age>185?new Vec3(.12,0,0):Vec3.ZERO);}
+    private static void held(AircraftEntity e){e.xo=e.getX();e.yo=e.getY();e.zo=e.getZ();double movement=STEP==5&&age>185?(age-185)*.12:0;e.setPos(movement,STEP==6?-59.7:-60,STEP==6?12+age*.08:20);e.setDeltaMovement(STEP==6?new Vec3(0,0,.08):STEP==5&&age>185?new Vec3(.12,0,0):Vec3.ZERO);}
     private static final class Tank extends TankEntity {
         Tank(Minecraft mc){super(ModEntityTypes.TANK.get(),mc.level);}
         @Override public void tick(){held(this);}
@@ -38,6 +38,11 @@ public final class LivingVehiclePreviewProbe {
         @Override public void tick(){held(this);for(var rotor:getRotors())rotor.update(25);}
         @Override public int getDamageTaken(){return damage(this);}
         @Override public boolean isDestroyed(){return STEP==1&&age>40||STEP==3&&age>130&&age<190||super.isDestroyed();}
+    }
+    private static final class Boat extends io.github.mcheliceport.entity.ship.ShipEntity {
+        Boat(Minecraft mc){super(ModEntityTypes.SHIP.get(),mc.level);}
+        @Override public void tick(){held(this);}
+        @Override public int getDamageTaken(){return damage(this);}
     }
     private static final class Plane extends PlaneEntity {
         Plane(Minecraft mc){super(ModEntityTypes.PLANE.get(),mc.level);}
@@ -52,9 +57,10 @@ public final class LivingVehiclePreviewProbe {
             command(mc,"kill @e[type=!minecraft:player]","gamemode spectator","time set noon","weather clear","gamerule minecraft:advance_time false");
             for(int y=-60;y<4;y+=7)command(mc,"fill -30 "+y+" -30 30 "+(y+6)+" 40 air");
             command(mc,"fill -30 -64 -30 30 -61 40 stone","tp @s 12 -53 8 55 18");
+            if(STEP==6)command(mc,"fillbiome -16 -60 8 16 -48 36 plains","fill -16 -62 -16 16 -60 40 water");
             mc.getWindow().setWindowed(1280,720);mc.options.enableVsync().set(false);mc.options.framerateLimit().set(120);
             if(!mc.gui.hud.isHidden())mc.gui.hud.toggle();
-            ClientConfig.VEHICLE_WEATHER.set(true);ClientConfig.GPU_MODEL_BUFFERS.set(true);
+            ClientConfig.VEHICLE_WATER_DETAILS.set(true);ClientConfig.VEHICLE_WEATHER.set(true);ClientConfig.GPU_MODEL_BUFFERS.set(true);
             ClientConfig.EFFECT_QUALITY.set(EffectQuality.ENHANCED);ClientConfig.EFFECT_STYLE.set(ClientConfig.EffectStyle.POLISHED);
             ClientConfig.EFFECT_BUDGET.set(ClientConfig.EffectBudget.BALANCED);ClientConfig.ADAPTIVE_EFFECTS.set(false);
             ClientConfig.VEHICLE_DAMAGE_DETAILS.set(true);ClientConfig.ENGINE_STARTUP_EFFECTS.set(false);ClientConfig.ENGINE_HEAT_HAZE.set(STEP==4);ClientConfig.WEAPON_HEAT.set(true);
@@ -62,8 +68,8 @@ public final class LivingVehiclePreviewProbe {
         if(ticks<160)return;int next=(ticks-160)/220;age=(ticks-160)%220;
         if(next>=NAMES.length){mc.stop();return;}
         if(phase!=next){
-            phase=next;if(vehicle!=null)vehicle.discard();mc.particleEngine.clearParticles();VehicleAtmosphere.clear();VehicleWeaponHeat.clear();VehicleImpactMarks.clear();LoosePanels.clear();PanelInteriors.clear();VehicleWeather.clear();
-            vehicle=ContentRegistries.plane().get(NAMES[phase])!=null?new Plane(mc):ContentRegistries.heli().get(NAMES[phase])!=null?new Heli(mc):new Tank(mc);
+            phase=next;if(vehicle!=null)vehicle.discard();mc.particleEngine.clearParticles();VehicleAtmosphere.clear();VehicleWeaponHeat.clear();VehicleImpactMarks.clear();LoosePanels.clear();PanelInteriors.clear();VehicleWeather.clear();VehicleWaterEffects.clear();
+            vehicle=ContentRegistries.plane().get(NAMES[phase])!=null?new Plane(mc):ContentRegistries.heli().get(NAMES[phase])!=null?new Heli(mc):ContentRegistries.ship().get(NAMES[phase])!=null?new Boat(mc):new Tank(mc);
             vehicle.setId(975000+phase);vehicle.setAircraftTypeName(NAMES[phase]);vehicle.setTextureName(NAMES[phase]);vehicle.setPos(0,-60,20);
             var parts=vehicle.getParts();for(int i=0;i<parts.length;i++)parts[i].setId(985000+phase*100+i);
             for(int i=0;i<vehicle.getWeaponNum();i++){var set=vehicle.getWeapon(i);if(set!=null)set.setReserveAmmo(200);}
@@ -72,6 +78,11 @@ public final class LivingVehiclePreviewProbe {
             System.out.println("M8_LIVING stage="+STEP+" vehicle="+NAMES[phase]);
         }
         if(age==95||age==145||age==180||(STEP==3||STEP==5)&&age==205)capture=NAMES[phase]+"-age"+age;
+        if(STEP==6&&age==180){
+            if(VehicleWaterEffects.wakes()==0||VehicleWaterEffects.wakes()>64||VehicleWaterEffects.reads()>12)throw new IllegalStateException("Missing/unbounded wake");
+            System.out.println("M8_LIVING water_wakes="+VehicleWaterEffects.wakes()+" reads="+VehicleWaterEffects.reads());
+            VehicleWaterEffects.splash(mc.level,new Vec3(vehicle.getX()+2,-58.99,vehicle.getZ()-2),.6);
+        }
         if(STEP==5){
             if(age==40)command(mc,"weather rain");
             if(age==105)command(mc,"fillbiome -16 -60 8 16 -48 36 snowy_plains");
@@ -110,6 +121,7 @@ public final class LivingVehiclePreviewProbe {
     }
     @SubscribeEvent public static void camera(ViewportEvent.ComputeFov event){
         if(STEP==0||vehicle==null)return;
+        if(STEP==6){event.getCamera().setPosition(vehicle.position().add(8,5,-8));return;}
         if(STEP==4){event.getCamera().setPosition(VehicleWeaponHeat.hotPoint(vehicle).add(3.5,1.2,1));return;}
         Vec3 at=STEP==1?VehicleAtmosphere.wreckOrigins(vehicle).getFirst():vehicle.position().add(0,3,0);
         if(STEP==3){
@@ -122,7 +134,7 @@ public final class LivingVehiclePreviewProbe {
         event.getCamera().setPosition(at.add(STEP==1?new Vec3(7,3,-6):STEP==2?new Vec3(10,10,7):STEP==3?new Vec3(4.5,2.5,3.5):new Vec3(8,3,5)));
     }
     @SubscribeEvent public static void angles(ViewportEvent.ComputeCameraAngles event){
-        if(STEP==0||vehicle==null)return;event.setYaw(STEP==4?106:STEP==1?49:STEP==2?125:STEP==3?128:122);event.setPitch(STEP==4?18:STEP==1?18:STEP==2?39:STEP==3?21:17);event.setRoll(0);
+        if(STEP==0||vehicle==null)return;event.setYaw(STEP==6?45:STEP==4?106:STEP==1?49:STEP==2?125:STEP==3?128:122);event.setPitch(STEP==6?24:STEP==4?18:STEP==1?18:STEP==2?39:STEP==3?21:17);event.setRoll(0);
     }
     @SubscribeEvent public static void frame(RenderFrameEvent.Post event){
         if(capture==null)return;var mc=Minecraft.getInstance();String name=capture;capture=null;

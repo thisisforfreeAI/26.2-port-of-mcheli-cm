@@ -108,6 +108,10 @@ public final class LoosePanels {
             if(!world.hasChunkAt(BlockPos.containing(p.position))||!world.hasChunkAt(BlockPos.containing(p.sampled)))continue;
             var hit=world.clip(new ClipContext(p.sampled,p.position,ClipContext.Block.COLLIDER,ClipContext.Fluid.ANY,CollisionContext.empty()));
             if(hit.getType()==HitResult.Type.BLOCK){
+                if(world.getFluidState(hit.getBlockPos()).is(net.minecraft.tags.FluidTags.WATER)){
+                    io.github.mcheliceport.client.particle.VehicleWaterEffects.splash(world,hit.getLocation(),p.velocity.length());
+                    p.position=hit.getLocation().add(0,-.15,0);p.settled=true;p.restAge=p.age;p.age=Math.max(p.age,55);p.velocity=Vec3.ZERO;p.sampled=p.position;continue;
+                }
                 var n=new Vec3(hit.getDirection().getStepX(),hit.getDirection().getStepY(),hit.getDirection().getStepZ());
                 p.position=hit.getLocation().add(n.scale(.1));p.previous=p.position;
                 if(p.bounced){p.settled=true;p.restAge=p.age;p.velocity=Vec3.ZERO;p.age=Math.max(p.age,42);}

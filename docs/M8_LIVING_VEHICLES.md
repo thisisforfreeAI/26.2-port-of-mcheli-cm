@@ -12,7 +12,7 @@ legacy craters and Claude's NTM integration. Target 60 FPS on RTX 3060 8GB / 780
 | 3 | Exposed interiors and torn edges behind missing panels | Complete |
 | 4 | Weapon heat, discoloration, shimmer and cooling smoke | Complete |
 | 5 | Wet paint, parked snow accumulation and shedding | Complete |
-| 6 | Stronger wakes, shallow-water spray and debris splashes | Pending |
+| 6 | Stronger wakes, shallow-water spray and debris splashes | Complete |
 | 7 | Terrain buildup on lower panels and exhaust soot | Pending |
 | 8 | Flexible antennas, vibrating covers and loose cables | Pending |
 
@@ -63,3 +63,11 @@ climate samples per tick, four shedding particles and shared geometry admission 
 `effects.vehicleWeather` controls this layer. Native rain/snow/movement checks pass on the
 M1A2/AH-64/F-35A. All new atmosphere particles share a world-tick allowance regardless of
 subscriber order.
+
+## 6. Water interaction
+
+Moving hulls and wheels leave broken V-shaped foam and small spray. Existing panel collision
+checks trigger a splash when debris enters water. Sixty-four short-lived wakes, four births,
+twelve source-fluid reads and four support checks per tick bound work; shared particle admission
+also applies. No buoyancy, water blocks or gameplay collisions change.
+`effects.vehicleWaterDetails` controls it. Native M1A2/Growler/Zodiac previews pass.
