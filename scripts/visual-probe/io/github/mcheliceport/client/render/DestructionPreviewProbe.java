@@ -21,7 +21,7 @@ import net.neoforged.neoforge.client.event.ViewportEvent;
 @EventBusSubscriber(modid="mcheli_ce_port",value=Dist.CLIENT)
 public final class DestructionPreviewProbe {
     private static final int STEP=Integer.getInteger("mcheli.destructionPreview",0);
-    private static final String[] NAMES=STEP==8?new String[]{"f-35a","f-15e","a-10"}:STEP==7?new String[]{"f-35a","f-15e","ac-130"}:STEP==4?new String[]{"growler","mi-24ps","an2"}:new String[]{"m1a2","ah-64","f-35a"};
+    private static final String[] NAMES=STEP==8?new String[]{"f-35a","f-15e","a-10"}:STEP==7?new String[]{"f-35a","f-15e","a-10"}:STEP==4?new String[]{"growler","mi-24ps","an2"}:new String[]{"m1a2","ah-64","f-35a"};
     private static int tick,phase=-1,age;
     private static AircraftEntity vehicle;
     private static String capture;
@@ -189,7 +189,7 @@ public final class DestructionPreviewProbe {
         return bestPoint;
     }
     @SubscribeEvent public static void angles(ViewportEvent.ComputeCameraAngles e){
-        if(STEP==0||vehicle==null)return;e.setYaw(STEP==5?49:STEP==8?102:STEP==7?(phase==2?58:122):STEP==4?147:STEP==2?64:(STEP==3||STEP==6)?90:94);e.setPitch(STEP==5?18:STEP==8?16:STEP==7?12:STEP==4?10:STEP==2?12:(STEP==3||STEP==6)?20:17);e.setRoll(0);
+        if(STEP==0||vehicle==null)return;e.setYaw(STEP==5?49:STEP==8?102:STEP==7?122:STEP==4?147:STEP==2?64:(STEP==3||STEP==6)?90:94);e.setPitch(STEP==5?18:STEP==8?16:STEP==7?12:STEP==4?10:STEP==2?12:(STEP==3||STEP==6)?20:17);e.setRoll(0);
     }
     @SubscribeEvent public static void position(ViewportEvent.ComputeFov e){
         if(STEP==0||vehicle==null)return;
@@ -201,7 +201,7 @@ public final class DestructionPreviewProbe {
             if(models!=null){
                 LoosePanelLook.Spec best=null;
                 for(var group:models.body().groups){var s=LoosePanelLook.spec(group);if(s!=null&&(best==null||s.rank()<best.rank()))best=s;}
-                if(best!=null){var c=best.center();e.getCamera().setPosition(vehicle.position().add(c.x,c.y,c.z).add(8,2,phase==2?-5:5));return;}
+                if(best!=null){var c=best.center();e.getCamera().setPosition(vehicle.position().add(c.x,c.y,c.z).add(8,2,5));return;}
             }
         }
         if(STEP==2){

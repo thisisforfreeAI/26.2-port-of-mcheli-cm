@@ -1,7 +1,7 @@
 {
   "stage": 7,
   "name": "loose-panels",
-  "unit_tests": 316,
+  "unit_tests": 332,
   "failures": 0,
   "native_build_successful": true,
   "checks": [
@@ -21,14 +21,14 @@
     "M8_DESTRUCTION state_count=1 emitted=0",
     "M8_DESTRUCTION loose_age=205 detached=false pieces=0",
     "M8_DESTRUCTION Saved screenshot as m8-destruction-7-f-15e-age205.png",
-    "M8_DESTRUCTION step=7 vehicle=ac-130",
-    "M8_DESTRUCTION Saved screenshot as m8-destruction-7-ac-130-age95.png",
+    "M8_DESTRUCTION step=7 vehicle=a-10",
+    "M8_DESTRUCTION Saved screenshot as m8-destruction-7-a-10-age95.png",
     "M8_DESTRUCTION loose_age=145 detached=true pieces=1",
-    "M8_DESTRUCTION Saved screenshot as m8-destruction-7-ac-130-age145.png",
-    "M8_DESTRUCTION Saved screenshot as m8-destruction-7-ac-130-age180.png",
+    "M8_DESTRUCTION Saved screenshot as m8-destruction-7-a-10-age145.png",
+    "M8_DESTRUCTION Saved screenshot as m8-destruction-7-a-10-age180.png",
     "M8_DESTRUCTION state_count=1 emitted=0",
     "M8_DESTRUCTION loose_age=205 detached=false pieces=0",
-    "M8_DESTRUCTION Saved screenshot as m8-destruction-7-ac-130-age205.png"
+    "M8_DESTRUCTION Saved screenshot as m8-destruction-7-a-10-age205.png"
   ],
   "captures": "Controlled cosmetic-state previews on stock models; unedited native screenshots.",
   "target_fps": 60,

@@ -95,7 +95,8 @@ Small authored hatch/canopy/panel groups rattle as damage rises. A fresh critica
 transition can detach one cosmetic piece; old damage never replays it. Repair restores the
 panel and clears its debris. Groups are limited to 600 vertices and 4.5 blocks across; the
 scene keeps at most eight pieces, two births and two swept collision rays per tick. Hitboxes,
-weapons, inventory and entities remain unchanged. Native checks cover detachment and repair.
+weapons, inventory and entities remain unchanged. Canopy access still follows the vehicle's
+existing open/closed state. Native checks cover detachment and repair.
 
 Native previews on three stock vehicles and 313 local unit tests pass.
 
@@ -129,3 +130,14 @@ panels, and stage 8 checks opaque frames, repeated fractures and repaired glass.
 Stages 2 and 6 also assert terrain fitting/removal and blast occlusion respectively.
 Local previews used JDK 25/Mesa with optional integration dependency exclusions;
 GitHub CI validates the normal build and dedicated GameTests with and without NTM Next.
+
+## Final compatibility checks
+
+All eight stages have native Vulkan examples on three vehicles each. The final gallery uses
+M1A2/AH-64/F-35A for stages 1–3/5–6, Growler/Mi-24PS/An-2 for lamps, and F-35A/F-15E/A-10
+for panels and glass. Glazing also passes native OpenGL checks, including opaque-frame hits
+and repair. The feature branch includes main's M9 updates; gun cosmetics map rewound hits
+back onto the current vehicle surface. Gameplay lag compensation is unchanged.
+
+The final local suite passes 333 unit tests after the M9 merge and cosmetic-contact regression
+fix. Native captures are 1280×720; 1920×1080 on the target PC remains a performance check.

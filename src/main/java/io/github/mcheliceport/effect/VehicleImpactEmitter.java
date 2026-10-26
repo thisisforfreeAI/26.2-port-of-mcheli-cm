@@ -26,7 +26,8 @@ public final class VehicleImpactEmitter {
         dir=dir.normalize();
         // EntityHitResult(entity) contains the entity origin, not its ray contact.
         // Recover a cosmetic contact without changing the legacy impact/explosion result.
-        var contact=VehicleImpactLook.contact(bullet.position(),dir,target.getBoundingBox());
+        var contact=VehicleImpactLook.contact(bullet.position(),dir,target.getBoundingBox(),
+                io.github.mcheliceport.combat.LagCompensation.shift(target,bullet.hitRewindTicks()));
         if(contact.isEmpty())return;
         Vec3 hit=contact.get();
         long now=level.getGameTime();

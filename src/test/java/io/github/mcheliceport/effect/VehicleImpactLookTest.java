@@ -12,6 +12,16 @@ class VehicleImpactLookTest {
         assertTrue(VehicleImpactLook.contact(new net.minecraft.world.phys.Vec3(10,20,5),new net.minecraft.world.phys.Vec3(-1,0,0),
                 new net.minecraft.world.phys.AABB(0,2,3,2,6,7)).isEmpty());
     }
+    @Test void rewoundHitReturnsToTheMovingVehiclesCurrentSurface(){
+        var origin=new net.minecraft.world.phys.Vec3(10,4,7);
+        var direction=new net.minecraft.world.phys.Vec3(-1,0,0);
+        var box=new net.minecraft.world.phys.AABB(0,2,20,2,6,24);
+        assertTrue(VehicleImpactLook.contact(origin,direction,box).isEmpty());
+        var point=VehicleImpactLook.contact(origin,direction,box,new net.minecraft.world.phys.Vec3(0,0,-15)).orElseThrow();
+        assertEquals(2.3,point.x,1e-6);assertEquals(4,point.y);assertEquals(22,point.z);
+        assertEquals(VehicleImpactLook.contact(origin,direction,box),
+                VehicleImpactLook.contact(origin,direction,box,net.minecraft.world.phys.Vec3.ZERO));
+    }
     @Test void repairFadesCosmeticsWithoutRegrowingThem(){
         float opacity=VehicleImpactLook.repaired(1,10,1000,false);
         assertTrue(opacity<1&&opacity>0);assertEquals(opacity,VehicleImpactLook.repaired(opacity,-100,1000,false));
