@@ -13,7 +13,7 @@ RTX 3060 8GB / Ryzen 7 7800X3D at 1080p. Hardware FPS needs target-PC verificati
 | 5 | Wreck fires, embers and cooling smoke that die away | Complete |
 | 6 | Localized blast soot, exposed metal and panel smoke | Complete |
 | 7 | Rattling and detachable small authored panels | Complete |
-| 8 | Progressive cracks on identifiable glazing | Pending |
+| 8 | Progressive cracks on identifiable glazing | Complete |
 
 All additions are cosmetic and respect the existing damage-details switch, distance and
 quality controls. Avoid unbounded particles, repeated full-model scans, world lighting
@@ -94,3 +94,15 @@ weapons, inventory and entities remain unchanged. Native checks cover detachment
 Native previews on three stock vehicles and 313 local unit tests pass.
 
 ![Loose authored panels](screens/m8-destruction-07-loose-panels.png)
+
+## 8. Progressive glazing damage
+
+Repeated hits spread a single glass fracture into denser cracks, capped at 0.6 blocks and
+four stages. Cracks remain attached to their animated part and fade with repair. Mixed canopy
+frames use source UV and a bounded, asynchronous PNG-alpha cache so opaque frame hits retain
+metal marks. Sixteen masks, two pending decodes, one megapixel per texture; no PNG decoding
+on the render thread. Native checks cover first hit, four-hit progression and repair.
+
+Native previews on three stock vehicles and 316 local unit tests pass.
+
+![Progressive glazing damage](screens/m8-destruction-08-progressive-glass.png)

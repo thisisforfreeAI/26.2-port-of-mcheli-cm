@@ -21,11 +21,12 @@ import net.neoforged.neoforge.client.event.ViewportEvent;
 @EventBusSubscriber(modid="mcheli_ce_port",value=Dist.CLIENT)
 public final class DestructionPreviewProbe {
     private static final int STEP=Integer.getInteger("mcheli.destructionPreview",0);
-    private static final String[] NAMES=STEP==7?new String[]{"f-35a","f-15e","ac-130"}:STEP==4?new String[]{"growler","mi-24ps","an2"}:new String[]{"m1a2","ah-64","f-35a"};
+    private static final String[] NAMES=STEP==8?new String[]{"f-35a","f-15e","a-10"}:STEP==7?new String[]{"f-35a","f-15e","ac-130"}:STEP==4?new String[]{"growler","mi-24ps","an2"}:new String[]{"m1a2","ah-64","f-35a"};
     private static int tick,phase=-1,age;
     private static AircraftEntity vehicle;
     private static String capture;
-    private static int damage(AircraftEntity e){return (int)(e.getMaxHP()*(STEP==4?(age<120?.05:.9):STEP==3?.05:STEP==5?1:STEP==7?(age<140?.72:age<190?.95:0):.78));}
+    private static org.joml.Vector3f glassPoint,framePoint;
+    private static int damage(AircraftEntity e){return (int)(e.getMaxHP()*(STEP==8?(age<190?.5:0):STEP==4?(age<120?.05:.9):STEP==3?.05:STEP==5?1:STEP==7?(age<140?.72:age<190?.95:0):.78));}
     private static void move(AircraftEntity e){
         e.xo=e.getX();e.yo=e.getY();e.zo=e.getZ();
         double speed=STEP==1?(phase==2?.5:phase==1?.25:.1):0;
@@ -82,7 +83,7 @@ public final class DestructionPreviewProbe {
         int next=(tick-160)/220;age=(tick-160)%220;
         if(next>=NAMES.length){mc.stop();return;}
         if(next!=phase){
-            phase=next;if(vehicle!=null)vehicle.discard();mc.particleEngine.clearParticles();VehicleAtmosphere.clear();VehicleImpactMarks.clear();
+            phase=next;glassPoint=null;framePoint=null;if(vehicle!=null)vehicle.discard();mc.particleEngine.clearParticles();VehicleAtmosphere.clear();VehicleImpactMarks.clear();
             vehicle=io.github.mcheliceport.content.ContentRegistries.plane().get(NAMES[phase])!=null?new Plane(mc)
                     :io.github.mcheliceport.content.ContentRegistries.heli().get(NAMES[phase])!=null?new Heli(mc):new Tank(mc);
             LoosePanels.clear();
@@ -91,7 +92,29 @@ public final class DestructionPreviewProbe {
             var parts=vehicle.getParts();for(int i=0;i<parts.length;i++)parts[i].setId(980000+phase*100+i);
             mc.level.addEntity(vehicle);System.out.println("M8_DESTRUCTION step="+STEP+" vehicle="+NAMES[phase]);
         }
-        if(age==145||age==180||(STEP==4||STEP==7)&&age==95||STEP==7&&age==205)capture=NAMES[phase]+"-age"+age;
+        if(age==145||age==180||(STEP==4||STEP==7)&&age==95||(STEP==7||STEP==8)&&age==205||STEP==8&&age==95)capture=NAMES[phase]+"-age"+age;
+        if(STEP==8){
+            if(glassPoint==null&&age>50)findGlass();
+            if(age==70){
+                if(framePoint==null)throw new IllegalStateException("No identifiable canopy frame");
+                VehicleImpactMarks.receive(new io.github.mcheliceport.net.VehicleImpactPayload(vehicle.getId(),vehicle.getUUID(),
+                        framePoint.x,framePoint.y,framePoint.z,-1,0,0,.085F,false,tick));
+            }
+            if(age==80){
+                if(VehicleImpactMarks.crackStage(vehicle)!=0||VehicleImpactMarks.stored()==0)throw new IllegalStateException("Canopy frame incorrectly treated as glass");
+                System.out.println("M8_DESTRUCTION opaque_frame_paint=true");VehicleImpactMarks.clear();
+            }
+            if(age==90||age==125||age==160||age==170){
+                if(glassPoint==null)throw new IllegalStateException("No identifiable canopy glazing");
+                VehicleImpactMarks.receive(new io.github.mcheliceport.net.VehicleImpactPayload(vehicle.getId(),vehicle.getUUID(),
+                        glassPoint.x,glassPoint.y,glassPoint.z,-1,0,0,.12F,false,tick));
+            }
+            if(age==95||age==180||age==205){
+                int cracks=VehicleImpactMarks.crackStage(vehicle);
+                if(age==95&&cracks!=1||age==180&&cracks!=4||age==205&&cracks!=0)throw new IllegalStateException("Incorrect glass progression/repair: "+cracks);
+                System.out.println("M8_DESTRUCTION glass_age="+age+" stage="+cracks+" marks="+VehicleImpactMarks.stored());
+            }
+        }
         if(STEP==7&&(age==145||age==205)){
             if(age==145&&(!LoosePanels.detached(vehicle)||LoosePanels.pieces()==0||LoosePanels.pieces()>8))throw new IllegalStateException("Missing/unbounded loose panel");
             if(age==205&&LoosePanels.detached(vehicle))throw new IllegalStateException("Repair did not restore panel");
@@ -138,11 +161,41 @@ public final class DestructionPreviewProbe {
             }
         }
     }
+    private static void findGlass(){glassPoint=canopyPoint(true);framePoint=canopyPoint(false);}
+    private static org.joml.Vector3f canopyPoint(boolean transparent){
+        var models=io.github.mcheliceport.client.model.AircraftModels.peek(vehicle.getAcInfo());if(models==null)return null;
+        org.joml.Vector3f bestPoint=null;
+        var texture=net.minecraft.resources.Identifier.fromNamespaceAndPath("mcheli","textures/planes/"+NAMES[phase]+".png");
+        float best=-Float.MAX_VALUE;
+        for(var group:models.body().groups){
+            if(!group.name().toLowerCase(java.util.Locale.ROOT).startsWith("$canopy"))continue;var d=group.data();
+            for(int t=0;t+23<d.length;t+=24){
+                var a=new org.joml.Vector3f(d[t],d[t+1],d[t+2]);
+                var b=new org.joml.Vector3f(d[t+8],d[t+9],d[t+10]);var c=new org.joml.Vector3f(d[t+16],d[t+17],d[t+18]);
+                var normal=new org.joml.Vector3f(b).sub(a).cross(new org.joml.Vector3f(c).sub(a));
+                if(normal.lengthSquared()<1e-8||Math.abs(normal.normalize().x)<.3F)continue;
+                var center=a.add(b).add(c).div(3);if(center.x<.05F)continue;
+                var index=io.github.mcheliceport.client.model.VehicleImpactSurface.get(group);if(index==null)return null;
+                var from=new org.joml.Vector3f(center).add(2,0,0);
+                var hit=index.ray(d,from,new org.joml.Vector3f(-1,0,0),4);if(hit==null)continue;
+                var contact=from.add(-hit.distance(),0,0);
+                var uv=io.github.mcheliceport.client.model.VehicleImpactSurface.textureUv(d,hit.triangle(),contact);if(uv==null)continue;
+                Integer alpha=io.github.mcheliceport.client.model.VehicleGlassAlpha.alpha(texture,uv.x,uv.y);
+                if(alpha==null)return null;if((alpha<240)!=transparent)continue;
+                float score=contact.x+contact.y*.1F;
+                if(score>best){best=score;bestPoint=contact;}
+            }
+        }
+        return bestPoint;
+    }
     @SubscribeEvent public static void angles(ViewportEvent.ComputeCameraAngles e){
-        if(STEP==0||vehicle==null)return;e.setYaw(STEP==7?122:STEP==4?147:STEP==2?64:(STEP==3||STEP==6)?90:94);e.setPitch(STEP==7?12:STEP==4?10:STEP==2?12:(STEP==3||STEP==6)?20:17);e.setRoll(0);
+        if(STEP==0||vehicle==null)return;e.setYaw(STEP==8?102:STEP==7?122:STEP==4?147:STEP==2?64:(STEP==3||STEP==6)?90:94);e.setPitch(STEP==8?16:STEP==7?12:STEP==4?10:STEP==2?12:(STEP==3||STEP==6)?20:17);e.setRoll(0);
     }
     @SubscribeEvent public static void position(ViewportEvent.ComputeFov e){
         if(STEP==0||vehicle==null)return;
+        if(STEP==8&&glassPoint!=null){
+            e.getCamera().setPosition(vehicle.position().add(glassPoint.x,glassPoint.y+io.github.mcheliceport.content.aircraft.AircraftInfo.GLOBAL_Y_OFFSET,glassPoint.z).add(3.6,1.4,.8));return;
+        }
         if(STEP==7){
             var models=io.github.mcheliceport.client.model.AircraftModels.peek(vehicle.getAcInfo());
             if(models!=null){

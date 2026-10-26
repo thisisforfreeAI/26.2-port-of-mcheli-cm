@@ -13,6 +13,7 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 ## [0.6.0] - 2026-10-25 (M6 preview: gameplay and multiplayer)
 
 ### Added
+- Progressive glazing damage add bounded cosmetic vehicle destruction detail.
 - Loose authored panels add bounded cosmetic vehicle destruction detail.
 - Blast scars and panel smoke add bounded cosmetic vehicle destruction detail.
 - Cooling wrecks add bounded cosmetic vehicle destruction detail.

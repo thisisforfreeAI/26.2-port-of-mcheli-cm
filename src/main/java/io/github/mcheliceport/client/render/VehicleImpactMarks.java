@@ -41,9 +41,10 @@ public final class VehicleImpactMarks {
         final VehicleImpactSurface.Mesh mesh;
         final long born;
         final boolean blast; final Vector3f contact;
+        final float radius,angle; final int crackStage;
         float opacity=1,target=1;
-        Mark(McheliModel.Group group,int occurrence,int instances,int tile,VehicleImpactSurface.Mesh mesh,long born,boolean blast,Vector3f contact){
-            this.group=group;this.occurrence=occurrence;this.instances=instances;this.tile=tile;this.mesh=mesh;this.born=born;this.blast=blast;this.contact=contact;
+        Mark(McheliModel.Group group,int occurrence,int instances,int tile,VehicleImpactSurface.Mesh mesh,long born,boolean blast,Vector3f contact,float radius,float angle,int crackStage){
+            this.group=group;this.occurrence=occurrence;this.instances=instances;this.tile=tile;this.mesh=mesh;this.born=born;this.blast=blast;this.contact=contact;this.radius=radius;this.angle=angle;this.crackStage=crackStage;
         }
     }
     public record Draw(Matrix4f pose,VehicleImpactSurface.Mesh mesh,int tile,float opacity) {}
@@ -97,7 +98,7 @@ public final class VehicleImpactMarks {
             fits++;
             var pending=state.pending.removeFirst();
             boolean[] waiting={false};
-            Mark mark=fit(pending,render,waiting,entity);
+            Mark mark=fit(pending,render,waiting,entity,state);
             if(mark==null&&waiting[0]&&world.getGameTime()-pending.born<=40)state.pending.addLast(pending);
             if(mark!=null){
                 while(state.marks.size()>=cap)state.marks.removeFirst();
@@ -127,7 +128,7 @@ public final class VehicleImpactMarks {
         }
         return count==expectedInstances?pose:null;
     }
-    private static Mark fit(Pending pending,AircraftRenderState render,boolean[] waiting,AircraftEntity entity){
+    private static Mark fit(Pending pending,AircraftRenderState render,boolean[] waiting,AircraftEntity entity,State state){
         var p=pending.payload;
         Matrix4f body=VehicleImpactLook.body(render.yaw,render.pitch,render.roll);
         Vector3f point=body.transformPosition(new Vector3f(p.x(),p.y(),p.z()));
@@ -153,10 +154,30 @@ public final class VehicleImpactMarks {
             }
         }
         if(chosen==null||work[0]<=0||waiting[0])return null;
-        var mesh=chosenIndex.decal(chosen.data(),hit,localOrigin,localDirection,p.radius(),
-                Math.floorMod(p.seed(),628)*.01F);
+        var localContact=new Vector3f(localDirection).mul(hit.distance()).add(localOrigin);
+        boolean glass=VehicleSurfaceFinish.material(chosen.name())==VehicleSurfaceFinish.Material.GLASS;
+        if(!pending.blast&&!glass&&chosen.name().toLowerCase(java.util.Locale.ROOT).startsWith("$canopy")){
+            var uv=VehicleImpactSurface.textureUv(chosen.data(),hit.triangle(),localContact);
+            if(uv!=null){
+                Integer alpha=io.github.mcheliceport.client.model.VehicleGlassAlpha.alpha(render.texture,uv.x,uv.y);
+                if(alpha==null){waiting[0]=true;return null;}glass=alpha<240;
+            }
+        }
+        Mark previous=null;
+        if(glass&&!pending.blast)for(var m:state.marks){
+            if(m.tile>=6&&m.group==chosen&&m.occurrence==chosenOccurrence&&m.target>.25F
+                    &&m.contact.distanceSquared(localContact)<Math.max(.2F,m.radius)*Math.max(.2F,m.radius))previous=m;
+        }
+        float radius=glass&&!pending.blast?io.github.mcheliceport.client.model.VehicleGlassLook.radius(previous==null?0:previous.radius,p.radius()):p.radius();
+        int stage=glass&&!pending.blast?io.github.mcheliceport.client.model.VehicleGlassLook.stage(previous==null?0:previous.crackStage):0;
+        float angle=previous!=null?previous.angle:Math.floorMod(p.seed(),628)*.01F;
+        if(previous!=null)localContact=new Vector3f(previous.contact);
+        // Keep the existing fracture center as its footprint grows over repeated strikes.
+        Vector3f decalOrigin=new Vector3f(localContact).fma(-hit.distance(),localDirection);
+        var mesh=chosenIndex.decal(chosen.data(),hit,decalOrigin,localDirection,radius,angle);
         if(mesh.vertices().isEmpty())return null;
-        int tile=pending.blast?4+Math.floorMod(p.seed(),2):tile(chosen.name(),p.cannon(),p.seed());
+        int tile=pending.blast?4+Math.floorMod(p.seed(),2):glass?(stage>1?7:6):tile(chosen.name(),p.cannon(),p.seed());
+        if(previous!=null)state.marks.remove(previous);
         if(tile<6&&!pending.blast&&world.getGameTime()-pending.born<=6){
             var contact=chosenPose.transformPosition(new Vector3f(localDirection).mul(hit.distance()).add(localOrigin));
             var normal=new org.joml.Matrix3f(chosenPose).invert().transpose().transform(new Vector3f(mesh.normal())).normalize();
@@ -164,7 +185,7 @@ public final class VehicleImpactMarks {
                     entity.position().add(contact.x,contact.y,contact.z),new net.minecraft.world.phys.Vec3(direction.x,direction.y,direction.z),
                     new net.minecraft.world.phys.Vec3(normal.x,normal.y,normal.z),entity.getDeltaMovement(),p.cannon(),p.seed());
         }
-        return new Mark(chosen,chosenOccurrence,occurrences.get(chosen),tile,mesh,pending.born,pending.blast,new Vector3f(localDirection).mul(hit.distance()).add(localOrigin));
+        return new Mark(chosen,chosenOccurrence,occurrences.get(chosen),tile,mesh,pending.born,pending.blast,localContact,radius,angle,stage);
     }
     static int tile(String group,boolean cannon,int seed){
         return VehicleSurfaceFinish.material(group)==VehicleSurfaceFinish.Material.GLASS
@@ -174,6 +195,7 @@ public final class VehicleImpactMarks {
         var state=STATES.get(entity);
         return enabled()&&world==entity.level()&&state!=null&&world.getGameTime()-state.smokeTick<=4?state.smokeOrigin:null;
     }
+    public static int crackStage(AircraftEntity entity){var state=STATES.get(entity);return state==null?0:state.marks.stream().mapToInt(m->m.crackStage).max().orElse(0);}
     public static int stored(){return STATES.values().stream().mapToInt(s->s.marks.size()).sum();}
     public static int pending(){return STATES.values().stream().mapToInt(s->s.pending.size()).sum();}
 }

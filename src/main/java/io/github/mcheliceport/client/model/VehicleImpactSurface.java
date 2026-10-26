@@ -48,7 +48,7 @@ public final class VehicleImpactSurface {
         });
         return true;
     }
-    public static void clear(){synchronized(CACHE){CACHE.clear();generation++;}}
+    public static void clear(){synchronized(CACHE){CACHE.clear();generation++;}VehicleGlassAlpha.clear();}
     public static Index get(McheliModel.Group group){synchronized(CACHE){return CACHE.get(group);}}
     public static final class Index {
         private final int[] triangles;
@@ -146,6 +146,19 @@ public final class VehicleImpactSurface {
             if(n.left!=null){around(n.left,d,p,r,out,work);around(n.right,d,p,r,out,work);}
             else for(int i=n.start;i<n.end&&out.size()<128;i++)if(!out.contains(triangles[i]))out.add(triangles[i]);
         }
+    }
+    /** Interpolates the source model UV at the fitted hit, for mixed glass/frame textures. */
+    public static org.joml.Vector2f textureUv(float[] d,int t,Vector3f point){
+        if(t<0||t+23>=d.length||!point.isFinite())return null;
+        var ab=new Vector3f(d[t+8]-d[t],d[t+9]-d[t+1],d[t+10]-d[t+2]);
+        var ac=new Vector3f(d[t+16]-d[t],d[t+17]-d[t+1],d[t+18]-d[t+2]);
+        var ap=new Vector3f(point).sub(d[t],d[t+1],d[t+2]);
+        double aa=ab.dot(ab),bb=ac.dot(ac),cross=ab.dot(ac),den=aa*bb-cross*cross;
+        if(!Double.isFinite(den)||Math.abs(den)<1e-12)return null;
+        double b=(bb*ap.dot(ab)-cross*ap.dot(ac))/den,c=(aa*ap.dot(ac)-cross*ap.dot(ab))/den;
+        var uv=new org.joml.Vector2f((float)(d[t+3]+b*(d[t+11]-d[t+3])+c*(d[t+19]-d[t+3])),
+                (float)(d[t+4]+b*(d[t+12]-d[t+4])+c*(d[t+20]-d[t+4])));
+        return uv.isFinite()?uv:null;
     }
     private static double distance(float[] d,int t,Vector3f p){
         float x=(d[t]+d[t+8]+d[t+16])/3-p.x,y=(d[t+1]+d[t+9]+d[t+17])/3-p.y,z=(d[t+2]+d[t+10]+d[t+18])/3-p.z;

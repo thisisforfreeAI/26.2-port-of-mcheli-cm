@@ -32,11 +32,11 @@ for tile in range(8):
                     rgba = (gray, int(gray * .94), int(gray * .84), alpha)
             else:
                 # Fine branching cracks, leaving most of the glass clear.
-                for branch in range(7):
-                    a = branch * math.tau / 7 + .18 * math.sin(branch * 4 + tile)
+                for branch in range(7 if tile == 6 else 13):
+                    a = branch * math.tau / (7 if branch < 7 else 13) + .18 * math.sin(branch * 4 + 6)
                     along, across = px * math.cos(a) + py * math.sin(a), -px * math.sin(a) + py * math.cos(a)
                     bend = .035 * math.sin(along * 16 + branch)
-                    if 0 < along < .48 + .3 * ((branch * 7 + tile) % 5) / 4 and abs(across - bend) < .025:
+                    if 0 < along < .48 + .3 * ((branch * 7 + 6) % 5) / 4 and abs(across - bend) < .025:
                         rgba = (170, 190, 198, 190)
                     if .25 < along < .55 and abs(across - bend - (along - .25) * .42) < .018:
                         rgba = (130, 155, 165, 150)
