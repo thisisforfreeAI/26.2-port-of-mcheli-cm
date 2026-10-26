@@ -386,3 +386,12 @@ original craters and 60 FPS target. NTM work remains owned by Claude and is unto
 cannon soot, cracks on named glazing, part-local attachments and gradual repair fading.
 Use bounded optional cosmetic notifications, clipped overlays and the existing damage-details
 setting. Keep gameplay damage, craters and NTM unchanged. Mesh deformation is separate work.
+
+## Vehicle destruction and aftermath follow-ups
+
+All eight requested stages are implemented: damaged-engine trails; oil/coolant drips and
+ground stains; directional metal fragments; damaged lamp faults; finite cooling wrecks;
+blast-fitted soot and panel smoke; small authored loose panels; progressive glazing cracks.
+See [implementation, limits and native examples](M8_DESTRUCTION_EFFECTS.md).
+These stay behind the existing damage-details option and leave damage, craters and NTM
+integration unchanged. Target-PC verification of 60 FPS remains outstanding.

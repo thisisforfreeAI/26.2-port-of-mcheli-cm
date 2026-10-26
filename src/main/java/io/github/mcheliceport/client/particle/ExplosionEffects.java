@@ -67,6 +67,7 @@ public final class ExplosionEffects {
             effectExplosionInWater(level, x, y, z, size);
             return;
         }
+        io.github.mcheliceport.client.render.VehicleBlastScars.blast(level,new net.minecraft.world.phys.Vec3(x,y,z),size);
         boolean vanilla = ClientConfig.get(ClientConfig.DEFAULT_EXPLOSION_PARTICLE);
         if (!vanilla && EffectQuality.enhanced()) {
             ExplosionCloudEmitter.emit(level, x, y, z, size, style, direction,

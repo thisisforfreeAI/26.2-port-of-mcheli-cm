@@ -11,6 +11,11 @@ public final class VehicleImpactLook {
         var unit=direction.normalize();
         return box.inflate(.3).clip(origin.subtract(unit.scale(2)),origin.add(unit.scale(64)));
     }
+    /** Locate the historical hit, then return it in the vehicle's current world frame. */
+    public static java.util.Optional<net.minecraft.world.phys.Vec3> contact(net.minecraft.world.phys.Vec3 origin,
+            net.minecraft.world.phys.Vec3 direction,net.minecraft.world.phys.AABB currentBox,net.minecraft.world.phys.Vec3 rewindShift){
+        return contact(origin,direction,currentBox.move(rewindShift)).map(point->point.subtract(rewindShift));
+    }
     public static Matrix4f body(float yaw, float pitch, float roll) {
         return new Matrix4f().translation(0, io.github.mcheliceport.content.aircraft.AircraftInfo.GLOBAL_Y_OFFSET, 0)
                 .rotateY((float)Math.toRadians(-yaw)).rotateX((float)Math.toRadians(pitch)).rotateZ((float)Math.toRadians(roll));

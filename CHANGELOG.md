@@ -39,6 +39,14 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 ## [0.6.0] - 2026-10-25 (M6 preview: gameplay and multiplayer)
 
 ### Added
+- Progressive glazing damage add bounded cosmetic vehicle destruction detail.
+- Loose authored panels add bounded cosmetic vehicle destruction detail.
+- Blast scars and panel smoke add bounded cosmetic vehicle destruction detail.
+- Cooling wrecks add bounded cosmetic vehicle destruction detail.
+- Authored vehicle lamps flicker, dim or fail with damage, with local cosmetic sparks.
+- Fitted vehicle impacts shed bounded, directional tumbling metal fragments.
+- Damaged vehicles shed cosmetic oil/coolant drips and temporary ground-fitted wet stains.
+- Enhanced damaged-engine smoke sheds behind moving vehicles, with pulsing cores and fading wisps.
 - Enhanced vehicle damage details add panel-fitted gun chips, cannon scorch marks and cracks
   on named window/glass groups. Marks follow moving parts and fade as repairs restore health.
 - Looking at a vehicle in first person shows upstream's enter-seat prompt ("Press Right Button to

@@ -31,6 +31,7 @@ public final class VehicleAtmosphere {
     private static int emitted;
     private static final class State {
         final VehicleAtmosphereLook engine = new VehicleAtmosphereLook();
+        final WreckCoolingLook cooling = new WreckCoolingLook();
         Whine whine;
         void stop() { if (whine != null) { whine.finish(); whine = null; } }
     }
@@ -48,6 +49,7 @@ public final class VehicleAtmosphere {
     }
     public static int stateCount() { return STATES.size(); }
     public static int emitted() { return emitted; }
+    public static int wreckAge(AircraftEntity ac) { var state=STATES.get(ac);return state==null?-1:state.cooling.age(); }
     public static long startupVoiceCount() {
         return STATES.values().stream().filter(s -> s.whine != null
                 && Minecraft.getInstance().getSoundManager().isActive(s.whine)).count();
@@ -81,6 +83,7 @@ public final class VehicleAtmosphere {
                 if (STATES.size() >= 128) continue;
                 state = new State(); STATES.put(aircraft, state);
             }
+            state.cooling.tick(aircraft.isDestroyed());
             boolean powered = !aircraft.isDestroyed() && aircraft.canUseFuel();
             state.engine.tick(aircraft.getCurrentThrottle(), powered);
             if (!ClientConfig.get(ClientConfig.ENGINE_STARTUP_EFFECTS)) state.stop();
@@ -116,7 +119,7 @@ public final class VehicleAtmosphere {
                             state.engine.startup() * 0.3F, 22, 0.76F, 0.79F, 0.82F);
                 }
             }
-            if (ClientConfig.get(ClientConfig.VEHICLE_DAMAGE_DETAILS)) damage(level, aircraft, origins, now);
+            if (ClientConfig.get(ClientConfig.VEHICLE_DAMAGE_DETAILS)) damage(level, aircraft, origins, now, state.cooling);
         }
     }
 
@@ -146,36 +149,76 @@ public final class VehicleAtmosphere {
         return result;
     }
 
-    private static void damage(ClientLevel level, AircraftEntity aircraft, List<Vec3> origins, long now) {
+    /** Rear-deck fallback for tanks; aircraft retain their authored engine/nozzle anchors. */
+    public static List<Vec3> wreckOrigins(AircraftEntity aircraft) {
+        if(aircraft instanceof io.github.mcheliceport.entity.tank.TankEntity&&aircraft.getAcInfo().engineOutlets.isEmpty()){
+            var model=io.github.mcheliceport.client.model.AircraftModels.peek(aircraft.getAcInfo());
+            double top=model==null?1.8:Math.clamp(model.body().maxY*.4,1.2,2.1);
+            double rear=model==null?-1.7:Math.clamp(model.body().minZ*.82,-5,-.7);
+            return List.of(aircraft.position().add(McheliMath.rotVec3(.85,top+.35,rear,
+                    -aircraft.getYaw(),-aircraft.getPitch(),-aircraft.getRoll())));
+        }
+        return origins(aircraft);
+    }
+
+    private static void damage(ClientLevel level, AircraftEntity aircraft, List<Vec3> origins, long now, WreckCoolingLook cooling) {
+        if (aircraft.isDestroyed()) { WreckEffects.emit(level,wreckOrigins(aircraft),cooling,aircraft,now); return; }
         float severity = VehicleAtmosphereLook.damage(aircraft.getHP(), aircraft.getMaxHP());
         if (severity == 0) return;
+        if (aircraft.isSearchLightOn() && severity > .4F && EffectPerformance.optionalGlows()
+                && Math.floorMod(now + aircraft.getId(), 13) == 0) {
+            var lights = aircraft.getAcInfo().searchLights;
+            if (!lights.isEmpty()) {
+                int lamp = Math.floorMod((int) (now / 13 + aircraft.getId()), lights.size());
+                var light = lights.get(lamp);
+                if (io.github.mcheliceport.entity.aircraft.SearchLightBeam.usable(light)
+                        && io.github.mcheliceport.client.render.VehicleLightDamage.strength(aircraft, lamp) < .4F) {
+                    Vec3 pos = aircraft.position().add(McheliMath.rotVec3(light.pos, -aircraft.getYaw(),
+                            -aircraft.getPitch(), -aircraft.getRoll())).add(0,
+                            io.github.mcheliceport.content.aircraft.AircraftInfo.GLOBAL_Y_OFFSET, 0);
+                    if (admit(level, pos, .05F)) {
+                        var spark = new SparkParticle(level, pos.x, pos.y, pos.z, .03, -.01, .02, 5, .045F);
+                        spark.setColor(.65F, .82F, 1); Minecraft.getInstance().particleEngine.add(spark);
+                    }
+                }
+            }
+        }
+        Vec3 panel=io.github.mcheliceport.client.render.VehicleImpactMarks.damageOrigin(aircraft);
+        if (panel!=null&&Math.floorMod(now+aircraft.getId(),9*(1+EffectPerformance.pressure()))==0&&admit(level,panel,.55F)) {
+            var smoke=new SmokeParticle(level,panel.x,panel.y,panel.z,0,.018,0);
+            smoke.enhanced=true;smoke.coherentDrift=true;smoke.disableCollision();
+            smoke.setColor(.35F,.34F,.32F);smoke.setAlphaF(.36F);smoke.setParticleMaxAge(25);
+            smoke.motionYUpAge=.6F;smoke.diffusible=true;smoke.particleScale=1.5F;smoke.particleMaxScale=5.5F;
+            Minecraft.getInstance().particleEngine.add(smoke);
+        }
         Vec3 position = origins.get(Math.floorMod((int) (now / 11 + aircraft.getId()), origins.size()));
-        Vec3 motion = aircraft.getDeltaMovement().scale(0.8);
         int period = 3 * (1 + EffectPerformance.pressure());
         if (Math.floorMod(now + aircraft.getId(), period) == 0
                 && VehicleAtmosphereLook.smokePulse(now, aircraft.getId(), severity)) {
-            if (admit(level, position, 1.3F)) {
-                float gray = 0.7F - severity * 0.55F;
+            boolean wisp=DamageTrailLook.wisp(now,aircraft.getId());
+            double speed=aircraft.getDeltaMovement().length();
+            float radius=DamageTrailLook.radius(severity,speed);
+            if (admit(level, position, radius)) {
+                float gray = DamageTrailLook.gray(severity,wisp);
+                Vec3 shed=aircraft.getDeltaMovement();
                 SmokeParticle smoke = new SmokeParticle(level, position.x, position.y, position.z,
-                        motion.x + 0.01, motion.y + 0.065, motion.z - 0.01);
+                        DamageTrailLook.inherited(shed.x)+Math.sin(now*.37+aircraft.getId())*.012,
+                        DamageTrailLook.inherited(shed.y)+.025+severity*.02,
+                        DamageTrailLook.inherited(shed.z)+Math.cos(now*.29+aircraft.getId())*.012);
                 smoke.enhanced = true;
                 smoke.coherentDrift = true;
                 smoke.disableCollision();
                 smoke.setColor(gray, gray, gray);
-                smoke.setAlphaF(0.35F + severity * 0.4F);
-                smoke.setParticleMaxAge(32);
+                smoke.setAlphaF((0.4F + severity * 0.35F)*(wisp?.62F:1));
+                smoke.setParticleMaxAge(DamageTrailLook.lifetime(severity,wisp));
+                smoke.motionYUpAge=wisp?.45F:.7F;
                 smoke.diffusible = true;
-                smoke.particleScale = 3 + severity * 3;
-                smoke.particleMaxScale = 7 + severity * 6;
+                smoke.particleScale = (3+severity*3)*(wisp?.7F:1);
+                smoke.particleMaxScale = radius*10*(wisp?.78F:1);
                 Minecraft.getInstance().particleEngine.add(smoke);
             }
         }
-        if (!aircraft.isDestroyed() && Math.floorMod(now + aircraft.getId(), 7 * (1 + EffectPerformance.pressure())) == 0) {
-            plume(level, position.add(0.15, -0.15, 0), motion.add(0, 0.015, 0), 0.24F, 0.25F, 18, 0.75F, 0.89F, 0.9F);
-            if (admit(level, position, 0.04F)) Minecraft.getInstance().particleEngine.add(new SurfaceDebrisParticle(level,
-                    position.x, position.y - 0.2, position.z, motion.x, -0.08, motion.z, 0.055F,
-                    0.45F, 0.82F, 0.87F, position.y - 3, 18, 0.1F));
-        }
+        FluidLeaks.emit(level,aircraft,position,severity,now);
         if (severity > 0.4F && EffectPerformance.optionalGlows()
                 && Math.floorMod(now + (long) aircraft.getId() * 3, 23) < 2 && admit(level, position, 0.07F)) {
             SparkParticle spark = new SparkParticle(level, position.x, position.y, position.z,
@@ -185,7 +228,7 @@ public final class VehicleAtmosphere {
         }
     }
 
-    private static boolean admit(ClientLevel level, Vec3 position, float radius) {
+    static boolean admit(ClientLevel level, Vec3 position, float radius) {
         if (emitted >= EngineExhaustLook.cap(ClientConfig.get(ClientConfig.EFFECT_BUDGET))) return false;
         BlockPos block = BlockPos.containing(position);
         if (!level.hasChunkAt(block) || !level.getFluidState(block).isEmpty()

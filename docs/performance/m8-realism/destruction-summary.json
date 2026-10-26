@@ -1,0 +1,34 @@
+{
+  "local_unit_tests": 333,
+  "failures": 0,
+  "vulkan_native_stages": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8
+  ],
+  "vehicles_per_stage": 3,
+  "opengl_native_stages": [
+    8
+  ],
+  "capture_size": [
+    1280,
+    720
+  ],
+  "captures": "Unedited native controlled cosmetic-state previews on stock models.",
+  "native_adapter": "Mesa llvmpipe; Vulkan and OpenGL",
+  "main_included": "34b9d8f",
+  "target_fps": 60,
+  "target_resolution": [
+    1920,
+    1080
+  ],
+  "target_hardware": "RTX 3060 8GB / Ryzen 7 7800X3D",
+  "target_hardware_fps_certified": false,
+  "local_dependency_note": "Optional JEI and NTM bridge/runtime sources excluded locally; normal integrations are built by GitHub CI. No local stub jar is shipped.",
+  "pull_request": "https://github.com/thisisforfreeAI/26.2-port-of-mcheli-cm/pull/95"
+}
