@@ -91,7 +91,7 @@ public final class McheliCommand {
     public static final String DEFAULT_DUMP_FOLDER = "mcheli_yaml_dump";
     /** Upstream's {@code ALL_COMMAND} order. */
     public static final List<String> SUBCOMMANDS = List.of("sendss", "modlist", "reconfig", "title", "fill", "status", "killentity",
-            "removeentity", "attackentity", "showboundingbox", "list", "delayhitbox", "dumpyaml");
+            "removeentity", "attackentity", "showboundingbox", "list", "delayhitbox", "dumpyaml", "anticheat");
     public static final int MAX_FILL = 3_000_000;
     static final List<String> DAMAGE_SOURCES = List.of("player", "inFire", "onFire", "lava", "inWall", "drown",
             "starve", "cactus", "fall", "outOfWorld", "generic", "magic", "wither", "anvil", "fallingBlock");
@@ -155,6 +155,10 @@ public final class McheliCommand {
                                 .executes(McheliCommand::setHitBoxDelay)))
                 .then(sub("showboundingbox").then(Commands.argument("enable", BoolArgumentType.bool())
                         .executes(McheliCommand::showBoundingBox)))
+                .then(sub("anticheat")
+                        .executes(c -> antiCheat(c, null))
+                        .then(Commands.argument("player", EntityArgument.player())
+                                .executes(c -> antiCheat(c, EntityArgument.getPlayer(c, "player")))))
                 .then(sub("reconfig").executes(McheliCommand::reconfig))
                 .then(sub("dumpyaml")
                         .executes(c -> dumpYaml(c, DEFAULT_DUMP_FOLDER))
@@ -224,6 +228,44 @@ public final class McheliCommand {
             source.sendSuccess(() -> Component.literal("Asked " + name + " for " + what), false);
         }
         return asked;
+    }
+
+    /**
+     * M9: the anti-cheat violation scores of online players, or one player's counts by check and
+     * latest failures. Returns how many players (or failures) were listed.
+     */
+    private static int antiCheat(CommandContext<CommandSourceStack> c, @Nullable ServerPlayer target) {
+        CommandSourceStack source = c.getSource();
+        long now = source.getLevel().getGameTime();
+        if (target == null) {
+            int shown = 0;
+            for (ServerPlayer player : source.getServer().getPlayerList().getPlayers()) {
+                var r = io.github.mcheliceport.combat.AntiCheat.recordOf(player.getUUID());
+                if (r != null && !r.counts().isEmpty()) {
+                    String line = String.format(" %s : score %.1f %s", player.getGameProfile().name(), r.score(now), r.counts());
+                    source.sendSuccess(() -> Component.literal(line), false);
+                    shown++;
+                }
+            }
+            if (shown == 0) {
+                source.sendSuccess(() -> Component.literal("No anti-cheat violations"), false);
+            }
+            return shown;
+        }
+        var r = io.github.mcheliceport.combat.AntiCheat.recordOf(target.getUUID());
+        String name = target.getGameProfile().name();
+        if (r == null || r.counts().isEmpty()) {
+            source.sendSuccess(() -> Component.literal(name + " has no anti-cheat violations"), false);
+            return 0;
+        }
+        source.sendSuccess(() -> Component.literal(String.format("--- %s : score %.1f %s ---", name, r.score(now),
+                r.counts())), false);
+        var recent = r.recent();
+        for (var e : recent) {
+            String line = String.format(" %ds ago: %s, %s", (now - e.tick()) / 20, e.check(), e.detail());
+            source.sendSuccess(() -> Component.literal(line), false);
+        }
+        return recent.size();
     }
 
     private static int statusEntities(CommandContext<CommandSourceStack> c, int min) {

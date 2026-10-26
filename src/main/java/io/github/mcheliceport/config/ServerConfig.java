@@ -41,6 +41,9 @@ public final class ServerConfig {
     public static final ModConfigSpec.BooleanValue NPC_BATTLES;
     public static final ModConfigSpec.BooleanValue PROJECTILE_CHUNK_LOAD;
     public static final ModConfigSpec.IntValue PROJECTILE_CHUNK_LEASE_TICKS;
+    public static final ModConfigSpec.IntValue LAG_COMPENSATION_MAX_MS;
+    public static final ModConfigSpec.IntValue ANTI_CHEAT_THRESHOLD;
+    public static final ModConfigSpec.EnumValue<io.github.mcheliceport.combat.AntiCheat.Action> ANTI_CHEAT_ACTION;
     public static final ModConfigSpec.BooleanValue ENABLE_COMMAND;
     public static final ModConfigSpec.ConfigValue<List<? extends String>> COMMAND_PERMISSIONS;
     public static final ModConfigSpec.BooleanValue ENABLE_DEBUG_BOUNDING_BOX;
@@ -169,6 +172,24 @@ public final class ServerConfig {
                 .comment("Ticks a chunk stays loaded after the last projectile asked for it, so the shots of a burst",
                         "keep the same chunks loaded (20 ticks = 1 second). Upstream: ProjectileChunkLeaseTicks.")
                 .defineInRange("chunkLeaseTicks", 40, 0, 1200);
+        LAG_COMPENSATION_MAX_MS = builder
+                .comment("Lag compensation (a port addition): a player's shots test vehicles where that player saw them,",
+                        "up to this many milliseconds in the past (round trip plus interpolation). Higher favours shooters",
+                        "on slow connections, lower favours their targets. 0 turns it off.")
+                .defineInRange("lagCompensationMaxMs", 250, 0, 500);
+        builder.pop();
+
+        builder.comment("Server checks on weapon fire (a port addition). A failed check always drops that shot or lock;",
+                        "these settings decide what happens to a player who keeps failing them.")
+                .push("antiCheat");
+        ANTI_CHEAT_THRESHOLD = builder
+                .comment("Violation score that triggers the action below. A failure adds 1 or 2 and the score decays",
+                        "with a one-minute time constant, so honest players with lag stay well below it. 0 turns alerts off.")
+                .defineInRange("threshold", 20, 0, 1000);
+        ANTI_CHEAT_ACTION = builder
+                .comment("LOG: write a warning to the server log. NOTIFY_OPS: also tell online operators.",
+                        "KICK: also disconnect the player. At most one action per player per minute.")
+                .defineEnum("action", io.github.mcheliceport.combat.AntiCheat.Action.LOG);
         builder.pop();
 
         builder.comment("The /mcheli command.").push("commands");
@@ -200,6 +221,11 @@ public final class ServerConfig {
                 .define("playersChooseTeam", true);
         builder.pop();
         SPEC = builder.build();
+    }
+
+    /** The value, or its default before a server has loaded the config (unit tests, the main menu). */
+    public static <T> T get(ModConfigSpec.ConfigValue<T> value) {
+        return SPEC.isLoaded() ? value.get() : value.getDefault();
     }
 
     private ServerConfig() {}

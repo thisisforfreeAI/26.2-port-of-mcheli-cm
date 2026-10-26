@@ -69,6 +69,9 @@ public final class McheliCePort {
                 (net.neoforged.neoforge.event.TagsUpdatedEvent event) -> io.github.mcheliceport.weapon.BlockList.clearCaches());
         io.github.mcheliceport.radar.EntityInfoFeed.register();
         io.github.mcheliceport.wingman.handler.WingmanTickHandler.register();
+        io.github.mcheliceport.combat.LagCompensation.register();
+        io.github.mcheliceport.combat.WatcherMotion.register();
+        io.github.mcheliceport.combat.AntiCheat.register();
     }
 
     private void commonSetup(FMLCommonSetupEvent event) {

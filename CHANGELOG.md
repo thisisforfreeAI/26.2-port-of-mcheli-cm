@@ -10,6 +10,26 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 
 ## [Unreleased]
 
+### Added
+- Lag compensation (M9): a player's gun rounds hit vehicles where that player saw them, about one
+  round trip plus 100 ms of interpolation in the past, capped at 250 ms by the new server setting
+  `projectiles.lagCompensationMaxMs` (0 turns it off). A jet crossing at 250 km/h is about 17 blocks
+  ahead of where a 150 ms shooter sees it; those hits now land. Missiles and rockets rewind only for
+  that long after launch, so a dodge still beats them. Blocks, mobs and players on foot are never
+  rewound, and explosions still go off where things are now.
+- Smoother fast vehicles and missiles (M9): the server sends watching players the velocity of
+  vehicles moving faster than 1 block a tick. Their clients interpolate at an even speed and, when a
+  position update is late, keep the vehicle moving for up to 4 ticks instead of stopping and
+  snapping forward. Guided missiles (AA, AS, AT, TV) now update every 2 ticks instead of 5. Clients
+  without this version keep the old interpolation.
+- Server checks on weapon fire (M9). More than 2 fire packets a tick (after a burst of 4) or an
+  impossible aim drops the shot. A claimed fire position the vehicle was not near in the last few
+  ticks fires from the vehicle's server position instead, where before anything within 16 blocks
+  was trusted. A BVR lock must name a live target within 2000 blocks that is not the shooter or
+  aboard its vehicle. Failures add to a decaying score; past `antiCheat.threshold` (default 20)
+  the server logs a warning, and `antiCheat.action` can also tell operators or kick. Operators see
+  scores and recent failures with `/mcheli anticheat [player]`.
+
 ## [0.6.0] - 2026-10-25 (M6 preview: gameplay and multiplayer)
 
 ### Added

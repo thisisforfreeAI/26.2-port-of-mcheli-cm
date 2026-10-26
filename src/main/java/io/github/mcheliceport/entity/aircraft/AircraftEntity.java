@@ -173,6 +173,10 @@ public abstract class AircraftEntity extends Entity
 
     protected @Nullable AircraftInfo info;
     private final InterpolationHandler interpolation = new InterpolationHandler(this);
+    /** M9: the velocity the server last sent this watching client, and the tick it arrived. */
+    private Vec3 watchedVelocity = Vec3.ZERO;
+    private long watchedVelocityTick = Long.MIN_VALUE;
+    private int extrapolatedTicks;
     private AircraftHitBox[] hitBoxes = NO_HIT_BOXES;
     private SeatEntity[] seats = NO_SEATS;
     private SimpleContainer inventory = new SimpleContainer(FIXED_SLOTS);
@@ -1984,6 +1988,9 @@ public abstract class AircraftEntity extends Entity
                 && ServerSettings.client().serverAuthoritativeMovement());
         float yaw = this.getYRot();
         float pitch = this.getXRot();
+        if (this.level().isClientSide() && !this.isPilotLocalClient() && !this.isDestroyed()) {
+            this.smoothWatched();
+        }
         this.interpolation.interpolate();
         if (keepRotation) {
             this.setYRot(yaw);
@@ -1995,6 +2002,31 @@ public abstract class AircraftEntity extends Entity
         }
         if (this.level().isClientSide()) {
             this.setDeltaMovement(Vec3.ZERO);
+        }
+    }
+
+    /** M9: the server's velocity for a vehicle another player moves; see {@code WatcherMotion}. */
+    public void setWatchedVelocity(Vec3 velocity) {
+        this.watchedVelocity = velocity;
+        this.watchedVelocityTick = this.level().getGameTime();
+    }
+
+    /**
+     * M9 smoother sync on a watching client: while a fresh velocity is known, interpolate over one
+     * position update so the speed stays even, and when an update is late carry the vehicle on along
+     * its velocity for a few ticks; the next update then blends it back.
+     */
+    private void smoothWatched() {
+        boolean fresh = io.github.mcheliceport.combat.WatcherMotion.fresh(this.level().getGameTime(),
+                this.watchedVelocityTick);
+        this.interpolation.setInterpolationLength(fresh ? io.github.mcheliceport.combat.WatcherMotion.SMOOTH_STEPS
+                : InterpolationHandler.DEFAULT_INTERPOLATION_STEPS);
+        boolean interpolating = this.interpolation.hasActiveInterpolation();
+        if (io.github.mcheliceport.combat.WatcherMotion.extrapolates(interpolating, fresh, this.extrapolatedTicks)) {
+            this.setPos(this.position().add(this.watchedVelocity));
+            this.extrapolatedTicks++;
+        } else if (interpolating) {
+            this.extrapolatedTicks = 0;
         }
     }
 

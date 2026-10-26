@@ -116,6 +116,8 @@ public abstract class BaseBulletEntity extends Entity implements WeaponTargets.P
     protected boolean doingTopAttack = false;
     private boolean speedAddedFromAircraft = false;
     private int countOnUpdate = 0;
+    /** M9 lag compensation: ticks a player's shot rewinds vehicles by, fixed when it is fired. */
+    private int rewindTicks;
     private int power;
     private @Nullable WeaponInfo weaponInfo;
     private double airburstTravelled = 0.0;
@@ -331,6 +333,7 @@ public abstract class BaseBulletEntity extends Entity implements WeaponTargets.P
         this.shootingAircraft = entity;
         this.shootingEntity = user;
         this.airburstDist = w.airburstDist;
+        this.rewindTicks = io.github.mcheliceport.combat.LagCompensation.rewindTicksFor(user);
     }
 
     public void setParameterFromWeapon(BaseBulletEntity b, @Nullable Entity entity, @Nullable Entity user) {
@@ -341,6 +344,7 @@ public abstract class BaseBulletEntity extends Entity implements WeaponTargets.P
         this.shootingAircraft = entity;
         this.shootingEntity = user;
         this.airburstDist = b.airburstDist;
+        this.rewindTicks = b.rewindTicks;
     }
 
     public void setAirburstDist(int airburstDist) {
@@ -686,8 +690,9 @@ public abstract class BaseBulletEntity extends Entity implements WeaponTargets.P
         if (info.ahead && (this.airburstDist <= 5 || this.airburstDist >= 3000)) {
             return;
         }
+        double rewind = this.hitRewindTicks();
         float searchRange = info.proximityFuseDist * 5.0F;
-        List<Entity> nearby = this.level().getEntities(this, this.getBoundingBox().inflate(searchRange));
+        List<Entity> nearby = this.level().getEntities(this, this.getBoundingBox().inflate(searchRange + rewind * 5.0));
         if (nearby.isEmpty()) {
             return;
         }
@@ -715,12 +720,14 @@ public abstract class BaseBulletEntity extends Entity implements WeaponTargets.P
             if (isAircraftTarget && WeaponGuidanceSystem.isEntityOnGround(entity, info.proximityFuseHeight)) {
                 continue;
             }
-            double currentDistance = Math.sqrt(this.distanceToSqr(entity.getX(), entity.getY(), entity.getZ()));
+            // M9: a vehicle is fused against where the shooter saw it, while the missile still rewinds.
+            Vec3 seen = entity.position().add(io.github.mcheliceport.combat.LagCompensation.shift(entity, rewind));
+            double currentDistance = Math.sqrt(this.distanceToSqr(seen.x, seen.y, seen.z));
             double timeToPos = currentDistance / segLen;
             Vec3 em = entity.getDeltaMovement();
-            double predX = entity.getX() + em.x * timeToPos;
-            double predY = entity.getY() + em.y * timeToPos;
-            double predZ = entity.getZ() + em.z * timeToPos;
+            double predX = seen.x + em.x * timeToPos;
+            double predY = seen.y + em.y * timeToPos;
+            double predZ = seen.z + em.z * timeToPos;
             double toPredX = predX - this.getX();
             double toPredY = predY - this.getY();
             double toPredZ = predZ - this.getZ();
@@ -998,16 +1005,39 @@ public abstract class BaseBulletEntity extends Entity implements WeaponTargets.P
         }
     }
 
-    /** The nearest collidable entity whose box (grown by 0.3) the segment crosses. */
+    /** Sets the rewind a shot was fired with (tests; real shots take it from the shooter's latency). */
+    public void setRewindTicks(int ticks) {
+        this.rewindTicks = Math.max(ticks, 0);
+    }
+
+    /**
+     * M9 lag compensation: how many ticks back this projectile tests vehicles. Gun rounds keep the
+     * shooter's rewind for their whole flight; steered weapons (missiles, rockets, bombs) give it
+     * up as they fly, so a missile cannot hit where a dodging target used to be.
+     */
+    public double hitRewindTicks() {
+        if (this.rewindTicks <= 0 || this.level().isClientSide()) {
+            return 0.0;
+        }
+        return this instanceof BulletEntity ? this.rewindTicks : Math.max(0, this.rewindTicks - this.tickCount);
+    }
+
+    /**
+     * The nearest collidable entity whose box (grown by 0.3) the segment crosses. Vehicles are
+     * tested where the shooter saw them ({@link #hitRewindTicks}).
+     */
     protected @Nullable Entity findEntityOnPath(Vec3 from, Vec3 to, double mx, double my, double mz) {
         Entity found = null;
         double d0 = 0.0;
-        AABB search = this.getBoundingBox().expandTowards(mx, my, mz).inflate(21.0);
+        double rewind = this.hitRewindTicks();
+        // A rewound vehicle can be up to one rewind of flight from where it is now (about 5 blocks a tick at most).
+        AABB search = this.getBoundingBox().expandTowards(mx, my, mz).inflate(21.0 + rewind * 5.0);
         for (Entity candidate : this.level().getEntities(this, search)) {
             if (!this.canBeCollidedEntity(candidate)) {
                 continue;
             }
-            Optional<Vec3> intercept = candidate.getBoundingBox().inflate(0.3).clip(from, to);
+            Vec3 shift = io.github.mcheliceport.combat.LagCompensation.shift(candidate, rewind);
+            Optional<Vec3> intercept = candidate.getBoundingBox().move(shift).inflate(0.3).clip(from, to);
             if (intercept.isPresent()) {
                 double d1 = from.distanceTo(intercept.get());
                 if (d1 < d0 || d0 == 0.0) {
@@ -1018,7 +1048,7 @@ public abstract class BaseBulletEntity extends Entity implements WeaponTargets.P
             if (candidate instanceof AircraftEntity aircraft) {
                 for (AircraftHitBox box : aircraft.getHitBoxes()) {
                     if (!box.isPickable()) { continue; }
-                    Optional<Vec3> partHit = box.getBoundingBox().inflate(0.3).clip(from, to);
+                    Optional<Vec3> partHit = box.getBoundingBox().move(shift).inflate(0.3).clip(from, to);
                     if (partHit.isPresent()) {
                         double distance = from.distanceTo(partHit.get());
                         if (found == null || distance < d0) { found = box; d0 = distance; }
