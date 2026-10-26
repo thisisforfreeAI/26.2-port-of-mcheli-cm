@@ -15,6 +15,7 @@ final class WreckEffects {
         var engine=Minecraft.getInstance().particleEngine;
         Vec3 origin=origins.get(Math.floorMod((int)(tick/9+id),origins.size()));
         Vec3 pos=origin.add(Math.sin(tick*.7+id)*.22,.2,Math.cos(tick*.43+id)*.22);
+        CookoffEffects.emit(level,aircraft,cooling,pos);
         int pressure=1+EffectPerformance.pressure();
         if (fire>0 && Math.floorMod(tick+id,5*pressure)==0) {
             float radius=.55F+.55F*fire;

@@ -45,7 +45,7 @@ public final class VehicleAtmosphere {
 
     public static void clear() {
         STATES.values().forEach(State::stop); STATES.clear(); world = null;
-        lastTick = Long.MIN_VALUE; emitted = 0;
+        lastTick = Long.MIN_VALUE; emitted = 0; CookoffEffects.clear();
     }
     public static int stateCount() { return STATES.size(); }
     public static int emitted() { return emitted; }
