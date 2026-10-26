@@ -10,7 +10,7 @@ legacy craters and Claude's NTM integration. Target 60 FPS on RTX 3060 8GB / 780
 | 1 | Finite ammunition cook-off flashes, sparks and pops | Complete |
 | 2 | Chipped/bent rotor variants and restrained wobble | Complete |
 | 3 | Exposed interiors and torn edges behind missing panels | Complete |
-| 4 | Weapon heat, discoloration, shimmer and cooling smoke | Pending |
+| 4 | Weapon heat, discoloration, shimmer and cooling smoke | Complete |
 | 5 | Wet paint, parked snow accumulation and shedding | Pending |
 | 6 | Stronger wakes, shallow-water spray and debris splashes | Pending |
 | 7 | Terrain buildup on lower panels and exhaust soot | Pending |
@@ -43,3 +43,13 @@ Geometry builds off-thread; 32 cached panels and four pending jobs bound loading
 per-view detail geometry is capped at 4,096/12,288/24,576 vertices and sheds with pressure.
 Native F-35A/F-15E/A-10 checks cover wreck detachment, inserted geometry and repair removal.
 Unknown/oversized parts retain their authored geometry, and gameplay canopy access is unchanged.
+
+## 4. Weapon heat
+
+Real client shot events warm conventional guns; repeated events in the same tick do not
+multiply heat. Ammo families sharing a barrel share temperature. Named/slender gun groups
+receive restrained temper discoloration, heat uses the existing shared refraction pass, and
+small cooling puffs follow the posed barrel tip after firing stops. No barrel or bullet glow,
+overheating damage or firing changes. Thirty-two warm mounts, four cooling puffs per tick and
+shared particle/geometry admission bound cost. `effects.weaponHeat` controls this layer.
+Native M1A2/AH-64/T-90 warmup and cooling previews pass.

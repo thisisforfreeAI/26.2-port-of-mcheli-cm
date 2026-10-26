@@ -46,6 +46,7 @@ public final class ClientConfig {
     public static final ModConfigSpec.BooleanValue ROTOR_WASH_DEBRIS;
     public static final ModConfigSpec.BooleanValue ENGINE_STARTUP_EFFECTS;
     public static final ModConfigSpec.BooleanValue VEHICLE_DAMAGE_DETAILS;
+    public static final ModConfigSpec.BooleanValue WEAPON_HEAT;
     public static final ModConfigSpec.BooleanValue WEAPON_GROUND_EFFECTS;
     public static final ModConfigSpec.IntValue EFFECT_TARGET_FPS;
     public static final ModConfigSpec.IntValue ALIVE_TIME_OF_CARTRIDGE;
@@ -171,6 +172,7 @@ public final class ClientConfig {
                 .define("rotorWashDebris", true);
         ENGINE_STARTUP_EFFECTS = builder.comment("Enhanced engine startup puffs, spooling turbine whine and gradual heat buildup.")
                 .define("engineStartupEffects", true);
+        WEAPON_HEAT = builder.comment("Cosmetic barrel discoloration, shared heat haze and cooling smoke after sustained gunfire.").define("weaponHeat",true);
         VEHICLE_DAMAGE_DETAILS = builder.comment("Cosmetic impact/blast scars, progressive glass cracks, fluid leaks, damaged lamps, loose panels and cooling wrecks.")
                 .define("vehicleDamageDetails", true);
         WEAPON_GROUND_EFFECTS = builder.comment("Brief muzzle illumination and ground dust beneath large guns.")

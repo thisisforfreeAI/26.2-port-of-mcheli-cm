@@ -136,6 +136,9 @@ public final class WeaponClient implements WeaponClientHooks.Hooks {
         }
     }
 
+    @Override public void weaponHeat(Entity shooter,int mount,io.github.mcheliceport.content.weapon.WeaponInfo info,Vec3 position,float yaw,float pitch){
+        io.github.mcheliceport.client.particle.VehicleWeaponHeat.shot(shooter,mount,info,position,yaw,pitch);
+    }
     @Override
     public Vec3 viewPosition() {
         return Minecraft.getInstance().gameRenderer.mainCamera().position();

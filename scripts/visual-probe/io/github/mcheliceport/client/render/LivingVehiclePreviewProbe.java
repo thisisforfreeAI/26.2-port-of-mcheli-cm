@@ -21,7 +21,7 @@ import net.neoforged.neoforge.client.event.*;
 public final class LivingVehiclePreviewProbe {
     private static final int STEP=Integer.getInteger("mcheli.livingPreview",0);
     private static final String[] NAMES=STEP==2?new String[]{"ah-64","mh-60l_dap","mh-6"}
-            :STEP==3?new String[]{"f-35a","f-15e","a-10"}:new String[]{"m1a2","ah-64","f-35a"};
+            :STEP==3?new String[]{"f-35a","f-15e","a-10"}:STEP==4?new String[]{"m1a2","ah-64","t-90"}:new String[]{"m1a2","ah-64","f-35a"};
     private static int ticks,phase=-1,age,lastPops,captureTick=-1;
     private static AircraftEntity vehicle;private static String capture;
     private static int damage(AircraftEntity e){return (int)(e.getMaxHP()*(STEP==1?(age>40?1:.3):STEP==2?(age<100?.05:.92):STEP==3?(age<130?.5:age<190?.96:0):.05));}
@@ -55,12 +55,12 @@ public final class LivingVehiclePreviewProbe {
             if(!mc.gui.hud.isHidden())mc.gui.hud.toggle();
             ClientConfig.EFFECT_QUALITY.set(EffectQuality.ENHANCED);ClientConfig.EFFECT_STYLE.set(ClientConfig.EffectStyle.POLISHED);
             ClientConfig.EFFECT_BUDGET.set(ClientConfig.EffectBudget.BALANCED);ClientConfig.ADAPTIVE_EFFECTS.set(false);
-            ClientConfig.VEHICLE_DAMAGE_DETAILS.set(true);ClientConfig.ENGINE_STARTUP_EFFECTS.set(false);ClientConfig.ENGINE_HEAT_HAZE.set(false);
+            ClientConfig.VEHICLE_DAMAGE_DETAILS.set(true);ClientConfig.ENGINE_STARTUP_EFFECTS.set(false);ClientConfig.ENGINE_HEAT_HAZE.set(STEP==4);ClientConfig.WEAPON_HEAT.set(true);
         }
         if(ticks<160)return;int next=(ticks-160)/220;age=(ticks-160)%220;
         if(next>=NAMES.length){mc.stop();return;}
         if(phase!=next){
-            phase=next;if(vehicle!=null)vehicle.discard();mc.particleEngine.clearParticles();VehicleAtmosphere.clear();VehicleImpactMarks.clear();LoosePanels.clear();PanelInteriors.clear();
+            phase=next;if(vehicle!=null)vehicle.discard();mc.particleEngine.clearParticles();VehicleAtmosphere.clear();VehicleWeaponHeat.clear();VehicleImpactMarks.clear();LoosePanels.clear();PanelInteriors.clear();
             vehicle=ContentRegistries.plane().get(NAMES[phase])!=null?new Plane(mc):ContentRegistries.heli().get(NAMES[phase])!=null?new Heli(mc):new Tank(mc);
             vehicle.setId(975000+phase);vehicle.setAircraftTypeName(NAMES[phase]);vehicle.setTextureName(NAMES[phase]);vehicle.setPos(0,-60,20);
             var parts=vehicle.getParts();for(int i=0;i<parts.length;i++)parts[i].setId(985000+phase*100+i);
@@ -69,6 +69,15 @@ public final class LivingVehiclePreviewProbe {
             System.out.println("M8_LIVING stage="+STEP+" vehicle="+NAMES[phase]);
         }
         if(age==95||age==145||age==180||STEP==3&&age==205)capture=NAMES[phase]+"-age"+age;
+        if(STEP==4){
+            if(age>=50&&age<130&&age%3==0)for(int i=0;i<vehicle.getWeaponNum();i++){
+                var set=vehicle.getWeapon(i);if(set==null||set.getFirstWeapon()==null)continue;
+                var weapon=set.getFirstWeapon();var info=weapon.getInfo();
+                if(info!=null&&!info.useHBM&&(info.type.equals("machinegun1")||info.type.equals("machinegun2")))
+                    {io.github.mcheliceport.weapon.WeaponClientHooks.weaponHeat(vehicle,i,info,vehicle.position().add(weapon.getShotPos(vehicle)),vehicle.getYaw(),vehicle.getPitch());break;}
+            }
+            if(age==145){if(VehicleWeaponHeat.hottest(vehicle)<.7F)throw new IllegalStateException("Missing weapon heat");System.out.println("M8_LIVING weapon_heat="+VehicleWeaponHeat.hottest(vehicle));}
+        }
         if(STEP==3&&(age==145||age==180||age==205)){
             if(age<190&&(!LoosePanels.detached(vehicle)||PanelInteriors.renderedVertices()==0))throw new IllegalStateException("Missing exposed interior");
             if(age==205&&LoosePanels.detached(vehicle))throw new IllegalStateException("Repair retained interior");
@@ -90,6 +99,7 @@ public final class LivingVehiclePreviewProbe {
     }
     @SubscribeEvent public static void camera(ViewportEvent.ComputeFov event){
         if(STEP==0||vehicle==null)return;
+        if(STEP==4){event.getCamera().setPosition(VehicleWeaponHeat.hotPoint(vehicle).add(3.5,1.2,1));return;}
         Vec3 at=STEP==1?VehicleAtmosphere.wreckOrigins(vehicle).getFirst():vehicle.position().add(0,3,0);
         if(STEP==3){
             var models=io.github.mcheliceport.client.model.AircraftModels.peek(vehicle.getAcInfo());
@@ -101,7 +111,7 @@ public final class LivingVehiclePreviewProbe {
         event.getCamera().setPosition(at.add(STEP==1?new Vec3(7,3,-6):STEP==2?new Vec3(10,10,7):STEP==3?new Vec3(4.5,2.5,3.5):new Vec3(8,3,5)));
     }
     @SubscribeEvent public static void angles(ViewportEvent.ComputeCameraAngles event){
-        if(STEP==0||vehicle==null)return;event.setYaw(STEP==1?49:STEP==2?125:STEP==3?128:122);event.setPitch(STEP==1?18:STEP==2?39:STEP==3?21:17);event.setRoll(0);
+        if(STEP==0||vehicle==null)return;event.setYaw(STEP==4?106:STEP==1?49:STEP==2?125:STEP==3?128:122);event.setPitch(STEP==4?18:STEP==1?18:STEP==2?39:STEP==3?21:17);event.setRoll(0);
     }
     @SubscribeEvent public static void frame(RenderFrameEvent.Post event){
         if(capture==null)return;var mc=Minecraft.getInstance();String name=capture;capture=null;

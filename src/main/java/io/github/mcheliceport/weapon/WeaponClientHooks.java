@@ -18,6 +18,7 @@ public final class WeaponClientHooks {
 
     /** The client's side of the weapon code. Only called on the client thread. */
     public interface Hooks {
+        default void weaponHeat(net.minecraft.world.entity.Entity shooter,int mount,io.github.mcheliceport.content.weapon.WeaponInfo info,Vec3 position,float yaw,float pitch){}
         default void vehicleImpact(io.github.mcheliceport.net.VehicleImpactPayload payload) {}
         /** Cosmetic shot details; the existing client shot state supplies authority and timing. */
         default void weaponShot(Level level, Vec3 position, Vec3 motion, io.github.mcheliceport.content.weapon.WeaponInfo info,
@@ -102,6 +103,9 @@ public final class WeaponClientHooks {
         }
     }
 
+    public static void weaponHeat(net.minecraft.world.entity.Entity shooter,int mount,io.github.mcheliceport.content.weapon.WeaponInfo info,Vec3 position,float yaw,float pitch){
+        Hooks h=hooks;if(h!=null&&shooter.level().isClientSide())h.weaponHeat(shooter,mount,info,position,yaw,pitch);
+    }
     public static void weaponShot(Level level, Vec3 position, Vec3 motion, io.github.mcheliceport.content.weapon.WeaponInfo info,
             float yaw, float pitch) {
         Hooks h = hooks;
