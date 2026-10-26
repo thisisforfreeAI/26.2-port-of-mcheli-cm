@@ -36,18 +36,21 @@ public final class DestructionPreviewProbe {
         @Override public void tick(){DestructionPreviewProbe.move(this);}
         @Override public int getDamageTaken(){return DestructionPreviewProbe.damage(this);}
         @Override public boolean isSearchLightOn(){return STEP==4 || super.isSearchLightOn();}
+        @Override public boolean isDestroyed(){return STEP==5&&age>40 || super.isDestroyed();}
     }
     private static final class Heli extends HeliEntity {
         Heli(Minecraft mc){super(ModEntityTypes.HELICOPTER.get(),mc.level);}
         @Override public void tick(){DestructionPreviewProbe.move(this);}
         @Override public int getDamageTaken(){return DestructionPreviewProbe.damage(this);}
         @Override public boolean isSearchLightOn(){return STEP==4 || super.isSearchLightOn();}
+        @Override public boolean isDestroyed(){return STEP==5&&age>40 || super.isDestroyed();}
     }
     private static final class Plane extends PlaneEntity {
         Plane(Minecraft mc){super(ModEntityTypes.PLANE.get(),mc.level);}
         @Override public void tick(){DestructionPreviewProbe.move(this);}
         @Override public int getDamageTaken(){return DestructionPreviewProbe.damage(this);}
         @Override public boolean isSearchLightOn(){return STEP==4 || super.isSearchLightOn();}
+        @Override public boolean isDestroyed(){return STEP==5&&age>40 || super.isDestroyed();}
     }
     private static void commands(Minecraft mc,String...c){for(String s:c)mc.player.connection.sendCommand(s);}
     @SubscribeEvent public static void tick(ClientTickEvent.Post event){
@@ -102,6 +105,11 @@ public final class DestructionPreviewProbe {
             if(strengths.isEmpty())throw new IllegalStateException("No authored lamps");
             System.out.println("M8_DESTRUCTION lamps_age="+age+" strength="+strengths);
         }
+        if(STEP==5&&age==180){
+            int burnAge=VehicleAtmosphere.wreckAge(vehicle);
+            if(burnAge<130||burnAge>150)throw new IllegalStateException("Wrong fresh wreck age: "+burnAge);
+            System.out.println("M8_DESTRUCTION wreck_age="+burnAge);
+        }
         if(age==200){
             System.out.println("M8_DESTRUCTION state_count="+VehicleAtmosphere.stateCount()+" emitted="+VehicleAtmosphere.emitted());
             if(STEP==2){
@@ -119,6 +127,9 @@ public final class DestructionPreviewProbe {
         if(STEP==2){
             var origin=VehicleAtmosphere.origins(vehicle).getFirst();
             e.getCamera().setPosition(new Vec3(origin.x,vehicle.getY(),origin.z).add(5.2,1.2,-2.5));
+        }else if(STEP==5){
+            var origin=VehicleAtmosphere.origins(vehicle).getFirst();
+            e.getCamera().setPosition(new Vec3(origin.x,vehicle.getY()+4,origin.z).add(9,0,.5));
         }else e.getCamera().setPosition(vehicle.position().add(STEP==4?(phase==0?new Vec3(5,2,8):new Vec3(12,5,18)):STEP==3?new Vec3(6,2.3,0):new Vec3(15,5,1)));
     }
     @SubscribeEvent public static void frame(RenderFrameEvent.Post event){

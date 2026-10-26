@@ -10,7 +10,7 @@ RTX 3060 8GB / Ryzen 7 7800X3D at 1080p. Hardware FPS needs target-PC verificati
 | 2 | Coolant/oil leaks and temporary ground stains | Complete |
 | 3 | Directional tumbling metal fragments | Complete |
 | 4 | Flickering/failing damaged lights and local sparks | Complete |
-| 5 | Wreck fires, embers and cooling smoke that die away | Pending |
+| 5 | Wreck fires, embers and cooling smoke that die away | Complete |
 | 6 | Localized blast soot, exposed metal and panel smoke | Pending |
 | 7 | Rattling and detachable small authored panels | Pending |
 | 8 | Progressive cracks on identifiable glazing | Pending |
@@ -59,3 +59,14 @@ No world light-engine work. Native healthy/damaged Growler, Mi-24PS and An-2 com
 and 308 local unit tests pass.
 
 ![Growler damaged lamps](screens/m8-destruction-04-damaged-lights.png)
+
+## 5. Cooling wrecks
+
+Fresh wrecks develop small fire pockets and rising embers. Fire ends after 12 seconds;
+smoke becomes cooler and sparser, then stops after 50 seconds. Seeing an already destroyed
+vehicle starts with cooling smoke, avoiding replayed fire. Flames/smoke share the existing
+8/16/24 atmosphere births-per-tick cap; no gameplay fire blocks or damage are added.
+
+Native previews on three stock vehicles and 310 local unit tests pass.
+
+![Cooling wrecks](screens/m8-destruction-05-cooling-wrecks.png)

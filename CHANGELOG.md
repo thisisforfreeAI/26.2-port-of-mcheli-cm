@@ -13,6 +13,7 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 ## [0.6.0] - 2026-10-25 (M6 preview: gameplay and multiplayer)
 
 ### Added
+- Cooling wrecks add bounded cosmetic vehicle destruction detail.
 - Authored vehicle lamps flicker, dim or fail with damage, with local cosmetic sparks.
 - Fitted vehicle impacts shed bounded, directional tumbling metal fragments.
 - Damaged vehicles shed cosmetic oil/coolant drips and temporary ground-fitted wet stains.

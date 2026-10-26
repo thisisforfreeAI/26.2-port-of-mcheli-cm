@@ -31,6 +31,7 @@ public final class VehicleAtmosphere {
     private static int emitted;
     private static final class State {
         final VehicleAtmosphereLook engine = new VehicleAtmosphereLook();
+        final WreckCoolingLook cooling = new WreckCoolingLook();
         Whine whine;
         void stop() { if (whine != null) { whine.finish(); whine = null; } }
     }
@@ -48,6 +49,7 @@ public final class VehicleAtmosphere {
     }
     public static int stateCount() { return STATES.size(); }
     public static int emitted() { return emitted; }
+    public static int wreckAge(AircraftEntity ac) { var state=STATES.get(ac);return state==null?-1:state.cooling.age(); }
     public static long startupVoiceCount() {
         return STATES.values().stream().filter(s -> s.whine != null
                 && Minecraft.getInstance().getSoundManager().isActive(s.whine)).count();
@@ -81,6 +83,7 @@ public final class VehicleAtmosphere {
                 if (STATES.size() >= 128) continue;
                 state = new State(); STATES.put(aircraft, state);
             }
+            state.cooling.tick(aircraft.isDestroyed());
             boolean powered = !aircraft.isDestroyed() && aircraft.canUseFuel();
             state.engine.tick(aircraft.getCurrentThrottle(), powered);
             if (!ClientConfig.get(ClientConfig.ENGINE_STARTUP_EFFECTS)) state.stop();
@@ -116,7 +119,7 @@ public final class VehicleAtmosphere {
                             state.engine.startup() * 0.3F, 22, 0.76F, 0.79F, 0.82F);
                 }
             }
-            if (ClientConfig.get(ClientConfig.VEHICLE_DAMAGE_DETAILS)) damage(level, aircraft, origins, now);
+            if (ClientConfig.get(ClientConfig.VEHICLE_DAMAGE_DETAILS)) damage(level, aircraft, origins, now, state.cooling);
         }
     }
 
@@ -146,7 +149,8 @@ public final class VehicleAtmosphere {
         return result;
     }
 
-    private static void damage(ClientLevel level, AircraftEntity aircraft, List<Vec3> origins, long now) {
+    private static void damage(ClientLevel level, AircraftEntity aircraft, List<Vec3> origins, long now, WreckCoolingLook cooling) {
+        if (aircraft.isDestroyed()) { WreckEffects.emit(level,origins,cooling,aircraft,now); return; }
         float severity = VehicleAtmosphereLook.damage(aircraft.getHP(), aircraft.getMaxHP());
         if (severity == 0) return;
         if (aircraft.isSearchLightOn() && severity > .4F && EffectPerformance.optionalGlows()
