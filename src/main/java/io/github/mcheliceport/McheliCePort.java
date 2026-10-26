@@ -71,6 +71,7 @@ public final class McheliCePort {
         io.github.mcheliceport.wingman.handler.WingmanTickHandler.register();
         io.github.mcheliceport.combat.LagCompensation.register();
         io.github.mcheliceport.combat.WatcherMotion.register();
+        io.github.mcheliceport.combat.AntiCheat.register();
     }
 
     private void commonSetup(FMLCommonSetupEvent event) {

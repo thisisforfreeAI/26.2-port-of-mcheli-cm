@@ -408,9 +408,32 @@ public final class ModNetwork {
         } else {
             net.minecraft.world.entity.Entity target = player.level().getEntity(targetId);
             if (target != null) {
+                if (!bvrTargetValid(ac, player, target)) {
+                    if (player instanceof ServerPlayer sp) {
+                        io.github.mcheliceport.combat.AntiCheat.violation(sp,
+                                io.github.mcheliceport.combat.AntiCheat.Check.LOCK_TARGET,
+                                "BVR lock on " + target.getType().getDescriptionId());
+                    }
+                    return;
+                }
                 gs.setTarget(target);
             }
         }
+    }
+
+    /**
+     * M9: a BVR lock must name a live target within the radar feed's range that is not the shooter,
+     * its vehicle or anyone aboard it.
+     */
+    public static boolean bvrTargetValid(AircraftEntity ac, Player player, Entity target) {
+        if (!target.isAlive() || target == player || target == ac || ac.isMountedEntity(target)
+                || target.getRootVehicle() == ac) {
+            return false;
+        }
+        double dx = target.getX() - ac.getX();
+        double dz = target.getZ() - ac.getZ();
+        double range = io.github.mcheliceport.radar.EntityInfoFeed.RANGE;
+        return dx * dx + dz * dz <= range * range;
     }
 
     public static @Nullable AircraftEntity riddenAircraft(Player player) {
@@ -668,7 +691,36 @@ public final class ModNetwork {
         if (aircraft == null || aircraft.getId() != p.entityId()) {
             return;
         }
+        if (player instanceof ServerPlayer sp) {
+            p = screenWeaponControl(aircraft, sp, p);
+        }
         applyWeaponControl(aircraft, player, p);
+    }
+
+    /**
+     * M9 anti-cheat on a player's fire packet: too many fire packets or an impossible aim drop the
+     * shot; an implausible fire origin is replaced by the vehicle's server position. Each failure
+     * is recorded ({@link io.github.mcheliceport.combat.AntiCheat}). Everything but the shot passes.
+     */
+    public static WeaponControlPayload screenWeaponControl(AircraftEntity aircraft, ServerPlayer player,
+            WeaponControlPayload p) {
+        if (!p.useWeapon()) {
+            return p;
+        }
+        if (!io.github.mcheliceport.combat.AntiCheat.allowFirePacket(player)) {
+            return p.withoutUseWeapon();
+        }
+        if (!io.github.mcheliceport.combat.AntiCheat.aimValid(p.userYaw(), p.userPitch())) {
+            io.github.mcheliceport.combat.AntiCheat.violation(player, io.github.mcheliceport.combat.AntiCheat.Check.AIM,
+                    "aim " + p.userYaw() + "/" + p.userPitch());
+            return p.withoutUseWeapon();
+        }
+        if (!Double.isFinite(p.x()) || !Double.isFinite(p.y()) || !Double.isFinite(p.z())
+                || !io.github.mcheliceport.combat.AntiCheat.checkOrigin(player, aircraft, p.x(), p.y(), p.z())) {
+            return p.withUseWeapon(p.option1(), p.option2(), aircraft.getX(), aircraft.getY(), aircraft.getZ(),
+                    p.userYaw(), p.userPitch());
+        }
+        return p;
     }
 
     /** Upstream {@code PacketPlayerControlBase}'s weapon switch, use weapon and flare handling. */

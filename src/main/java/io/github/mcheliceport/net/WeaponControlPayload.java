@@ -84,6 +84,12 @@ public record WeaponControlPayload(int entityId, byte switchWeapon, boolean useW
                 this.flareType, this.reload, this.useChaff, this.useAps, this.useEcm);
     }
 
+    /** The same controls without the shot (M9 anti-cheat drops it). */
+    public WeaponControlPayload withoutUseWeapon() {
+        return new WeaponControlPayload(this.entityId, this.switchWeapon, false, 0, 0, 0.0, 0.0, 0.0, 0.0F, 0.0F,
+                this.flareType, this.reload, this.useChaff, this.useAps, this.useEcm);
+    }
+
     public WeaponControlPayload withFlare(int type) {
         return new WeaponControlPayload(this.entityId, this.switchWeapon, this.useWeapon, this.option1, this.option2,
                 this.x, this.y, this.z, this.userYaw, this.userPitch, (byte) type, this.reload, this.useChaff,
