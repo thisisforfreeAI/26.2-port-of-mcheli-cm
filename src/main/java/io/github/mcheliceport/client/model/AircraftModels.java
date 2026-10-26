@@ -283,6 +283,7 @@ public final class AircraftModels {
         protected Map<String, Entry> prepare(ResourceManager manager, ProfilerFiller profiler) {
             VehicleImpactSurface.clear();
             VehicleSkinMeshes.clear();
+            io.github.mcheliceport.client.render.SmallVehicleMotion.clear();
             io.github.mcheliceport.client.render.RotorDamage.clear();
             io.github.mcheliceport.client.render.PanelInteriors.clear();
             if (ClientConfig.get(ClientConfig.ON_DEMAND_MODELS)) {

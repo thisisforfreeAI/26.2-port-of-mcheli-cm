@@ -47,6 +47,7 @@ public final class ClientConfig {
     public static final ModConfigSpec.BooleanValue ENGINE_STARTUP_EFFECTS;
     public static final ModConfigSpec.BooleanValue VEHICLE_DAMAGE_DETAILS;
     public static final ModConfigSpec.BooleanValue WEAPON_HEAT;
+    public static final ModConfigSpec.BooleanValue VEHICLE_SMALL_MOTION;
     public static final ModConfigSpec.BooleanValue VEHICLE_SURFACE_BUILDUP;
     public static final ModConfigSpec.BooleanValue VEHICLE_WEATHER;
     public static final ModConfigSpec.BooleanValue VEHICLE_WATER_DETAILS;
@@ -176,6 +177,7 @@ public final class ClientConfig {
         ENGINE_STARTUP_EFFECTS = builder.comment("Enhanced engine startup puffs, spooling turbine whine and gradual heat buildup.")
                 .define("engineStartupEffects", true);
         VEHICLE_WATER_DETAILS = builder.comment("Bounded V wakes, shallow-water spray and detached-panel splashes.").define("vehicleWaterDetails",true);
+        VEHICLE_SMALL_MOTION = builder.comment("Flexible supported antennas, authored nozzle-cover vibration and hanging exposed cables.").define("vehicleSmallMotion",true);
         VEHICLE_SURFACE_BUILDUP = builder.comment("Mud and dust on lower panels, washed by water and rain; soot near exhausts.").define("vehicleSurfaceBuildup",true);
         VEHICLE_WEATHER = builder.comment("Rain darkens paint; cold precipitation collects on parked vehicles and sheds with movement.").define("vehicleWeather",true);
         WEAPON_HEAT = builder.comment("Cosmetic barrel discoloration, shared heat haze and cooling smoke after sustained gunfire.").define("weaponHeat",true);

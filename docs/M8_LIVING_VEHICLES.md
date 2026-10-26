@@ -14,7 +14,7 @@ legacy craters and Claude's NTM integration. Target 60 FPS on RTX 3060 8GB / 780
 | 5 | Wet paint, parked snow accumulation and shedding | Complete |
 | 6 | Stronger wakes, shallow-water spray and debris splashes | Complete |
 | 7 | Terrain buildup on lower panels and exhaust soot | Complete |
-| 8 | Flexible antennas, vibrating covers and loose cables | Pending |
+| 8 | Flexible antennas, vibrating covers and loose cables | Complete |
 
 No new damage, secondary craters, gameplay entities or world-light updates. Prefer authored
 anchors, cached geometry and existing render pipelines. Unknown model parts stay intact.
@@ -78,3 +78,12 @@ Lower panels gradually collect irregular dust/mud on loose soil and sand. Parkin
 rain and water wash it away. Running engines leave restrained soot near authored outlets, with
 a rear-deck fallback on tanks. Four ground probes per tick, 64 states and cached overlay meshes
 bound cost. `effects.vehicleSurfaceBuildup` controls it. M1A2/AH-64/F-35A native previews pass.
+
+## 8. Small moving details
+
+Audited M1A2/T-90 antenna triangles are split into two flexible segments on the loader,
+preserving source UVs and unrelated geometry. Authored plane nozzle covers vibrate slightly
+under power; absent parts are skipped. Two short segmented cables hang behind supported missing
+panels, sharing the overlay vertex allowance. Sixteen cached groups and four pending jobs bound
+loading. `effects.vehicleSmallMotion` controls it. Native M1A2/T-90/F-35B checks pass; the F-35B
+has the authored nozzle assembly required for that example. Unknown add-on geometry stays intact.
