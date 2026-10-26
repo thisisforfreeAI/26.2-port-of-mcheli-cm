@@ -94,6 +94,11 @@ public final class LagCompensation {
         return out[0] == 0.0 && out[1] == 0.0 && out[2] == 0.0 ? Vec3.ZERO : new Vec3(out[0], out[1], out[2]);
     }
 
+    /** The vehicle's recorded positions, or null before its first server tick. */
+    public static @Nullable PoseHistory history(AircraftEntity aircraft) {
+        return HISTORY.get(aircraft);
+    }
+
     private static @Nullable AircraftEntity vehicleOf(Entity target) {
         if (target instanceof AircraftEntity aircraft) {
             return aircraft;

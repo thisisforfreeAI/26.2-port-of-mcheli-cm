@@ -27,7 +27,8 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
 public final class EntityInfoFeed {
 
     private static final int INTERVAL = 10;
-    private static final double RANGE = 2000.0;
+    /** Horizontal range of the feed, which is also how far a BVR lock may reach. */
+    public static final double RANGE = 2000.0;
     private static int tickCounter;
     private static long snapshotSeq;
 
