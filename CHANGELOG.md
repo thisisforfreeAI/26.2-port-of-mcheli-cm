@@ -17,6 +17,11 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
   ahead of where a 150 ms shooter sees it; those hits now land. Missiles and rockets rewind only for
   that long after launch, so a dodge still beats them. Blocks, mobs and players on foot are never
   rewound, and explosions still go off where things are now.
+- Smoother fast vehicles and missiles (M9): the server sends watching players the velocity of
+  vehicles moving faster than 1 block a tick. Their clients interpolate at an even speed and, when a
+  position update is late, keep the vehicle moving for up to 4 ticks instead of stopping and
+  snapping forward. Guided missiles (AA, AS, AT, TV) now update every 2 ticks instead of 5. Clients
+  without this version keep the old interpolation.
 
 ## [0.6.0] - 2026-10-25 (M6 preview: gameplay and multiplayer)
 

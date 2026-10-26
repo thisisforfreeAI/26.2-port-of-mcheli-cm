@@ -70,6 +70,7 @@ public final class McheliCePort {
         io.github.mcheliceport.radar.EntityInfoFeed.register();
         io.github.mcheliceport.wingman.handler.WingmanTickHandler.register();
         io.github.mcheliceport.combat.LagCompensation.register();
+        io.github.mcheliceport.combat.WatcherMotion.register();
     }
 
     private void commonSetup(FMLCommonSetupEvent event) {

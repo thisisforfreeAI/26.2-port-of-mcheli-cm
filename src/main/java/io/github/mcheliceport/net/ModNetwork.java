@@ -63,6 +63,13 @@ public final class ModNetwork {
         // Optional addition: older clients keep the existing protocol and simply receive no marks.
         event.registrar(VERSION).optional().playToClient(VehicleImpactPayload.TYPE,VehicleImpactPayload.CODEC,
                 (p,context)->{var hooks=WeaponClientHooks.get();if(hooks!=null)hooks.vehicleImpact(p);});
+        event.registrar(VERSION).optional().playToClient(VehicleMotionPayload.TYPE, VehicleMotionPayload.CODEC,
+                (p, context) -> {
+                    if (p.valid() && context.player().level().getEntity(p.entityId())
+                            instanceof io.github.mcheliceport.entity.aircraft.AircraftEntity aircraft) {
+                        aircraft.setWatchedVelocity(new net.minecraft.world.phys.Vec3(p.vx(), p.vy(), p.vz()));
+                    }
+                });
         registrar.playToServer(UavRosterActionPayload.TYPE, UavRosterActionPayload.CODEC, (p, context) -> {
             if (context.player().containerMenu instanceof io.github.mcheliceport.menu.UavStationMenu menu) { menu.rosterAction(context.player(), p); }
         });
