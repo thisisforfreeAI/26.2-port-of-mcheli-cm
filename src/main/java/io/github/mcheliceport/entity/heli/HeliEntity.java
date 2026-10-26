@@ -463,7 +463,18 @@ public class HeliEntity extends AircraftEntity implements HeliFlightModel.Body {
 
     /** Upstream {@code onUpdate_Server}, run by whichever side moves the heli. */
     private void onUpdateSimulation() {
-        HeliFlightModel.physics(this, this.params(), this.isHovering(), this.isDestroyed(), this.canFloatWater());
+        HeliFlightModel.Params p = this.params();
+        HeliFlightModel.physics(this, p, this.isHovering(), this.isDestroyed(), this.canFloatWater());
+        // M9e: no power to the rotor autorotates, a hurt tail rotor yaws the helicopter.
+        if (io.github.mcheliceport.damage.ComponentEffects.autorotating(this)
+                && this.motionY() < -io.github.mcheliceport.damage.ComponentEffects.AUTOROTATION_SINK) {
+            this.setMotion(this.motionX(), -io.github.mcheliceport.damage.ComponentEffects.AUTOROTATION_SINK,
+                    this.motionZ());
+        }
+        if (!this.isDestroyed()) {
+            this.addPhysicsYaw(io.github.mcheliceport.damage.ComponentEffects.tailDrift(this,
+                    this.getDeltaMovement().horizontalDistance(), p.speed()));
+        }
         this.breakSoftBlocks();
     }
 

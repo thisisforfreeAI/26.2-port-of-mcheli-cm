@@ -34,7 +34,16 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
   Hull damage and time to kill are unchanged. Repairs heal components with the hull, the worst
   first, and a full repair heals them all. Component health is saved with the vehicle and its item
   and synced to every client through a read-only API (`damage.VehicleComponents`) for damage visuals
-  and addons. Damaged components do not change flight yet.
+  and addons.
+- Damaged vehicles limp home (M9e). Planes keep the mean thrust of their engines (a damaged one
+  gives 60%), so a twin jet with one engine out flies home on half power and one with none glides.
+  Helicopters lose power the same way (70% per damaged engine) and to a damaged main rotor (75%);
+  with no engine or a dead main rotor they autorotate, sinking at most 0.4 blocks a tick. A hurt
+  tail rotor yaws a powered helicopter in a hover, less the faster it flies, and not at all past 60%
+  of its top speed. Tanks, cars and ships crawl at 25% with every engine out. A damaged fuel tank
+  leaks 1% of its capacity every 5 seconds, a disabled one every second; it never explodes. While
+  anything is hurt, a strip at the right of the HUD shows each part (`E1 E2 R T F`) in green, amber
+  or red. A repair now also heals components when the hull is already whole.
 
 ## [0.6.0] - 2026-10-25 (M6 preview: gameplay and multiplayer)
 

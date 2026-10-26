@@ -96,6 +96,7 @@ public final class ModGameTests {
         LagCompensationGameTests.register();
         AntiCheatGameTests.register();
         ComponentDamageGameTests.register();
+        ComponentEffectsGameTests.register();
         if (System.getProperty("neoforge.enabledGameTestNamespaces") != null) {
             ChargerGameTests.registerTestBattery(modBus);
         }

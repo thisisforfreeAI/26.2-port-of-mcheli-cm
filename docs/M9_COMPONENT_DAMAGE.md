@@ -65,9 +65,34 @@ The list order is fixed per vehicle type. Listeners run on the side where the ch
 grow scorch on a hit tank, and fade on repair. M9 does not change the M8 decal code or the impact
 payload.
 
+## Flight effects (M9e)
+
+`damage.ComponentEffects` turns component states into limits. Everything reads the synced health,
+so the pilot's client, which flies the vehicle, and the server agree.
+
+| Component | Damaged | Disabled |
+|---|---|---|
+| Plane engine | 60% of its share of thrust | 0; the throttle cap is the mean over engines |
+| Helicopter engine | 70% of its share | 0; no engine left means autorotation |
+| Ground or ship engine | throttle capped at 70% | 70% while another runs, 25% with none |
+| Main rotor | throttle capped at 75% | autorotation |
+| Tail rotor | 0.5°/tick yaw at full throttle | 2°/tick |
+| Fuel tank | leaks 1% every 100 ticks | 1% every 20 ticks |
+
+- The cap is applied in `AircraftEntity.setCurrentThrottle`, so every flight model sees it
+  without changes of its own. It is cached per packed health value.
+- Autorotation: after the helicopter physics, an unpowered helicopter's sink is clamped to
+  0.4 blocks a tick, so it can be flared onto the ground. It still steers.
+- Tail drift scales with throttle (the main rotor's torque) and fades linearly to nothing at 60%
+  of the type's top speed, so a helicopter with a dead tail rotor flies home fast and lands with
+  little power. The yaw is sent like a pilot's turn.
+- Leaks run on the server and never set the vehicle on fire.
+- The HUD strip (`client.hud.ComponentStatusLayer`) appears only while some component is hurt:
+  `E` (numbered when there are several), `R` main rotor, `T` tail rotor, `F` fuel tank, in green,
+  amber or red.
+
 ## Not yet
 
-- Flight effects of damaged and disabled components, and the HUD strip: M9e.
 - A `DamageZones:` list in vehicle YAML to place zones by hand for addon vehicles. Until then an
   addon can mark engine boxes with `Type: ENGINE`.
 
@@ -79,3 +104,12 @@ payload.
 - `component_damage_hits_repair_save` (GameTest, stock AH-64): a round entering one engine damages
   only that engine and the hull; a blast at the tail damages the tail rotor; health saves, loads,
   heals on a partial repair and resets on a full one.
+- `ComponentEffectsTest` (unit): throttle caps per frame, tail drift against throttle and speed,
+  leak rates.
+- `component_effects_twin_engine_plane` (GameTest): a stock twin-engine plane gets half throttle
+  with one engine out, none with both, and full again after a repair.
+- `component_effects_heli_autorotates` (GameTest, AH-64): engines out, it has no power and sinks
+  at most 0.4 blocks a tick from 60 blocks up; an intact unpowered one falls faster.
+- `component_effects_tail_rotor_and_leak` (GameTest, AH-64): a dead tail rotor keeps engine power,
+  spins the helicopter at 2°/tick in a hover and not at all at speed; a holed tank leaks 1% a
+  second without exploding.

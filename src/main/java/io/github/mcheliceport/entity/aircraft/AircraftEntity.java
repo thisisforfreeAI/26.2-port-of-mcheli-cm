@@ -242,6 +242,8 @@ public abstract class AircraftEntity extends Entity
     private boolean isParachuting;
     /** Client: the pilot turned the vehicle this tick, so its attitude goes to the server. */
     public boolean rotationChanged;
+    private long throttleCapFor = io.github.mcheliceport.damage.ComponentHealth.FULL;
+    private double throttleCap = 1.0;
     public boolean rollReversed;
     public float thirdPersonDist = 4.0F;
     private boolean switchSeat;
@@ -898,7 +900,28 @@ public abstract class AircraftEntity extends Entity
     }
 
     public void setCurrentThrottle(double throttle) {
-        this.currentThrottle = throttle;
+        this.currentThrottle = Math.min(throttle, this.componentThrottleCap());
+    }
+
+    /** M9e: the highest throttle the vehicle's engines and rotors allow, 1 when intact. */
+    public double componentThrottleCap() {
+        long health = this.getComponentHealth();
+        if (health == io.github.mcheliceport.damage.ComponentHealth.FULL) {
+            return 1.0;
+        }
+        if (health != this.throttleCapFor) {
+            this.throttleCap = io.github.mcheliceport.damage.ComponentEffects.throttleCap(this);
+            this.throttleCapFor = health;
+        }
+        return this.throttleCap;
+    }
+
+    /** M9e: turns the vehicle by a yaw the physics adds (a hurt tail rotor), sent like a pilot's turn. */
+    public void addPhysicsYaw(float degrees) {
+        if (degrees != 0.0F) {
+            this.setYRot(this.getYRot() + degrees);
+            this.rotationChanged = true;
+        }
     }
 
     public void addCurrentThrottle(double throttle) {
@@ -3164,7 +3187,8 @@ public abstract class AircraftEntity extends Entity
             amount = 1;
         }
         int damage = this.getDamageTaken();
-        if (damage > 0 && !this.level().isClientSide()) {
+        boolean componentsHurt = this.getComponentHealth() != io.github.mcheliceport.damage.ComponentHealth.FULL;
+        if ((damage > 0 || componentsHurt) && !this.level().isClientSide()) {
             this.setDamageTaken(damage - amount);
             io.github.mcheliceport.damage.ComponentDamage.onRepair(this, amount);
             return true;
