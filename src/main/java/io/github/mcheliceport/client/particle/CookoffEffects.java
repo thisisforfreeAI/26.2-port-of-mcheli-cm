@@ -21,7 +21,7 @@ public final class CookoffEffects {
         int ammunition=0;
         for(int i=0;i<Math.min(16,aircraft.getWeaponNum());i++){
             var set=aircraft.getWeapon(i);
-            if(set==null||set.getFirstWeapon()==null||set.getInfo()==null||set.getInfo().useHBM)continue;
+            if(set==null||set.getFirstWeapon()==null||set.getInfo()==null||set.getInfo().useHBM||set.getInfo().payloadNTM!=io.github.mcheliceport.content.weapon.WeaponInfo.Payload.NONE)continue;
             ammunition=(int)Math.min(256L,ammunition+(long)Math.max(0,set.getAmmo())+Math.max(0,set.getRestAllAmmoNum()));
         }
         if(!cooling.cookoff(aircraft.getId(),ammunition))return;

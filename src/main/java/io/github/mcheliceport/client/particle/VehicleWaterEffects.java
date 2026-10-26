@@ -23,7 +23,7 @@ import net.neoforged.neoforge.client.event.*;
 public final class VehicleWaterEffects {
     private record Wake(Vec3 point,Vec3 forward,float width,BlockPos support,long born,int light){}
     private static final List<Wake> WAKES=new ArrayList<>();
-    private static final Identifier TEXTURE=Identifier.withDefaultNamespace("textures/block/snow.png");
+    private static final Identifier TEXTURE=Identifier.fromNamespaceAndPath("mcheli_ce_port","textures/effect/m8_fluid_stains.png");
     private static ClientLevel world;private static long lastTick=Long.MIN_VALUE,processedTick=Long.MIN_VALUE;private static int reads,births,splashes,cursor,spray;
     private VehicleWaterEffects(){}
     private static boolean enabled(){return EffectQuality.enhanced()&&ClientConfig.get(ClientConfig.VEHICLE_WATER_DETAILS);}
@@ -92,11 +92,12 @@ public final class VehicleWaterEffects {
                 if(camera.distanceToSqr(w.point)>48*48)continue;float age=now-w.born+partial,a=VehicleWaterLook.alpha(age);if(a<=0)continue;
                 Vec3 back=w.forward.scale(-1),side=new Vec3(-w.forward.z,0,w.forward.x);int color=((int)(255*a)<<24)|0xDCECF5;
                 for(int sign:new int[]{-1,1})for(int n=0;n<4;n++){
-                    double t0=n*.8,t1=t0+.52,width=w.width+age*.018;
+                    double jitter=Math.sin(w.born*.73+n*2.7+sign)*.10;
+                    double t0=n*.8+jitter,t1=t0+.37+.16*Math.sin(w.born*.31+n),width=w.width+age*.018+jitter;
                     Vec3 p0=w.point.add(back.scale(t0+age*.018)).add(side.scale(sign*(width+t0*.45)));
                     Vec3 p1=w.point.add(back.scale(t1+age*.018)).add(side.scale(sign*(width+t1*.45)));
-                    Vec3 offset=side.scale(.045+.015*Math.sin(n*3+age*.2));Vec3[] points={p0.subtract(offset),p1.subtract(offset),p1.add(offset),p0.add(offset)};
-                    for(int k=0;k<4;k++){var p=points[k].subtract(camera);buffer.addVertex(pose,(float)p.x,(float)p.y,(float)p.z).setColor(color).setUv(k<2?0:1,k%3==0?0:1)
+                    Vec3 offset=side.scale(.10+.035*Math.sin(n*3+age*.2+w.born));Vec3[] points={p0.subtract(offset),p1.subtract(offset),p1.add(offset),p0.add(offset)};
+                    for(int k=0;k<4;k++){var p=points[k].subtract(camera);buffer.addVertex(pose,(float)p.x,(float)p.y,(float)p.z).setColor(color).setUv(k<2?0:.5F,k%3==0?0:1)
                             .setOverlay(OverlayTexture.NO_OVERLAY).setLight(w.light).setNormal(pose,0,1,0);}
                 }
             }

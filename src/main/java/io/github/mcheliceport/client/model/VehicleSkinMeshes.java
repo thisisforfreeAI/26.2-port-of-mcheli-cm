@@ -23,13 +23,27 @@ public final class VehicleSkinMeshes {
     static McheliModel.Group regionMesh(McheliModel.Group group,net.minecraft.world.phys.Vec3 p,float radius){
         var out=new java.util.ArrayList<Float>();var d=group.data();
         for(int t=0;t+23<d.length&&out.size()<24000;t+=24){
-            double x=(d[t]+d[t+8]+d[t+16])/3,y=(d[t+1]+d[t+9]+d[t+17])/3,z=(d[t+2]+d[t+10]+d[t+18])/3;
-            if(p.distanceToSqr(x,y,z)>radius*radius)continue;
-            for(int k=0;k<3;k++){int i=t+k*8;for(int a=0;a<3;a++)out.add(d[i+a]+d[i+5+a]*.006F);
-                out.add((float)(.5+(d[i]-p.x)/(radius*2)));out.add((float)(.5+(d[i+2]-p.z)/(radius*2)));
-                for(int a=5;a<8;a++)out.add(d[i+a]);}
+            var polygon=new ArrayList<float[]>();for(int k=0;k<3;k++)polygon.add(Arrays.copyOfRange(d,t+k*8,t+k*8+8));
+            for(int axis=0;axis<3;axis++){
+                float center=(float)(axis==0?p.x:axis==1?p.y:p.z);
+                polygon=clipRegion(polygon,axis,center-radius,true);polygon=clipRegion(polygon,axis,center+radius,false);
+            }
+            for(int n=1;n+1<polygon.size()&&out.size()+24<=24000;n++)for(var v:new float[][]{polygon.getFirst(),polygon.get(n),polygon.get(n+1)}){
+                for(int a=0;a<3;a++)out.add(v[a]+v[5+a]*.006F);
+                boolean top=Math.abs(v[6])>.6F,side=Math.abs(v[5])>.6F;
+                out.add((float)(.5+((side?v[2]:v[0])-(side?p.z:p.x))/(radius*2)));
+                out.add((float)(.5+((top?v[2]:v[1])-(top?p.z:p.y))/(radius*2)));
+                for(int a=5;a<8;a++)out.add(v[a]);
+            }
         }
         float[] data=new float[out.size()];for(int i=0;i<data.length;i++)data[i]=out.get(i);return new McheliModel.Group(group.name()+"_soot",data);
+    }
+    private static ArrayList<float[]> clipRegion(java.util.List<float[]> input,int axis,float at,boolean above){
+        var out=new ArrayList<float[]>();if(input.isEmpty())return out;var prev=input.getLast();boolean pin=above?prev[axis]>=at:prev[axis]<=at;
+        for(var next:input){boolean nin=above?next[axis]>=at:next[axis]<=at;
+            if(pin!=nin){float f=(at-prev[axis])/(next[axis]-prev[axis]);var edge=new float[8];for(int i=0;i<8;i++)edge[i]=prev[i]+(next[i]-prev[i])*f;out.add(edge);}
+            if(nin)out.add(next);prev=next;pin=nin;
+        }return out;
     }
     private VehicleSkinMeshes(){}
     public static Skin get(McheliModel.Group group){
