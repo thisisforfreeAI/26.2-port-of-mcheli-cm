@@ -29,6 +29,12 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
   aboard its vehicle. Failures add to a decaying score; past `antiCheat.threshold` (default 20)
   the server logs a warning, and `antiCheat.action` can also tell operators or kick. Operators see
   scores and recent failures with `/mcheli anticheat [player]`.
+- Component damage (M9): engines, rotors and fuel tanks have their own health on top of the hull's.
+  A round damages the component its flight enters first, a blast every component within 6 blocks.
+  Hull damage and time to kill are unchanged. Repairs heal components with the hull, the worst
+  first, and a full repair heals them all. Component health is saved with the vehicle and its item
+  and synced to every client through a read-only API (`damage.VehicleComponents`) for damage visuals
+  and addons. Damaged components do not change flight yet.
 
 ## [0.6.0] - 2026-10-25 (M6 preview: gameplay and multiplayer)
 

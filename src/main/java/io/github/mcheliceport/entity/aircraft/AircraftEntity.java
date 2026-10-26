@@ -130,6 +130,9 @@ public abstract class AircraftEntity extends Entity
             SynchedEntityData.defineId(AircraftEntity.class, EntityDataSerializers.STRING);
     private static final EntityDataAccessor<Integer> DATA_DAMAGE =
             SynchedEntityData.defineId(AircraftEntity.class, EntityDataSerializers.INT);
+    /** M9 component health, packed by {@link io.github.mcheliceport.damage.ComponentHealth}. */
+    private static final EntityDataAccessor<Long> DATA_COMPONENTS =
+            SynchedEntityData.defineId(AircraftEntity.class, EntityDataSerializers.LONG);
     private static final EntityDataAccessor<Integer> DATA_STATUS =
             SynchedEntityData.defineId(AircraftEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> DATA_FUEL =
@@ -173,6 +176,12 @@ public abstract class AircraftEntity extends Entity
 
     protected @Nullable AircraftInfo info;
     private final InterpolationHandler interpolation = new InterpolationHandler(this);
+    /** M9: the component health last seen, and the tick each slot last changed (-1: never). */
+    private long lastComponentHealth = io.github.mcheliceport.damage.ComponentHealth.FULL;
+    private final long[] componentChangeTicks = new long[io.github.mcheliceport.damage.ComponentHealth.SLOTS];
+    {
+        java.util.Arrays.fill(this.componentChangeTicks, -1L);
+    }
     /** M9: the velocity the server last sent this watching client, and the tick it arrived. */
     private Vec3 watchedVelocity = Vec3.ZERO;
     private long watchedVelocityTick = Long.MIN_VALUE;
@@ -413,6 +422,7 @@ public abstract class AircraftEntity extends Entity
         builder.define(DATA_TYPE_NAME, "");
         builder.define(DATA_ERA, "");
         builder.define(DATA_DAMAGE, 0);
+        builder.define(DATA_COMPONENTS, io.github.mcheliceport.damage.ComponentHealth.FULL);
         builder.define(DATA_STATUS, 0);
         builder.define(DATA_FUEL, 0);
         builder.define(DATA_FUEL_TYPE, "");
@@ -433,6 +443,18 @@ public abstract class AircraftEntity extends Entity
     @Override
     public void onSyncedDataUpdated(EntityDataAccessor<?> accessor) {
         super.onSyncedDataUpdated(accessor);
+        if (DATA_COMPONENTS.equals(accessor) && this.componentChangeTicks != null) {
+            long before = this.lastComponentHealth;
+            long after = this.entityData.get(DATA_COMPONENTS);
+            this.lastComponentHealth = after;
+            for (int i = 0; i < io.github.mcheliceport.damage.ComponentHealth.SLOTS; i++) {
+                if (io.github.mcheliceport.damage.ComponentHealth.level(before, i)
+                        != io.github.mcheliceport.damage.ComponentHealth.level(after, i)) {
+                    this.componentChangeTicks[i] = this.level().getGameTime();
+                }
+            }
+            io.github.mcheliceport.damage.VehicleComponents.notifyChanged(this, before, after);
+        }
         if (DATA_IRON_CURTAIN.equals(accessor) && this.level().isClientSide()) {
             int ticks = this.entityData.get(DATA_IRON_CURTAIN);
             if (ticks > 0) {
@@ -741,6 +763,20 @@ public abstract class AircraftEntity extends Entity
 
     public int getDamageTaken() {
         return this.entityData.get(DATA_DAMAGE);
+    }
+
+    /** M9: engines', rotors' and fuel tanks' health, packed; read it through {@code VehicleComponents}. */
+    public long getComponentHealth() {
+        return this.entityData.get(DATA_COMPONENTS);
+    }
+
+    public void setComponentHealth(long packed) {
+        this.entityData.set(DATA_COMPONENTS, packed);
+    }
+
+    /** The level game time a component slot last changed on this side, or -1. */
+    public long getComponentChangeTick(int slot) {
+        return slot >= 0 && slot < this.componentChangeTicks.length ? this.componentChangeTicks[slot] : -1L;
     }
 
     public void setDamageTaken(int damage) {
@@ -2853,6 +2889,7 @@ public abstract class AircraftEntity extends Entity
         if (!this.isDestroyed()) {
             if (!isPlayerAttack) {
                 this.setDamageTaken(this.getDamageTaken() + (int) damage);
+                io.github.mcheliceport.damage.ComponentDamage.onHurt(this, source, damage);
             }
             this.markHurt();
             if (this.getDamageTaken() >= this.getMaxHP() || isPlayerAttack) {
@@ -3129,6 +3166,7 @@ public abstract class AircraftEntity extends Entity
         int damage = this.getDamageTaken();
         if (damage > 0 && !this.level().isClientSide()) {
             this.setDamageTaken(damage - amount);
+            io.github.mcheliceport.damage.ComponentDamage.onRepair(this, amount);
             return true;
         }
         return false;
@@ -3161,6 +3199,12 @@ public abstract class AircraftEntity extends Entity
     public void writeDataToItem(ItemStack stack) {
         AircraftItemData.write(stack, this.getCommand(), this.getFuel(), this.getDamageTaken(),
                 CommonConfig.ITEM_FUEL.get(), CommonConfig.ITEM_DAMAGE.get());
+        // M9: damaged components ride along with the hull damage, so picking a vehicle up does not repair them.
+        if (CommonConfig.ITEM_DAMAGE.get() && this.getComponentHealth() != io.github.mcheliceport.damage.ComponentHealth.FULL) {
+            stack.set(io.github.mcheliceport.registry.ModDataComponents.AIRCRAFT_COMPONENTS.get(), this.getComponentHealth());
+        } else {
+            stack.remove(io.github.mcheliceport.registry.ModDataComponents.AIRCRAFT_COMPONENTS.get());
+        }
         this.weapons.writeAmmoToItem(stack);
     }
 
@@ -3178,6 +3222,9 @@ public abstract class AircraftEntity extends Entity
         }
         if (values.damage() != null) {
             this.setDamageTaken(values.damage());
+            this.setComponentHealth(stack.getOrDefault(
+                    io.github.mcheliceport.registry.ModDataComponents.AIRCRAFT_COMPONENTS.get(),
+                    io.github.mcheliceport.damage.ComponentHealth.FULL));
         }
     }
 
@@ -3641,6 +3688,7 @@ public abstract class AircraftEntity extends Entity
         } else {
             input.getInt("AcDamage").ifPresent(this::setDamageTaken);
         }
+        this.setComponentHealth(input.getLongOr("AcComponents", io.github.mcheliceport.damage.ComponentHealth.FULL));
         this.setCurrentThrottle(input.getDoubleOr("AcThrottle", 0.0));
         boolean hovering = input.getBooleanOr("AcHoveringMode", false);
         if (hovering != this.hoveringMode) {
@@ -3686,6 +3734,7 @@ public abstract class AircraftEntity extends Entity
         ContainerHelper.saveAllItems(output.child("ParachutesAC"), chutes);
         output.putIntArray("AcWeaponsAmmo", this.weapons.saveAmmo());
         output.putInt("AcDamage", this.getDamageTaken());
+        output.putLong("AcComponents", this.getComponentHealth());
         output.putDouble("AcThrottle", this.getCurrentThrottle());
         output.putBoolean("AcHoveringMode", this.hoveringMode);
         output.putDouble("AcBeforeHoverThrottle", this.beforeHoverThrottle);
