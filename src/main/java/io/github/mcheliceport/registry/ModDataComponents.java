@@ -24,6 +24,11 @@ public final class ModDataComponents {
             ModRegistries.DATA_COMPONENT_TYPES.registerComponentType("aircraft_fuel",
                     b -> b.persistent(Codec.INT).networkSynchronized(ByteBufCodecs.VAR_INT));
 
+    /** M9: a vehicle item's damaged component health (absent when intact). */
+    public static final Supplier<DataComponentType<Long>> AIRCRAFT_COMPONENTS =
+            ModRegistries.DATA_COMPONENT_TYPES.registerComponentType("aircraft_components",
+                    b -> b.persistent(Codec.LONG).networkSynchronized(ByteBufCodecs.VAR_LONG));
+
     /** The command the vehicle runs when destroyed; its presence marks an item that carries vehicle data. */
     public static final Supplier<DataComponentType<String>> AIRCRAFT_COMMAND =
             ModRegistries.DATA_COMPONENT_TYPES.registerComponentType("aircraft_command",
