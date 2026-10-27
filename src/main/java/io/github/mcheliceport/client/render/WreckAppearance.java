@@ -11,20 +11,20 @@ import org.joml.Matrix4f;
 /** Render-only breakup, restrained settling and burn contrast. No entity pose or collision edits. */
 public final class WreckAppearance {
  private static final class State {boolean seen,dead;int removed;final Set<McheliModel.Group> scattered=Collections.newSetFromMap(new IdentityHashMap<>());}
- private static final Map<AircraftEntity,State> STATES=new WeakHashMap<>();
+ private static final Map<AircraftEntity,State> STATES=Collections.synchronizedMap(new WeakHashMap<>());
  private static final Identifier SOOT=Identifier.fromNamespaceAndPath("mcheli_ce_port","textures/effect/m8_fluid_stains.png");
  private static final Identifier METAL=Identifier.withDefaultNamespace("textures/block/iron_block.png");
- private static Object world;
+ private static java.lang.ref.WeakReference<Object> world=new java.lang.ref.WeakReference<>(null);
  public static boolean enabled(){return EffectQuality.enhanced()&&ClientConfig.get(ClientConfig.VEHICLE_DAMAGE_DETAILS);}
  public static int tint(){return 0xFF77736E;}
  public static boolean removable(String n){return n.matches("\\$(canopy|hatch|panel|enginecover|cover)[0-9]*")||n.equals("$track_roller0");}
  public static int removed(AircraftEntity ac){var s=STATES.get(ac);return s==null?0:s.removed;}
- public static void clear(){STATES.clear();world=null;WreckMesh.clear();}
+ public static void clear(){STATES.clear();world.clear();WreckMesh.clear();}
  public static void apply(AircraftEntity ac,AircraftRenderState render){
-  if(world!=ac.level()){clear();world=ac.level();}if(!enabled())return;
+  if(world.get()!=ac.level()){clear();world=new java.lang.ref.WeakReference<>(ac.level());}if(!enabled())return;
   var s=STATES.computeIfAbsent(ac,k->new State());boolean fresh=s.seen&&!s.dead&&ac.isDestroyed();s.seen=true;s.dead=ac.isDestroyed();
   if(!s.dead){s.removed=0;s.scattered.clear();return;}
-  if(render.far||render.thermal||Minecraft.getInstance().gameRenderer.mainCamera().position().distanceToSqr(ac.position())>48*48)return;
+  if(render.far||Minecraft.getInstance().gameRenderer.mainCamera().position().distanceToSqr(ac.position())>48*48)return;
   boolean plane=ac instanceof io.github.mcheliceport.entity.plane.PlaneEntity;
   boolean heli=ac instanceof io.github.mcheliceport.entity.heli.HeliEntity;
   float settle=Math.clamp((VehicleAtmosphere.wreckAge(ac)+1)/60F,0,1);
@@ -48,7 +48,7 @@ public final class WreckAppearance {
    draws.add(new AircraftPartPoses.Draw(pose,List.of(mesh.shape())));
    VehicleDetailLayers.add(render,pose,render.texture,List.of(mesh.paint()),0x707E7769);
    VehicleDetailLayers.add(render,pose,METAL,List.of(mesh.metal()),0xA0807C75);
-   if(name.equals("$body")){
+   if(name.equals("$body")&&!render.thermal){
     var inverse=new Matrix4f(draw.pose()).invert();
     for(var origin:VehicleAtmosphere.wreckOrigins(ac)){
      var relative=origin.subtract(ac.position());var local=inverse.transformPosition(new org.joml.Vector3f((float)relative.x,(float)relative.y,(float)relative.z));

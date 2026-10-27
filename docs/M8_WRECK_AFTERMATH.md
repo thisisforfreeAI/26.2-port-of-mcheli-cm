@@ -23,3 +23,15 @@ craters and the NTM integration. Enhanced quality and vehicle damage details con
 Twenty-four cached mesh groups, four queued loader jobs, a 60,000-vertex source limit,
 48-block detail range and the shared overlay allowance bound work. Native fixtures use controlled
 live-to-wreck states, not actual combat. Target-PC 60 FPS remains a hardware acceptance check.
+
+## Native examples and validation
+
+[Six native screenshots](M8_WRECK_GALLERY.md) show early burning and later cooling on the
+M1A2, AH-64 and F-35A. The stationary fixture also verifies repair restores the original
+parts and clears long-lived debris on each vehicle. Local unit tests pass; local previews
+use compile-only optional dependency stand-ins and are not distributable builds. Full
+repository CI validates the normal integration and NTM GameTests.
+
+World tracking uses a weak reference and synchronized weak actor keys so disconnecting
+does not retain the old level. Thermal view keeps the same broken silhouette and skips
+paint/soot overlays. No new shaders, terrain edits or gameplay entities are introduced.
