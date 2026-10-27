@@ -9,6 +9,8 @@ import net.minecraft.world.phys.Vec3;
 final class WreckEffects {
     private WreckEffects() {}
     static void emit(ClientLevel level, List<Vec3> origins, WreckCoolingLook cooling, io.github.mcheliceport.entity.aircraft.AircraftEntity aircraft, long tick) {
+        var sequence=WreckSequenceEffects.get(aircraft);
+        if(sequence!=null&&sequence.opening!=null&&(sequence.cover||sequence.tail))origins=List.of(sequence.opening);
         int id=aircraft.getId();
         float fire=cooling.fire(), density=cooling.smoke();
         if (density<=0) return;
@@ -17,6 +19,7 @@ final class WreckEffects {
         Vec3 pos=origin.add(Math.sin(tick*.7+id)*.09,.05,Math.cos(tick*.43+id)*.09);
         Vec3 ammunition=aircraft instanceof io.github.mcheliceport.entity.tank.TankEntity
                 ?aircraft.position().add(io.github.mcheliceport.util.McheliMath.rotVec3(0,2.1,-.45,-aircraft.getYaw(),-aircraft.getPitch(),-aircraft.getRoll())):pos;
+        if(sequence!=null&&sequence.turret&&sequence.ring!=null)ammunition=sequence.ring;
         CookoffEffects.emit(level,aircraft,cooling,ammunition);
         int pressure=1+EffectPerformance.pressure();
         if (fire>0 && Math.floorMod(tick+id,5*pressure)==0) {

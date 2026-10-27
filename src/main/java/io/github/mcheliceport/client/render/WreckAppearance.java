@@ -16,6 +16,8 @@ public final class WreckAppearance {
  private static final Identifier METAL=Identifier.withDefaultNamespace("textures/block/iron_block.png");
  private static java.lang.ref.WeakReference<Object> world=new java.lang.ref.WeakReference<>(null);
  public static boolean enabled(){return EffectQuality.enhanced()&&ClientConfig.get(ClientConfig.VEHICLE_DAMAGE_DETAILS);}
+ public static float settling(AircraftEntity ac){int age=VehicleAtmosphere.wreckAge(ac);return io.github.mcheliceport.client.particle.WreckSequenceEffects.enabled()?io.github.mcheliceport.client.particle.DestructionTimeline.collapse(age):Math.clamp((age+1)/60F,0,1);}
+ public static Matrix4f root(AircraftEntity ac){float s=settling(ac);return new Matrix4f().translate(0,-.10F*s,0).rotateZ(.025F*s).rotateX(-.018F*s);}
  public static int tint(){return 0xFF77736E;}
  public static boolean removable(String n){return n.matches("\\$(canopy|hatch|panel|enginecover|cover)[0-9]*")||n.equals("$track_roller0");}
  public static int removed(AircraftEntity ac){var s=STATES.get(ac);return s==null?0:s.removed;}
@@ -27,7 +29,7 @@ public final class WreckAppearance {
   if(render.far||Minecraft.getInstance().gameRenderer.mainCamera().position().distanceToSqr(ac.position())>48*48)return;
   boolean plane=ac instanceof io.github.mcheliceport.entity.plane.PlaneEntity;
   boolean heli=ac instanceof io.github.mcheliceport.entity.heli.HeliEntity;
-  float settle=Math.clamp((VehicleAtmosphere.wreckAge(ac)+1)/60F,0,1);
+  float settle=settling(ac);
   var root=new Matrix4f().translate(0,-.10F*settle,0).rotateZ(.025F*settle).rotateX(-.018F*settle);
   var draws=new ArrayList<AircraftPartPoses.Draw>();int removed=0;
   for(var draw:render.draws)for(var group:draw.groups()){
@@ -35,7 +37,7 @@ public final class WreckAppearance {
    boolean supported=name.equals("$body")||name.equals("$weapon0")||name.startsWith("$lg")||removable(name)||heli&&name.equals("$weapon1");
    var mesh=supported?WreckMesh.get(group,plane&&name.equals("$body")):null;
    if(mesh==null){draws.add(new AircraftPartPoses.Draw(new Matrix4f(root).mul(draw.pose()),List.of(group)));continue;}
-   boolean detach=removed<2&&(removable(group.name())||heli&&group.name().equals("$weapon1")&&group.vertexCount()<=1200);
+   boolean detach=removed<2&&(!io.github.mcheliceport.client.particle.WreckSequenceEffects.enabled()||!name.startsWith("$enginecover")&&!name.startsWith("$cover"))&&(removable(group.name())||heli&&group.name().equals("$weapon1")&&group.vertexCount()<=1200);
    if(detach){
     removed++;PanelInteriors.add(render,new Matrix4f(root).mul(draw.pose()),group);
     // Fresh transition only; late-loaded old wrecks never replay flying debris.
