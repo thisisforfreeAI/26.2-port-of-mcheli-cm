@@ -143,6 +143,7 @@ public abstract class AircraftRenderer<T extends AircraftEntity> extends EntityR
             }
         }
         SmallVehicleMotion.apply(entity,state,partialTicks);
+        DestructionParts.apply(entity,state,partialTicks);
         WreckAppearance.apply(entity,state);
         LoosePanels.extract(entity,state);
         io.github.mcheliceport.client.particle.VehicleWeather.extract(entity,state);

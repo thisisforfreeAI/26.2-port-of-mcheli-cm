@@ -47,7 +47,7 @@ public final class VehicleAtmosphere {
 
     public static void clear() {
         STATES.values().forEach(State::stop); STATES.clear(); world = null;
-        lastTick = Long.MIN_VALUE; CookoffEffects.clear();
+        lastTick = Long.MIN_VALUE; CookoffEffects.clear(); WreckSequenceEffects.clear();
     }
     public static int stateCount() { return STATES.size(); }
     public static int emitted() { return world!=null&&admissionWorld.get()==world&&admissionTick==world.getGameTime()?emitted:0; }
@@ -86,6 +86,7 @@ public final class VehicleAtmosphere {
                 state = new State(); STATES.put(aircraft, state);
             }
             state.cooling.tick(aircraft.isDestroyed());
+            WreckSequenceEffects.tick(level,aircraft,state.cooling.age());
             boolean powered = !aircraft.isDestroyed() && aircraft.canUseFuel();
             state.engine.tick(aircraft.getCurrentThrottle(), powered);
             if (!ClientConfig.get(ClientConfig.ENGINE_STARTUP_EFFECTS)) state.stop();

@@ -43,12 +43,16 @@ public final class LoosePanels {
     }
     private LoosePanels(){}
     public static void wreckPiece(AircraftEntity owner,Identifier texture,McheliModel.Group group,Matrix4f pose,Vector3f center){
+        scatter(owner,texture,group,pose,center,new Vec3(0,.22,0));
+    }
+    public static boolean scatter(AircraftEntity owner,Identifier texture,McheliModel.Group group,Matrix4f pose,Vector3f center,Vec3 impulse){
         var mc=Minecraft.getInstance();if(mc.level!=world){clear();world=mc.level;}
         long tick=world.getGameTime();if(birthTick!=tick){birthTick=tick;births=0;}
-        if(PIECES.size()>=8||births>=2||group.vertexCount()>1200)return;
+        int vertices=PIECES.stream().mapToInt(p->p.group.vertexCount()).sum();
+        if(!enabled()||PIECES.size()>=8||births>=2||group.vertexCount()<3||group.vertexCount()>12000||vertices+group.vertexCount()>24000)return false;
         var at=pose.transformPosition(new Vector3f(center));var position=owner.position().add(at.x,at.y,at.z);
         int light=world.hasChunkAt(BlockPos.containing(position))?LightCoordsUtil.getLightCoords(world,BlockPos.containing(position)):0;
-        var local=new Matrix4f().translation(-at.x,-at.y,-at.z).mul(pose);var piece=new Piece(owner,group,texture,local,position,light);piece.life=900;PIECES.add(piece);births++;
+        var local=new Matrix4f().translation(-at.x,-at.y,-at.z).mul(pose);var piece=new Piece(owner,group,texture,local,position,light);piece.life=900;piece.velocity=piece.velocity.add(impulse).add(0,-.22,0);PIECES.add(piece);births++;return true;
     }
     private static boolean enabled(){return EffectQuality.enhanced()&&ClientConfig.get(ClientConfig.VEHICLE_DAMAGE_DETAILS);}
     public static void clear(){STATES.clear();PIECES.clear();world=null;birthTick=Long.MIN_VALUE;births=0;collisionCursor=0;}

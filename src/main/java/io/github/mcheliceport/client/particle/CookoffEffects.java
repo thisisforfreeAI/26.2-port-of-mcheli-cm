@@ -15,15 +15,28 @@ public final class CookoffEffects {
     public static void clear(){lastTick=Long.MIN_VALUE;births=events=sounds=0;}
     public static int events(){return events;}
     public static int sounds(){return sounds;}
-    static void emit(ClientLevel level,AircraftEntity aircraft,WreckCoolingLook cooling,Vec3 position){
-        if(!CookoffLook.candidate(cooling.age(),aircraft.getId()))return;
-        if(Minecraft.getInstance().gameRenderer.mainCamera().position().distanceToSqr(position)>40*40)return;
+    public static int conventionalAmmo(AircraftEntity aircraft){
         int ammunition=0;
         for(int i=0;i<Math.min(16,aircraft.getWeaponNum());i++){
             var set=aircraft.getWeapon(i);
             if(set==null||set.getFirstWeapon()==null||set.getInfo()==null||set.getInfo().useHBM||set.getInfo().payloadNTM!=io.github.mcheliceport.content.weapon.WeaponInfo.Payload.NONE)continue;
             ammunition=(int)Math.min(256L,ammunition+(long)Math.max(0,set.getAmmo())+Math.max(0,set.getRestAllAmmoNum()));
         }
+        return ammunition;
+    }
+    public static boolean explosiveStore(io.github.mcheliceport.content.weapon.WeaponInfo info){
+        return info!=null&&!info.useHBM&&info.payloadNTM==io.github.mcheliceport.content.weapon.WeaponInfo.Payload.NONE&&!info.effectOnly&&info.explosion>0;
+    }
+    public static int explosiveAmmo(AircraftEntity aircraft){
+        int ammunition=0;for(int i=0;i<Math.min(16,aircraft.getWeaponNum());i++){
+            var set=aircraft.getWeapon(i);if(set==null||set.getFirstWeapon()==null||!explosiveStore(set.getInfo()))continue;
+            ammunition=(int)Math.min(256L,ammunition+(long)Math.max(0,set.getAmmo())+Math.max(0,set.getRestAllAmmoNum()));
+        }return ammunition;
+    }
+    static void emit(ClientLevel level,AircraftEntity aircraft,WreckCoolingLook cooling,Vec3 position){
+        if(!CookoffLook.candidate(cooling.age(),aircraft.getId()))return;
+        if(Minecraft.getInstance().gameRenderer.mainCamera().position().distanceToSqr(position)>40*40)return;
+        int ammunition=conventionalAmmo(aircraft);
         if(!cooling.cookoff(aircraft.getId(),ammunition))return;
         long now=level.getGameTime();if(now!=lastTick){lastTick=now;births=0;}
         if(births>=2||!VehicleAtmosphere.admit(level,position,.65F))return;

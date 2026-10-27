@@ -1,0 +1,21 @@
+{
+  "stage": 11,
+  "unit_tests": 370,
+  "failures": 0,
+  "native_success": true,
+  "checks": [
+    "M8_LIVING stage=11 vehicle=f-35a",
+    "M8_SEQUENCE parts=13 turret=false strikes=0 bursts=2",
+    "M8_WRECK repair_restored=true",
+    "M8_LIVING stage=11 vehicle=f-15e",
+    "M8_SEQUENCE parts=13 turret=false strikes=0 bursts=2",
+    "M8_WRECK repair_restored=true",
+    "M8_LIVING stage=11 vehicle=a-10",
+    "M8_SEQUENCE parts=13 turret=false strikes=0 bursts=2",
+    "M8_WRECK repair_restored=true"
+  ],
+  "backend": [
+    "[04:30:23] [Render thread/INFO] [minecraft/Minecraft]: Using graphics backend Vulkan, using drivers: 1.4.305 llvmpipe Mesa 25.0.7-2+deb13u1 (LLVM 19.1.7)"
+  ],
+  "target_pc_fps_verified": false
+}
