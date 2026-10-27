@@ -71,3 +71,8 @@ The non-shipping `VehicleBloodPreviewProbe`, enabled with `-Dmcheli.probeBlood=t
 `scripts/visual-probe.init.gradle`, holds example vehicles while real server damage calls produce
 the normal optional packet and production client effect. Its screenshots are controlled previews,
 not combat captures. It checks kill attribution, actual droplets/marks, ray bounds and toggle cleanup.
+
+Local result: **374 unit tests and all 274 required GameTests passed**. The Vulkan native run
+passed three actual kill/packet/effect scenes, three toggle cleanups and the supporting-block
+invalidation check. See the [six-image gallery](M8_VEHICLE_BLOOD_GALLERY.md) and
+[machine-readable evidence](performance/m8-realism/vehicle-blood.json).

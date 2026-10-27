@@ -53,18 +53,24 @@ public final class VehicleBloodPreviewProbe {
             ClientConfig.ENGINE_STARTUP_EFFECTS.set(false);
         }
         if(ticks<160)return;
-        int next=(ticks-160)/180;age=(ticks-160)%180;
+        int next=(ticks-160)/220;age=(ticks-160)%220;
         if(next>=3){System.out.println("M8_BLOOD all_scenes_passed=true");mc.stop();return;}
-        if(next!=phase){phase=next;VehicleBloodEffects.clear();mc.particleEngine.clearParticles();ClientConfig.VEHICLE_BLOOD.set(true);request=phase;}
+        if(next!=phase){phase=next;VehicleBloodEffects.clear();mc.particleEngine.clearParticles();ClientConfig.VEHICLE_BLOOD.set(true);firstDropAge=-1;request=phase;}
         if(age==95&&finished!=phase)throw new IllegalStateException("Missing confirmed server vehicle kill");
         if(age==100) {
             if(VehicleBloodEffects.droplets()==0||BloodStains.count()==0||BloodStains.rays()>4)
                 throw new IllegalStateException("Missing/unbounded blood render: drops="+VehicleBloodEffects.droplets()+" marks="+BloodStains.count());
             System.out.println("M8_BLOOD vehicle="+NAMES[phase]+" drops="+VehicleBloodEffects.droplets()+" marks="+BloodStains.count()+" shared_tick="+VehicleAtmosphere.emitted());
         }
-        if(age==105)capture=NAMES[phase]+"-ground";
-        if(age==125)ClientConfig.VEHICLE_BLOOD.set(false);
-        if(age==130) {
+        if(age==140)capture=NAMES[phase]+"-ground";
+        if(phase==0&&age==145)mc.getSingleplayerServer().execute(()->mc.getSingleplayerServer().overworld()
+                .setBlockAndUpdate(net.minecraft.core.BlockPos.containing(FEET).below(),net.minecraft.world.level.block.Blocks.AIR.defaultBlockState()));
+        if(phase==0&&age==155){
+            if(BloodStains.count()!=0)throw new IllegalStateException("Changed block retained a blood mark");
+            System.out.println("M8_BLOOD changed_block_cleared=true");
+        }
+        if(age==160)ClientConfig.VEHICLE_BLOOD.set(false);
+        if(age==165) {
             if(BloodStains.count()!=0||VehicleBloodEffects.droplets()!=0)throw new IllegalStateException("Disabled blood retained state");
             System.out.println("M8_BLOOD toggle_cleared=true");
         }
@@ -74,6 +80,7 @@ public final class VehicleBloodPreviewProbe {
         var level=event.getServer().overworld();
         if(serverPhase!=request) {
             serverPhase=request;serverAge=0;
+            level.setBlockAndUpdate(net.minecraft.core.BlockPos.containing(FEET).below(),net.minecraft.world.level.block.Blocks.STONE.defaultBlockState());
             if(vehicle!=null)vehicle.discard();if(victim!=null)victim.discard();
             vehicle=serverPhase==0?new HeliEntity(ModEntityTypes.HELICOPTER.get(),level){@Override protected void onUpdateAircraft(){}}
                     :new TankEntity(ModEntityTypes.TANK.get(),level){@Override protected void onUpdateAircraft(){}};
@@ -106,12 +113,12 @@ public final class VehicleBloodPreviewProbe {
     }
     @SubscribeEvent public static void frame(RenderFrameEvent.Post event){
         if(!ENABLED||phase<0)return;
-        if(finished==phase&&VehicleBloodEffects.droplets()>0&&age<100&&capture==null){
-            // Capture a single first live frame after the packet has created droplets.
-            if(capturedPhase!=phase){capturedPhase=phase;capture=NAMES[phase]+"-impact";}
+        if(finished==phase&&VehicleBloodEffects.droplets()>0&&firstDropAge<0)firstDropAge=age;
+        if(firstDropAge>=0&&age-firstDropAge>=5&&capturedPhase!=phase){
+            capturedPhase=phase;capture=NAMES[phase]+"-impact";
         }
         if(capture!=null){var mc=Minecraft.getInstance();String name=capture;capture=null;
             Screenshot.grab(mc.gameDirectory,"m8-blood-"+name+".png",mc.gameRenderer.mainRenderTarget(),1,m->System.out.println("M8_BLOOD "+m.getString()));}
     }
-    private static int capturedPhase=-1;
+    private static int capturedPhase=-1,firstDropAge=-1;
 }
