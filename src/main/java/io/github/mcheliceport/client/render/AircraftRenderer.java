@@ -119,7 +119,7 @@ public abstract class AircraftRenderer<T extends AircraftEntity> extends EntityR
         state.texture = Identifier.fromNamespaceAndPath("mcheli",
                 "textures/" + this.directory() + "/" + entity.getTextureName() + ".png");
         if (entity.isDestroyed()) {
-            state.color = DESTROYED_COLOR;
+            state.color = WreckAppearance.enabled()?WreckAppearance.tint():DESTROYED_COLOR;
         } else if (entity.isIronCurtainActive()) {
             // Upstream's iron curtain tint, pulsing red.
             float f = entity.getIronCurtainFactor(partialTicks);
@@ -127,7 +127,7 @@ public abstract class AircraftRenderer<T extends AircraftEntity> extends EntityR
         } else {
             state.color = COLOR;
         }
-        state.surfaceShade = !state.thermal && state.color == COLOR
+        state.surfaceShade = !state.thermal && (state.color == COLOR || entity.isDestroyed()&&WreckAppearance.enabled())
                 && ClientConfig.get(ClientConfig.VEHICLE_SURFACE_SHADE)
                 && io.github.mcheliceport.config.EffectQuality.enhanced();
         state.flat = !(info.smoothShading && ClientConfig.get(ClientConfig.SMOOTH_SHADING));
@@ -143,6 +143,7 @@ public abstract class AircraftRenderer<T extends AircraftEntity> extends EntityR
             }
         }
         SmallVehicleMotion.apply(entity,state,partialTicks);
+        WreckAppearance.apply(entity,state);
         LoosePanels.extract(entity,state);
         io.github.mcheliceport.client.particle.VehicleWeather.extract(entity,state);
         io.github.mcheliceport.client.particle.VehicleSurfaceBuildup.extract(entity,state);

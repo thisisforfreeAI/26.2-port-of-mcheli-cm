@@ -6,7 +6,7 @@ class WreckCoolingLookTest {
     @Test void freshWreckFireCoolsBeforeSmokeAndBothStop() {
         var look=new WreckCoolingLook(); look.tick(false); look.tick(true);
         assertEquals(1,look.fire()); assertEquals(1,look.smoke());
-        for(int i=0;i<240;i++)look.tick(true);
+        for(int i=0;i<360;i++)look.tick(true);
         assertEquals(0,look.fire()); assertTrue(look.smoke()>0);
         for(int i=0;i<1200;i++)look.tick(true);
         assertEquals(0,look.smoke()); assertEquals(0,look.fire());

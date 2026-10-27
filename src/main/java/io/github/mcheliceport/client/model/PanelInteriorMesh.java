@@ -8,7 +8,7 @@ public final class PanelInteriorMesh {
     public record Parts(McheliModel.Group dark,McheliModel.Group metal){}
     public static Parts build(McheliModel.Group panel){
         String name=panel.name().toLowerCase(java.util.Locale.ROOT);boolean canopy=name.startsWith("$canopy");
-        if(!canopy&&!name.startsWith("$hatch")&&!name.startsWith("$panel"))return null;
+        if(!canopy&&!name.startsWith("$hatch")&&!name.startsWith("$panel")&&!name.startsWith("$enginecover")&&!name.startsWith("$cover"))return null;
         if(panel.vertexCount()<3||panel.vertexCount()>600)return null;
         var lo=new Vector3f(Float.POSITIVE_INFINITY);var hi=new Vector3f(Float.NEGATIVE_INFINITY);
         var d=panel.data();for(int i=0;i+7<d.length;i+=8){var p=new Vector3f(d[i],d[i+1],d[i+2]);if(!p.isFinite())return null;lo.min(p);hi.max(p);}
@@ -19,6 +19,7 @@ public final class PanelInteriorMesh {
             dark.box(lo.x,base,lo.z,hi.x,base+.025F,hi.z);
             dark.box(lo.x,base,lo.z,lo.x+e,top,hi.z);dark.box(hi.x-e,base,lo.z,hi.x,top,hi.z);
             dark.box(lo.x,base,lo.z,hi.x,top,lo.z+e);dark.box(lo.x,base,hi.z-e,hi.x,top,hi.z);
+            metal.box(lo.x+w*.35F,base+.035F,lo.z+l*.25F,lo.x+w*.60F,base+.14F,lo.z+l*.65F);
             for(int i=1;i<=3;i++){float z=lo.z+l*i/4;metal.box(lo.x+w*.2F,base+.028F,z-.03F,hi.x-w*.2F,base+.07F,z+.03F);}
         }
         metal.box(lo.x,top,lo.z,lo.x+e,top+.025F,hi.z);metal.box(hi.x-e,top,lo.z,hi.x,top+.025F,hi.z);
