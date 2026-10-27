@@ -60,6 +60,8 @@ public final class ModNetwork {
 
     private static void registerPayloads(RegisterPayloadHandlersEvent event) {
         PayloadRegistrar registrar = event.registrar(VERSION);
+        event.registrar(VERSION).optional().playToClient(VehicleBloodPayload.TYPE, VehicleBloodPayload.CODEC,
+                (p, context) -> { var hooks = WeaponClientHooks.get(); if (hooks != null) hooks.vehicleBlood(p); });
         // Optional addition: older clients keep the existing protocol and simply receive no marks.
         event.registrar(VERSION).optional().playToClient(VehicleImpactPayload.TYPE,VehicleImpactPayload.CODEC,
                 (p,context)->{var hooks=WeaponClientHooks.get();if(hooks!=null)hooks.vehicleImpact(p);});

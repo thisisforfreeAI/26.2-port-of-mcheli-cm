@@ -1,7 +1,8 @@
 # Vehicle-kill blood: compatibility investigation
 
 Requested follow-up after the destruction sequences. This document records the integration
-boundary; it does not enable new blood or gore behavior.
+boundary. The subsequent [vehicle-kill blood implementation](M8_VEHICLE_BLOOD.md) now applies
+these exclusions without modifying NTM gore.
 
 ## Findings
 

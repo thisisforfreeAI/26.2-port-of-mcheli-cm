@@ -135,7 +135,9 @@ final class TankCollisions {
             DamageSource source = pilot instanceof LivingEntity living ? level.damageSources().mobAttack(living)
                     : level.damageSources().generic();
             DamageScaling.applyHurtResistantTime(target);
-            target.hurtServer(level, source, damage);
+            var blood = io.github.mcheliceport.effect.VehicleBlood.ram(target, this.tank, source, motion);
+            boolean applied = target.hurtServer(level, source, damage);
+            io.github.mcheliceport.effect.VehicleBlood.finish(blood, applied);
             if (target instanceof AbstractArrow) { target.discard(); }
             else {
                 double knockback = target instanceof AircraftEntity ? 0.05 : 1.5;

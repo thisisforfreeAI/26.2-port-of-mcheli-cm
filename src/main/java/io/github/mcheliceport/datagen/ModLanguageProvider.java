@@ -32,6 +32,8 @@ public class ModLanguageProvider extends LanguageProvider {
     }
 
     private void english() {
+        add("mcheli.effects.blood", "Vehicle-kill blood: %s");
+        add("mcheli.effects.blood.tip", "Blood from conventional MC Heli vehicle kills of supported mobs. NTM guns and payloads keep their own gore. Requires Enhanced effects.");
         add("mcheli.effects.menu", "MC Heli Effects…");
         add("gui.mcheli.interact_seat.enter", "Press %s to enter seat %d");
         add("mcheli.effects.modern", "Modern explosions: %s");
