@@ -1,6 +1,6 @@
 {
   "stage": 12,
-  "unit_tests": 369,
+  "unit_tests": 371,
   "failures": 0,
   "native_success": true,
   "checks": [
@@ -15,7 +15,7 @@
     "M8_WRECK repair_restored=true"
   ],
   "backend": [
-    "[04:26:25] [Render thread/INFO] [minecraft/Minecraft]: Using graphics backend OpenGL, using drivers: 4.5 (Core Profile) Mesa 25.0.7-2+deb13u1"
+    "[04:42:49] [Render thread/INFO] [minecraft/Minecraft]: Using graphics backend Vulkan, using drivers: 1.4.305 llvmpipe Mesa 25.0.7-2+deb13u1 (LLVM 19.1.7)"
   ],
   "target_pc_fps_verified": false
 }

@@ -13,11 +13,13 @@ import org.joml.Matrix4f;
 
 /** Finite staged effects, on existing shared admission. State is owned by VehicleAtmosphere. */
 public final class WreckSequenceEffects {
+    public record Strike(io.github.mcheliceport.client.model.McheliModel.Group group,Matrix4f pose,int age){}
     public static final class State {
         public int age=-1,ammo,heavyAmmo,seed,parts,strikes,bursts;long tick=Long.MIN_VALUE;public boolean seenAlive;
         public boolean turret,cover,wing,tail,track;
         public Vec3 opening,ring;
         public final Set<String> scattered=new HashSet<>(),struck=new HashSet<>();
+        public final Map<String,Strike> fragments=new HashMap<>();
         public final Map<String,Float> rotorSpeeds=new HashMap<>();
         public final Map<String,Matrix4f> rotorStarts=new HashMap<>();
         public final Map<String,Vec3> tips=new HashMap<>();
@@ -34,7 +36,7 @@ public final class WreckSequenceEffects {
         budget(level);if(!enabled()){STATES.clear();return;}
         if(STATES.size()>=128&&!STATES.containsKey(ac))return;
         var s=STATES.computeIfAbsent(ac,k->new State());if(s.tick==level.getGameTime())return;s.tick=level.getGameTime();s.seed=ac.getUUID().hashCode();
-        if(age<0){if(s.age>=0){s.scattered.clear();s.struck.clear();s.rotorStarts.clear();s.rotorSpeeds.clear();s.tips.clear();s.opening=s.ring=null;s.turret=s.cover=s.wing=s.tail=s.track=false;s.parts=s.strikes=s.bursts=0;}
+        if(age<0){if(s.age>=0){s.scattered.clear();s.struck.clear();s.fragments.clear();s.rotorStarts.clear();s.rotorSpeeds.clear();s.tips.clear();s.opening=s.ring=null;s.turret=s.cover=s.wing=s.tail=s.track=false;s.parts=s.strikes=s.bursts=0;}
             s.age=-1;s.seenAlive=true;if(level.getGameTime()%20==0||s.ammo==0){s.ammo=CookoffEffects.conventionalAmmo(ac);s.heavyAmmo=CookoffEffects.explosiveAmmo(ac);}return;}
         if(s.age<0&&!s.seenAlive){s.ammo=CookoffEffects.conventionalAmmo(ac);s.heavyAmmo=CookoffEffects.explosiveAmmo(ac);}
         s.age=age;if(!s.seenAlive)return; // Old wrecks keep their static silhouette, without fresh bursts.

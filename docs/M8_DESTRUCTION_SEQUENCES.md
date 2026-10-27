@@ -44,8 +44,8 @@ unmeasured; software-rendered previews validate behavior and limits.
 ## Native examples and validation
 
 [18 native screenshots](M8_DESTRUCTION_SEQUENCES_GALLERY.md) cover nine stock vehicles.
-Tank and plane families pass Vulkan previews; the rotor family passes OpenGL previews with
-real surface contacts. All three families verify repair restoration. The tank fixture includes
+All three final families pass Vulkan previews, including real rotor surface contacts and
+actual cached 3D fragment delivery. All three families verify repair restoration. The tank fixture includes
 controlled qualifying rare seeds and an Abrams case that keeps its turret. The unarmed MH-6
 correctly skips ammunition bursts. Evidence is in `docs/performance/m8-realism/destruction-*`.
 Automatic engine covers are rejected if they exceed 18% of the source surface area, avoiding
@@ -58,3 +58,8 @@ compatibility come from repository CI. No blood effects are enabled by this chan
 
 Final local suite: 371 unit tests pass. Native scene reports preserve the test counts at their
 respective run times; the final tiny-hull guard has its own unit regression check.
+
+The final rotor fixture requires a successfully spawned mesh fragment for every recorded strike.
+The loader handoff retains the impact pose and retries while cached fragment bounds finish,
+then stops; repairs clear the pending records. An earlier OpenGL preview checked rotor geometry
+and contacts before this last mesh-delivery refinement.

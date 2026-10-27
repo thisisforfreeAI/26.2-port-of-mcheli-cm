@@ -4,11 +4,17 @@
   "native_families": {
     "10": "Vulkan tanks",
     "11": "Vulkan planes",
-    "12": "OpenGL helicopters"
+    "12": "Vulkan helicopters"
   },
   "native_vehicles": 9,
   "native_repair_checks": 9,
   "native_unedited_images": 18,
   "target_pc_fps_verified": false,
-  "blood_follow_up": "Compatibility investigation only; no blood/gore behavior enabled."
+  "blood_follow_up": "Compatibility investigation only; no blood/gore behavior enabled.",
+  "rotor_mesh_fragment_delivery_verified": true,
+  "rotor_mesh_fragments_by_vehicle": {
+    "ah-64": 2,
+    "mh-60l_dap": 2,
+    "mh-6": 1
+  }
 }

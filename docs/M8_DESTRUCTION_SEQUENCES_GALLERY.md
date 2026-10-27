@@ -50,7 +50,7 @@ Wing and rear sections detach, exposing spars. Later frames show settled geometr
 
 ## Ground-contact rotor damage
 
-Controlled tipped wrecks make real swept rotor-tip contacts with the ground. The rotors visually slow and stop. Unarmed MH-6 produces no ammunition bursts. OpenGL is used for this family; the other two use Vulkan.
+Controlled tipped wrecks make real swept rotor-tip contacts with the ground. The rotors visually slow and stop. Unarmed MH-6 produces no ammunition bursts. All final captures use Vulkan.
 
 ### AH-64
 

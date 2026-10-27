@@ -116,10 +116,12 @@ public final class DestructionParts {
                 if(!level.hasChunkAt(BlockPos.containing(at))||!level.hasChunkAt(BlockPos.containing(previous)))continue;
                 var hit=level.clip(new ClipContext(previous,at.add(0,-.12,0),ClipContext.Block.COLLIDER,ClipContext.Fluid.NONE,CollisionContext.empty()));
                 if(hit.getType()==HitResult.Type.BLOCK&&!hit.isInside()&&WreckSequenceEffects.rotorStrike(level,ac,hit.getLocation())){
-                    s.struck.add(key);scatter(ac,newRenderTexture(ac),s,"rotor"+key,part.tip(),pose,s.age,new Vec3(.1,.12,.1));break;
+                    s.struck.add(key);s.fragments.put(key,new WreckSequenceEffects.Strike(part.tip(),new Matrix4f(pose),s.age));break;
                 }
             }
         }
+        var fragment=s.fragments.get(key);
+        if(fragment!=null)scatter(ac,newRenderTexture(ac),s,"rotor"+key,fragment.group(),fragment.pose(),fragment.age(),new Vec3(.1,.12,.1));
         return new Rotor(pose,key,part);
     }
     private static Identifier newRenderTexture(AircraftEntity ac){return Identifier.fromNamespaceAndPath("mcheli","textures/helicopters/"+ac.getTextureName()+".png");}

@@ -97,7 +97,7 @@ public final class LivingVehiclePreviewProbe {
                     if(!sequence.cover)throw new IllegalStateException("Missing engine cover blowout");
                     if(STEP==10&&(!sequence.track||DestructionTimeline.turret(vehicle.getAcInfo().name,sequence.seed,sequence.heavyAmmo)!=sequence.turret))throw new IllegalStateException("Missing/incorrect tank sequence");
                     if(STEP==11&&(!sequence.wing||!sequence.tail))throw new IllegalStateException("Missing wing/tail breakup");
-                    if(STEP==12&&(sequence.strikes==0||WreckSequenceEffects.rays()>2))throw new IllegalStateException("Missing/unbounded rotor strikes");
+                    if(STEP==12&&(sequence.strikes==0||WreckSequenceEffects.rays()>2||sequence.scattered.stream().filter(n->n.startsWith("rotor")).count()!=sequence.strikes))throw new IllegalStateException("Missing/unbounded rotor strikes");
                     if(sequence.ammo>0&&sequence.bursts==0)throw new IllegalStateException("Missing interior bursts");
                     System.out.println("M8_SEQUENCE parts="+sequence.parts+" turret="+sequence.turret+" strikes="+sequence.strikes+" bursts="+sequence.bursts);
                 }
