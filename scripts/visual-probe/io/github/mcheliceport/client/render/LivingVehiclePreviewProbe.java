@@ -25,38 +25,38 @@ public final class LivingVehiclePreviewProbe {
     private static int ticks,phase=-1,age,lastPops,captureTick=-1;
     private static float snowAt180;
     private static AircraftEntity vehicle;private static String capture;
-    private static int damage(AircraftEntity e){return (int)(e.getMaxHP()*(STEP==1?(age>40?1:.3):STEP==2?(age<100?.05:.92):STEP==3?(age<130?.5:age<190?.96:0):STEP==8&&phase==2&&age>130?.96:.05));}
-    private static void held(AircraftEntity e){e.xo=e.getX();e.yo=e.getY();e.zo=e.getZ();double movement=STEP==5&&age>185?(age-185)*.12:0;e.setPos(movement,STEP==6?-59.7:-60,STEP==6?12+age*.08:STEP>=7?20+age*.08:20);e.setDeltaMovement(STEP==6||STEP>=7?new Vec3(0,0,.08):STEP==5&&age>185?new Vec3(.12,0,0):Vec3.ZERO);}
+    private static int damage(AircraftEntity e){return (int)(e.getMaxHP()*(STEP==1||STEP==9?(STEP==9&&age>780?0:age>40?1:.3):STEP==2?(age<100?.05:.92):STEP==3?(age<130?.5:age<190?.96:0):STEP==8&&phase==2&&age>130?.96:.05));}
+    private static void held(AircraftEntity e){e.xo=e.getX();e.yo=e.getY();e.zo=e.getZ();double movement=STEP==5&&age>185?(age-185)*.12:0;e.setPos(movement,STEP==6?-59.7:-60,STEP==6?12+age*.08:(STEP==7||STEP==8)?20+age*.08:20);e.setDeltaMovement(STEP==6||STEP==7||STEP==8?new Vec3(0,0,.08):STEP==5&&age>185?new Vec3(.12,0,0):Vec3.ZERO);}
     private static final class Tank extends TankEntity {
         Tank(Minecraft mc){super(ModEntityTypes.TANK.get(),mc.level);}
         @Override public void tick(){held(this);}
-        @Override public double getCurrentThrottle(){return STEP>=7?.75:super.getCurrentThrottle();}
-        @Override public boolean canUseFuel(){return STEP>=7||super.canUseFuel();}
+        @Override public double getCurrentThrottle(){return STEP==7||STEP==8?.75:super.getCurrentThrottle();}
+        @Override public boolean canUseFuel(){return STEP==7||STEP==8||super.canUseFuel();}
         @Override public int getDamageTaken(){return damage(this);}
-        @Override public boolean isDestroyed(){return STEP==1&&age>40||STEP==3&&age>130&&age<190||super.isDestroyed();}
+        @Override public boolean isDestroyed(){return (STEP==1||STEP==9)&&age>40&&(STEP!=9||age<=780)||STEP==3&&age>130&&age<190||super.isDestroyed();}
     }
     private static final class Heli extends HeliEntity {
         Heli(Minecraft mc){super(ModEntityTypes.HELICOPTER.get(),mc.level);}
         @Override public void tick(){held(this);for(var rotor:getRotors())rotor.update(25);}
-        @Override public double getCurrentThrottle(){return STEP>=7?.75:super.getCurrentThrottle();}
-        @Override public boolean canUseFuel(){return STEP>=7||super.canUseFuel();}
+        @Override public double getCurrentThrottle(){return STEP==7||STEP==8?.75:super.getCurrentThrottle();}
+        @Override public boolean canUseFuel(){return STEP==7||STEP==8||super.canUseFuel();}
         @Override public int getDamageTaken(){return damage(this);}
-        @Override public boolean isDestroyed(){return STEP==1&&age>40||STEP==3&&age>130&&age<190||super.isDestroyed();}
+        @Override public boolean isDestroyed(){return (STEP==1||STEP==9)&&age>40&&(STEP!=9||age<=780)||STEP==3&&age>130&&age<190||super.isDestroyed();}
     }
     private static final class Boat extends io.github.mcheliceport.entity.ship.ShipEntity {
         Boat(Minecraft mc){super(ModEntityTypes.SHIP.get(),mc.level);}
         @Override public void tick(){held(this);}
-        @Override public double getCurrentThrottle(){return STEP>=7?.75:super.getCurrentThrottle();}
-        @Override public boolean canUseFuel(){return STEP>=7||super.canUseFuel();}
+        @Override public double getCurrentThrottle(){return STEP==7||STEP==8?.75:super.getCurrentThrottle();}
+        @Override public boolean canUseFuel(){return STEP==7||STEP==8||super.canUseFuel();}
         @Override public int getDamageTaken(){return damage(this);}
     }
     private static final class Plane extends PlaneEntity {
         Plane(Minecraft mc){super(ModEntityTypes.PLANE.get(),mc.level);}
         @Override public void tick(){held(this);}
-        @Override public double getCurrentThrottle(){return STEP>=7?.75:super.getCurrentThrottle();}
-        @Override public boolean canUseFuel(){return STEP>=7||super.canUseFuel();}
+        @Override public double getCurrentThrottle(){return STEP==7||STEP==8?.75:super.getCurrentThrottle();}
+        @Override public boolean canUseFuel(){return STEP==7||STEP==8||super.canUseFuel();}
         @Override public int getDamageTaken(){return damage(this);}
-        @Override public boolean isDestroyed(){return STEP==1&&age>40||STEP==3&&age>130&&age<190||super.isDestroyed();}
+        @Override public boolean isDestroyed(){return (STEP==1||STEP==9)&&age>40&&(STEP!=9||age<=780)||STEP==3&&age>130&&age<190||super.isDestroyed();}
     }
     private static void command(Minecraft mc,String...commands){for(var c:commands)mc.player.connection.sendCommand(c);}
     @SubscribeEvent public static void tick(ClientTickEvent.Post event){
@@ -74,10 +74,10 @@ public final class LivingVehiclePreviewProbe {
             ClientConfig.EFFECT_BUDGET.set(ClientConfig.EffectBudget.BALANCED);ClientConfig.ADAPTIVE_EFFECTS.set(false);
             ClientConfig.VEHICLE_DAMAGE_DETAILS.set(true);ClientConfig.ENGINE_STARTUP_EFFECTS.set(false);ClientConfig.ENGINE_HEAT_HAZE.set(STEP==4);ClientConfig.WEAPON_HEAT.set(true);
         }
-        if(ticks<160)return;int next=(ticks-160)/220;age=(ticks-160)%220;
+        if(ticks<160)return;int next=(ticks-160)/(STEP==9?900:220);age=(ticks-160)%(STEP==9?900:220);
         if(next>=NAMES.length){mc.stop();return;}
         if(phase!=next){
-            phase=next;if(vehicle!=null)vehicle.discard();mc.particleEngine.clearParticles();VehicleAtmosphere.clear();VehicleWeaponHeat.clear();VehicleImpactMarks.clear();LoosePanels.clear();PanelInteriors.clear();VehicleWeather.clear();VehicleWaterEffects.clear();VehicleSurfaceBuildup.clear();SmallVehicleMotion.clear();
+            phase=next;if(vehicle!=null)vehicle.discard();mc.particleEngine.clearParticles();VehicleAtmosphere.clear();VehicleWeaponHeat.clear();VehicleImpactMarks.clear();LoosePanels.clear();PanelInteriors.clear();VehicleWeather.clear();VehicleWaterEffects.clear();VehicleSurfaceBuildup.clear();SmallVehicleMotion.clear();WreckAppearance.clear();
             vehicle=ContentRegistries.plane().get(NAMES[phase])!=null?new Plane(mc):ContentRegistries.heli().get(NAMES[phase])!=null?new Heli(mc):ContentRegistries.ship().get(NAMES[phase])!=null?new Boat(mc):new Tank(mc);
             vehicle.setId(975000+phase);vehicle.setAircraftTypeName(NAMES[phase]);vehicle.setTextureName(NAMES[phase]);vehicle.setPos(0,-60,20);
             var parts=vehicle.getParts();for(int i=0;i<parts.length;i++)parts[i].setId(985000+phase*100+i);
@@ -86,7 +86,15 @@ public final class LivingVehiclePreviewProbe {
             if(STEP==5)command(mc,"weather clear","fillbiome -16 -60 8 16 -48 36 plains");
             System.out.println("M8_LIVING stage="+STEP+" vehicle="+NAMES[phase]);
         }
-        if(age==95||age==145||age==180||(STEP==3||STEP==5)&&age==205)capture=NAMES[phase]+"-age"+age;
+        if(age==95||age==145||age==180||STEP==9&&age==700||(STEP==3||STEP==5)&&age==205)capture=NAMES[phase]+"-age"+age;
+        if(STEP==9&&age==850){
+            if(WreckAppearance.removed(vehicle)!=0||LoosePanels.pieces()!=0)throw new IllegalStateException("Repair retained wreck parts: removed="+WreckAppearance.removed(vehicle)+" debris="+LoosePanels.pieces()+" dead="+vehicle.isDestroyed());
+            System.out.println("M8_WRECK repair_restored=true");
+        }
+        if(STEP==9&&age==180){
+            if(WreckAppearance.removed(vehicle)==0)throw new IllegalStateException("Missing wreck breakup");
+            System.out.println("M8_WRECK removed="+WreckAppearance.removed(vehicle)+" debris="+LoosePanels.pieces());
+        }
         if(STEP==8&&age==180){
             if(SmallVehicleMotion.moved(vehicle)==0)throw new IllegalStateException("Missing small part motion");
             if(phase==2&&(!LoosePanels.detached(vehicle)||PanelInteriors.cables()==0))throw new IllegalStateException("Missing exposed cables");

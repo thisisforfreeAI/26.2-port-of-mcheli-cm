@@ -16,6 +16,6 @@ public final class WreckCoolingLook {
         lastCookoffAge=age;return true;
     }
     public int age() { return age; }
-    public float fire() { return age < 0 ? 0 : Math.max(0, 1 - age / 240F); }
-    public float smoke() { return age < 0 ? 0 : Math.max(0, 1 - age / 1000F); }
+    public float fire() { return age < 0 ? 0 : Math.max(0, 1 - age / 360F); }
+    public float smoke() { return age < 0 ? 0 : Math.max(0, 1 - age / 1200F); }
 }

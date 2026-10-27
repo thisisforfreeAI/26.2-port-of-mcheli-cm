@@ -406,3 +406,11 @@ See [implementation and limits](M8_LIVING_VEHICLES.md) and the
 client work and shared geometry/particle admission. Original craters, handling and gameplay
 damage are unchanged; Claude's NTM integration remains separate. Target-PC 60 FPS acceptance
 remains open.
+
+## Wreck aftermath refinement
+
+[Wreck aftermath](M8_WRECK_AFTERMATH.md) adds selective part loss, damaged outer wings,
+readable burn surfaces, supported opening detail, localized fire/cook-offs, restrained
+settling and longer-lived nearby debris. See the [native examples](M8_WRECK_GALLERY.md).
+Original hulls remain recognizable; full model-specific destroyed hull assets are separate
+work. Existing collision, handling, craters and NTM ownership are preserved.

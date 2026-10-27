@@ -29,7 +29,7 @@ public final class SmallVehicleMotion {
         }}return future.getNow(null);
     }
     public static void apply(AircraftEntity ac,AircraftRenderState render,float partial){
-        MOVED.put(ac,0);if(render.far||render.thermal||!EffectQuality.enhanced()||!ClientConfig.get(ClientConfig.VEHICLE_SMALL_MOTION))return;
+        MOVED.put(ac,0);if(ac.isDestroyed()||render.far||render.thermal||!EffectQuality.enhanced()||!ClientConfig.get(ClientConfig.VEHICLE_SMALL_MOTION))return;
         var info=ac.getAcInfo();if(info==null)return;float time=ac.level().getGameTime()+partial;int count=0;
         boolean moving=ac.getDeltaMovement().lengthSqr()>.001||ac.getCurrentThrottle()>.2;
         var extra=new ArrayList<AircraftPartPoses.Draw>();

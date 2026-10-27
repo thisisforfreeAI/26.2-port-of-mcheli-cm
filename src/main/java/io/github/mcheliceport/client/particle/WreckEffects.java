@@ -13,20 +13,22 @@ final class WreckEffects {
         float fire=cooling.fire(), density=cooling.smoke();
         if (density<=0) return;
         var engine=Minecraft.getInstance().particleEngine;
-        Vec3 origin=origins.get(Math.floorMod((int)(tick/9+id),origins.size()));
-        Vec3 pos=origin.add(Math.sin(tick*.7+id)*.22,.2,Math.cos(tick*.43+id)*.22);
-        CookoffEffects.emit(level,aircraft,cooling,pos);
+        Vec3 origin=origins.get(Math.floorMod((int)(tick/45+id),origins.size()));
+        Vec3 pos=origin.add(Math.sin(tick*.7+id)*.09,.05,Math.cos(tick*.43+id)*.09);
+        Vec3 ammunition=aircraft instanceof io.github.mcheliceport.entity.tank.TankEntity
+                ?aircraft.position().add(io.github.mcheliceport.util.McheliMath.rotVec3(0,2.1,-.45,-aircraft.getYaw(),-aircraft.getPitch(),-aircraft.getRoll())):pos;
+        CookoffEffects.emit(level,aircraft,cooling,ammunition);
         int pressure=1+EffectPerformance.pressure();
         if (fire>0 && Math.floorMod(tick+id,5*pressure)==0) {
-            float radius=.55F+.55F*fire;
+            float radius=.4F+.5F*fire;
             if (VehicleAtmosphere.admit(level,pos,radius*1.35F)) {
                 engine.add(new WreckFlameParticle(level,pos.x,pos.y+.15,pos.z,radius,.85F*fire));
             }
         }
-        if (fire>.1F && Math.floorMod(tick+id,13*pressure)==0
+        if (fire>.1F && Math.floorMod(tick+id,17*pressure)==0
                 && VehicleAtmosphere.admit(level,pos,.035F)) {
             engine.add(new SparkParticle(level,pos.x,pos.y,pos.z,
-                    Math.sin(tick)*.04,.17,Math.cos(tick)*.04,18,.035F));
+                    Math.sin(tick)*.04,.17,Math.cos(tick)*.04,28,.028F));
         }
         int period=(density>.65F?4:density>.25F?8:16)*pressure;
         if (Math.floorMod(tick+id,period)!=0) return;
