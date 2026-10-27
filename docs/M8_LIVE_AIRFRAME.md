@@ -43,7 +43,8 @@ spars. Associated animated parts beyond a missing section are hidden in their po
   when the corresponding component is repaired or destruction sequences are disabled.
 - Model clipping, surface shading and impact BVH preparation happen on the bounded background
   loader. Each requested mask is cached; source meshes over 60,000 vertices or sections over 9,000
-  vertices keep their original surface. No per-frame clipping or dynamic-light work is added.
+  vertices keep their original surface. Wing clipping requires a body span above five blocks,
+  and rear clipping requires a body length above six blocks, avoiding cuts through tiny bodies. No per-frame clipping or dynamic-light work is added.
 - A first view of an already damaged plane shows its missing sections without replaying fresh
   debris. The damaged silhouette is also applied outside the nearby debris range.
 - A later wreck retains every section already lost, then adds the existing staged cover/right-wing/
@@ -67,3 +68,9 @@ The non-shipping `LiveAirframePreviewProbe`, enabled with `-Dmcheli.probeLiveAir
 `scripts/visual-probe.init.gradle`, renders controlled airborne damage states on three stock
 planes. Native captures are labeled previews, not combat captures; actual damage and persistence
 are checked separately by the server GameTests.
+
+
+Validation result: **374 unit tests, 271 normal required GameTests and 279 with NTM Next passed**.
+The full three-plane Vulkan run passed nine live failure checks, six repairs, three toggle
+cleanups and three wreck-preservation checks. [Twelve native screenshots](M8_LIVE_AIRFRAME_GALLERY.md)
+and [machine-readable evidence](performance/m8-realism/live-airframe.json) are included.

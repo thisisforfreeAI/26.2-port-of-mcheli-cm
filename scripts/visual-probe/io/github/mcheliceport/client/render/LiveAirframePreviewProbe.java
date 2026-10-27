@@ -17,6 +17,7 @@ import net.neoforged.neoforge.client.event.*;
 @EventBusSubscriber(modid="mcheli_ce_port",value=Dist.CLIENT)
 public final class LiveAirframePreviewProbe {
     private static final boolean ENABLED=Boolean.getBoolean("mcheli.probeLiveAirframe");
+    private static final int START=Integer.getInteger("mcheli.probeAirframeStart",0);
     private static final String[] NAMES={"f-35a","f-15e","a-10"};
     private static int ticks,phase=-1,age;private static PlaneEntity plane;private static String capture;
     private static final class PreviewPlane extends PlaneEntity {
@@ -38,7 +39,7 @@ public final class LiveAirframePreviewProbe {
             ClientConfig.EFFECT_QUALITY.set(EffectQuality.ENHANCED);ClientConfig.VEHICLE_DAMAGE_DETAILS.set(true);ClientConfig.VEHICLE_DESTRUCTION_SEQUENCES.set(true);
             ClientConfig.ENGINE_STARTUP_EFFECTS.set(false);ClientConfig.EFFECT_BUDGET.set(ClientConfig.EffectBudget.BALANCED);ClientConfig.ADAPTIVE_EFFECTS.set(false);
         }
-        if(ticks<160)return;int next=(ticks-160)/380;age=(ticks-160)%380;
+        if(ticks<160)return;int next=START+(ticks-160)/380;age=(ticks-160)%380;
         if(next>=3){System.out.println("M8_LIVE_AIRFRAME all_scenes_passed=true");mc.stop();return;}
         if(next!=phase){
             phase=next;if(plane!=null)plane.discard();VehicleAtmosphere.clear();LoosePanels.clear();WreckAppearance.clear();
@@ -64,7 +65,7 @@ public final class LiveAirframePreviewProbe {
         }
         if(age==300){var s=WreckSequenceEffects.get(plane);if(s==null||s.airframe==null||(s.airframe.mask()&6)!=6)throw new IllegalStateException("Wreck regrew a live-lost part");System.out.println("M8_LIVE_AIRFRAME wreck_preserved=true");}
     }
-    @SubscribeEvent public static void camera(ViewportEvent.ComputeFov event){if(ENABLED&&plane!=null)event.getCamera().setPosition(plane.position().add(9,9,4));}
-    @SubscribeEvent public static void angles(ViewportEvent.ComputeCameraAngles event){if(ENABLED&&plane!=null){event.setYaw(135);event.setPitch(29);event.setRoll(0);}}
+    @SubscribeEvent public static void camera(ViewportEvent.ComputeFov event){if(ENABLED&&plane!=null)event.getCamera().setPosition(plane.position().add(phase==2?new Vec3(12,12,7):new Vec3(9,9,4)));}
+    @SubscribeEvent public static void angles(ViewportEvent.ComputeCameraAngles event){if(ENABLED&&plane!=null){event.setYaw(135);event.setPitch(phase==2?31:29);event.setRoll(0);}}
     @SubscribeEvent public static void frame(RenderFrameEvent.Post event){if(capture!=null){var mc=Minecraft.getInstance();String name=capture;capture=null;Screenshot.grab(mc.gameDirectory,"m8-live-airframe-"+name+".png",mc.gameRenderer.mainRenderTarget(),1,m->System.out.println("M8_LIVE_AIRFRAME "+m.getString()));}}
 }
