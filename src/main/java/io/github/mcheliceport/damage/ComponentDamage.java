@@ -107,13 +107,19 @@ public final class ComponentDamage {
     public static int pick(List<DamageZone> zones, Vec3 from, Vec3 dir, double maxDistance) {
         int best = -1;
         double bestT = Double.POSITIVE_INFINITY;
+        double bestVolume = Double.POSITIVE_INFINITY;
         for (int i = 0; i < zones.size(); i++) {
             DamageZone z = zones.get(i);
             DamageZone grown = new DamageZone(z.kind(), z.index(), z.center(),
                     z.halfSize().add(RAY_SLACK, RAY_SLACK, RAY_SLACK), z.partName());
             double t = grown.entry(from, dir);
-            if (!Double.isNaN(t) && t <= maxDistance && t < bestT) {
+            double volume = z.halfSize().x * z.halfSize().y * z.halfSize().z;
+            // Broad fallback engine boxes can share the wing/tail surface. Prefer the specific zone
+            // at the same entry point, retaining nearest-entry behavior for separate components.
+            if (!Double.isNaN(t) && t <= maxDistance && (t < bestT - 1.0E-6
+                    || Math.abs(t - bestT) <= 1.0E-6 && volume < bestVolume)) {
                 bestT = t;
+                bestVolume = volume;
                 best = i;
             }
         }

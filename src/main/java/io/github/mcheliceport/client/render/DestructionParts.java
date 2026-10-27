@@ -23,11 +23,18 @@ public final class DestructionParts {
     static {var b=new DetailBoxes();b.box(-.8F,0,-.8F,.8F,.035F,.8F);b.box(-.82F,.03F,-.82F,-.73F,.12F,.82F);b.box(.73F,.03F,-.82F,.82F,.12F,.82F);RING=b.group("$open_turret_ring");}
     private DestructionParts(){}
     public static void apply(AircraftEntity ac,AircraftRenderState render,float partial){
-        var s=WreckSequenceEffects.get(ac);if(s==null||render.far||render.texture==null||Minecraft.getInstance().gameRenderer.mainCamera().position().distanceToSqr(ac.position())>40*40)return;
         boolean plane=ac instanceof PlaneEntity,tank=ac instanceof TankEntity;
+        var s=WreckSequenceEffects.get(ac);
+        if(s==null&&plane&&WreckSequenceEffects.enabled()){
+            s=new WreckSequenceEffects.State();s.age=ac.isDestroyed()?1200:-1;
+        }
+        if(s==null||render.texture==null)return;
+        double distance=Minecraft.getInstance().gameRenderer.mainCamera().position().distanceToSqr(ac.position());
+        if(!plane&&(render.far||distance>40*40))return;
         var models=AircraftModels.peek(ac.getAcInfo());if(models==null)return;
         var outlets=EngineExhaustLook.outlets(ac.getAcInfo(),0);Vec3 anchor=outlets.isEmpty()?new Vec3(0,1.8,-2):outlets.getFirst().position();
-        BreakupMeshes.Body body=null;for(var draw:render.draws)for(var group:draw.groups())if(group.name().equals("$body")){body=BreakupMeshes.body(group,plane,anchor);break;}
+        BreakupMeshes.Body body=null;if(distance<=40*40)for(var draw:render.draws)for(var group:draw.groups())if(group.name().equals("$body")){body=BreakupMeshes.body(group,plane,anchor);break;}
+        if(plane){PlaneAirframeParts.apply((PlaneEntity)ac,render,s,body);return;}
         boolean eject=tank&&DestructionTimeline.turret(ac.getAcInfo().name,s.seed,s.heavyAmmo);
         var turretGroups=models.body().groups.stream().filter(g->g.name().startsWith("$weapon")).toList();
         var turret=eject?BreakupMeshes.merge(turretGroups):null;

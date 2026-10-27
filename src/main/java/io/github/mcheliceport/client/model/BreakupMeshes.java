@@ -12,6 +12,40 @@ public final class BreakupMeshes {
     public record Body(McheliModel.Group coverOpen,McheliModel.Group wingGone,McheliModel.Group tailGone,
             McheliModel.Group cover,McheliModel.Group wing,McheliModel.Group tail,McheliModel.Group machinery,
             Bounds bounds,Vec3 opening,float wingCut,float tailCut){}
+    public record Airframe(McheliModel.Group kept,List<McheliModel.Group> sections,McheliModel.Group ribs,
+            Bounds bounds,float leftCut,float rightCut,float tailCut,int mask) {}
+    public static Airframe airframe(McheliModel.Group source,int mask) {
+        if(source.vertexCount()<3||source.vertexCount()>60000)return null;
+        return (Airframe)get(new Key(source,"airframe-"+(mask&7),Vec3.ZERO),()->airframeBuild(source,mask&7));
+    }
+    /** Disjoint left/right/tail sections: combinations cannot duplicate or regrow removed surfaces. */
+    public static Airframe airframeBuild(McheliModel.Group source,int requested) {
+        var b=bounds(source);float left=b.low.x*.55F,right=b.high.x*.55F,tail=b.low.z+(b.high.z-b.low.z)*.27F;
+        var aft=b.high.z-b.low.z>6?split(source,2,tail):new McheliModel.Group[]{empty("$tail"),source};
+        var port=b.high.x-b.low.x>5?split(aft[1],0,left):new McheliModel.Group[]{empty("$left"),aft[1]};
+        var starboard=b.high.x-b.low.x>5?split(port[1],0,right):new McheliModel.Group[]{port[1],empty("$right")};
+        var sections=List.of(port[0],starboard[1],aft[0]);int mask=0;
+        for(int i=0;i<3;i++)if((requested&(1<<i))!=0&&sections.get(i).vertexCount()>0&&sections.get(i).vertexCount()<=9000)mask|=1<<i;
+        var kept=new ArrayList<McheliModel.Group>();kept.add(starboard[0]);
+        for(int i=0;i<3;i++)if((mask&(1<<i))==0)kept.add(sections.get(i));
+        var frame=mask==0?source:join("$body",kept);var ribs=new DetailBoxes();
+        for(int i=0;i<3;i++)if((mask&(1<<i))!=0){
+            int axis=i==2?2:0;float cut=i==0?left:i==1?right:tail;var points=edge(frame,axis,cut);
+            if(points.isEmpty())continue;
+            for(int n=0;n<Math.min(3,points.size());n++){
+                var v=points.get(n*points.size()/Math.min(3,points.size()));
+                if(axis==0)ribs.box(v.x-.12F,v.y-.025F,v.z-.04F,v.x+.12F,v.y+.025F,v.z+.04F);
+                else ribs.box(v.x-.12F,v.y-.025F,v.z-.10F,v.x+.12F,v.y+.025F,v.z+.10F);
+            }
+        }
+        if(mask!=0)prepare(frame);
+        return new Airframe(frame,sections,ribs.group("$airframe_spars"),b,left,right,tail,mask);
+    }
+    private static McheliModel.Group join(String name,List<McheliModel.Group> groups){
+        int size=groups.stream().mapToInt(g->g.data().length).sum();float[] data=new float[size];int at=0;
+        for(var group:groups){System.arraycopy(group.data(),0,data,at,group.data().length);at+=group.data().length;}
+        return new McheliModel.Group(name,data);
+    }
     private record Key(Object source,String kind,Vec3 anchor){}
     private static final Map<Key,CompletableFuture<Object>> CACHE=new LinkedHashMap<>();
     private static final ExecutorService LOADER=Executors.newSingleThreadExecutor(r->{var t=new Thread(r,"mcheli-breakup-sections");t.setDaemon(true);return t;});
