@@ -1,0 +1,131 @@
+{
+  "native_unedited": true,
+  "images": [
+    {
+      "stage": 10,
+      "vehicle": "t-90",
+      "frame": "age145",
+      "file": "docs/screens/m8-sequences/m8-living-10-t-90-age145.png",
+      "sha256": "1751f526a2d39cc0aeb5a3ebb450fee6454bf122c88960b7dcc1b159e08706c6"
+    },
+    {
+      "stage": 10,
+      "vehicle": "t-90",
+      "frame": "age180",
+      "file": "docs/screens/m8-sequences/m8-living-10-t-90-age180.png",
+      "sha256": "a8283e76e2183becffd1ef94437aa49468febc2e086bd5f175e210fe3146aeec"
+    },
+    {
+      "stage": 10,
+      "vehicle": "m1a2",
+      "frame": "age145",
+      "file": "docs/screens/m8-sequences/m8-living-10-m1a2-age145.png",
+      "sha256": "266ceccc24a9ca25c2762a24b069cf5a9f269bdf35d77cacaab6fc15a758f557"
+    },
+    {
+      "stage": 10,
+      "vehicle": "m1a2",
+      "frame": "age180",
+      "file": "docs/screens/m8-sequences/m8-living-10-m1a2-age180.png",
+      "sha256": "34115c36fb6f7e4dd18a9c4022f2709cc52f7469b4ec1fe4d934207d71ad0276"
+    },
+    {
+      "stage": 10,
+      "vehicle": "t84",
+      "frame": "age145",
+      "file": "docs/screens/m8-sequences/m8-living-10-t84-age145.png",
+      "sha256": "8cbc32cdcd4d1d7df6093a18a6ca90aebde5bbbb8211a32c536073bf4511def3"
+    },
+    {
+      "stage": 10,
+      "vehicle": "t84",
+      "frame": "age180",
+      "file": "docs/screens/m8-sequences/m8-living-10-t84-age180.png",
+      "sha256": "7f5f39e7de4d0dc0811e1751e9a42dda0d3fd6607c2c662496fd28c8b395ac1e"
+    },
+    {
+      "stage": 11,
+      "vehicle": "f-35a",
+      "frame": "age180",
+      "file": "docs/screens/m8-sequences/m8-living-11-f-35a-age180.png",
+      "sha256": "fc2e7400dbcf685655fec181e431e032c7936528de7b3f52d37494ccf2f23ca4"
+    },
+    {
+      "stage": 11,
+      "vehicle": "f-35a",
+      "frame": "age350",
+      "file": "docs/screens/m8-sequences/m8-living-11-f-35a-age350.png",
+      "sha256": "8176c9c9438c87b65c13c3a30d85f6060d3de6ae16fb7b9daf5864d7946d0d0c"
+    },
+    {
+      "stage": 11,
+      "vehicle": "f-15e",
+      "frame": "age180",
+      "file": "docs/screens/m8-sequences/m8-living-11-f-15e-age180.png",
+      "sha256": "05529c46802b4211359f1ac22f0fcbba48cecf7a51bcd4a4679df48ae2200abf"
+    },
+    {
+      "stage": 11,
+      "vehicle": "f-15e",
+      "frame": "age350",
+      "file": "docs/screens/m8-sequences/m8-living-11-f-15e-age350.png",
+      "sha256": "e48654003a45cfb064d25561661ad8db4da2bacfe4a72c7cb018a2b0c1eff970"
+    },
+    {
+      "stage": 11,
+      "vehicle": "a-10",
+      "frame": "age180",
+      "file": "docs/screens/m8-sequences/m8-living-11-a-10-age180.png",
+      "sha256": "d94cd953d565da75bd3e939d693c037c575e19d422781ef615a73e16e62d8205"
+    },
+    {
+      "stage": 11,
+      "vehicle": "a-10",
+      "frame": "age350",
+      "file": "docs/screens/m8-sequences/m8-living-11-a-10-age350.png",
+      "sha256": "760237a0b5d6603fdb38f53b6397579d71c50d21b13c24687c18bf979cc03f57"
+    },
+    {
+      "stage": 12,
+      "vehicle": "ah-64",
+      "frame": "strike1",
+      "file": "docs/screens/m8-sequences/m8-living-12-ah-64-strike1.png",
+      "sha256": "205f87ea1b18d03417ee7b99a751a721607d638bc12f9fe0d39b44aa77f26ee3"
+    },
+    {
+      "stage": 12,
+      "vehicle": "ah-64",
+      "frame": "age350",
+      "file": "docs/screens/m8-sequences/m8-living-12-ah-64-age350.png",
+      "sha256": "86a0569ee6e8562fa0d2e5e1d641c4d55f10ad13eadb0069643219be897e2000"
+    },
+    {
+      "stage": 12,
+      "vehicle": "mh-60l_dap",
+      "frame": "strike1",
+      "file": "docs/screens/m8-sequences/m8-living-12-mh-60l_dap-strike1.png",
+      "sha256": "b5e4253141e3d43e0a70a0cf2b8bb042385ef4fe5aef7b869be0e1bb43db3cc2"
+    },
+    {
+      "stage": 12,
+      "vehicle": "mh-60l_dap",
+      "frame": "age350",
+      "file": "docs/screens/m8-sequences/m8-living-12-mh-60l_dap-age350.png",
+      "sha256": "81bf82fe9f0ca0caaf1301643bf660e74546d6c905e8332fcd7954d3c90e1448"
+    },
+    {
+      "stage": 12,
+      "vehicle": "mh-6",
+      "frame": "strike1",
+      "file": "docs/screens/m8-sequences/m8-living-12-mh-6-strike1.png",
+      "sha256": "e3cb9602545e5dc1edd3649d3e3504c362bda9326d8de8fdf070c1f39cfd0be4"
+    },
+    {
+      "stage": 12,
+      "vehicle": "mh-6",
+      "frame": "age350",
+      "file": "docs/screens/m8-sequences/m8-living-12-mh-6-age350.png",
+      "sha256": "6be06a1efae6cc8d66a82f2299379689029f0e26e0daa40d7f55ed2e1fcd19d9"
+    }
+  ]
+}

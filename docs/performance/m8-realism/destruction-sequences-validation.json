@@ -1,0 +1,14 @@
+{
+  "unit_tests": 371,
+  "failures": 0,
+  "native_families": {
+    "10": "Vulkan tanks",
+    "11": "Vulkan planes",
+    "12": "OpenGL helicopters"
+  },
+  "native_vehicles": 9,
+  "native_repair_checks": 9,
+  "native_unedited_images": 18,
+  "target_pc_fps_verified": false,
+  "blood_follow_up": "Compatibility investigation only; no blood/gore behavior enabled."
+}

@@ -414,3 +414,12 @@ readable burn surfaces, supported opening detail, localized fire/cook-offs, rest
 settling and longer-lived nearby debris. See the [native examples](M8_WRECK_GALLERY.md).
 Original hulls remain recognizable; full model-specific destroyed hull assets are separate
 work. Existing collision, handling, craters and NTM ownership are preserved.
+
+## Staged destruction sequences
+
+[Eight staged additions](M8_DESTRUCTION_SEQUENCES.md) implement rare supported turret ejection,
+broken tracks, cover blowouts, wing/tail separation, ground-contact rotor strikes, interior bursts,
+delayed collapse and smoldering openings. [Native examples](M8_DESTRUCTION_SEQUENCES_GALLERY.md)
+cover tanks, planes and helicopters. These remain bounded client presentation with original
+craters and gameplay intact. The separate [blood investigation](M8_VEHICLE_BLOOD_INVESTIGATION.md)
+records vehicle-only attribution and NTM gore exclusions; blood is not enabled yet.

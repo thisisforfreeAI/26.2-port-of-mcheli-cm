@@ -40,3 +40,21 @@ Detached sections are limited to 9,000 vertices and turrets to 12,000; shared de
 to eight pieces and 24,000 vertices total. The shared overlay/atmosphere budgets also apply.
 Repair restores original parts and removes long-lived wreck debris. Target-PC 60 FPS remains
 unmeasured; software-rendered previews validate behavior and limits.
+
+## Native examples and validation
+
+[18 native screenshots](M8_DESTRUCTION_SEQUENCES_GALLERY.md) cover nine stock vehicles.
+Tank and plane families pass Vulkan previews; the rotor family passes OpenGL previews with
+real surface contacts. All three families verify repair restoration. The tank fixture includes
+controlled qualifying rare seeds and an Abrams case that keeps its turret. The unarmed MH-6
+correctly skips ammunition bursts. Evidence is in `docs/performance/m8-realism/destruction-*`.
+Automatic engine covers are rejected if they exceed 18% of the source surface area, avoiding
+removal of most of a tiny hull.
+
+Native previews are controlled cosmetic states, not combat captures or performance measurements.
+Local checks use compile-only optional dependency stand-ins; distributable builds and NTM runtime
+compatibility come from repository CI. No blood effects are enabled by this change; see the
+[vehicle-kill blood investigation](M8_VEHICLE_BLOOD_INVESTIGATION.md) for the requested follow-up.
+
+Final local suite: 371 unit tests pass. Native scene reports preserve the test counts at their
+respective run times; the final tiny-hull guard has its own unit regression check.

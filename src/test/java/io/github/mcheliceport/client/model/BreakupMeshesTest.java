@@ -21,4 +21,10 @@ class BreakupMeshesTest {
         assertTrue(p.bounds().center().x<0);assertTrue(BreakupMeshes.bounds(p.tip()).high().x<-4);
         assertTrue(BreakupMeshes.bounds(p.stem()).high().x>-.01F);
     }
+    @Test void anEngineLidMustNotRemoveMostOfATinyHull(){
+        var box=new DetailBoxes();box.box(-.3F,0,-.5F,.3F,.2F,.5F);var source=box.group("$body");
+        var parts=BreakupMeshes.bodyBuild(source,false,new Vec3(0,.2,0));
+        assertEquals(0,parts.cover().vertexCount());assertArrayEquals(source.data(),parts.coverOpen().data());
+    }
+
 }

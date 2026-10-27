@@ -65,7 +65,7 @@ public final class BreakupMeshes {
             float[] lo={(float)opening.x-.48F,(float)opening.y-.18F,(float)opening.z-.65F};
             float[] hi={(float)opening.x+.48F,(float)opening.y+.12F,(float)opening.z+.65F};
             var cube=boxSplit(source,lo,hi);remaining=cube[0];cover=cube[1];
-            if(cover.vertexCount()>1200){remaining=source;cover=empty("$blown_cover");opening=null;}
+            if(cover.vertexCount()>1200||remaining.vertexCount()<3||area(cover)>area(source)*.18){remaining=source;cover=empty("$blown_cover");opening=null;}
             else if(cover.vertexCount()>0){
                 machinery.box(lo[0],lo[1]-.08F,lo[2],hi[0],lo[1]-.04F,hi[2]);
                 for(int i=0;i<3;i++)machinery.box(lo[0]+.10F+i*.26F,lo[1]-.03F,lo[2]+.12F,lo[0]+.22F+i*.26F,lo[1]+.08F,hi[2]-.12F);
@@ -92,6 +92,12 @@ public final class BreakupMeshes {
         }
         var frames=List.of(remaining,wing[0],tail[1]);for(var frame:frames)prepare(frame);
         return new Body(remaining,wing[0],tail[1],cover,wing[1],tail[0],machinery.group("$exposed_spars"),b,opening,wingCut,tailCut);
+    }
+    private static double area(McheliModel.Group group){
+        double sum=0;var d=group.data();for(int t=0;t+23<d.length;t+=24){
+            double ax=d[t+8]-d[t],ay=d[t+9]-d[t+1],az=d[t+10]-d[t+2],bx=d[t+16]-d[t],by=d[t+17]-d[t+1],bz=d[t+18]-d[t+2];
+            double x=ay*bz-az*by,y=az*bx-ax*bz,z=ax*by-ay*bx;sum+=Math.sqrt(x*x+y*y+z*z)*.5;
+        }return sum;
     }
     private static List<Vector3f> edge(McheliModel.Group group,int axis,float plane){
         var points=new ArrayList<Vector3f>();var d=group.data();for(int i=0;i<d.length;i+=8)if(Math.abs(d[i+axis]-plane)<.002F)points.add(new Vector3f(d[i],d[i+1],d[i+2]));return points;
