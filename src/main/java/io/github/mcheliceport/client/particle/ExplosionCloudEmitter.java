@@ -177,6 +177,8 @@ final class ExplosionCloudEmitter {
         puff.setColor(colour + 0.1F, colour + 0.05F, colour);
         puff.diffusible = true;
         puff.coherentDrift = puff.enhanced;
+        puff.eroding = WreckEffects.refined();
+        if(puff.eroding)puff.useBillow(SmokeAtlas.EXPLOSION);
         puff.silhouetteOpacity = wisp ? .56F : .9F;
         puff.disableCollision();
         puff.particleScale = nominal * ExplosionLook.startScale(power, style, quality);

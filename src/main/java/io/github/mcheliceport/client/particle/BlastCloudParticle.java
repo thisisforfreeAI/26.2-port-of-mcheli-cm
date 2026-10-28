@@ -23,6 +23,9 @@ final class BlastCloudParticle extends SmokeParticle {
     private final boolean base;
     private final double turnSin, turnCos;
     private final int fadeTicks;
+    private final double birthY;
+    private final net.minecraft.client.renderer.texture.TextureAtlasSprite fireArt,coldArt;
+    private final boolean newSmoke;
 
     BlastCloudParticle(ClientLevel level, double x, double y, double z, double mx, double my, double mz,
             float radius, int life, int fireTicks, float opacity) {
@@ -53,6 +56,11 @@ final class BlastCloudParticle extends SmokeParticle {
         this.smokePhase = this.random.nextInt(4);
         this.setSprite(modern && !this.modern ? sprite(TEXTURE) : art);
         this.radius = radius;
+        this.birthY=y;this.eroding=WreckEffects.refined();
+        this.fireArt=this.sprite;
+        this.coldArt=this.eroding?sprite(opacity<.7F?SmokeAtlas.WISPS:SmokeAtlas.EXPLOSION):this.sprite;
+        this.newSmoke=this.eroding&&(this.coldArt.contents().name().equals(SmokeAtlas.EXPLOSION)
+                ||this.coldArt.contents().name().equals(SmokeAtlas.WISPS));
         this.delay = Math.clamp(delay, 0, 12);
         this.base = base;
         this.lifetime = Math.min(128, life + this.delay);
@@ -61,7 +69,7 @@ final class BlastCloudParticle extends SmokeParticle {
         this.opacity = opacity;
         this.hasPhysics = false;
         this.angle = this.modern ? (this.random.nextFloat()-.5F)*.5F : this.random.nextInt(4) * (float) (Math.PI / 2);
-        this.smokeShade = 0.78F + this.random.nextFloat() * 0.22F;
+        this.smokeShade = (this.eroding?.70F:.78F) + this.random.nextFloat() * (this.eroding?.28F:.22F);
         // The dedicated heat curve below controls fire lighting; inherited sampling stays ambient.
         this.heat = 0;
         double turn = (this.random.nextBoolean() ? 1 : -1) * (0.018 + this.random.nextDouble() * 0.025);
@@ -88,6 +96,10 @@ final class BlastCloudParticle extends SmokeParticle {
                 drag, this.age - this.delay);
         this.zd = BlastSmokeMotion.advect(this.zd, BlastSmokeMotion.windZ(this.level.getGameTime()),
                 drag, this.age - this.delay);
+        if(this.eroding && this.age-this.delay>=this.fireTicks){
+            double curlField=SmokeBillowLook.blastCurl(this.level.getGameTime(),this.angle,this.y-this.birthY,this.age-this.delay,this.base);
+            this.xd+=curlField;this.zd-=curlField*.65;
+        }
     }
 
     @Override public void extract(QuadParticleRenderState state, Camera camera, float partialTick) {
@@ -96,8 +108,13 @@ final class BlastCloudParticle extends SmokeParticle {
         if (age <= this.delay) return;
         float localAge = Math.max(0, age - this.delay);
         // Advance through fire promptly, then spend most of the lifetime as non-emissive smoke.
-        if (localAge < this.fireTicks) this.frame = Math.min(11, (int) (localAge * 12 / this.fireTicks));
-        else this.frame = BlastReadability.smokeFrame(localAge,this.fireTicks,this.lifetime-this.delay,this.smokePhase);
+        if(this.newSmoke&&localAge>=this.fireTicks){
+            this.setSprite(this.coldArt);this.frame=SmokeAtlas.frame(localAge-this.fireTicks,this.lifetime-this.delay-this.fireTicks);
+        }else{
+            this.setSprite(this.fireArt);
+            if (localAge < this.fireTicks) this.frame = Math.min(11, (int) (localAge * 12 / this.fireTicks));
+            else this.frame = BlastReadability.smokeFrame(localAge,this.fireTicks,this.lifetime-this.delay,this.smokePhase);
+        }
         this.alpha = this.opacity * ExplosionSequence.cloudAlpha(age, this.lifetime, this.delay, this.fireTicks > 0, this.fadeTicks);
         if (this.modern) this.alpha *= this.fireTicks>0 ? 0.92F : 0.84F;
         float shade = localAge >= this.fireTicks ? this.smokeShade : 1;

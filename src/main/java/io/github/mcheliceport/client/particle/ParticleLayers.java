@@ -28,10 +28,20 @@ public final class ParticleLayers {
     public static final SingleQuadParticle.Layer ADDITIVE = new SingleQuadParticle.Layer(true,
             TextureAtlas.LOCATION_PARTICLES, ADDITIVE_PIPELINE);
 
+    private static final RenderPipeline ERODING_SMOKE_PIPELINE = RenderPipeline.builder(RenderPipelines.PARTICLE_SNIPPET)
+            .withLocation(Identifier.fromNamespaceAndPath(McheliCePort.MOD_ID, "pipeline/eroding_smoke"))
+            .withFragmentShader(Identifier.fromNamespaceAndPath(McheliCePort.MOD_ID, "core/eroding_smoke"))
+            .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
+            .withDepthStencilState(new DepthStencilState(CompareOp.GREATER_THAN_OR_EQUAL, false))
+            .build();
+    static final SingleQuadParticle.Layer ERODING_SMOKE = new SingleQuadParticle.Layer(true,
+            TextureAtlas.LOCATION_PARTICLES, ERODING_SMOKE_PIPELINE);
+
     private ParticleLayers() {
     }
 
     public static void registerPipelines(RegisterRenderPipelinesEvent event) {
         event.registerPipeline(ADDITIVE_PIPELINE);
+        event.registerPipeline(ERODING_SMOKE_PIPELINE);
     }
 }

@@ -16,6 +16,21 @@
       "type": "minecraft:single",
       "resource": "mcheli_ce_port:particle/m8_modern_blast_cloud",
       "sprite": "mcheli_ce_port:m8_modern_blast_cloud"
+    },
+    {
+      "type": "minecraft:single",
+      "resource": "mcheli_ce_port:particle/m8_billow_explosion",
+      "sprite": "mcheli_ce_port:m8_billow_explosion"
+    },
+    {
+      "type": "minecraft:single",
+      "resource": "mcheli_ce_port:particle/m8_billow_wreck",
+      "sprite": "mcheli_ce_port:m8_billow_wreck"
+    },
+    {
+      "type": "minecraft:single",
+      "resource": "mcheli_ce_port:particle/m8_billow_wisps",
+      "sprite": "mcheli_ce_port:m8_billow_wisps"
     }
   ]
 }

@@ -373,6 +373,22 @@ system. Preserve original crater formation and size VFX to its reported footprin
 until player acceptance. [Implementation](M8_MODERN_EXPLOSIONS.md) adds the saved menu toggle,
 modern atlas and per-weapon rendering path. Target-PC 60 FPS/artistic acceptance remains open.
 
+## Smoke refinement work
+
+Implemented smoke goals; native validation and target-PC acceptance are tracked separately:
+
+- [x] Connected rolling billows with shared motion instead of separated identical puffs.
+- [x] Distinct blast expansion and sustained, height-shaped wreck plumes.
+- [x] Dense cores and broken edges, with smaller wisps dispersing earlier.
+- [x] Varied internal contrast and localized brief amber light close to fire.
+- [x] Uneven wreck emission that settles into interrupted smoke as the wreck cools.
+- [x] Edge breakup during dissipation rather than uniform whole-puff transparency.
+
+[Implementation and limits](M8_SMOKE_BILLOWS.md) add three approved 16-frame sprite families
+(48 total), shared wind and existing admission; preserve Classic behavior and original crater
+formation. Retain the 60 FPS goal and keep NTM integration separate. The aircraft graphics
+ideas below remain queued independently.
+
 ## Planned aircraft and destruction graphics additions
 
 The following eight ideas are approved for the roadmap and remain pending implementation.
