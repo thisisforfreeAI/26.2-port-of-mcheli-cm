@@ -35,7 +35,7 @@ public final class LoosePanels {
     private static final class Piece {
         final AircraftEntity owner;final McheliModel.Group group;final Identifier texture;final Matrix4f local;
         Vec3 position,previous,velocity,sampled;float phase;final int light;
-        int age,restAge,life=60,airframeBit,controlSlot=-1;boolean scar;boolean bounced,settled;
+        int age,restAge,life=60,airframeBit,controlSlot=-1;boolean scar,skin;boolean bounced,settled;
         Piece(AircraftEntity owner,McheliModel.Group group,Identifier texture,Matrix4f local,Vec3 position,int light){
             this.owner=owner;this.group=group;this.texture=texture;this.local=local;this.position=this.previous=this.sampled=position;
             this.velocity=owner.getDeltaMovement().scale(.3).add(position.subtract(owner.position()).multiply(1,0,1).normalize().scale(.12)).add(0,.22,0);this.light=light;phase=(owner.getId()%17)*.2F;
@@ -65,6 +65,14 @@ public final class LoosePanels {
                 owner.position().subtract(new Vec3(owner.xo,owner.yo,owner.zo))).add(v.x,v.y,v.z);return true;
     }
     public static int airframePieces(AircraftEntity owner){return (int)PIECES.stream().filter(p->p.owner==owner&&p.airframeBit!=0).count();}
+    public static boolean skinPiece(AircraftEntity owner,Identifier texture,McheliModel.Group group,
+            Matrix4f pose,Vector3f center,Vec3 impulse,int bit){
+        if(!airframePiece(owner,texture,group,pose,center,impulse,bit))return false;
+        var piece=PIECES.getLast();piece.skin=true;piece.life=36;
+        if(owner.isDestroyed())piece.airframeBit=0;
+        return true;
+    }
+    public static int skinPieces(AircraftEntity owner){return (int)PIECES.stream().filter(p->p.owner==owner&&p.skin).count();}
     public static boolean controlPiece(AircraftEntity owner,Identifier texture,McheliModel.Group group,Matrix4f pose,Vector3f center,int slot){
         if(!scatter(owner,texture,group,pose,center,Vec3.ZERO))return false;
         var piece=PIECES.getLast();piece.controlSlot=slot;piece.life=120;piece.phase=0;
@@ -130,7 +138,8 @@ public final class LoosePanels {
     @SubscribeEvent public static void tick(ClientTickEvent.Post event){
         var mc=Minecraft.getInstance();if(world!=mc.level||!enabled()){clear();return;}if(world==null||mc.isPaused())return;
         long tick=world.getGameTime();STATES.entrySet().removeIf(e->e.getKey().isRemoved()||e.getKey().level()!=world||mc.gameRenderer.mainCamera().position().distanceToSqr(e.getKey().position())>96*96);
-        PIECES.removeIf(p->p.owner.isRemoved() || ++p.age>p.life
+        PIECES.removeIf(p->p.owner.isRemoved() || ++p.age>p.life || p.skin&&(!io.github.mcheliceport.client.particle.WreckSequenceEffects.enabled()
+                ||p.airframeBit==0&&!p.owner.isDestroyed())
                 || (p.controlSlot>=0 ? !DamagedControlSurfaces.missing(p.owner,p.controlSlot)
                 : p.airframeBit!=0 ? !io.github.mcheliceport.client.particle.WreckSequenceEffects.enabled()
                 || (io.github.mcheliceport.damage.AirframeDamage.missing(p.owner)&p.airframeBit)==0
@@ -148,7 +157,7 @@ public final class LoosePanels {
                 }
                 var n=new Vec3(hit.getDirection().getStepX(),hit.getDirection().getStepY(),hit.getDirection().getStepZ());
                 p.position=hit.getLocation().add(n.scale(.1));p.previous=p.position;
-                if(p.bounced){p.settled=true;p.restAge=p.age;p.velocity=Vec3.ZERO;if(!p.scar){io.github.mcheliceport.client.effect.FluidStains.add(world,p.position.add(0,.2,0),false);p.scar=true;}p.age=Math.max(p.age,Math.min(42,p.life-18));}
+                if(p.bounced){p.settled=true;p.restAge=p.age;p.velocity=Vec3.ZERO;if(!p.scar&&!p.skin){io.github.mcheliceport.client.effect.FluidStains.add(world,p.position.add(0,.2,0),false);p.scar=true;}p.age=Math.max(p.age,Math.min(42,p.life-18));}
                 else{p.bounced=true;p.velocity=p.velocity.subtract(n.scale(1.25*p.velocity.dot(n))).scale(.3);}
             }
             p.sampled=p.position;
