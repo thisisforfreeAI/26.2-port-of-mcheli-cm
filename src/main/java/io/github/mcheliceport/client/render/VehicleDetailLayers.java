@@ -24,5 +24,11 @@ public final class VehicleDetailLayers {
         if(count==0||vertices+count>cap)return false;vertices+=count;
         render.detailDraws.add(new AircraftRenderState.DetailDraw(texture,new Matrix4f(pose),List.copyOf(groups),color));return true;
     }
+    /** Structural closure (cut caps and inner lining) is never dropped for budget, or the airframe reads as hollow. */
+    public static boolean require(AircraftRenderState render,Matrix4f pose,Identifier texture,List<McheliModel.Group> groups,int color){
+        if(render.far||render.thermal)return false;
+        int count=groups.stream().mapToInt(McheliModel.Group::vertexCount).sum();if(count==0)return false;vertices+=count;
+        render.detailDraws.add(new AircraftRenderState.DetailDraw(texture,new Matrix4f(pose),List.copyOf(groups),color));return true;
+    }
     public static int vertices(){return vertices;}
 }
