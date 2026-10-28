@@ -32,7 +32,7 @@ import net.neoforged.neoforge.client.event.*;
 public final class BreakawayProbe {
     private static final boolean ENABLED=Boolean.getBoolean("mcheli.probeBreakaway");
     private static final String[] NAMES=System.getProperty("mcheli.probeBreakawayPlanes","f22a,f-35a,f-15e,a-10").split(",");
-    private static final Vec3 HOME=new Vec3(0,-47,20);
+    private static Vec3 HOME=Vec3.ZERO;private static double ground;
     private static final int PHASE=300;
     private static int ticks,phase=-1,age;private static PlaneEntity plane;private static String capture;private static boolean created;
     private static Vec3 eye,target;
@@ -47,7 +47,8 @@ public final class BreakawayProbe {
     }
     @SubscribeEvent public static void screen(ScreenEvent.Init.Post event){
         if(!ENABLED||created||Minecraft.getInstance().level!=null)return;
-        if(!(event.getScreen() instanceof TitleScreen||event.getScreen() instanceof DisconnectedScreen))return;
+        if(!(event.getScreen() instanceof TitleScreen||event.getScreen() instanceof DisconnectedScreen
+                ||event.getScreen() instanceof net.minecraft.client.gui.screens.AccessibilityOnboardingScreen))return;
         var mc=Minecraft.getInstance();created=true;
         if(mc.getLevelSource().levelExists("M6Smoke")){mc.createWorldOpenFlows().openWorld("M6Smoke",()->mc.gui.setScreen(new TitleScreen()));return;}
         var settings=new LevelSettings("M6Smoke",GameType.CREATIVE,new LevelSettings.DifficultySettings(Difficulty.PEACEFUL,false,false),true,WorldDataConfiguration.DEFAULT);
@@ -57,15 +58,29 @@ public final class BreakawayProbe {
         var s=WreckSequenceEffects.get(plane);if(s==null||s.airframe==null)return null;var p=s.airframe.openings().get(bit);
         return p==null?null:plane.position().add(McheliMath.rotVec3(p,-plane.getYaw(),-plane.getPitch(),-plane.getRoll())).add(0,AircraftInfo.GLOBAL_Y_OFFSET,0);
     }
+    /** The newest flying section, read reflectively so production code needs no probe hook. */
+    private static Vec3 piece(){
+        try{var f=LoosePanels.class.getDeclaredField("PIECES");f.setAccessible(true);var list=(java.util.List<?>)f.get(null);
+            for(int i=list.size()-1;i>=0;i--){var p=list.get(i);var t=p.getClass().getDeclaredField("tear");t.setAccessible(true);
+                if(t.get(p)!=null){var at=p.getClass().getDeclaredField("position");at.setAccessible(true);return (Vec3)at.get(p);}}
+        }catch(ReflectiveOperationException e){throw new IllegalStateException(e);}
+        return null;
+    }
     private static void shot(String name,Vec3 at,Vec3 from){if(at==null){System.out.println("M8_BREAKAWAY missing anchor for "+name);return;}target=at;eye=at.add(from);capture=NAMES[phase]+"-"+name;}
     @SubscribeEvent public static void tick(ClientTickEvent.Post event){
         if(!ENABLED)return;var mc=Minecraft.getInstance();if(mc.level==null||mc.player==null||mc.isPaused())return;
         if(++ticks==40){
-            for(String c:new String[]{"kill @e[type=!minecraft:player]","gamemode spectator","time set noon","weather clear","gamerule minecraft:advance_time false","tp @s -8 -44 14 -45 20"})mc.player.connection.sendCommand(c);
+            for(String c:new String[]{"kill @e[type=!minecraft:player]","gamemode spectator","time set noon","weather clear","gamerule minecraft:advance_time false"})mc.player.connection.sendCommand(c);
             mc.getWindow().setWindowed(1280,720);mc.options.enableVsync().set(false);mc.options.framerateLimit().set(60);if(!mc.gui.hud.isHidden())mc.gui.hud.toggle();
             ClientConfig.EFFECT_QUALITY.set(EffectQuality.ENHANCED);ClientConfig.VEHICLE_DAMAGE_DETAILS.set(true);ClientConfig.VEHICLE_DESTRUCTION_SEQUENCES.set(true);
             ClientConfig.EFFECT_STYLE.set(ClientConfig.EffectStyle.POLISHED);ClientConfig.ENGINE_STARTUP_EFFECTS.set(false);
             ClientConfig.EFFECT_BUDGET.set(ClientConfig.EffectBudget.BALANCED);ClientConfig.ADAPTIVE_EFFECTS.set(false);
+        }
+        if(ticks==150){
+            // Wherever the world spawned us: lit, loaded chunks, about 12 blocks above the local ground.
+            var at=mc.player.blockPosition().offset(0,0,14);
+            ground=mc.level.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING,at.getX(),at.getZ());
+            HOME=new Vec3(at.getX()+.5,Math.max(ground+12,mc.player.getY()+2),at.getZ()+.5);System.out.println("M8_BREAKAWAY home="+HOME+" ground="+ground);
         }
         if(ticks<160)return;int next=(ticks-160)/PHASE;age=(ticks-160)%PHASE;
         if(next>=NAMES.length){System.out.println("M8_BREAKAWAY done");mc.stop();return;}
@@ -76,14 +91,15 @@ public final class BreakawayProbe {
             mc.level.addEntity(plane);damage(0);eye=HOME.add(-12,4,-8);target=HOME;System.out.println("M8_BREAKAWAY scene="+NAMES[phase]);
         }
         if(age==40)damage(AirframeDamage.LEFT);
-        if(age==44)shot("1-wing-separation",opening(AirframeDamage.LEFT),new Vec3(-6,2.5,-6));
-        if(age==58)shot("2-falling-trail",opening(AirframeDamage.LEFT).add(0,-5,0),new Vec3(-11,3,-9));
+        if(age==47)shot("1-wing-separation",piece(),new Vec3(-5,2,-5));
+        if(age==58)shot("2-falling-trail",piece(),new Vec3(-6,2.5,-6));
+        if(age==68)shot("2b-falling-trail",piece(),new Vec3(-5,1.5,-5));
         if(age==100)shot("3-wing-stump",opening(AirframeDamage.LEFT),new Vec3(-2.8,1.3,-1.9));
         if(age==106)shot("4-wing-stump-grazing",opening(AirframeDamage.LEFT),new Vec3(-1.4,.35,2.4));
         if(age==130)damage(AirframeDamage.LEFT|AirframeDamage.TAIL);
-        if(age==134)shot("5-tail-separation",opening(AirframeDamage.TAIL),new Vec3(-5,2.5,-7));
+        if(age==137)shot("5-tail-separation",piece(),new Vec3(-5,2.5,-7));
         if(age==175)shot("6-tail-stump",opening(AirframeDamage.TAIL),new Vec3(-1.6,1.1,-3.2));
-        if(age==210)shot("7-landed-pieces",new Vec3(HOME.x-3,-60,HOME.z-3),new Vec3(-9,5,-8));
+        if(age==200)shot("7-landed-pieces",piece(),new Vec3(-4,2.5,-4));
         if(age==260)shot("8-overview",HOME.add(0,-5,-2),new Vec3(-13,5,-12));
         if(age%20==0)System.out.println("M8_BREAKAWAY age="+age+" pieces="+LoosePanels.pieces()+" detail_vertices="+VehicleDetailLayers.vertices());
     }

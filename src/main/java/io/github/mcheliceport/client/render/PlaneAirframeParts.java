@@ -16,7 +16,7 @@ import org.joml.Vector3f;
 public final class PlaneAirframeParts {
     private static final Identifier METAL=Identifier.withDefaultNamespace("textures/block/iron_block.png");
     /** Inner skin is the aircraft's own paint in shadow; bulkheads are bare scorched alloy. */
-    static final int LINING=0xFF4A4743,CAP=0xFF3D3934;
+    static final int LINING=0xFF6A665F,CAP=0xFF3D3934;
     private PlaneAirframeParts() {}
     public static boolean tailMissing(PlaneEntity ac) {var state=WreckSequenceEffects.get(ac);return state!=null&&state.tail;}
     public static void apply(PlaneEntity ac,AircraftRenderState render,WreckSequenceEffects.State state,BreakupMeshes.Body engineBody) {
