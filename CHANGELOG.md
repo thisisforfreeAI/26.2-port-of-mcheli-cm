@@ -11,6 +11,13 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 ## [Unreleased]
 
 ### Added
+- AI fire control: wingmen and aircraft on mission orders pick the weapon that suits their target
+  (air-to-air missiles and guns at aircraft, ground missiles, rockets and bombs at vehicles, guns at
+  mobs), lead a moving target and allow for drop with guns and rockets, release bombs where they will
+  land, launch missiles only at a target in front, and fly strafing passes that pull off and come
+  round again. Planes flown by the AI bank into their turns, no longer drift sideways, and circle a
+  landed or hovering leader instead of hanging in the air. `ai.difficulty` now also sets how well
+  they aim. See `docs/M10_AI_FIRE_CONTROL.md`.
 - Weather and night (M10e): rain gusts flying helicopters and planes (more up high, doubled in a
   storm, with a camera shake), snow above the clouds ices them up and costs up to 10% of top
   speed. Rain and storms shorten radar and heat seeker ranges, night shortens other locks and AI
