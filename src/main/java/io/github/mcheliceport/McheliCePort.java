@@ -73,6 +73,7 @@ public final class McheliCePort {
         io.github.mcheliceport.combat.WatcherMotion.register();
         io.github.mcheliceport.combat.AntiCheat.register();
         io.github.mcheliceport.damage.ComponentEffects.register();
+        io.github.mcheliceport.weather.FlightWeather.register();
     }
 
     private void commonSetup(FMLCommonSetupEvent event) {

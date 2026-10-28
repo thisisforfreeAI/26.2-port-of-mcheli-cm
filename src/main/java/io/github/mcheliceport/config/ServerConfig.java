@@ -45,6 +45,17 @@ public final class ServerConfig {
     public static final ModConfigSpec.BooleanValue NPC_BATTLES;
     public static final ModConfigSpec.EnumValue<AiSkill> AI_DIFFICULTY;
     public static final ModConfigSpec.BooleanValue AI_TERRAIN;
+    public static final ModConfigSpec.BooleanValue WEATHER;
+    public static final ModConfigSpec.DoubleValue WEATHER_RADAR_RAIN;
+    public static final ModConfigSpec.DoubleValue WEATHER_RADAR_THUNDER;
+    public static final ModConfigSpec.DoubleValue WEATHER_IR_RAIN;
+    public static final ModConfigSpec.DoubleValue WEATHER_IR_THUNDER;
+    public static final ModConfigSpec.DoubleValue WEATHER_IR_SNOW;
+    public static final ModConfigSpec.DoubleValue WEATHER_VISUAL_NIGHT;
+    public static final ModConfigSpec.DoubleValue WEATHER_GUST_MIN;
+    public static final ModConfigSpec.DoubleValue WEATHER_GUST_MAX;
+    public static final ModConfigSpec.DoubleValue WEATHER_ICING_HEIGHT;
+    public static final ModConfigSpec.DoubleValue WEATHER_ICE_SLOW;
     public static final ModConfigSpec.BooleanValue PROJECTILE_CHUNK_LOAD;
     public static final ModConfigSpec.IntValue PROJECTILE_CHUNK_LEASE_TICKS;
     public static final ModConfigSpec.IntValue LAG_COMPENSATION_MAX_MS;
@@ -189,6 +200,44 @@ public final class ServerConfig {
         AI_TERRAIN = builder
                 .comment("AI pilots climb over terrain they see ahead. false: upstream's flight, which can fly into hills.")
                 .define("terrainAvoidance", true);
+        builder.pop();
+
+        builder.comment("M10e weather and night on flight and sensors (a port addition). Ranges are shares of the",
+                        "clear-weather range.").push("weather");
+        WEATHER = builder
+                .comment("Rain, thunder, snow and night change flight and sensors. false: upstream's clear skies.")
+                .define("enabled", true);
+        WEATHER_RADAR_RAIN = builder
+                .comment("Radar range, and how far the eye sees, in rain.")
+                .defineInRange("radarRain", 0.85, 0.0, 1.0);
+        WEATHER_RADAR_THUNDER = builder
+                .comment("Radar range, and how far the eye sees, in a thunderstorm.")
+                .defineInRange("radarThunder", 0.70, 0.0, 1.0);
+        WEATHER_IR_RAIN = builder
+                .comment("Heat seeker lock range in rain.")
+                .defineInRange("irRain", 0.80, 0.0, 1.0);
+        WEATHER_IR_THUNDER = builder
+                .comment("Heat seeker lock range in a thunderstorm.")
+                .defineInRange("irThunder", 0.60, 0.0, 1.0);
+        WEATHER_IR_SNOW = builder
+                .comment("Heat seeker lock range in falling snow.")
+                .defineInRange("irSnow", 0.85, 0.0, 1.0);
+        WEATHER_VISUAL_NIGHT = builder
+                .comment("Range of locks that are neither radar nor heat seekers at night, and of AI pilots looking for",
+                        "targets, without night or thermal vision, a searchlight or a lit target.")
+                .defineInRange("visualNight", 0.60, 0.0, 1.0);
+        WEATHER_GUST_MIN = builder
+                .comment("Least gust drift in rain, in blocks a tick; doubled in a storm and up to doubled by height.")
+                .defineInRange("gustMin", 0.02, 0.0, 1.0);
+        WEATHER_GUST_MAX = builder
+                .comment("Most gust drift in rain, in blocks a tick.")
+                .defineInRange("gustMax", 0.05, 0.0, 1.0);
+        WEATHER_ICING_HEIGHT = builder
+                .comment("Height above which vehicles ice up in falling snow (the clouds' height).")
+                .defineInRange("icingHeight", 192.0, -64.0, 2048.0);
+        WEATHER_ICE_SLOW = builder
+                .comment("Share of its top speed a fully iced vehicle loses.")
+                .defineInRange("iceSlow", 0.10, 0.0, 1.0);
         builder.pop();
 
         builder.comment("Keeping chunks loaded along the flight path of projectiles, so bullets, rockets and missiles",

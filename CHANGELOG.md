@@ -11,6 +11,12 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 ## [Unreleased]
 
 ### Added
+- Weather and night (M10e): rain gusts flying helicopters and planes (more up high, doubled in a
+  storm, with a camera shake), snow above the clouds ices them up and costs up to 10% of top
+  speed. Rain and storms shorten radar and heat seeker ranges, night shortens other locks and AI
+  search ranges unless night or thermal vision, a searchlight or a lit target helps, and nearby
+  lightning blanks radar for 2 seconds. A HUD line shows `GUST`, `STORM`, `ICE`, `NIGHT` and
+  `RADAR OFF`. New server config `[weather]`. See `docs/M10_WEATHER_NIGHT.md`.
 - Smarter AI pilots (M10d): wingmen and aircraft on mission orders look ahead for terrain and climb
   before hills, fire their decoys at a homing missile after a reaction time and turn away from it,
   and break off (or fly home from an order) once an engine or rotor is disabled. New server config

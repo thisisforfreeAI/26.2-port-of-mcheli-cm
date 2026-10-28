@@ -15,6 +15,7 @@ import io.github.mcheliceport.util.McheliMath;
 import io.github.mcheliceport.util.McheliSounds;
 import io.github.mcheliceport.weapon.DamageScaling;
 import io.github.mcheliceport.weapon.WeaponWorld;
+import io.github.mcheliceport.weather.FlightWeather;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundSource;
@@ -209,10 +210,12 @@ public class WeaponGuidanceSystem extends EntityGuidanceSystem {
         List<Entity> canLock = this.world.getEntities(user, user.getBoundingBox().inflate(this.lockRange));
         Entity potentialTarget = null;
         double minDistSq = this.lockRange * this.lockRange * 2.0;
+        FlightWeather.Conditions weather = FlightWeather.at(this.world, user.position());
         for (Entity current : canLock) {
             if (!this.canLockEntity(current)) {
                 continue;
             }
+            double range = this.lockRange * this.weatherFactor(weather, user, current);
             double dx = current.getX() - user.getX();
             double dy = current.getY() - user.getY();
             double dz = current.getZ() - user.getZ();
@@ -220,7 +223,7 @@ public class WeaponGuidanceSystem extends EntityGuidanceSystem {
             Entity locker = this.getLockEntity(user);
             float stealth = 1.0F - getEntityStealth(current);
             float angle = this.lockAngle * (stealth / 2.0F + 0.5F);
-            if (distSq < this.lockRange * this.lockRange && distSq < minDistSq
+            if (distSq < range * range && distSq < minDistSq
                     && inLockAngle(locker, user.getYRot(), user.getXRot(), current, angle)) {
                 Vec3 v1 = locker.position();
                 Vec3 v2 = new Vec3(current.getX(), current.getY() + current.getBbHeight() / 2.0F, current.getZ());
@@ -267,6 +270,34 @@ public class WeaponGuidanceSystem extends EntityGuidanceSystem {
         return true;
     }
 
+    /** The sensor this seeker locks with (M10e). */
+    public FlightWeather.Sensor sensor() {
+        return this.isRadarMissile ? FlightWeather.Sensor.RADAR
+                : this.isHeatSeekerMissile ? FlightWeather.Sensor.IR : FlightWeather.Sensor.VISUAL;
+    }
+
+    /** M10e: how far {@code user} locks on {@code target} in the weather and light at the user. */
+    public double lockRangeOn(Entity user, Entity target) {
+        return this.lockRange * this.weatherFactor(FlightWeather.at(user.level(), user.position()), user, target);
+    }
+
+    /**
+     * M10e: the share of the lock range left in the weather at the user; at night the eye needs
+     * night or thermal vision, a searchlight or a lit target to keep its range.
+     */
+    private double weatherFactor(FlightWeather.Conditions weather, Entity user, Entity target) {
+        if (weather.equals(FlightWeather.Conditions.CLEAR)) {
+            return 1.0;
+        }
+        FlightWeather.Sensor sensor = this.sensor();
+        boolean seesInDark = false;
+        if (sensor == FlightWeather.Sensor.VISUAL && weather.night()) {
+            AircraftEntity ac = riddenAircraft(user);
+            seesInDark = FlightWeather.lit(target) || ac != null && FlightWeather.seesInDark(ac, user);
+        }
+        return FlightWeather.sensorFactor(weather, sensor, seesInDark);
+    }
+
     private static @Nullable AircraftEntity riddenAircraft(Entity user) {
         return user instanceof Player player ? ModNetwork.riddenAircraft(player)
                 : user.getVehicle() instanceof AircraftEntity ac ? ac
@@ -279,7 +310,7 @@ public class WeaponGuidanceSystem extends EntityGuidanceSystem {
         double dz = this.targetEntity.getZ() - user.getZ();
         double distSq = dx * dx + dy * dy + dz * dz;
         float stealth = 1.0F - getEntityStealth(this.targetEntity);
-        double currentRange = this.lockRange * stealth;
+        double currentRange = this.lockRangeOn(user, this.targetEntity) * stealth;
         if (distSq >= currentRange * currentRange) {
             this.clearLock();
             return;
