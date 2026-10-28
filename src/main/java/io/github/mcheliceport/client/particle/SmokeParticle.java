@@ -24,6 +24,9 @@ public class SmokeParticle extends McheliParticle {
     float heat;
     /** Enabled for enhanced explosion/damage smoke, never trails or Classic smoke. */
     boolean coherentDrift;
+    /** Birth-selected alpha erosion for refined explosion/wreck smoke; Classic keeps its original layer. */
+    boolean eroding;
+    boolean billowFrames;
     float coolingShare = EffectLook.COOL_SHARE;
     float silhouetteOpacity = 1;
     /** Scale at the previous tick, for smooth growth between ticks; 0 until the first growth. */
@@ -53,7 +56,7 @@ public class SmokeParticle extends McheliParticle {
         this.yo = this.y;
         this.zo = this.z;
         if (this.age < this.lifetime) {
-            this.frame = (int) (8.0 * this.age / this.lifetime);
+            this.frame = billowFrames?SmokeAtlas.frame(this.age,this.lifetime):(int) (8.0 * this.age / this.lifetime);
             this.age++;
             this.prevScale = this.particleScale;
             if (this.diffusible && this.particleScale < this.particleMaxScale) {
@@ -92,6 +95,11 @@ public class SmokeParticle extends McheliParticle {
         } else {
             this.remove();
         }
+    }
+
+    void useBillow(Identifier id){
+        var art=sprite(id);
+        if(art.contents().name().equals(id)){setSprite(art);billowFrames=true;eroding=true;}
     }
 
     /** Cinematic blast puffs use depth-tested rendering without block collision queries. */
@@ -163,13 +171,15 @@ public class SmokeParticle extends McheliParticle {
 
     @Override
     protected float getV0() {
-        return this.polished ? this.sprite.getV(this.frame / 4 * 0.5F) : super.getV0();
+        return this.billowFrames?this.sprite.getV(this.frame/4*.25F):this.polished ? this.sprite.getV(this.frame / 4 * 0.5F) : super.getV0();
     }
 
     @Override
     protected float getV1() {
-        return this.polished ? this.sprite.getV((this.frame / 4 + 1) * 0.5F) : super.getV1();
+        return this.billowFrames?this.sprite.getV((this.frame/4+1)*.25F):this.polished ? this.sprite.getV((this.frame / 4 + 1) * 0.5F) : super.getV1();
     }
+
+    @Override protected Layer getLayer(){return eroding?ParticleLayers.ERODING_SMOKE:super.getLayer();}
 
     @Override
     protected int getLightCoords(float partialTick) {

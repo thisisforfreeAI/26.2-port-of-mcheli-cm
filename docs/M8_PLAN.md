@@ -373,6 +373,53 @@ system. Preserve original crater formation and size VFX to its reported footprin
 until player acceptance. [Implementation](M8_MODERN_EXPLOSIONS.md) adds the saved menu toggle,
 modern atlas and per-weapon rendering path. Target-PC 60 FPS/artistic acceptance remains open.
 
+## Smoke refinement work
+
+Implemented smoke goals; native validation and target-PC acceptance are tracked separately:
+
+- [x] Connected rolling billows with shared motion instead of separated identical puffs.
+- [x] Distinct blast expansion and sustained, height-shaped wreck plumes.
+- [x] Dense cores and broken edges, with smaller wisps dispersing earlier.
+- [x] Varied internal contrast and localized brief amber light close to fire.
+- [x] Uneven wreck emission that settles into interrupted smoke as the wreck cools.
+- [x] Edge breakup during dissipation rather than uniform whole-puff transparency.
+
+[Implementation and limits](M8_SMOKE_BILLOWS.md) add three approved 16-frame sprite families
+(48 total), shared wind and existing admission; preserve Classic behavior and original crater
+formation. Retain the 60 FPS goal and keep NTM integration separate. The aircraft graphics
+ideas below remain queued independently.
+
+## Planned aircraft and destruction graphics additions
+
+The following eight ideas are approved for the roadmap and remain pending implementation.
+Build on the existing engine fire, damaged trails, exposed interiors and mesh debris instead
+of treating those systems as absent. Implement and review additions separately with labeled
+native examples on several suitable vehicles.
+
+- [ ] **Airflow-shaped fire:** stretch damaged-engine flames backward with flight motion;
+  transition toward upward flames as the aircraft slows or stops.
+- [ ] **Fuel spray from torn wings:** brief droplets and faint vapor from a damaged structural
+  area, with restrained visual ignition near an existing fire. Keep separate from oil/coolant
+  drips; no new gameplay damage or fuel-consumption rules in this graphics work.
+- [ ] **Fluttering damaged controls:** uneven motion on supported flaps, ailerons and rudders,
+  with cosmetic separation as damage progresses; retain correct attachment poses.
+- [ ] **Richer broken edges:** refine existing exposed sections with more readable ribs, dark
+  cavities and a few hanging cables at severed wings/tails.
+- [ ] **Debris shedding:** small skin fragments after the main breakup, with restrained,
+  non-emissive sunlight highlights. Reuse existing global mesh/particle limits.
+- [ ] **Maneuver-readable smoke trails:** preserve the path of turns before older trail segments
+  spread and drift with the shared wind; avoid chains of identical round puffs.
+- [ ] **Wing vapor:** brief condensation during suitable sharp turns and humid conditions,
+  with bounded nearby detail and smooth fade-in/out.
+- [ ] **Altitude-dependent contrails:** thin cold-air trails behind suitable engines, widening
+  and dispersing with age; keep distinct from hot exhaust and engine-damage smoke.
+
+Start with airflow-shaped fire, fuel spray and fluttering controls. Keep Minecraft's simple
+look, existing flight handling/collision/gameplay damage and original craters. Respect Claude's
+NTM Next ownership: no NTM explosion bridge, gun/gore hooks or copied NTM assets. Retain the
+60 FPS / 1080p goal on RTX 3060 8 GB and Ryzen 7 7800X3D, with distance limits, shared admission
+and adaptive reduction. Target-PC profiling and player visual acceptance remain separate checks.
+
 ## Default graphics refinement
 
 [Default visual refinement](M8_DEFAULT_VISUAL_REFINEMENT.md) improves smoke silhouettes,

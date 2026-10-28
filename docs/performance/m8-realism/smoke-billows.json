@@ -1,0 +1,179 @@
+{
+  "kind": "native-controlled-effect-validation",
+  "unit_tests": 376,
+  "unit_failures": 0,
+  "required_local_gametests": 268,
+  "final_ci": "See the PR for the final commit checks with and without NTM Next.",
+  "native_optional_mods_installed": false,
+  "local_build_limit": "Local-only compile init excludes unavailable JEI/NTM dependencies, with throwing optional bridge stubs. No locally built JAR distributed. CI builds full dependencies.",
+  "target_hardware_fps_measured": false,
+  "shared_atlas": {
+    "width": 4096,
+    "height": 4096,
+    "mip": 0,
+    "rgba_base_bytes": 67108864
+  },
+  "configured_limits": {
+    "LOW": {
+      "effects": 384,
+      "flash": 48
+    },
+    "BALANCED": {
+      "effects": 1536,
+      "flash": 96
+    },
+    "HIGH": {
+      "effects": 3072,
+      "flash": 192
+    }
+  },
+  "art": [
+    {
+      "family": "explosion",
+      "file": "src/main/resources/assets/mcheli_ce_port/textures/particle/m8_billow_explosion.png",
+      "width": 1254,
+      "height": 1254,
+      "frames": 16,
+      "columns": 4,
+      "rows": 4,
+      "original_generated_art": true,
+      "sha256": "bb48720929f09d1f45e90a3890b6cbfac8da64aed577969639bca490ea304b70"
+    },
+    {
+      "family": "wreck",
+      "file": "src/main/resources/assets/mcheli_ce_port/textures/particle/m8_billow_wreck.png",
+      "width": 1271,
+      "height": 1238,
+      "frames": 16,
+      "columns": 4,
+      "rows": 4,
+      "original_generated_art": true,
+      "sha256": "65308c5d8fae272ef8c52c78137eb5b5755df1f2e07775f6d2969c8da97c9031"
+    },
+    {
+      "family": "wisps",
+      "file": "src/main/resources/assets/mcheli_ce_port/textures/particle/m8_billow_wisps.png",
+      "width": 1278,
+      "height": 1230,
+      "frames": 16,
+      "columns": 4,
+      "rows": 4,
+      "original_generated_art": true,
+      "sha256": "e206afcd48d43f258bf99252060acee5051105e0996cd357acc170138ea0f847"
+    }
+  ],
+  "native_runs": {
+    "VULKAN": {
+      "mode": 0,
+      "checks": [
+        "M8_SMOKE_BILLOWS wreck=m1a2 age=107 peak=37 particles=25",
+        "M8_SMOKE_BILLOWS wreck=m1a2 age=779 peak=37 particles=12",
+        "M8_SMOKE_BILLOWS wreck_drain=true",
+        "M8_SMOKE_BILLOWS wreck=ah-64 age=106 peak=41 particles=27",
+        "M8_SMOKE_BILLOWS wreck=ah-64 age=778 peak=41 particles=13",
+        "M8_SMOKE_BILLOWS wreck_drain=true",
+        "M8_SMOKE_BILLOWS wreck=f-35a age=108 peak=39 particles=28",
+        "M8_SMOKE_BILLOWS wreck=f-35a age=778 peak=39 particles=10",
+        "M8_SMOKE_BILLOWS wreck_drain=true",
+        "M8_SMOKE_BILLOWS mode=0 all_passed=true"
+      ]
+    },
+    "OPENGL": {
+      "mode": 1,
+      "checks": [
+        "M8_SMOKE_BILLOWS blast=0 peak=21 particles=0 classic=false",
+        "M8_SMOKE_BILLOWS blast=1 peak=52 particles=0 classic=false",
+        "M8_SMOKE_BILLOWS blast=2 peak=52 particles=1 classic=false",
+        "M8_SMOKE_BILLOWS blast=3 peak=346 particles=65 classic=false",
+        "M8_SMOKE_BILLOWS blast=4 peak=970 particles=135 classic=true",
+        "M8_SMOKE_BILLOWS mode=1 all_passed=true"
+      ]
+    }
+  },
+  "screenshots": [
+    {
+      "file": "docs/screens/m8-smoke-billows/m1a2-hot.png",
+      "subject": "m1a2",
+      "stage": "hot",
+      "backend": "Vulkan",
+      "sha256": "6e573b4f278199b3ebb158f0fcee89b908f17a2939cb19cd3d70dc263cfd278b"
+    },
+    {
+      "file": "docs/screens/m8-smoke-billows/m1a2-cool.png",
+      "subject": "m1a2",
+      "stage": "cool",
+      "backend": "Vulkan",
+      "sha256": "d917778051aa34ea5fd70200a195e9f398591c86db321ebc4050a26935194ea0"
+    },
+    {
+      "file": "docs/screens/m8-smoke-billows/ah-64-hot.png",
+      "subject": "ah-64",
+      "stage": "hot",
+      "backend": "Vulkan",
+      "sha256": "844d422ea0be7c1c4014df4ecbe3856900081120d1cbfc03a7bfbcc5d65c9652"
+    },
+    {
+      "file": "docs/screens/m8-smoke-billows/ah-64-cool.png",
+      "subject": "ah-64",
+      "stage": "cool",
+      "backend": "Vulkan",
+      "sha256": "ae63c922440dc90f6c707c1ebcc0cbd4f8394837b026d2444d699e2df77cfe46"
+    },
+    {
+      "file": "docs/screens/m8-smoke-billows/f-35a-hot.png",
+      "subject": "f-35a",
+      "stage": "hot",
+      "backend": "Vulkan",
+      "sha256": "b4abdb5bacfdf6fa2a4e473d368f83d41411f66da0f84ee258cc0a1750e1bb9c"
+    },
+    {
+      "file": "docs/screens/m8-smoke-billows/f-35a-cool.png",
+      "subject": "f-35a",
+      "stage": "cool",
+      "backend": "Vulkan",
+      "sha256": "448b69b0fb27bda162a39ca72304dd7920a6229090dc2a4cf7b6b2f2df92327a"
+    },
+    {
+      "file": "docs/screens/m8-smoke-billows/small-impact-age11.png",
+      "subject": "small-impact",
+      "effect_age": 11,
+      "backend": "OpenGL",
+      "sha256": "51950f2764150e4a3ad20196daf4363bb00d898b7ea2155b4ff1c2297a75e291"
+    },
+    {
+      "file": "docs/screens/m8-smoke-billows/small-impact-age35.png",
+      "subject": "small-impact",
+      "effect_age": 35,
+      "backend": "OpenGL",
+      "sha256": "fca333b9c8fb5760d1410454c35157572ae426bb15688171a160148266ff4d3d"
+    },
+    {
+      "file": "docs/screens/m8-smoke-billows/large-blast-age35.png",
+      "subject": "large-blast",
+      "effect_age": 35,
+      "backend": "OpenGL",
+      "sha256": "b7a7e898ddbeb5042ff1013c3cdb285f5f67dd29630109f5291a39d0f3e5ac3d"
+    },
+    {
+      "file": "docs/screens/m8-smoke-billows/large-blast-age75.png",
+      "subject": "large-blast",
+      "effect_age": 75,
+      "backend": "OpenGL",
+      "sha256": "e1b717be811432cab7a0096b7697dc026827b8696dd937179ebf812ef9bc68d3"
+    },
+    {
+      "file": "docs/screens/m8-smoke-billows/modern-night-age11.png",
+      "subject": "modern-night",
+      "effect_age": 11,
+      "backend": "OpenGL",
+      "sha256": "0db6a029374fed27073fc9e3fadbb809e37da814de1068919670572328bd9a3e"
+    },
+    {
+      "file": "docs/screens/m8-smoke-billows/modern-night-age35.png",
+      "subject": "modern-night",
+      "effect_age": 35,
+      "backend": "OpenGL",
+      "sha256": "2611706bd8df45e6ba97b7f01a30e177cf299f8ad7467ef317ce8960e6f8cf38"
+    }
+  ]
+}

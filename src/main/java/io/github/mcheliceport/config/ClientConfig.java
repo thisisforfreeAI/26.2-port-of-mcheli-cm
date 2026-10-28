@@ -156,8 +156,8 @@ public final class ClientConfig {
                         "Both styles use Minecraft's supported Vulkan/OpenGL rendering pipelines.")
                 .defineEnum("style", EffectStyle.POLISHED);
         EFFECT_BUDGET = builder
-                .comment("Custom smoke/flash budget: LOW (96 blocks, 384 smoke), BALANCED (192 blocks, 768 smoke),",
-                        "HIGH (256 blocks, 1536 smoke). Also respects Minecraft's particle setting.",
+                .comment("Custom effect/flash budgets: LOW (96 blocks, 384 effects / 48 flashes), BALANCED (192 blocks, 1536 / 96),",
+                        "HIGH (256 blocks, 3072 / 192). Also respects Minecraft's particle setting.",
                         "LOW disables flare halos. McHeli block dust shares the smoke budget; gameplay is unchanged.")
                 .defineEnum("quality", EffectBudget.BALANCED);
         BLAST_MARKS = builder
