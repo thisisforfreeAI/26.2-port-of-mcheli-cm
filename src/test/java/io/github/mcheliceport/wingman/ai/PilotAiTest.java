@@ -65,6 +65,9 @@ class PilotAiTest {
             assertTrue(better.lookahead().length > worse.lookahead().length, better + " looks further");
             assertTrue(better.clearance() < worse.clearance(), better + " flies lower");
             assertTrue(better.reactionTicks() < worse.reactionTicks(), better + " reacts sooner");
+            assertTrue(better.leadFactor() >= worse.leadFactor(), better + " leads as fully");
+            assertTrue(better.gimbal() > worse.gimbal(), better + " lays its gun further off the nose");
+            assertTrue(better.coneFactor() < worse.coneFactor(), better + " holds fire for a tighter solution");
         }
         assertEquals(0, AiSkill.EASY.breakTicks(), "an Easy pilot only fires its decoys");
         assertTrue(AiSkill.VETERAN.fliesLow() && !AiSkill.NORMAL.fliesLow());

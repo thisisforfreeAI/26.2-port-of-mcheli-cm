@@ -143,7 +143,7 @@ final class PlannerGameTests {
             orbit.order.orbitRadius = 77.0;
             Zombie target = new Zombie(EntityTypes.ZOMBIE, level);
             target.setPos(10.0, 70.0, -20.0);
-            Vec3 t = WingmanTickHandler.computeOrbitTarget(target, orbit);
+            Vec3 t = WingmanTickHandler.computeOrbitTarget(target, target, orbit);
             check(h, Math.abs(Math.hypot(t.x - 10.0, t.z + 20.0) - 77.0) < 1e-6, "the orbit is not at the order's radius");
             check(h, WingmanTickHandler.isOrbitFireWeapon("rocket", true) && !WingmanTickHandler.isOrbitFireWeapon("rocket", false)
                     && WingmanTickHandler.isOrbitFireWeapon("aamissile", false), "Orbit Atk does not orbit every weapon");

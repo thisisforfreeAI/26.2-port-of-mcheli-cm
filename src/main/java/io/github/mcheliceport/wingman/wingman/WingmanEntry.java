@@ -30,6 +30,14 @@ public class WingmanEntry {
     public int weaponSeat;
     /** The weapon type to fire ({@code gun}, {@code aamissile}...), or null to try every type. */
     public @Nullable String weaponType;
+    /**
+     * The weapon set the pilot chose against its current target, or -1, its type, the target it
+     * chose it for and the ticks until it chooses again (a port addition, not saved).
+     */
+    public int aiWeapon = -1;
+    public @Nullable String aiWeaponType;
+    public @Nullable UUID aiWeaponTarget;
+    public int aiWeaponHold;
 
     /** The orbit angle around a missile target, in degrees. */
     public double orbitAngle;

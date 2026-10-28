@@ -2,7 +2,9 @@ package io.github.mcheliceport.gametest;
 
 import io.github.mcheliceport.McheliCePort;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
@@ -33,7 +35,8 @@ public final class ModGameTests {
     private static final DeferredRegister<Consumer<GameTestHelper>> FUNCTIONS =
             DeferredRegister.create(Registries.TEST_FUNCTION, McheliCePort.MOD_ID);
 
-    private record Spec(String name, int maxTicks, ResourceKey<Consumer<GameTestHelper>> function, boolean alone) {
+    /** {@code batch} names the environment, and so the batch, the test runs in. */
+    private record Spec(String name, int maxTicks, ResourceKey<Consumer<GameTestHelper>> function, String batch) {
     }
 
     private static final List<Spec> SPECS = new ArrayList<>();
@@ -100,6 +103,7 @@ public final class ModGameTests {
         CrewGameTests.register();
         GroundCrewGameTests.register();
         AiPilotGameTests.register();
+        AiFireControlGameTests.register();
         WeatherGameTests.register();
         ComponentEffectsGameTests.register();
         VehicleBloodGameTests.register();
@@ -113,7 +117,7 @@ public final class ModGameTests {
     /** Adds a test that fails unless it succeeds within {@code maxTicks}. */
     static void test(String name, int maxTicks, Consumer<GameTestHelper> function) {
         FUNCTIONS.register(name, () -> function);
-        SPECS.add(new Spec(name, maxTicks, ResourceKey.create(Registries.TEST_FUNCTION, id(name)), false));
+        SPECS.add(new Spec(name, maxTicks, ResourceKey.create(Registries.TEST_FUNCTION, id(name)), "default"));
     }
 
     /**
@@ -122,17 +126,25 @@ public final class ModGameTests {
      */
     static void testAlone(String name, int maxTicks, Consumer<GameTestHelper> function) {
         FUNCTIONS.register(name, () -> function);
-        SPECS.add(new Spec(name, maxTicks, ResourceKey.create(Registries.TEST_FUNCTION, id(name)), true));
+        SPECS.add(new Spec(name, maxTicks, ResourceKey.create(Registries.TEST_FUNCTION, id(name)), "alone"));
+    }
+
+    /**
+     * Adds a test that runs in the batch named {@code batch}, apart from the others: for tests that
+     * fire many projectiles or force chunks, which {@link #testAlone} tests would see.
+     */
+    static void testInBatch(String batch, String name, int maxTicks, Consumer<GameTestHelper> function) {
+        FUNCTIONS.register(name, () -> function);
+        SPECS.add(new Spec(name, maxTicks, ResourceKey.create(Registries.TEST_FUNCTION, id(name)), batch));
     }
 
     private static void onRegisterGameTests(RegisterGameTestsEvent event) {
-        Holder<TestEnvironmentDefinition<?>> environment =
-                event.registerEnvironment(id("default"), new TestEnvironmentDefinition.AllOf(List.of()));
-        Holder<TestEnvironmentDefinition<?>> alone =
-                event.registerEnvironment(id("alone"), new TestEnvironmentDefinition.AllOf(List.of()));
+        Map<String, Holder<TestEnvironmentDefinition<?>>> environments = new HashMap<>();
         for (Spec spec : SPECS) {
+            Holder<TestEnvironmentDefinition<?>> environment = environments.computeIfAbsent(spec.batch(),
+                    b -> event.registerEnvironment(id(b), new TestEnvironmentDefinition.AllOf(List.of())));
             event.registerTest(id(spec.name()), new FunctionGameTestInstance(spec.function(),
-                    new TestData<>(spec.alone() ? alone : environment, STRUCTURE, spec.maxTicks(), 0, true, Rotation.NONE, false, 1, 1, false,
+                    new TestData<>(environment, STRUCTURE, spec.maxTicks(), 0, true, Rotation.NONE, false, 1, 1, false,
                             0)));
         }
     }

@@ -602,6 +602,17 @@ These follow from how Minecraft 26.2 works or from decisions approved in PORTING
     outline and the emissive layers (exhaust flames) always take the per-frame path. M8's surface shading
     is baked into the GPU buffers too. If the GPU path fails once, it turns itself off for the
     session and logs why.
+109. AI pilots aim and fly with the port's fire control (`docs/M10_AI_FIRE_CONTROL.md`), not
+    upstream's checks. Upstream fired a gun whenever the target was within 20 degrees of the
+    heading, with no lead or drop, dropped bombs anywhere within 80 blocks, fired the first weapon
+    at any heading with none chosen, and turned its orbit point 2 degrees a tick; the port chooses
+    the weapon for the target, leads guns and rockets, releases bombs where they will land, launches
+    missiles within 45 degrees, flies passes and orbits planes can fly, and fires along its solution
+    rather than the nose. Orders use every weapon they list, not only the first non-gun one. Bomb runs
+    are flown from 100 blocks up (upstream 200). Wingmen top up a magazine that was never loaded,
+    which upstream's infinite ammunition did not. AI planes bank into every turn, lose their sideways
+    drift, are pushed towards their slot only forwards and circle a stopped leader instead of idling
+    in the air. Ground vehicles keep upstream's firing.
 
 ## Upstream content issues kept as they are
 

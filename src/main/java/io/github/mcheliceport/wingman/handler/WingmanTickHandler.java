@@ -1,15 +1,20 @@
 package io.github.mcheliceport.wingman.handler;
 
 import io.github.mcheliceport.McheliCePort;
+import io.github.mcheliceport.content.aircraft.AircraftInfo;
+import io.github.mcheliceport.content.weapon.WeaponInfo;
 import io.github.mcheliceport.entity.NpcBattles;
 import io.github.mcheliceport.entity.aircraft.AircraftEntity;
 import io.github.mcheliceport.entity.ground.GroundVehicleEntity;
 import io.github.mcheliceport.entity.gunner.GunnerEntity;
 import io.github.mcheliceport.entity.heli.HeliEntity;
 import io.github.mcheliceport.entity.plane.PlaneEntity;
+import io.github.mcheliceport.weapon.WeaponBase;
 import io.github.mcheliceport.weapon.WeaponParam;
 import io.github.mcheliceport.weapon.WeaponSet;
 import io.github.mcheliceport.weather.FlightWeather;
+import io.github.mcheliceport.wingman.ai.AiSkill;
+import io.github.mcheliceport.wingman.ai.FireControl;
 import io.github.mcheliceport.wingman.ai.PilotAi;
 import io.github.mcheliceport.wingman.ai.TerrainAvoidance;
 import io.github.mcheliceport.wingman.config.WingmanConfig;
@@ -65,6 +70,22 @@ public final class WingmanTickHandler {
     private static final float MAX_ROLL_RATE = 5.0F;
     private static final float MAX_PITCH_UP = 25.0F;
     private static final float MAX_PITCH_DOWN = -20.0F;
+    /** How far a plane noses down on a gun or rocket pass (pitch is positive down). */
+    private static final float MAX_DIVE = 35.0F;
+    /** A plane banks this many degrees for each degree a tick it turns, at most {@link #MAX_BANK}. */
+    private static final float BANK_PER_YAW = 7.0F;
+    private static final float MAX_BANK = 50.0F;
+    /** Each tick an AI plane's sideways drift is turned this far towards its nose. */
+    private static final double SLIP_DAMPING = 0.35;
+    /** A plane whose leader has stopped circles it at this radius, this high over it, at about this throttle. */
+    private static final double CIRCLE_RADIUS = 60.0;
+    private static final double CIRCLE_HEIGHT = 20.0;
+    private static final double CIRCLE_THROTTLE = 0.7;
+    /** A pilot chooses its weapon again after this many ticks. */
+    private static final int WEAPON_HOLD_TICKS = 40;
+    /** A missile is fired only at a target within this many degrees of its mount and this far away. */
+    private static final double MISSILE_CONE = 45.0;
+    private static final double MISSILE_MIN_RANGE = 25.0;
 
     /** From this distance to the slot the wingman flies at full throttle. */
     private static final double THROTTLE_BLEND_FAR = 80.0;
@@ -123,15 +144,23 @@ public final class WingmanTickHandler {
                 controlVtol(plane, entry);
             }
             if (entry.attackMode != WingmanEntry.ATK_NONE) {
+                updatePass(level, wingman, entry);
                 Vec3 movTarget = wingman instanceof HeliEntity ? computeMoveTarget(level, wingman, entry) : null;
                 applyThrottle(wingman, movTarget != null ? heliAltitudeThrottle(wingman, movTarget.y) : 1.0);
                 steerToTarget(level, wingman, entry);
             } else if (entry.isAutonomous()) {
+                PilotAi.endPass(wingman);
                 tickAutonomousStart(level, wingman, entry);
             } else if (entry.leader != null) {
+                PilotAi.endPass(wingman);
                 Vec3 fp = formationPos(entry.leader, entry.formationSlot);
                 double distToSlot = fp.distanceTo(wingman.position());
-                if (isLeaderStopped(entry.leader) && distToSlot < HOLD_THRESHOLD) {
+                if (circlesLeader(level, wingman, entry)) {
+                    // More throttle below the circle's height, as a pilot holds it.
+                    double below = entry.leader.getY() + CIRCLE_HEIGHT - wingman.getY();
+                    applyThrottle(wingman, Mth.clamp(CIRCLE_THROTTLE + below * 0.05, 0.5, 1.0));
+                    steerToTarget(level, wingman, entry);
+                } else if (isLeaderStopped(entry.leader) && distToSlot < HOLD_THRESHOLD) {
                     holdStop(wingman, entry.leader);
                 } else {
                     if (wingman instanceof HeliEntity) {
@@ -287,28 +316,38 @@ public final class WingmanTickHandler {
                 wingman.setYaw(currentYaw + yawStep);
                 wingman.lastRiderYaw = targetYaw;
             }
+            boolean banks = !heli && !ground && flies(wingman, entry) && !wingman.onGround();
             if (!ground && !inAttack && !entry.isAutonomous() && entry.leader != null) {
                 float leaderRoll = entry.leader instanceof AircraftEntity la ? la.getRoll() : 0.0F;
+                float targetRoll = leaderRoll;
+                // A plane away from its slot banks into its own turn, and takes the leader's roll as it closes.
+                if (banks) {
+                    float bank = Mth.clamp(yawStep * BANK_PER_YAW, -MAX_BANK, MAX_BANK);
+                    targetRoll = leaderRoll + (bank - leaderRoll) * (float) Math.min(1.0, hDist / 30.0);
+                }
                 float currentRoll = wingman.getRoll();
-                float rollStep = Mth.clamp(Mth.wrapDegrees(leaderRoll - currentRoll), -MAX_ROLL_RATE, MAX_ROLL_RATE);
+                float rollStep = Mth.clamp(Mth.wrapDegrees(targetRoll - currentRoll), -MAX_ROLL_RATE, MAX_ROLL_RATE);
                 wingman.setRoll(currentRoll + rollStep);
-            }
-            // An autonomous plane banks into its turns, 7 degrees for each degree a tick of turn,
-            // except on the ground and hovering.
-            if (entry.isAutonomous() && !heli && !ground && !entry.vtolHoverMode && entry.autoState != AutonomousState.TAKEOFF_ROLL
-                    && entry.autoState != AutonomousState.ALIGN) {
-                float targetRoll = Mth.clamp(yawStep * 7.0F, -45.0F, 45.0F);
+            } else if (banks || entry.isAutonomous() && !heli && !ground && !entry.vtolHoverMode
+                    && entry.autoState != AutonomousState.TAKEOFF_ROLL && entry.autoState != AutonomousState.ALIGN) {
+                // A plane in the air banks into its turns, 7 degrees for each degree a tick of turn,
+                // attacking as well as on a mission, so it does not skid round flat.
+                float targetRoll = Mth.clamp(yawStep * BANK_PER_YAW, -MAX_BANK, MAX_BANK);
                 float curRoll = wingman.getRoll();
                 wingman.setRoll(curRoll + Mth.clamp(Mth.wrapDegrees(targetRoll - curRoll), -MAX_ROLL_RATE, MAX_ROLL_RATE));
             }
             // Fixed guns aim with the nose; other weapons keep the aircraft level and aim through lastRiderPitch.
-            boolean fixedGun = inAttack && isFixedGunWeapon(entry.weaponType);
+            // Pulling off a pass, a plane flies to its move target instead.
+            boolean fixedGun = inAttack && aimTarget != null && isFixedGunWeapon(attackType(entry));
             float targetPitch;
             if (ground) {
                 targetPitch = currentPitch;
+            } else if (fixedGun && !heli && PilotAi.isPullingUp(wingman)) {
+                // Low over the ground ahead, a diving plane pulls up before it fires.
+                targetPitch = MAX_PITCH_DOWN;
             } else if (fixedGun) {
                 targetPitch = (float) -Math.toDegrees(Math.atan2(dy, Math.max(hDist, 1.0)));
-                targetPitch = Mth.clamp(targetPitch, MAX_PITCH_DOWN, MAX_PITCH_UP);
+                targetPitch = Mth.clamp(targetPitch, MAX_PITCH_DOWN, heli ? MAX_PITCH_UP : MAX_DIVE);
             } else {
                 double movDy = movTarget != null ? movTarget.y - wingman.getY() : dy;
                 if (heli) {
@@ -377,9 +416,54 @@ public final class WingmanTickHandler {
             return false;
         }
         return switch (type.toLowerCase(Locale.ROOT)) {
-            case "gun", "machinegun", "machinegun1", "machinegun2", "cannon", "cas", "rocket", "mkrocket" -> true;
+            case "gun", "machinegun", "machinegun1", "machinegun2", "cannon", "cas", "rocket", "mkrocket", "buckshot",
+                    "railgun", "laser" -> true;
             default -> false;
         };
+    }
+
+    /** The weapon type the pilot attacks with: the one it chose for its target, else its order's. */
+    static @Nullable String attackType(WingmanEntry entry) {
+        return entry.aiWeaponType != null ? entry.aiWeaponType : entry.weaponType;
+    }
+
+    /** A fixed-wing aircraft: not a helicopter or a ground vehicle. */
+    private static boolean isPlane(Entity e) {
+        return !(e instanceof HeliEntity) && !(e instanceof GroundVehicleEntity);
+    }
+
+    /** Whether {@code e} is more than 4 blocks over the ground under it. */
+    private static boolean airborne(ServerLevel level, Entity e) {
+        return !e.onGround() && e.getY() - TerrainAvoidance.of(level).top(e.getBlockX(), e.getBlockZ()) > 4.0;
+    }
+
+    /** A plane in the air whose leader has stopped (landed or hovering) circles over it. */
+    private static boolean circlesLeader(ServerLevel level, AircraftEntity wingman, WingmanEntry entry) {
+        return entry.leader != null && entry.attackMode == WingmanEntry.ATK_NONE && !entry.isAutonomous()
+                && entry.state == WingmanState.FOLLOWING && isPlane(wingman) && isLeaderStopped(entry.leader)
+                && airborne(level, wingman);
+    }
+
+    /**
+     * A port addition: a plane's gun or rocket pass at its target ({@link PilotAi#updatePass}). It
+     * pulls off closer than its turn needs, or low in a dive over the ground, and comes round again
+     * from further out; an air target it passes close by.
+     */
+    private static void updatePass(ServerLevel level, AircraftEntity wingman, WingmanEntry entry) {
+        Entity target = isPlane(wingman) ? resolveTarget(level, wingman, entry) : null;
+        if (target == null || target.isRemoved() || !FireControl.role(attackType(entry)).ballistic()
+                || entry.order != null && entry.order.orbitAttack) {
+            PilotAi.endPass(wingman);
+            return;
+        }
+        boolean air = airborne(level, target);
+        double dist = wingman.distanceTo(target);
+        double speed = wingman.getDeltaMovement().length();
+        double overGround = wingman.getY() - TerrainAvoidance.of(level).top(wingman.getBlockX(), wingman.getBlockZ());
+        boolean tooLow = !air && wingman.getPitch() > 5.0F && overGround < 12.0 + speed * 8.0;
+        double minRange = air ? 12.0 + speed * 4.0 : 25.0 + speed * 10.0;
+        double reattack = air ? 60.0 : Math.max(130.0, standoffForWeapon(attackType(entry)) * 2.0);
+        PilotAi.updatePass(wingman, dist, minRange, reattack, tooLow);
     }
 
     // ---- after the aircraft move ----
@@ -414,6 +498,13 @@ public final class WingmanTickHandler {
             entry.diagTick++;
             if (entry.attackMode != WingmanEntry.ATK_NONE && !PilotAi.isBreaking(wingman)) {
                 fireAtTarget(level, wingman, entry);
+            } else {
+                entry.aiWeapon = -1;
+                entry.aiWeaponType = null;
+                entry.aiWeaponTarget = null;
+            }
+            if (isPlane(wingman) && flies(wingman, entry) && !wingman.onGround()) {
+                dampSideslip(wingman);
             }
             if (entry.attackMode == WingmanEntry.ATK_NONE && !entry.isAutonomous() && entry.leader != null
                     && !isLeaderStopped(entry.leader)) {
@@ -435,20 +526,45 @@ public final class WingmanTickHandler {
     }
 
     /**
-     * Upstream's firing in {@code onWorldTickEnd}: within the weapon's range a bomb drops within 80
-     * blocks horizontally, a fixed gun fires within 20 degrees of the target and a missile at any heading.
+     * Upstream's firing in {@code onWorldTickEnd}, with the port's fire control: the pilot chooses
+     * the weapon that suits its target, and fires only with a solution. A gun or rocket is laid on
+     * where the target will be when the round gets there, allowing for its drop, and fires once the
+     * nose (or the weapon's mount) holds that point within the angle the target fills; a bomb is
+     * released where its fall meets the target; a missile is launched at a target within its
+     * seeker's cone. A ground vehicle keeps upstream's checks.
      */
     private static void fireAtTarget(ServerLevel level, AircraftEntity wingman, WingmanEntry entry) {
+        UUID id = wingman.getUUID();
+        int cd = FIRE_COOLDOWNS.getOrDefault(id, 0);
+        if (cd > 0) {
+            FIRE_COOLDOWNS.put(id, cd - 1);
+        }
         Entity target = resolveTarget(level, wingman, entry);
         if (target == null || target.isRemoved()) {
             return;
         }
         if (entry.diagTick % 100 == 1) {
-            McheliCePort.LOGGER.info("[Wingman/ATK] {} targeting: name='{}' class={} pos=({},{},{}) dist={}",
+            McheliCePort.LOGGER.info("[Wingman/ATK] {} targeting: name='{}' class={} pos=({},{},{}) dist={} weapon={}",
                     wingman.getUUID().toString().substring(0, 8), target.getName().getString(),
                     target.getClass().getSimpleName(), (int) target.getX(), (int) target.getY(), (int) target.getZ(),
-                    (int) wingman.distanceTo(target));
+                    (int) wingman.distanceTo(target), attackType(entry));
         }
+        if (wingman instanceof GroundVehicleEntity) {
+            fireUpstream(wingman, target, entry, cd);
+            return;
+        }
+        chooseWeapon(level, wingman, entry, target);
+        Aim aim = aim(level, wingman, entry, target, true);
+        if (aim != null && aim.fire() && cd <= 0) {
+            tryFire(wingman, entry, target, aim.yaw(), aim.pitch(), attackType(entry), true);
+        }
+    }
+
+    /**
+     * Upstream's checks, for a ground vehicle: within the weapon's range a bomb drops within 80
+     * blocks horizontally, a fixed gun fires within 20 degrees of the target and a missile at any heading.
+     */
+    private static void fireUpstream(AircraftEntity wingman, Entity target, WingmanEntry entry, int cd) {
         double dx = target.getX() - wingman.getX();
         double dy = target.getY() + 1.5 - wingman.getY();
         double dz = target.getZ() - wingman.getZ();
@@ -456,7 +572,7 @@ public final class WingmanTickHandler {
         float hd = (float) Math.sqrt(dx * dx + dz * dz);
         float yaw = (float) Math.toDegrees(Math.atan2(-dx, dz));
         float pitch = (float) -Math.toDegrees(Math.atan2(dy, Math.max(hd, 1.0F)));
-        if (dist > fireRangeForWeapon(entry.weaponType)) {
+        if (dist > fireRangeForWeapon(entry.weaponType) || cd > 0) {
             return;
         }
         boolean canFire = true;
@@ -466,7 +582,208 @@ public final class WingmanTickHandler {
             canFire = Math.abs(Mth.wrapDegrees(yaw - wingman.getYaw())) < 20.0F;
         }
         if (canFire) {
-            tryFire(wingman, target, yaw, pitch, entry.weaponType);
+            tryFire(wingman, entry, target, yaw, pitch, entry.weaponType, false);
+        }
+    }
+
+    /**
+     * Where to point and whether to fire.
+     *
+     * @param steer where the aircraft points its nose: the lead point of a gun or rocket, where a
+     *              bomb's target will be when it lands, a missile's target
+     * @param yaw   the shot's direction, within its mount
+     */
+    record Aim(Vec3 steer, float yaw, float pitch, boolean fire) {
+    }
+
+    /**
+     * The pilot's firing solution against {@code target} with its chosen weapon ({@link FireControl}).
+     * With {@code firing} (after the aircraft move) it updates what it tracks of the target.
+     */
+    private static @Nullable Aim aim(ServerLevel level, AircraftEntity ac, WingmanEntry entry, Entity target,
+            boolean firing) {
+        AiSkill skill = PilotAi.skill();
+        String type = attackType(entry);
+        FireControl.Role role = FireControl.role(type);
+        WeaponSet ws = entry.aiWeapon >= 0 && entry.aiWeapon < ac.getWeaponNum() ? ac.getWeapon(entry.aiWeapon) : null;
+        WeaponBase wb = ws != null ? ws.getCurrentWeapon() : null;
+        WeaponInfo info = ws != null ? ws.getInfo() : null;
+        Vec3 muzzle = wb != null ? ac.position().add(wb.getShotPos(ac)) : ac.position();
+        Vec3 centre = target.getBoundingBox().getCenter();
+        PilotAi.Track track = PilotAi.track(ac, target, level.getGameTime(), firing);
+        Vec3 tv = track.velocity().scale(skill.leadFactor());
+        Vec3 ta = skill.predictsTurns() ? track.acceleration() : Vec3.ZERO;
+        double dist = muzzle.distanceTo(centre);
+        boolean inRange = dist <= fireRangeForWeapon(type);
+        float noseYaw = ac.getYaw();
+        float nosePitch = ac.getPitch();
+        Vec3 los = centre.subtract(muzzle);
+        if (role.ballistic() && info != null) {
+            FireControl.Ballistics b = ballistics(info);
+            FireControl.Solution sol = FireControl.intercept(muzzle, ac.getDeltaMovement(), centre, tv, ta, b);
+            if (sol == null) {
+                return new Aim(centre, FireControl.yaw(los), FireControl.pitch(los), false);
+            }
+            // Guns off the centreline (in the wings) are laid in towards the target too, as a
+            // fighter's guns are harmonised, else from 3 blocks out they pass it by at short range.
+            Vec3 offset = muzzle.subtract(ac.position());
+            double side = offset.subtract(sol.dir().scale(offset.dot(sol.dir()))).length();
+            float convergence = (float) Math.toDegrees(Math.atan2(side, Math.max(dist, 20.0)));
+            float[] shot = mount(ac, entry.aiWeapon, skill.gimbal() + convergence).clamp(noseYaw, nosePitch,
+                    FireControl.yaw(sol.dir()), FireControl.pitch(sol.dir()));
+            double off = FireControl.angle(FireControl.look(shot[0], shot[1]), sol.dir());
+            double radius = hitRadius(target, info);
+            boolean fire = inRange && sol.miss() <= radius + 0.5
+                    && off <= FireControl.tolerance(radius, dist) * skill.coneFactor();
+            // The nose points along the solution from the aircraft's centre, the same for every gun.
+            return new Aim(ac.position().add(sol.dir().scale(dist)), shot[0], shot[1], fire);
+        }
+        if (role.guided()) {
+            FireControl.Mount m = mount(ac, entry.aiWeapon, (float) MISSILE_CONE);
+            float[] centreDir = m.centre(noseYaw, nosePitch);
+            float[] shot = m.clamp(noseYaw, nosePitch, FireControl.yaw(los), FireControl.pitch(los));
+            boolean fire = inRange && dist >= MISSILE_MIN_RANGE
+                    && FireControl.angle(FireControl.look(centreDir[0], centreDir[1]), los) <= MISSILE_CONE;
+            return new Aim(centre, shot[0], shot[1], fire);
+        }
+        if (role == FireControl.Role.BOMB && info != null) {
+            Vec3 ground = new Vec3(centre.x, target.getY(), centre.z);
+            FireControl.Drop drop = FireControl.drop(muzzle, ac.getDeltaMovement(), ground, tv, ballistics(info));
+            boolean fire = false;
+            Vec3 steer = new Vec3(target.getX(), ac.getY(), target.getZ());
+            if (drop != null) {
+                double tol = Math.max(1.5, hitRadius(target, info));
+                double last = firing ? PilotAi.swapAlong(ac, drop.along()) : Double.NaN;
+                fire = inRange && drop.cross() <= tol && Math.abs(drop.along()) <= tol
+                        // Passing the release point between ticks, it drops late rather than not at all.
+                        || inRange && last > 0.0 && drop.along() <= 0.0 && drop.cross() <= tol * 2.5;
+                steer = new Vec3(target.getX() + tv.x * drop.ticks(), ac.getY(), target.getZ() + tv.z * drop.ticks());
+            }
+            return new Aim(steer, noseYaw, nosePitch, fire);
+        }
+        // A torpedo runs within upstream's 20 degrees; with no weapon fit for the target it holds fire.
+        boolean fire = role == FireControl.Role.TORPEDO && entry.aiWeapon >= 0 && inRange
+                && Math.abs(Mth.wrapDegrees(FireControl.yaw(los) - noseYaw)) < 20.0F;
+        return new Aim(centre, FireControl.yaw(los), FireControl.pitch(los), fire);
+    }
+
+    private static FireControl.Ballistics ballistics(WeaponInfo info) {
+        return FireControl.Ballistics.of(info.type, info.acceleration, info.gravity, info.dragInAir,
+                info.speedDependsAircraft, info.timeFuse);
+    }
+
+    /**
+     * How close a round must pass: half the target's size, and for an explosive round part of its
+     * blast, up to 3 blocks.
+     */
+    private static double hitRadius(Entity target, @Nullable WeaponInfo info) {
+        double r = Math.max(target.getBbWidth(), target.getBbHeight()) * 0.5;
+        if (info != null && info.explosion > 0) {
+            r += Math.min(info.explosion * 0.5, 3.0);
+        }
+        return Math.max(r, 0.5);
+    }
+
+    /**
+     * The mount of weapon set {@code index}, as {@code AircraftWeapons.aimWeapon} turns it: its
+     * fixed direction and, for a turret or a weapon with yaw limits (about its default yaw) or pitch
+     * limits, how far it turns; any weapon can be laid {@code gimbal} degrees off it.
+     */
+    private static FireControl.Mount mount(AircraftEntity ac, int index, float gimbal) {
+        AircraftInfo info = ac.getAcInfo();
+        AircraftInfo.Weapon w = info != null ? info.getWeaponById(index) : null;
+        if (w == null) {
+            return FireControl.Mount.fixed(0.0F, 0.0F, gimbal);
+        }
+        boolean yawLimits = Math.abs(w.minYaw) > 0.001F || Math.abs(w.maxYaw) > 0.001F;
+        boolean yawControl = w.turret || yawLimits;
+        boolean unlimited = w.turret && !yawLimits || Math.abs((int) w.minYaw) >= 360 || Math.abs((int) w.maxYaw) >= 360;
+        boolean pitchLimits = Math.abs(w.minPitch) > 0.001F || Math.abs(w.maxPitch) > 0.001F;
+        float minYaw = !yawControl ? 0.0F : unlimited ? -180.0F : w.minYaw;
+        float maxYaw = !yawControl ? 0.0F : unlimited ? 180.0F : w.maxYaw;
+        float minPitch = pitchLimits ? w.minPitch : w.turret ? info.minRotationPitch : 0.0F;
+        float maxPitch = pitchLimits ? w.maxPitch : w.turret ? info.maxRotationPitch : 0.0F;
+        return new FireControl.Mount(w.yaw + (yawControl ? w.defaultYaw : 0.0F), w.pitch, Math.min(minYaw, -gimbal),
+                Math.max(maxYaw, gimbal), Math.min(minPitch, -gimbal), Math.max(maxPitch, gimbal));
+    }
+
+    /**
+     * Chooses the weapon set to attack {@code target} with: among those its order allows (or the
+     * type it was told to use, or any), the one that suits the target best ({@link FireControl#score}),
+     * kept for {@link #WEAPON_HOLD_TICKS} unless the target changes.
+     */
+    public static void chooseWeapon(ServerLevel level, AircraftEntity ac, WingmanEntry entry, Entity target) {
+        if (entry.aiWeaponHold > 0 && target.getUUID().equals(entry.aiWeaponTarget) && entry.aiWeapon < ac.getWeaponNum()) {
+            entry.aiWeaponHold--;
+            return;
+        }
+        boolean air = airborne(level, target);
+        boolean armored = target instanceof AircraftEntity;
+        boolean water = target.isInWater();
+        double dist = ac.distanceTo(target);
+        int best = -1;
+        String bestType = null;
+        double bestScore = 0.0;
+        for (int i = 0; i < ac.getWeaponNum(); i++) {
+            WeaponSet ws = ac.getWeapon(i);
+            if (ws == null || ws.getInfo() == null || ws.getInfo().type == null || !allowed(entry, ws)) {
+                continue;
+            }
+            String type = ws.getInfo().type;
+            if ("targetingpod".equalsIgnoreCase(type) && !"targetingpod".equalsIgnoreCase(entry.weaponType)) {
+                continue;
+            }
+            double score = FireControl.score(FireControl.role(type), air, armored, water, dist <= fireRangeForWeapon(type));
+            if (!ws.canFire()) {
+                score *= 0.9;
+            }
+            if (score > bestScore) {
+                bestScore = score;
+                best = i;
+                bestType = type;
+            }
+        }
+        if (best != entry.aiWeapon) {
+            PilotAi.endPass(ac);
+        }
+        entry.aiWeapon = best;
+        entry.aiWeaponType = bestType;
+        entry.aiWeaponTarget = target.getUUID();
+        entry.aiWeaponHold = WEAPON_HOLD_TICKS;
+    }
+
+    /** The weapons the pilot may use: its order's, else the type it was told to use, else any. */
+    private static boolean allowed(WingmanEntry entry, WeaponSet ws) {
+        if (entry.order != null && !entry.order.weapons.isEmpty()) {
+            for (String w : entry.order.weapons) {
+                if (matchesWeaponType(ws, w)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        return entry.weaponType == null || matchesWeaponType(ws, entry.weaponType);
+    }
+
+    /** Turns an AI plane's horizontal motion towards its nose, as a wing would, so it does not drift sideways. */
+    private static void dampSideslip(AircraftEntity plane) {
+        Vec3 m = plane.getDeltaMovement();
+        double hs = Math.sqrt(m.x * m.x + m.z * m.z);
+        if (hs < 0.05) {
+            return;
+        }
+        double rad = Math.toRadians(plane.getYaw());
+        double fx = -Math.sin(rad);
+        double fz = Math.cos(rad);
+        // Flying backwards (a VTOL backing off) is left alone.
+        if (m.x * fx + m.z * fz <= 0.0) {
+            return;
+        }
+        double nx = m.x + (fx * hs - m.x) * SLIP_DAMPING;
+        double nz = m.z + (fz * hs - m.z) * SLIP_DAMPING;
+        double n = Math.sqrt(nx * nx + nz * nz);
+        if (n > 1.0E-6) {
+            plane.setDeltaMovement(nx / n * hs, m.y, nz / n * hs);
         }
     }
 
@@ -490,7 +807,7 @@ public final class WingmanTickHandler {
         if (!attacking && !entry.isAutonomous() && entry.leader != null) {
             formation = entry.leader.getY() - TerrainAvoidance.of(level).top(entry.leader.getBlockX(), entry.leader.getBlockZ());
         }
-        return PilotAi.adjust(level, wingman, raw, attacking && !isBombWeapon(entry.weaponType), formation);
+        return PilotAi.adjust(level, wingman, raw, attacking && !isBombWeapon(attackType(entry)), formation);
     }
 
     /**
@@ -515,9 +832,16 @@ public final class WingmanTickHandler {
         if (entry.attackMode != WingmanEntry.ATK_NONE) {
             Entity target = resolveTarget(level, wingman, entry);
             if (target != null && !target.isRemoved()) {
-                if (isOrbitFireWeapon(entry.weaponType, entry.order != null && entry.order.orbitAttack)) {
-                    return computeOrbitTarget(target, entry);
-                } else if (isBombWeapon(entry.weaponType)) {
+                String type = attackType(entry);
+                boolean orbitAttack = entry.order != null && entry.order.orbitAttack;
+                Vec3 extend = PilotAi.extendTarget(wingman, clampAttackAltitude(target.getY() + altOffsetForWeapon(type)));
+                if (extend != null) {
+                    return applyLeaderClearance(extend, entry.leader);
+                }
+                // A plane cannot hold a missile on a target it circles: it runs in at it instead.
+                if (isOrbitFireWeapon(type, orbitAttack) && (orbitAttack || !isPlane(wingman))) {
+                    return computeOrbitTarget(wingman, target, entry);
+                } else if (isBombWeapon(type)) {
                     return computeOverflyTarget(wingman, target, entry);
                 }
                 return computeApproachTarget(wingman, target, entry);
@@ -541,6 +865,9 @@ public final class WingmanTickHandler {
                 }
             }
             return raw;
+        }
+        if (circlesLeader(level, wingman, entry)) {
+            return orbitPoint(wingman, entry.leader, CIRCLE_RADIUS, entry.leader.getY() + CIRCLE_HEIGHT, 1.0);
         }
         if (entry.state == WingmanState.FOLLOWING && entry.leader != null) {
             return formationPos(entry.leader, entry.formationSlot);
@@ -575,7 +902,15 @@ public final class WingmanTickHandler {
         if (target == null || target.isRemoved()) {
             return null;
         }
-        return new Vec3(target.getX(), target.getY() + 1.5, target.getZ());
+        if (wingman instanceof GroundVehicleEntity) {
+            return new Vec3(target.getX(), target.getY() + 1.5, target.getZ());
+        }
+        // A plane pulling off its pass, or circling a gunship orbit, points along its move target.
+        if (isPlane(wingman) && (PilotAi.isExtending(wingman) || entry.order != null && entry.order.orbitAttack)) {
+            return null;
+        }
+        Aim aim = aim(level, wingman, entry, target, false);
+        return aim != null ? aim.steer() : null;
     }
 
     private static double clampAttackAltitude(double y) {
@@ -589,26 +924,41 @@ public final class WingmanTickHandler {
     }
 
     /**
-     * Upstream {@code computeOrbitTarget}: circles the target 2 degrees a tick, at an order's orbit
-     * radius, else at the weapon's standoff.
+     * Upstream {@code computeOrbitTarget}: circles the target at an order's orbit radius, else at the
+     * weapon's standoff. Upstream turned its point 2 degrees a tick whatever the aircraft did, faster
+     * than a plane can fly a wide orbit; the port's point is on the circle a little ahead of the
+     * aircraft, so it joins the circle and flies round it. A plane whose weapon points to its right
+     * circles the other way, to keep the target on that side.
      */
-    public static Vec3 computeOrbitTarget(Entity target, WingmanEntry entry) {
+    public static Vec3 computeOrbitTarget(Entity wingman, Entity target, WingmanEntry entry) {
+        String type = attackType(entry);
         double orbitRadius = entry.order != null && entry.order.orbitRadius > 0 ? entry.order.orbitRadius
-                : standoffForWeapon(entry.weaponType);
-        double idealY = clampAttackAltitude(target.getY() + altOffsetForWeapon(entry.weaponType));
-        entry.orbitAngle = (entry.orbitAngle + 2.0) % 360.0;
-        double rad = Math.toRadians(entry.orbitAngle);
-        return applyLeaderClearance(new Vec3(target.getX() + Math.sin(rad) * orbitRadius, idealY,
-                target.getZ() + Math.cos(rad) * orbitRadius), entry.leader);
+                : standoffForWeapon(type);
+        double idealY = clampAttackAltitude(target.getY() + altOffsetForWeapon(type));
+        double dir = wingman instanceof AircraftEntity ac && mount(ac, entry.aiWeapon, 0.0F).yaw() > 10.0F ? -1.0 : 1.0;
+        Vec3 p = orbitPoint(wingman, target, orbitRadius, idealY, dir);
+        entry.orbitAngle = Math.toDegrees(Math.atan2(p.x - target.getX(), p.z - target.getZ()));
+        return applyLeaderClearance(p, entry.leader);
+    }
+
+    /**
+     * The point on a circle of {@code radius} round {@code centre}, at {@code y}, an arc of about
+     * 40 blocks (at most 45 degrees) on from the aircraft's bearing; {@code dir} 1 goes round
+     * anticlockwise seen from above, -1 clockwise.
+     */
+    static Vec3 orbitPoint(Entity ac, Entity centre, double radius, double y, double dir) {
+        double bearing = Math.atan2(ac.getX() - centre.getX(), ac.getZ() - centre.getZ());
+        double rad = bearing + dir * Math.min(Math.toRadians(45.0), 40.0 / Math.max(radius, 1.0));
+        return new Vec3(centre.getX() + Math.sin(rad) * radius, y, centre.getZ() + Math.cos(rad) * radius);
     }
 
     /** Upstream {@code computeApproachTarget}: closes to the standoff distance, then turns away. */
     private static Vec3 computeApproachTarget(AircraftEntity wingman, Entity target, WingmanEntry entry) {
-        double standoff = standoffForWeapon(entry.weaponType);
+        double standoff = standoffForWeapon(attackType(entry));
         double dx = target.getX() - wingman.getX();
         double dz = target.getZ() - wingman.getZ();
         double hDist = Math.sqrt(dx * dx + dz * dz);
-        double idealY = clampAttackAltitude(target.getY() + altOffsetForWeapon(entry.weaponType));
+        double idealY = clampAttackAltitude(target.getY() + altOffsetForWeapon(attackType(entry)));
         Vec3 raw;
         if (hDist > standoff) {
             double ratio = (hDist - standoff) / hDist;
@@ -620,12 +970,28 @@ public final class WingmanTickHandler {
         return applyLeaderClearance(raw, entry.leader);
     }
 
-    /** Upstream {@code computeOverflyTarget}: a bomber aims 80 blocks past the target along its heading. */
+    /**
+     * Upstream {@code computeOverflyTarget}: a bomber aims 80 blocks past the target. Upstream went
+     * past it along the bomber's heading, which a bomber not yet lined up never flew over; the port
+     * goes past it along the line from the bomber, so the run passes over the target.
+     */
     private static Vec3 computeOverflyTarget(AircraftEntity wingman, Entity target, WingmanEntry entry) {
         double idealY = clampAttackAltitude(target.getY() + altOffsetForWeapon("bomb"));
-        double facing = Math.toRadians(wingman.getYaw());
-        return applyLeaderClearance(new Vec3(target.getX() - Math.sin(facing) * 80.0, idealY,
-                target.getZ() + Math.cos(facing) * 80.0), entry.leader);
+        double dx = target.getX() - wingman.getX();
+        double dz = target.getZ() - wingman.getZ();
+        double hd = Math.sqrt(dx * dx + dz * dz);
+        double fx;
+        double fz;
+        if (hd > 1.0) {
+            fx = dx / hd;
+            fz = dz / hd;
+        } else {
+            double facing = Math.toRadians(wingman.getYaw());
+            fx = -Math.sin(facing);
+            fz = Math.cos(facing);
+        }
+        return applyLeaderClearance(new Vec3(target.getX() + fx * 80.0, idealY, target.getZ() + fz * 80.0),
+                entry.leader);
     }
 
     /**
@@ -839,7 +1205,9 @@ public final class WingmanTickHandler {
             case "cas" -> 50.0;
             case "rocket", "mkrocket" -> 60.0;
             case "missile", "aamissile", "atmissile", "tvmissile" -> 80.0;
-            case "asmissile", "bomb" -> 200.0;
+            case "asmissile" -> 200.0;
+            // Upstream bombed from 200 blocks; from 100 a bomb falls in half the time, for a moving target to stray.
+            case "bomb" -> 100.0;
             case "torpedo" -> 5.0;
             default -> 50.0;
         };
@@ -892,24 +1260,27 @@ public final class WingmanTickHandler {
      * Upstream {@code tryFire}: fires the first weapon of the wanted type that is ready (else the
      * first of that type), with infinite ammunition, at the wingman's own cooldown. The port fires
      * as the wingman itself, along its own heading, where upstream fired as the leader and along the
-     * leader's heading, and passes the target to seeking weapons as the port's gunners do.
+     * leader's heading, and passes the target to seeking weapons as the port's gunners do. With
+     * {@code aimed} it fires the set the pilot chose, along the fire control's yaw and pitch.
      */
-    private static void tryFire(AircraftEntity ac, Entity target, float yaw, float pitch, @Nullable String weaponType) {
+    private static void tryFire(AircraftEntity ac, WingmanEntry entry, Entity target, float yaw, float pitch,
+            @Nullable String weaponType, boolean aimed) {
         if (ac.getWeaponNum() <= 0) {
             return;
         }
         UUID id = ac.getUUID();
-        int cd = FIRE_COOLDOWNS.getOrDefault(id, 0);
-        if (cd > 0) {
-            FIRE_COOLDOWNS.put(id, cd - 1);
-            return;
-        }
-        WeaponSet chosen = pickWeapon(ac, weaponType, true);
+        WeaponSet chosen = aimed && entry.aiWeapon >= 0 && entry.aiWeapon < ac.getWeaponNum() ? ac.getWeapon(entry.aiWeapon)
+                : pickWeapon(ac, weaponType, true);
         if (chosen == null) {
             chosen = pickWeapon(ac, weaponType, false);
         }
         if (chosen == null) {
             return;
+        }
+        // Upstream's wingmen fire with infinite ammunition, but that only refills a magazine once it
+        // is fired empty: one that was never loaded (a fresh aircraft) never fired at all.
+        if (chosen.getMagSize() > 0 && chosen.getAmmo() <= 0 && chosen.getRestAllAmmoNum() <= 0 && !chosen.isBusy()) {
+            chosen.setAmmo(chosen.getMagSize());
         }
         String resolvedType = resolveWeaponType(chosen, weaponType);
         WeaponParam prm = new WeaponParam();
@@ -918,7 +1289,8 @@ public final class WingmanTickHandler {
         prm.isInfinity = true;
         prm.option1 = target.getId();
         prm.setPosAndRot(ac.getX(), ac.getY(), ac.getZ(), yaw, pitch);
-        if (chosen.use(prm)) {
+        // The fire control lays the shot itself; upstream's shot went along the aircraft's nose.
+        if (aimed ? ac.weapons().useAimed(chosen, prm, yaw, pitch) : chosen.use(prm)) {
             FIRE_COOLDOWNS.put(id, fireCooldownForType(resolvedType));
             if (isHeavyWeapon(resolvedType)) {
                 POST_FIRE_ESCAPE.put(id, POST_FIRE_ESCAPE_TICKS);
@@ -993,7 +1365,7 @@ public final class WingmanTickHandler {
     /**
      * Upstream {@code applySlotBoost}: after the flight model has moved a wingman more than 20
      * blocks from its slot, it moves it further towards the slot, up to twice the leader's speed
-     * from 80 blocks. Only horizontally: the flight model keeps the altitude.
+     * from 80 blocks. Only horizontally: the flight model keeps the altitude. A plane only forwards.
      */
     private static void applySlotBoost(AircraftEntity wingman, double fdx, double fdz, double distToSlot,
             double leaderSpeed) {
@@ -1004,7 +1376,19 @@ public final class WingmanTickHandler {
                 : (distToSlot - BOOST_DIST_OFF) / (BOOST_DIST_ON - BOOST_DIST_OFF);
         double boost = leaderSpeed * BOOST_LEADER_MULT * taper;
         double norm = Math.max(distToSlot, 0.01);
-        wingman.setPos(wingman.getX() + fdx / norm * boost, wingman.getY(), wingman.getZ() + fdz / norm * boost);
+        double bx = fdx / norm;
+        double bz = fdz / norm;
+        if (isPlane(wingman)) {
+            // A plane is pushed only along its nose, and only as far as the slot lies ahead of it:
+            // pushed straight at the slot it slid sideways through the air.
+            double rad = Math.toRadians(wingman.getYaw());
+            double fx = -Math.sin(rad);
+            double fz = Math.cos(rad);
+            double ahead = Math.max(0.0, bx * fx + bz * fz);
+            bx = fx * ahead;
+            bz = fz * ahead;
+        }
+        wingman.setPos(wingman.getX() + bx * boost, wingman.getY(), wingman.getZ() + bz * boost);
         if (++boostDebugTick >= 20) {
             boostDebugTick = 0;
             McheliCePort.LOGGER.debug("[Wingman/Boost] dist={} leaderSpd={} boost={}", (int) distToSlot,
