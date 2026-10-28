@@ -97,6 +97,7 @@ public class ModLanguageProvider extends LanguageProvider {
         addBlock(ModBlocks.DRAFTING_TABLE, "Drafting Table");
         addBlock(ModBlocks.LIT_DRAFTING_TABLE, "Drafting Table");
         addBlock(ModBlocks.CHARGER, "Aircraft Charger");
+        addBlock(ModBlocks.REPAIR_PAD, "Repair Pad");
         addBlock(ModBlocks.WINGMAN_MARKER, "Marker Block");
     }
 

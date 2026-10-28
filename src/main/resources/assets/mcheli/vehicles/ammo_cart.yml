@@ -1,0 +1,30 @@
+# M10c, a port addition: a rideable ammunition cart with a limited stock. It rearms one weapon of
+# each vehicle within 8 blocks per second, the emptiest first, twice as fast with its loader
+# aboard, and restocks on a repair pad. It shares the ammo box's model for now.
+DisplayName:
+  DEFAULT: Ammo cart
+  ja_jp: 弾薬カート
+Category: ZZZ
+MaxHP: 600
+AmmoSupplyRange: 8.0
+AmmoSupplyStock: 600
+ThrottleDownFactor: 1.0
+Camera:
+  ThirdPersonDist: 8.0
+  Pos:
+  - Pos: [0.0, 2.0, 0.0]
+PhysicalProperties:
+  RotationLimits:
+    Pitch:
+      Min: 0.0
+      Max: 0.0
+Armor:
+  DamageFactor: 1.0
+Seats:
+- Position: [0.0, 1.0, 0.0]
+  Hud: vehicle
+  Role: LOADER
+Recepie:
+  isShaped: true
+  Pattern:
+  - "\"ICI\",  \"IGI\",  \"P P\",  I, iron_ingot, C, chest, G, gunpowder, P, oak_planks"

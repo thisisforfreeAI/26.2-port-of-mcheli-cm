@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "key": {
+    "I": "#c:ingots/iron",
+    "R": "#c:dusts/redstone",
+    "S": "minecraft:smooth_stone",
+    "Y": "#c:dyes/yellow"
+  },
+  "pattern": [
+    "IYI",
+    "SRS",
+    "IYI"
+  ],
+  "result": {
+    "count": 9,
+    "id": "mcheli_ce_port:repair_pad"
+  }
+}

@@ -37,7 +37,7 @@ class AllGroundModelsTest {
                 }
             }
         }
-        assertEquals(12, stock.tank().size()); assertEquals(18, stock.vehicle().size());
+        assertEquals(12, stock.tank().size()); assertEquals(19, stock.vehicle().size());
         // The MXT-MV's model has its canopy as $canopy0, so the "canopy" alias entry draws nothing.
         assertEquals(List.of(), missing);
     }

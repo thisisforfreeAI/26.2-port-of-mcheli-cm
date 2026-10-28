@@ -38,6 +38,11 @@ public final class ModBlocks {
     public static final Supplier<BlockEntityType<ChargerBlockEntity>> CHARGER_ENTITY =
             ModRegistries.BLOCK_ENTITY_TYPES.register("charger", () -> new BlockEntityType<>(
                     ChargerBlockEntity::new, CHARGER.get()));
+    /** M10c: a repair pad tile; a 3x3 of them services a vehicle standing on it. */
+    public static final DeferredBlock<io.github.mcheliceport.block.RepairPadBlock> REPAIR_PAD =
+            ModRegistries.BLOCKS.registerBlock("repair_pad", io.github.mcheliceport.block.RepairPadBlock::new,
+                    p -> p.mapColor(MapColor.COLOR_YELLOW).sound(SoundType.METAL).strength(1.5f, 6.0f)
+                            .requiresCorrectToolForDrops().noOcclusion());
     public static final DeferredBlock<WingmanMarkerBlock> WINGMAN_MARKER = ModRegistries.BLOCKS.registerBlock(
             "wingman_marker", WingmanMarkerBlock::new,
             p -> p.mapColor(MapColor.METAL).strength(2.0f, 6.0f).requiresCorrectToolForDrops());

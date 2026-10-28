@@ -511,6 +511,7 @@ public final class YamlParser implements ContentParser {
                     }
                 }
                 case "AmmoSupplyRange" -> info.ammoSupplyRange = getClamped(1000, value);
+                case "AmmoSupplyStock" -> info.ammoSupplyStock = getClamped(1_000_000, value);
                 case "RepairOtherVehicles" -> {
                     Map<String, Number> repairMap = (HashMap<String, Number>) value;
                     if (repairMap.containsKey("Range"))

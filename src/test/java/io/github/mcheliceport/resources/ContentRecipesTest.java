@@ -130,7 +130,7 @@ class ContentRecipesTest {
                 "only the infinite supply props deliberately have no survival recipe");
         assertTrue(stock.throwable().values().stream().allMatch(info -> !info.recipeString.isEmpty()));
         Map<Identifier, byte[]> files = ContentRecipes.build(ModItems.contentItems(), stock, GAME_ITEMS);
-        assertEquals(119, files.size(), "115 vehicle recipes and four throwable recipes, with none skipped");
+        assertEquals(120, files.size(), "116 vehicle recipes (with M10c's ammo cart) and four throwable recipes, with none skipped");
         for (byte[] file : files.values()) {
             assertDecodes(JsonParser.parseString(new String(file, StandardCharsets.UTF_8)));
         }

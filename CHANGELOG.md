@@ -11,6 +11,12 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 ## [Unreleased]
 
 ### Added
+- Ground crew (M10c): a new Repair Pad block; a vehicle parked on a 3x3 pad with its engine off is
+  repaired 10 HP a second and refuelled and rearmed from supply vehicles within 8 blocks. A new
+  ammo cart carries 600 rounds, rearms the emptiest weapon of each vehicle within 8 blocks once a
+  second (twice with its loader aboard) and restocks on a pad. Addon supply vehicles can carry a
+  stock with `AmmoSupplyStock`. Riders see `REPAIR REARM REFUEL` while serviced, and supply vehicles
+  show their reach as a ring. See `docs/M10_GROUND_CREW.md`.
 - Crew roles (M10b): seats are pilot, gunner, loader, commander or passenger. Stock seats keep who
   may fire what. A manned loader seat makes guns reload in 0.6x the time and its reload key serves
   the emptiest gun; loaders and passengers can't fire. A commander marks a target (new key `M`) that

@@ -30,6 +30,11 @@ public class ModRecipeProvider extends RecipeProvider {
 
     @Override
     protected void buildRecipes() {
+        this.shaped(RecipeCategory.DECORATIONS, ModItems.REPAIR_PAD.get(), 9)
+                .pattern("IYI").pattern("SRS").pattern("IYI")
+                .define('I', Tags.Items.INGOTS_IRON).define('Y', Tags.Items.DYES_YELLOW)
+                .define('S', Items.SMOOTH_STONE).define('R', Tags.Items.DUSTS_REDSTONE)
+                .unlockedBy("has_iron_ingot", this.has(Tags.Items.INGOTS_IRON)).save(this.output);
         this.shaped(RecipeCategory.MISC, ModItems.CHAIN.get())
                 .pattern("I I").pattern("III").pattern("I I")
                 .define('I', Tags.Items.INGOTS_IRON)

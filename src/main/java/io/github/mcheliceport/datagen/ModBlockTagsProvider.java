@@ -27,7 +27,8 @@ public class ModBlockTagsProvider extends BlockTagsProvider {
                 .add(ModBlocks.DRAFTING_TABLE.getKey())
                 .add(ModBlocks.LIT_DRAFTING_TABLE.getKey())
                 .add(ModBlocks.CHARGER.getKey())
-                .add(ModBlocks.WINGMAN_MARKER.getKey());
+                .add(ModBlocks.WINGMAN_MARKER.getKey())
+                .add(ModBlocks.REPAIR_PAD.getKey());
         this.tag(BlockTags.NEEDS_STONE_TOOL)
                 .add(ModBlocks.CHARGER.getKey())
                 .add(ModBlocks.WINGMAN_MARKER.getKey());

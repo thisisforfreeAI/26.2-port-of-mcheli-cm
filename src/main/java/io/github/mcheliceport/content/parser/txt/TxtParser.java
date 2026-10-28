@@ -222,6 +222,7 @@ public final class TxtParser implements ContentParser {
             case "fuelconsumption" -> info.fuelConsumption = info.toFloat(data, 0.0F, 10000.0F);
             case "fuelsupplyrange" -> info.fuelSupplyRange = info.toFloat(data, 0.0F, 1000.0F);
             case "ammosupplyrange" -> info.ammoSupplyRange = info.toFloat(data, 0.0F, 1000.0F);
+            case "ammosupplystock" -> info.ammoSupplyStock = info.toInt(data, 0, 1_000_000);
             case "repairothervehicles" -> {
                 String[] s = info.splitParam(data);
                 if (s.length >= 1) {

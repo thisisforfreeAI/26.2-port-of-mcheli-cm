@@ -21,6 +21,7 @@ public class ModBlockLootProvider extends BlockLootSubProvider {
         this.dropSelf(ModBlocks.DRAFTING_TABLE.get());
         this.dropOther(ModBlocks.LIT_DRAFTING_TABLE.get(), ModBlocks.DRAFTING_TABLE.get());
         this.dropSelf(ModBlocks.CHARGER.get());
+        this.dropSelf(ModBlocks.REPAIR_PAD.get());
         this.dropSelf(ModBlocks.WINGMAN_MARKER.get());
     }
 

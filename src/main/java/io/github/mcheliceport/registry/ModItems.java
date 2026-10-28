@@ -101,6 +101,7 @@ public final class ModItems {
     public static final DeferredItem<BlockItem> DRAFTING_TABLE = blockItem(ModBlocks.DRAFTING_TABLE);
     public static final DeferredItem<BlockItem> CHARGER = blockItem(ModBlocks.CHARGER);
     public static final DeferredItem<BlockItem> WINGMAN_MARKER = blockItem(ModBlocks.WINGMAN_MARKER);
+    public static final DeferredItem<BlockItem> REPAIR_PAD = blockItem(ModBlocks.REPAIR_PAD);
 
     private ModItems() {
     }

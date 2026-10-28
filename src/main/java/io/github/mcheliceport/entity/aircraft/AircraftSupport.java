@@ -5,7 +5,7 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
 
 /** Nearby fuel/repair and medical crew effects from upstream MCH_EntityAircraft. */
-final class AircraftSupport {
+public final class AircraftSupport {
     private final AircraftEntity ac;
     private int fuelSuppliedCount;
 
@@ -37,6 +37,9 @@ final class AircraftSupport {
                     other.setFuelType(type);
                 }
                 other.setFuel(other.getFuel() + amount);
+                if (amount > 0) {
+                    io.github.mcheliceport.groundcrew.GroundCrew.mark(other, io.github.mcheliceport.groundcrew.GroundCrew.REFUEL);
+                }
                 // Upstream clamps the source after transfer; it does not cap the amount to its fuel.
                 if (!info.fuelSupplyInfinite) {
                     this.ac.setFuel(this.ac.getFuel() - amount);
@@ -45,6 +48,39 @@ final class AircraftSupport {
             // Even a full or airborne compatible recipient gets the upstream consumption grace.
             other.support().fuelSuppliedCount = 40;
         }
+    }
+
+    /**
+     * M10c: moves up to {@code max} fuel from a fuel supply vehicle to {@code target} under the same
+     * rules as its own supply (compatible type, a finite source pays), and returns how much moved.
+     */
+    public static int transferFuel(AircraftEntity source, AircraftEntity target, int max) {
+        var info = source.getAcInfo();
+        var to = target.getAcInfo();
+        if (info == null || to == null || info.fuelSupplyRange <= 0 || source == target || source.isDestroyed()) {
+            return 0;
+        }
+        String type = info.fuelSupplyInfinite ? info.fuelSupplyType : source.getFuelType();
+        if (type.isBlank() || !info.fuelSupplyInfinite && (info.electric || source.getFuel() <= 0)
+                || !to.isFuelValid(type) || target.getFuel() > 0 && !to.electric && !target.getFuelType().isBlank()
+                && !target.getFuelType().equals(type)) {
+            return 0;
+        }
+        int amount = Math.min(target.getMaxFuel() - target.getFuel(), max);
+        if (!info.fuelSupplyInfinite) {
+            amount = Math.min(amount, source.getFuel());
+        }
+        if (amount <= 0) {
+            return 0;
+        }
+        if (target.getFuel() <= 0) {
+            target.setFuelType(type);
+        }
+        target.setFuel(target.getFuel() + amount);
+        if (!info.fuelSupplyInfinite) {
+            source.setFuel(source.getFuel() - amount);
+        }
+        return amount;
     }
 
     /** Called only while updateFuel is active, immediately before the consumption check. */

@@ -31,7 +31,8 @@ import org.junit.jupiter.api.io.TempDir;
  */
 class AddonOverrideTest {
 
-    private static final int STOCK_FILES = 372 + io.github.mcheliceport.content.ContentParityTest.NTM_BOMBS;
+    private static final int STOCK_FILES = 372 + io.github.mcheliceport.content.ContentParityTest.NTM_BOMBS
+            + io.github.mcheliceport.content.ContentParityTest.PORT_VEHICLES;
 
     @TempDir
     Path addonDir;

@@ -718,6 +718,7 @@ vehicles/46.itemID: 28603 vs 0
 vehicles/46.bbZmax: 1.0 vs 5.0
 vehicles/46.bbZ: -2.0 vs 0.0
 vehicles/46.author: '' vs 'EMB4'
+vehicles/ammo_cart: only in YAML
 vehicles/ammo_box.itemID: 28611 vs 0
 vehicles/ammo_box.category: 'zzz' vs 'ZZZ'
 vehicles/ammo_box.author: '' vs 'EMB4'

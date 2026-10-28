@@ -32,6 +32,9 @@ public final class ServerConfig {
     public static final ModConfigSpec.DoubleValue CHARGER_RANGE;
     public static final ModConfigSpec.IntValue CHARGER_TRANSFER_RATE;
     public static final ModConfigSpec.IntValue CHARGER_CAPACITY;
+    public static final ModConfigSpec.BooleanValue GROUND_CREW;
+    public static final ModConfigSpec.IntValue PAD_REPAIR_HP;
+    public static final ModConfigSpec.DoubleValue PAD_SUPPLY_RANGE;
     public static final ModConfigSpec.DoubleValue WINGMAN_SIDE_DIST;
     public static final ModConfigSpec.DoubleValue WINGMAN_ALT_OFFSET;
     public static final ModConfigSpec.DoubleValue WINGMAN_REAR_DIST;
@@ -128,6 +131,19 @@ public final class ServerConfig {
         CHARGER_CAPACITY = builder
                 .comment("Energy the charger holds. Upstream: ChargerCapacity.")
                 .defineInRange("chargerCapacity", 100000, 0, Integer.MAX_VALUE);
+        builder.pop();
+
+        builder.comment("M10c ground crew: repair pads and supply vehicles with a stock (a port addition).")
+                .push("groundCrew");
+        GROUND_CREW = builder
+                .comment("Repair pads service vehicles and stocked supply vehicles restock on them.")
+                .define("enabled", true);
+        PAD_REPAIR_HP = builder
+                .comment("Hit points a repair pad restores each second to a vehicle standing still on it.")
+                .defineInRange("padRepairHp", 10, 0, 100000);
+        PAD_SUPPLY_RANGE = builder
+                .comment("How close to a pad's centre a fuel or ammo supply vehicle must be to top up the vehicle on it, in blocks.")
+                .defineInRange("padSupplyRange", 8.0, 0.0, 64.0);
         builder.pop();
 
         builder.comment("The wingman formation (upstream's [formation] section of its wingman config). These are read",
