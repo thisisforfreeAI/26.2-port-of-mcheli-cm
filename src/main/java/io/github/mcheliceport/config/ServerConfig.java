@@ -1,5 +1,6 @@
 package io.github.mcheliceport.config;
 
+import io.github.mcheliceport.wingman.ai.AiSkill;
 import java.util.List;
 import net.neoforged.neoforge.common.ModConfigSpec;
 
@@ -42,6 +43,8 @@ public final class ServerConfig {
     public static final ModConfigSpec.DoubleValue WINGMAN_MIN_ATTACK_ALTITUDE;
     public static final ModConfigSpec.DoubleValue WINGMAN_MAX_ATTACK_ALTITUDE;
     public static final ModConfigSpec.BooleanValue NPC_BATTLES;
+    public static final ModConfigSpec.EnumValue<AiSkill> AI_DIFFICULTY;
+    public static final ModConfigSpec.BooleanValue AI_TERRAIN;
     public static final ModConfigSpec.BooleanValue PROJECTILE_CHUNK_LOAD;
     public static final ModConfigSpec.IntValue PROJECTILE_CHUNK_LEASE_TICKS;
     public static final ModConfigSpec.IntValue LAG_COMPENSATION_MAX_MS;
@@ -175,6 +178,17 @@ public final class ServerConfig {
         NPC_BATTLES = builder
                 .comment("false: NPCs only attack what upstream's did (monsters, players, target drones, team gunners).")
                 .define("enabled", true);
+        builder.pop();
+
+        builder.comment("M10d AI pilots of wingmen and aircraft on missions (a port addition).").push("ai");
+        AI_DIFFICULTY = builder
+                .comment("EASY looks 2 seconds ahead for terrain and reacts to missiles in 1.5 seconds; NORMAL looks",
+                        "2 and 4 seconds ahead, reacts in 0.6 seconds and turns away from the missile; VETERAN looks",
+                        "up to 8 seconds ahead, reacts in 0.2 seconds and flies attack runs 20 to 40 blocks up.")
+                .defineEnum("difficulty", AiSkill.NORMAL);
+        AI_TERRAIN = builder
+                .comment("AI pilots climb over terrain they see ahead. false: upstream's flight, which can fly into hills.")
+                .define("terrainAvoidance", true);
         builder.pop();
 
         builder.comment("Keeping chunks loaded along the flight path of projectiles, so bullets, rockets and missiles",
