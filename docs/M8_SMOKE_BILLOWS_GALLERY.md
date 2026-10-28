@@ -8,6 +8,9 @@ cropped or recolored. The new sprite artwork was generated separately and is lin
 
 [Implementation, controls and budgets](M8_SMOKE_BILLOWS.md).
 
+[Named weapon explosion gallery](M8_EXPLOSION_SMOKE_GALLERY.md) adds all five M8 blast
+profiles, an airburst, underwater spray and an index of the loaded conventional weapons.
+
 ## M1A2 — Vulkan
 
 | Burning wreck | Cooling, interrupted plume |

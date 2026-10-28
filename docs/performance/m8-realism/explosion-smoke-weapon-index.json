@@ -1,0 +1,1532 @@
+[
+  {
+    "name": "105mm",
+    "displayName": "105mmgun",
+    "type": "machinegun2",
+    "power": 3,
+    "effectSize": 3.0,
+    "airburstPower": 3,
+    "underwaterPower": 0,
+    "family": "CANNON"
+  },
+  {
+    "name": "127mmgun",
+    "displayName": "OtoMelara127mm gun",
+    "type": "machinegun2",
+    "power": 3,
+    "effectSize": 3.0,
+    "airburstPower": 3,
+    "underwaterPower": 0,
+    "family": "CANNON"
+  },
+  {
+    "name": "12_7cm",
+    "displayName": "12.7cm Gun",
+    "type": "machinegun2",
+    "power": 3,
+    "effectSize": 3.0,
+    "airburstPower": 3,
+    "underwaterPower": 0,
+    "family": "CANNON"
+  },
+  {
+    "name": "152mm_howitzer",
+    "displayName": "152mm howitzer",
+    "type": "machinegun2",
+    "power": 6,
+    "effectSize": 6.0,
+    "airburstPower": 6,
+    "underwaterPower": 0,
+    "family": "CANNON"
+  },
+  {
+    "name": "15_5cm",
+    "displayName": "15.5cm Type91[AP]",
+    "type": "machinegun1",
+    "power": 5,
+    "effectSize": 5.0,
+    "airburstPower": 5,
+    "underwaterPower": 4,
+    "family": "CANNON"
+  },
+  {
+    "name": "20mmgunpod",
+    "displayName": "20mmGunpod",
+    "type": "machinegun1",
+    "power": 1,
+    "effectSize": 1.0,
+    "airburstPower": 1,
+    "underwaterPower": 0,
+    "family": "CANNON"
+  },
+  {
+    "name": "250kg",
+    "displayName": "250kg bomb",
+    "type": "bomb",
+    "power": 4,
+    "effectSize": 4.0,
+    "airburstPower": 4,
+    "underwaterPower": 0,
+    "family": "HEAVY"
+  },
+  {
+    "name": "2a42",
+    "displayName": "2A42 30mmCannon",
+    "type": "machinegun2",
+    "power": 1,
+    "effectSize": 1.0,
+    "airburstPower": 1,
+    "underwaterPower": 0,
+    "family": "CANNON"
+  },
+  {
+    "name": "2a42_ifv",
+    "displayName": "2A42 30mmCannon",
+    "type": "machinegun2",
+    "power": 1,
+    "effectSize": 1.0,
+    "airburstPower": 1,
+    "underwaterPower": 0,
+    "family": "CANNON"
+  },
+  {
+    "name": "2a42_ka50",
+    "displayName": "2A42 30mmCannon",
+    "type": "machinegun2",
+    "power": 1,
+    "effectSize": 1.0,
+    "airburstPower": 1,
+    "underwaterPower": 0,
+    "family": "CANNON"
+  },
+  {
+    "name": "2a46m-1_apfsds",
+    "displayName": "2A46M-1 Smoothbore Gun[APFSDS]",
+    "type": "machinegun1",
+    "power": 1,
+    "effectSize": 1.0,
+    "airburstPower": 1,
+    "underwaterPower": 0,
+    "family": "CANNON"
+  },
+  {
+    "name": "2a46m-1_he",
+    "displayName": "2A46M-1 Smoothbore Gun[HE]",
+    "type": "machinegun2",
+    "power": 4,
+    "effectSize": 4.0,
+    "airburstPower": 4,
+    "underwaterPower": 0,
+    "family": "CANNON"
+  },
+  {
+    "name": "2a46m-1_heatmp",
+    "displayName": "2A46M-1 Smoothbore Gun[HEAT-MP]",
+    "type": "machinegun2",
+    "power": 2,
+    "effectSize": 2.0,
+    "airburstPower": 2,
+    "underwaterPower": 0,
+    "family": "CANNON"
+  },
+  {
+    "name": "46cm",
+    "displayName": "46cm Type91 [AP]",
+    "type": "machinegun1",
+    "power": 15,
+    "effectSize": 15.0,
+    "airburstPower": 15,
+    "underwaterPower": 10,
+    "family": "CANNON"
+  },
+  {
+    "name": "540pound",
+    "displayName": "540pound bomb",
+    "type": "bomb",
+    "power": 4,
+    "effectSize": 4.0,
+    "airburstPower": 4,
+    "underwaterPower": 0,
+    "family": "HEAVY"
+  },
+  {
+    "name": "60mm_mortar",
+    "displayName": "60mm Mortar",
+    "type": "machinegun1",
+    "power": 3,
+    "effectSize": 3.0,
+    "airburstPower": 3,
+    "underwaterPower": 0,
+    "family": "CANNON"
+  },
+  {
+    "name": "76mmgun",
+    "displayName": "OtoMelara76mm gun",
+    "type": "machinegun2",
+    "power": 2,
+    "effectSize": 2.0,
+    "airburstPower": 2,
+    "underwaterPower": 0,
+    "family": "CANNON"
+  },
+  {
+    "name": "81mm_mortar",
+    "displayName": "81mm Mortar",
+    "type": "rocket",
+    "power": 4,
+    "effectSize": 4.0,
+    "airburstPower": 4,
+    "underwaterPower": 0,
+    "family": "BLAST"
+  },
+  {
+    "name": "90mm_gun_m3",
+    "displayName": "90 mm Gun M3",
+    "type": "machinegun2",
+    "power": 3,
+    "effectSize": 3.0,
+    "airburstPower": 3,
+    "underwaterPower": 0,
+    "family": "CANNON"
+  },
+  {
+    "name": "9k114",
+    "displayName": "9M114",
+    "type": "atmissile",
+    "power": 4,
+    "effectSize": 4.0,
+    "airburstPower": 4,
+    "underwaterPower": 0,
+    "family": "PENETRATOR"
+  },
+  {
+    "name": "9k118",
+    "displayName": "9K118 Sheksna",
+    "type": "atmissile",
+    "power": 4,
+    "effectSize": 4.0,
+    "airburstPower": 4,
+    "underwaterPower": 0,
+    "family": "PENETRATOR"
+  },
+  {
+    "name": "9k118tv",
+    "displayName": "9K118 Sheksna",
+    "type": "tvmissile",
+    "power": 4,
+    "effectSize": 4.0,
+    "airburstPower": 4,
+    "underwaterPower": 0,
+    "family": "BLAST"
+  },
+  {
+    "name": "9k121_ka50",
+    "displayName": "9K121 Vikhr",
+    "type": "atmissile",
+    "power": 4,
+    "effectSize": 4.0,
+    "airburstPower": 4,
+    "underwaterPower": 0,
+    "family": "PENETRATOR"
+  },
+  {
+    "name": "9k121_ka52",
+    "displayName": "9K121 Vikhr",
+    "type": "atmissile",
+    "power": 4,
+    "effectSize": 4.0,
+    "airburstPower": 4,
+    "underwaterPower": 0,
+    "family": "PENETRATOR"
+  },
+  {
+    "name": "9k121tv_ka50",
+    "displayName": "9K121 Vikhr",
+    "type": "tvmissile",
+    "power": 4,
+    "effectSize": 4.0,
+    "airburstPower": 4,
+    "underwaterPower": 0,
+    "family": "BLAST"
+  },
+  {
+    "name": "9k121tv_ka52",
+    "displayName": "9K121 Vikhr",
+    "type": "tvmissile",
+    "power": 4,
+    "effectSize": 4.0,
+    "airburstPower": 4,
+    "underwaterPower": 0,
+    "family": "BLAST"
+  },
+  {
+    "name": "9k38_ka50",
+    "displayName": "9K38 Igla",
+    "type": "aamissile",
+    "power": 4,
+    "effectSize": 4.0,
+    "airburstPower": 4,
+    "underwaterPower": 0,
+    "family": "BLAST"
+  },
+  {
+    "name": "9k38_ka52",
+    "displayName": "9K38 Igla",
+    "type": "aamissile",
+    "power": 4,
+    "effectSize": 4.0,
+    "airburstPower": 4,
+    "underwaterPower": 0,
+    "family": "BLAST"
+  },
+  {
+    "name": "9m114",
+    "displayName": "9M114",
+    "type": "tvmissile",
+    "power": 4,
+    "effectSize": 4.0,
+    "airburstPower": 4,
+    "underwaterPower": 0,
+    "family": "BLAST"
+  },
+  {
+    "name": "9m119m",
+    "displayName": "9M119M ATM",
+    "type": "tvmissile",
+    "power": 3,
+    "effectSize": 3.0,
+    "airburstPower": 3,
+    "underwaterPower": 0,
+    "family": "BLAST"
+  },
+  {
+    "name": "9m133",
+    "displayName": "9M133 Kornet-M",
+    "type": "atmissile",
+    "power": 4,
+    "effectSize": 4.0,
+    "airburstPower": 4,
+    "underwaterPower": 0,
+    "family": "PENETRATOR"
+  },
+  {
+    "name": "9m133s",
+    "displayName": "9M133 Kornet-M",
+    "type": "tvmissile",
+    "power": 4,
+    "effectSize": 4.0,
+    "airburstPower": 4,
+    "underwaterPower": 0,
+    "family": "BLAST"
+  },
+  {
+    "name": "9m39",
+    "displayName": "9M39 Igla-1V",
+    "type": "aamissile",
+    "power": 4,
+    "effectSize": 4.0,
+    "airburstPower": 4,
+    "underwaterPower": 0,
+    "family": "BLAST"
+  },
+  {
+    "name": "a10gau8",
+    "displayName": "A-10 GAU-8 Avenger",
+    "type": "cas",
+    "power": 2,
+    "effectSize": 2.0,
+    "airburstPower": 2,
+    "underwaterPower": 0,
+    "family": "HEAVY"
+  },
+  {
+    "name": "agm-65",
+    "displayName": "AGM-65 Maverick",
+    "type": "asmissile",
+    "power": 6,
+    "effectSize": 6.0,
+    "airburstPower": 6,
+    "underwaterPower": 0,
+    "family": "BLAST"
+  },
+  {
+    "name": "agm114",
+    "displayName": "AGM-114 Hellfire",
+    "type": "atmissile",
+    "power": 4,
+    "effectSize": 4.0,
+    "airburstPower": 4,
+    "underwaterPower": 0,
+    "family": "PENETRATOR"
+  },
+  {
+    "name": "agm114tv",
+    "displayName": "AGM-114 Hellfire",
+    "type": "tvmissile",
+    "power": 4,
+    "effectSize": 4.0,
+    "airburstPower": 4,
+    "underwaterPower": 0,
+    "family": "BLAST"
+  },
+  {
+    "name": "agm119",
+    "displayName": "AGM-119B Penguin",
+    "type": "asmissile",
+    "power": 9,
+    "effectSize": 9.0,
+    "airburstPower": 9,
+    "underwaterPower": 0,
+    "family": "BLAST"
+  },
+  {
+    "name": "agm130",
+    "displayName": "AGM-130",
+    "type": "tvmissile",
+    "power": 10,
+    "effectSize": 10.0,
+    "airburstPower": 10,
+    "underwaterPower": 0,
+    "family": "BLAST"
+  },
+  {
+    "name": "agm154",
+    "displayName": "AGM-154",
+    "type": "asmissile",
+    "power": 5,
+    "effectSize": 5.0,
+    "airburstPower": 5,
+    "underwaterPower": 0,
+    "family": "PENETRATOR"
+  },
+  {
+    "name": "agm158",
+    "displayName": "AGM-158 JASSM",
+    "type": "tvmissile",
+    "power": 10,
+    "effectSize": 10.0,
+    "airburstPower": 10,
+    "underwaterPower": 0,
+    "family": "BLAST"
+  },
+  {
+    "name": "agm84",
+    "displayName": "AGM-84 Harpoon",
+    "type": "asmissile",
+    "power": 9,
+    "effectSize": 9.0,
+    "airburstPower": 9,
+    "underwaterPower": 0,
+    "family": "BLAST"
+  },
+  {
+    "name": "aim-9x",
+    "displayName": "AIM-9X sidewinder",
+    "type": "aamissile",
+    "power": 4,
+    "effectSize": 4.0,
+    "airburstPower": 4,
+    "underwaterPower": 0,
+    "family": "BLAST"
+  },
+  {
+    "name": "aim120",
+    "displayName": "AIM-120 AMRAAM",
+    "type": "aamissile",
+    "power": 5,
+    "effectSize": 5.0,
+    "airburstPower": 5,
+    "underwaterPower": 0,
+    "family": "BLAST"
+  },
+  {
+    "name": "aim7",
+    "displayName": "AIM-7 Sparrow",
+    "type": "aamissile",
+    "power": 5,
+    "effectSize": 5.0,
+    "airburstPower": 5,
+    "underwaterPower": 0,
+    "family": "BLAST"
+  },
+  {
+    "name": "aim7_f",
+    "displayName": "AIM-7 Sparrow",
+    "type": "aamissile",
+    "power": 5,
+    "effectSize": 5.0,
+    "airburstPower": 5,
+    "underwaterPower": 0,
+    "family": "BLAST"
+  },
+  {
+    "name": "aim7_spa",
+    "displayName": "AIM-7 Sparrow",
+    "type": "aamissile",
+    "power": 5,
+    "effectSize": 5.0,
+    "airburstPower": 5,
+    "underwaterPower": 0,
+    "family": "BLAST"
+  },
+  {
+    "name": "aim9",
+    "displayName": "AIM-9 Sidewinder",
+    "type": "aamissile",
+    "power": 5,
+    "effectSize": 5.0,
+    "airburstPower": 5,
+    "underwaterPower": 0,
+    "family": "BLAST"
+  },
+  {
+    "name": "aim92",
+    "displayName": "AIM-92 Stinger",
+    "type": "aamissile",
+    "power": 4,
+    "effectSize": 4.0,
+    "airburstPower": 4,
+    "underwaterPower": 0,
+    "family": "BLAST"
+  },
+  {
+    "name": "aim92_l",
+    "displayName": "AIM-92 Stinger",
+    "type": "aamissile",
+    "power": 4,
+    "effectSize": 4.0,
+    "airburstPower": 4,
+    "underwaterPower": 0,
+    "family": "BLAST"
+  },
+  {
+    "name": "aim9_l",
+    "displayName": "AIM-9 Sidewinder",
+    "type": "aamissile",
+    "power": 5,
+    "effectSize": 5.0,
+    "airburstPower": 5,
+    "underwaterPower": 0,
+    "family": "BLAST"
+  },
+  {
+    "name": "anm17allc",
+    "displayName": "AN-M17All C",
+    "type": "bomb",
+    "power": 3,
+    "effectSize": 3.0,
+    "airburstPower": 3,
+    "underwaterPower": 0,
+    "family": "HEAVY"
+  },
+  {
+    "name": "asraam",
+    "displayName": "ASRAAM AAM",
+    "type": "aamissile",
+    "power": 5,
+    "effectSize": 5.0,
+    "airburstPower": 5,
+    "underwaterPower": 0,
+    "family": "BLAST"
+  },
+  {
+    "name": "blu10b",
+    "displayName": "BLU-10/B",
+    "type": "bomb",
+    "power": 4,
+    "effectSize": 4.0,
+    "airburstPower": 4,
+    "underwaterPower": 0,
+    "family": "HEAVY"
+  },
+  {
+    "name": "bm_14_17",
+    "displayName": "BM-14-17 140mm Rocket",
+    "type": "rocket",
+    "power": 2,
+    "effectSize": 2.0,
+    "airburstPower": 2,
+    "underwaterPower": 0,
+    "family": "BLAST"
+  },
+  {
+    "name": "bofors40mm",
+    "displayName": "Bofors 40mm gun",
+    "type": "machinegun2",
+    "power": 2,
+    "effectSize": 2.0,
+    "airburstPower": 2,
+    "underwaterPower": 0,
+    "family": "CANNON"
+  },
+  {
+    "name": "bofors40mm_l",
+    "displayName": "Bofors 40mm gun",
+    "type": "machinegun2",
+    "power": 2,
+    "effectSize": 2.0,
+    "airburstPower": 2,
+    "underwaterPower": 0,
+    "family": "CANNON"
+  },
+  {
+    "name": "c_34",
+    "displayName": "Krupp C/34 40.6cm",
+    "type": "machinegun1",
+    "power": 12,
+    "effectSize": 12.0,
+    "airburstPower": 12,
+    "underwaterPower": 0,
+    "family": "CANNON"
+  },
+  {
+    "name": "canistershell",
+    "displayName": "Canister Shell",
+    "type": "rocket",
+    "power": 1,
+    "effectSize": 1.0,
+    "airburstPower": 1,
+    "underwaterPower": 0,
+    "family": "BLAST"
+  },
+  {
+    "name": "cas_gbu-38b",
+    "displayName": "GBU-38/B JDAM",
+    "type": "asmissile",
+    "power": 6,
+    "effectSize": 6.0,
+    "airburstPower": 6,
+    "underwaterPower": 0,
+    "family": "BLAST"
+  },
+  {
+    "name": "cb90_30mm",
+    "displayName": "30mm RWS",
+    "type": "machinegun2",
+    "power": 1,
+    "effectSize": 1.0,
+    "airburstPower": 1,
+    "underwaterPower": 0,
+    "family": "CANNON"
+  },
+  {
+    "name": "cb90_atgm",
+    "displayName": "TV-Guided ATGM",
+    "type": "tvmissile",
+    "power": 3,
+    "effectSize": 3.0,
+    "airburstPower": 3,
+    "underwaterPower": 0,
+    "family": "BLAST"
+  },
+  {
+    "name": "cb90_mk19",
+    "displayName": "Mk19 Grenade",
+    "type": "rocket",
+    "power": 2,
+    "effectSize": 2.0,
+    "airburstPower": 2,
+    "underwaterPower": 0,
+    "family": "BLAST"
+  },
+  {
+    "name": "cbu-100",
+    "displayName": "CBU-100 Cluster Bomb",
+    "type": "bomb",
+    "power": 3,
+    "effectSize": 3.0,
+    "airburstPower": 3,
+    "underwaterPower": 0,
+    "family": "HEAVY"
+  },
+  {
+    "name": "cbu-72",
+    "displayName": "CBU-72 FAE1",
+    "type": "bomb",
+    "power": 15,
+    "effectSize": 15.0,
+    "airburstPower": 15,
+    "underwaterPower": 0,
+    "family": "INCENDIARY"
+  },
+  {
+    "name": "cbu-87",
+    "displayName": "CBU-87/B Cluster Bomb",
+    "type": "bomb",
+    "power": 4,
+    "effectSize": 4.0,
+    "airburstPower": 4,
+    "underwaterPower": 0,
+    "family": "HEAVY"
+  },
+  {
+    "name": "crv7",
+    "displayName": "CRV7 Rocket",
+    "type": "rocket",
+    "power": 3,
+    "effectSize": 3.0,
+    "airburstPower": 3,
+    "underwaterPower": 0,
+    "family": "BLAST"
+  },
+  {
+    "name": "crv7_2",
+    "displayName": "CRV7 Rocket",
+    "type": "rocket",
+    "power": 3,
+    "effectSize": 3.0,
+    "airburstPower": 3,
+    "underwaterPower": 0,
+    "family": "BLAST"
+  },
+  {
+    "name": "crv7_mpsm",
+    "displayName": "CRV7 MPSM",
+    "type": "rocket",
+    "power": 1,
+    "effectSize": 1.0,
+    "airburstPower": 1,
+    "underwaterPower": 0,
+    "family": "BLAST"
+  },
+  {
+    "name": "d56ts",
+    "displayName": "D-56TS 76mmGun",
+    "type": "machinegun2",
+    "power": 3,
+    "effectSize": 3.0,
+    "airburstPower": 3,
+    "underwaterPower": 0,
+    "family": "CANNON"
+  },
+  {
+    "name": "egbu24",
+    "displayName": "EGBU-24 PavewayIII",
+    "type": "asmissile",
+    "power": 5,
+    "effectSize": 5.0,
+    "airburstPower": 5,
+    "underwaterPower": 0,
+    "family": "BLAST"
+  },
+  {
+    "name": "f5w",
+    "displayName": "F5W 936kg Torpedo",
+    "type": "torpedo",
+    "power": 3,
+    "effectSize": 3.0,
+    "airburstPower": 3,
+    "underwaterPower": 9,
+    "family": "BLAST"
+  },
+  {
+    "name": "fab500sh",
+    "displayName": "FAB-500 SH",
+    "type": "bomb",
+    "power": 5,
+    "effectSize": 5.0,
+    "airburstPower": 5,
+    "underwaterPower": 0,
+    "family": "HEAVY"
+  },
+  {
+    "name": "fgm148",
+    "displayName": "FGM-148 Javelin",
+    "type": "atmissile",
+    "power": 4,
+    "effectSize": 4.0,
+    "airburstPower": 4,
+    "underwaterPower": 0,
+    "family": "PENETRATOR"
+  },
+  {
+    "name": "fim92",
+    "displayName": "FIM-92 Stinger",
+    "type": "aamissile",
+    "power": 4,
+    "effectSize": 4.0,
+    "airburstPower": 4,
+    "underwaterPower": 0,
+    "family": "BLAST"
+  },
+  {
+    "name": "gau-12u",
+    "displayName": "GAU-12 Equalizer",
+    "type": "machinegun1",
+    "power": 1,
+    "effectSize": 1.0,
+    "airburstPower": 1,
+    "underwaterPower": 0,
+    "family": "CANNON"
+  },
+  {
+    "name": "gau-22a",
+    "displayName": "GAU-22/A Equalizer",
+    "type": "machinegun1",
+    "power": 1,
+    "effectSize": 1.0,
+    "airburstPower": 1,
+    "underwaterPower": 0,
+    "family": "CANNON"
+  },
+  {
+    "name": "gau-8",
+    "displayName": "GAU-8 Avenger",
+    "type": "machinegun1",
+    "power": 3,
+    "effectSize": 3.0,
+    "airburstPower": 3,
+    "underwaterPower": 0,
+    "family": "CANNON"
+  },
+  {
+    "name": "gbu-12",
+    "displayName": "GBU-12 Paveway II",
+    "type": "asmissile",
+    "power": 5,
+    "effectSize": 5.0,
+    "airburstPower": 5,
+    "underwaterPower": 0,
+    "family": "BLAST"
+  },
+  {
+    "name": "gbu-31",
+    "displayName": "GBU-31",
+    "type": "asmissile",
+    "power": 6,
+    "effectSize": 6.0,
+    "airburstPower": 6,
+    "underwaterPower": 0,
+    "family": "BLAST"
+  },
+  {
+    "name": "gbu-39_b_sdb",
+    "displayName": "GBU-39/B SDB",
+    "type": "asmissile",
+    "power": 5,
+    "effectSize": 5.0,
+    "airburstPower": 5,
+    "underwaterPower": 0,
+    "family": "BLAST"
+  },
+  {
+    "name": "gbu-44",
+    "displayName": "GBU-44/B Viper Strike",
+    "type": "atmissile",
+    "power": 5,
+    "effectSize": 5.0,
+    "airburstPower": 5,
+    "underwaterPower": 0,
+    "family": "PENETRATOR"
+  },
+  {
+    "name": "gbu-53_sdb",
+    "displayName": "GBU-53/B SDB II",
+    "type": "atmissile",
+    "power": 4,
+    "effectSize": 4.0,
+    "airburstPower": 4,
+    "underwaterPower": 0,
+    "family": "PENETRATOR"
+  },
+  {
+    "name": "gbu28",
+    "displayName": "GBU-28",
+    "type": "asmissile",
+    "power": 6,
+    "effectSize": 6.0,
+    "airburstPower": 6,
+    "underwaterPower": 0,
+    "family": "PENETRATOR"
+  },
+  {
+    "name": "gbu28_e",
+    "displayName": "GBU-28",
+    "type": "asmissile",
+    "power": 6,
+    "effectSize": 6.0,
+    "airburstPower": 6,
+    "underwaterPower": 0,
+    "family": "PENETRATOR"
+  },
+  {
+    "name": "gbu38",
+    "displayName": "GBU-38",
+    "type": "asmissile",
+    "power": 4,
+    "effectSize": 4.0,
+    "airburstPower": 4,
+    "underwaterPower": 0,
+    "family": "PENETRATOR"
+  },
+  {
+    "name": "gbu57",
+    "displayName": "GBU-57",
+    "type": "asmissile",
+    "power": 15,
+    "effectSize": 15.0,
+    "airburstPower": 15,
+    "underwaterPower": 0,
+    "family": "PENETRATOR"
+  },
+  {
+    "name": "gmw",
+    "displayName": "H&K GMW [M384 HE]",
+    "type": "rocket",
+    "power": 2,
+    "effectSize": 2.0,
+    "airburstPower": 2,
+    "underwaterPower": 0,
+    "family": "BLAST"
+  },
+  {
+    "name": "grom",
+    "displayName": "GROM Anti-Air Missile",
+    "type": "aamissile",
+    "power": 4,
+    "effectSize": 4.0,
+    "airburstPower": 4,
+    "underwaterPower": 0,
+    "family": "BLAST"
+  },
+  {
+    "name": "gsh-23-2",
+    "displayName": "GSh-23-2 Chain gun",
+    "type": "machinegun2",
+    "power": 1,
+    "effectSize": 1.0,
+    "airburstPower": 1,
+    "underwaterPower": 0,
+    "family": "CANNON"
+  },
+  {
+    "name": "hawk",
+    "displayName": "MIM-23 HAWK",
+    "type": "aamissile",
+    "power": 5,
+    "effectSize": 5.0,
+    "airburstPower": 5,
+    "underwaterPower": 0,
+    "family": "BLAST"
+  },
+  {
+    "name": "hydra70",
+    "displayName": "Hydra 70mm Rocket",
+    "type": "rocket",
+    "power": 3,
+    "effectSize": 3.0,
+    "airburstPower": 3,
+    "underwaterPower": 0,
+    "family": "BLAST"
+  },
+  {
+    "name": "hydra70_10",
+    "displayName": "Hydra 70mm Rocket",
+    "type": "rocket",
+    "power": 3,
+    "effectSize": 3.0,
+    "airburstPower": 3,
+    "underwaterPower": 0,
+    "family": "BLAST"
+  },
+  {
+    "name": "hydra70_4",
+    "displayName": "Hydra 70mm Rocket",
+    "type": "rocket",
+    "power": 3,
+    "effectSize": 3.0,
+    "airburstPower": 3,
+    "underwaterPower": 0,
+    "family": "BLAST"
+  },
+  {
+    "name": "hydra70_l",
+    "displayName": "Hydra 70mm Rocket",
+    "type": "rocket",
+    "power": 3,
+    "effectSize": 3.0,
+    "airburstPower": 3,
+    "underwaterPower": 0,
+    "family": "BLAST"
+  },
+  {
+    "name": "hydra70_mpsm",
+    "displayName": "Hydra 70mm MPSM",
+    "type": "rocket",
+    "power": 1,
+    "effectSize": 1.0,
+    "airburstPower": 1,
+    "underwaterPower": 0,
+    "family": "BLAST"
+  },
+  {
+    "name": "iris-t",
+    "displayName": "IRIS-T",
+    "type": "aamissile",
+    "power": 5,
+    "effectSize": 5.0,
+    "airburstPower": 5,
+    "underwaterPower": 0,
+    "family": "BLAST"
+  },
+  {
+    "name": "kba-3_ap",
+    "displayName": "125mm KBA-3 [APFSDS]",
+    "type": "machinegun2",
+    "power": 1,
+    "effectSize": 1.0,
+    "airburstPower": 1,
+    "underwaterPower": 0,
+    "family": "CANNON"
+  },
+  {
+    "name": "kba-3_he",
+    "displayName": "125mm KBA-3 [HE]",
+    "type": "machinegun2",
+    "power": 5,
+    "effectSize": 5.0,
+    "airburstPower": 5,
+    "underwaterPower": 0,
+    "family": "CANNON"
+  },
+  {
+    "name": "kh-25",
+    "displayName": "Kh-25ML",
+    "type": "asmissile",
+    "power": 5,
+    "effectSize": 5.0,
+    "airburstPower": 5,
+    "underwaterPower": 0,
+    "family": "BLAST"
+  },
+  {
+    "name": "kh-31",
+    "displayName": "Kh-31",
+    "type": "asmissile",
+    "power": 7,
+    "effectSize": 7.0,
+    "airburstPower": 7,
+    "underwaterPower": 0,
+    "family": "BLAST"
+  },
+  {
+    "name": "kh-35",
+    "displayName": "Kh-35",
+    "type": "asmissile",
+    "power": 7,
+    "effectSize": 7.0,
+    "airburstPower": 7,
+    "underwaterPower": 0,
+    "family": "BLAST"
+  },
+  {
+    "name": "lau-68",
+    "displayName": "LAU-68 70mm Rocket",
+    "type": "rocket",
+    "power": 3,
+    "effectSize": 3.0,
+    "airburstPower": 3,
+    "underwaterPower": 0,
+    "family": "BLAST"
+  },
+  {
+    "name": "lau-68_apkws",
+    "displayName": "LAU-68/APKWS",
+    "type": "tvmissile",
+    "power": 3,
+    "effectSize": 3.0,
+    "airburstPower": 3,
+    "underwaterPower": 0,
+    "family": "BLAST"
+  },
+  {
+    "name": "lau-68_logir",
+    "displayName": "LAU-68/LOGIR",
+    "type": "atmissile",
+    "power": 2,
+    "effectSize": 2.0,
+    "airburstPower": 2,
+    "underwaterPower": 0,
+    "family": "PENETRATOR"
+  },
+  {
+    "name": "m102_105mm",
+    "displayName": "M102 105mm Howitzer",
+    "type": "machinegun2",
+    "power": 6,
+    "effectSize": 6.0,
+    "airburstPower": 6,
+    "underwaterPower": 0,
+    "family": "CANNON"
+  },
+  {
+    "name": "m230",
+    "displayName": "M230 Chain gun",
+    "type": "machinegun2",
+    "power": 1,
+    "effectSize": 1.0,
+    "airburstPower": 1,
+    "underwaterPower": 0,
+    "family": "CANNON"
+  },
+  {
+    "name": "m230_30",
+    "displayName": "M230 Chain gun",
+    "type": "machinegun2",
+    "power": 1,
+    "effectSize": 1.0,
+    "airburstPower": 1,
+    "underwaterPower": 0,
+    "family": "CANNON"
+  },
+  {
+    "name": "m75_40mm",
+    "displayName": "M75 40mm grenade",
+    "type": "machinegun2",
+    "power": 2,
+    "effectSize": 2.0,
+    "airburstPower": 2,
+    "underwaterPower": 0,
+    "family": "CANNON"
+  },
+  {
+    "name": "mgm21a",
+    "displayName": "MGM-21A",
+    "type": "asmissile",
+    "power": 5,
+    "effectSize": 5.0,
+    "airburstPower": 5,
+    "underwaterPower": 0,
+    "family": "BLAST"
+  },
+  {
+    "name": "mk19_l",
+    "displayName": "Mk19 Grenade(Left Side)",
+    "type": "rocket",
+    "power": 2,
+    "effectSize": 2.0,
+    "airburstPower": 2,
+    "underwaterPower": 0,
+    "family": "BLAST"
+  },
+  {
+    "name": "mk19_r",
+    "displayName": "Mk19 Grenade(Right Side)",
+    "type": "rocket",
+    "power": 2,
+    "effectSize": 2.0,
+    "airburstPower": 2,
+    "underwaterPower": 0,
+    "family": "BLAST"
+  },
+  {
+    "name": "mk46",
+    "displayName": "Mark 46 torpedo",
+    "type": "torpedo",
+    "power": 2,
+    "effectSize": 2.0,
+    "airburstPower": 2,
+    "underwaterPower": 8,
+    "family": "BLAST"
+  },
+  {
+    "name": "mk46_3",
+    "displayName": "Mark 46 torpedo",
+    "type": "torpedo",
+    "power": 2,
+    "effectSize": 2.0,
+    "airburstPower": 2,
+    "underwaterPower": 8,
+    "family": "BLAST"
+  },
+  {
+    "name": "mk62",
+    "displayName": "Mk-62 Quick Strike Mine",
+    "type": "bomb",
+    "power": 3,
+    "effectSize": 3.0,
+    "airburstPower": 3,
+    "underwaterPower": 9,
+    "family": "HEAVY"
+  },
+  {
+    "name": "mk82",
+    "displayName": "MK82 bomb",
+    "type": "bomb",
+    "power": 4,
+    "effectSize": 4.0,
+    "airburstPower": 4,
+    "underwaterPower": 0,
+    "family": "HEAVY"
+  },
+  {
+    "name": "mk82_12",
+    "displayName": "MK82 bomb",
+    "type": "bomb",
+    "power": 4,
+    "effectSize": 4.0,
+    "airburstPower": 4,
+    "underwaterPower": 0,
+    "family": "HEAVY"
+  },
+  {
+    "name": "mk82_2r",
+    "displayName": "MK82 bomb",
+    "type": "bomb",
+    "power": 5,
+    "effectSize": 5.0,
+    "airburstPower": 5,
+    "underwaterPower": 0,
+    "family": "HEAVY"
+  },
+  {
+    "name": "mk82_b2",
+    "displayName": "MK82 bomb",
+    "type": "bomb",
+    "power": 4,
+    "effectSize": 4.0,
+    "airburstPower": 4,
+    "underwaterPower": 0,
+    "family": "HEAVY"
+  },
+  {
+    "name": "mw-1",
+    "displayName": "MW-1 BombDispenser",
+    "type": "bomb",
+    "power": 3,
+    "effectSize": 3.0,
+    "airburstPower": 3,
+    "underwaterPower": 0,
+    "family": "HEAVY"
+  },
+  {
+    "name": "pars_3_lr",
+    "displayName": "TRIGAT-LR",
+    "type": "atmissile",
+    "power": 2,
+    "effectSize": 2.0,
+    "airburstPower": 2,
+    "underwaterPower": 0,
+    "family": "PENETRATOR"
+  },
+  {
+    "name": "plab-250-120",
+    "displayName": "PLAB-250-120 DC",
+    "type": "bomb",
+    "power": 4,
+    "effectSize": 4.0,
+    "airburstPower": 4,
+    "underwaterPower": 9,
+    "family": "HEAVY"
+  },
+  {
+    "name": "plastic_bomb",
+    "displayName": "Plastic Bomb",
+    "type": "bomb",
+    "power": 4,
+    "effectSize": 4.0,
+    "airburstPower": 4,
+    "underwaterPower": 0,
+    "family": "HEAVY"
+  },
+  {
+    "name": "pom2",
+    "displayName": "POM-2S Anti-Personal Mine",
+    "type": "bomb",
+    "power": 4,
+    "effectSize": 4.0,
+    "airburstPower": 4,
+    "underwaterPower": 0,
+    "family": "HEAVY"
+  },
+  {
+    "name": "r-60",
+    "displayName": "R-60",
+    "type": "aamissile",
+    "power": 4,
+    "effectSize": 4.0,
+    "airburstPower": 4,
+    "underwaterPower": 0,
+    "family": "BLAST"
+  },
+  {
+    "name": "r-73",
+    "displayName": "R-73 missile",
+    "type": "aamissile",
+    "power": 4,
+    "effectSize": 4.0,
+    "airburstPower": 4,
+    "underwaterPower": 0,
+    "family": "BLAST"
+  },
+  {
+    "name": "r-77",
+    "displayName": "R-77 missile",
+    "type": "aamissile",
+    "power": 4,
+    "effectSize": 4.0,
+    "airburstPower": 4,
+    "underwaterPower": 0,
+    "family": "BLAST"
+  },
+  {
+    "name": "r27ae",
+    "displayName": "R-27AE AAM",
+    "type": "aamissile",
+    "power": 6,
+    "effectSize": 6.0,
+    "airburstPower": 6,
+    "underwaterPower": 0,
+    "family": "BLAST"
+  },
+  {
+    "name": "r73m2",
+    "displayName": "R-73M2 AAM",
+    "type": "aamissile",
+    "power": 4,
+    "effectSize": 4.0,
+    "airburstPower": 4,
+    "underwaterPower": 0,
+    "family": "BLAST"
+  },
+  {
+    "name": "r77-1",
+    "displayName": "R-77-1 AAM",
+    "type": "aamissile",
+    "power": 5,
+    "effectSize": 5.0,
+    "airburstPower": 5,
+    "underwaterPower": 0,
+    "family": "BLAST"
+  },
+  {
+    "name": "ram116",
+    "displayName": "RIM-116 RAM",
+    "type": "aamissile",
+    "power": 4,
+    "effectSize": 4.0,
+    "airburstPower": 4,
+    "underwaterPower": 0,
+    "family": "BLAST"
+  },
+  {
+    "name": "rehinmetall_apfsds",
+    "displayName": "Rehinmetall Smoothbore Gun[APFSDS]",
+    "type": "machinegun1",
+    "power": 1,
+    "effectSize": 1.0,
+    "airburstPower": 1,
+    "underwaterPower": 0,
+    "family": "CANNON"
+  },
+  {
+    "name": "rehinmetall_he",
+    "displayName": "Rehinmetall Smoothbore Gun[HE]",
+    "type": "machinegun1",
+    "power": 4,
+    "effectSize": 4.0,
+    "airburstPower": 4,
+    "underwaterPower": 0,
+    "family": "CANNON"
+  },
+  {
+    "name": "rmk30",
+    "displayName": "RMK30 RevolverCannon",
+    "type": "machinegun2",
+    "power": 1,
+    "effectSize": 1.0,
+    "airburstPower": 1,
+    "underwaterPower": 0,
+    "family": "CANNON"
+  },
+  {
+    "name": "s-13",
+    "displayName": "S-13 122mm Rocket",
+    "type": "rocket",
+    "power": 4,
+    "effectSize": 4.0,
+    "airburstPower": 4,
+    "underwaterPower": 0,
+    "family": "BLAST"
+  },
+  {
+    "name": "s-5",
+    "displayName": "S-5 Rocket",
+    "type": "rocket",
+    "power": 3,
+    "effectSize": 3.0,
+    "airburstPower": 3,
+    "underwaterPower": 0,
+    "family": "BLAST"
+  },
+  {
+    "name": "s-5m57mm",
+    "displayName": "S-5M 57mm Rocket",
+    "type": "rocket",
+    "power": 3,
+    "effectSize": 3.0,
+    "airburstPower": 3,
+    "underwaterPower": 0,
+    "family": "BLAST"
+  },
+  {
+    "name": "s-8",
+    "displayName": "S-8 80mmRocket",
+    "type": "rocket",
+    "power": 3,
+    "effectSize": 3.0,
+    "airburstPower": 3,
+    "underwaterPower": 0,
+    "family": "BLAST"
+  },
+  {
+    "name": "s-8_h",
+    "displayName": "S-8 80mmRocket",
+    "type": "rocket",
+    "power": 2,
+    "effectSize": 2.0,
+    "airburstPower": 2,
+    "underwaterPower": 0,
+    "family": "BLAST"
+  },
+  {
+    "name": "s-8_ka50",
+    "displayName": "S-8 80mmRocket",
+    "type": "rocket",
+    "power": 3,
+    "effectSize": 3.0,
+    "airburstPower": 3,
+    "underwaterPower": 0,
+    "family": "BLAST"
+  },
+  {
+    "name": "s-8dm",
+    "displayName": "S-8DM 80mmThermobaric",
+    "type": "rocket",
+    "power": 5,
+    "effectSize": 5.0,
+    "airburstPower": 5,
+    "underwaterPower": 0,
+    "family": "INCENDIARY"
+  },
+  {
+    "name": "s8",
+    "displayName": "S-8 Rocket B-8M1",
+    "type": "rocket",
+    "power": 4,
+    "effectSize": 4.0,
+    "airburstPower": 4,
+    "underwaterPower": 0,
+    "family": "BLAST"
+  },
+  {
+    "name": "sa-2",
+    "displayName": "SA-2 Guidline",
+    "type": "aamissile",
+    "power": 9,
+    "effectSize": 9.0,
+    "airburstPower": 9,
+    "underwaterPower": 0,
+    "family": "BLAST"
+  },
+  {
+    "name": "sam2",
+    "displayName": "Type 91 SAM-2",
+    "type": "aamissile",
+    "power": 4,
+    "effectSize": 4.0,
+    "airburstPower": 4,
+    "underwaterPower": 0,
+    "family": "BLAST"
+  },
+  {
+    "name": "sc50bi",
+    "displayName": "SC 50 Bi 50kg",
+    "type": "bomb",
+    "power": 3,
+    "effectSize": 3.0,
+    "airburstPower": 3,
+    "underwaterPower": 1,
+    "family": "HEAVY"
+  },
+  {
+    "name": "sneb68mm",
+    "displayName": "SNEB 68mm Rocket",
+    "type": "rocket",
+    "power": 2,
+    "effectSize": 2.0,
+    "airburstPower": 2,
+    "underwaterPower": 0,
+    "family": "BLAST"
+  },
+  {
+    "name": "type3bullet",
+    "displayName": "Type3 Anti-Air Shell[AA]",
+    "type": "rocket",
+    "power": 2,
+    "effectSize": 2.0,
+    "airburstPower": 2,
+    "underwaterPower": 0,
+    "family": "BLAST"
+  },
+  {
+    "name": "type3bullet_15_5",
+    "displayName": "15.5cm Type3 Anti-Air Shell[AA]",
+    "type": "rocket",
+    "power": 2,
+    "effectSize": 2.0,
+    "airburstPower": 2,
+    "underwaterPower": 0,
+    "family": "BLAST"
+  },
+  {
+    "name": "type3bullet_46",
+    "displayName": "46cm Type3 Anti-Air Shell[AA]",
+    "type": "rocket",
+    "power": 2,
+    "effectSize": 2.0,
+    "airburstPower": 2,
+    "underwaterPower": 0,
+    "family": "BLAST"
+  },
+  {
+    "name": "type91torpedo",
+    "displayName": "Type91 torpedo",
+    "type": "torpedo",
+    "power": 4,
+    "effectSize": 4.0,
+    "airburstPower": 4,
+    "underwaterPower": 9,
+    "family": "BLAST"
+  },
+  {
+    "name": "type93torpedo",
+    "displayName": "Type93 torpedo",
+    "type": "torpedo",
+    "power": 4,
+    "effectSize": 4.0,
+    "airburstPower": 4,
+    "underwaterPower": 9,
+    "family": "BLAST"
+  },
+  {
+    "name": "type97",
+    "displayName": "Type97 No6 Bomb",
+    "type": "bomb",
+    "power": 4,
+    "effectSize": 4.0,
+    "airburstPower": 4,
+    "underwaterPower": 0,
+    "family": "HEAVY"
+  },
+  {
+    "name": "xm301",
+    "displayName": "XM301 20mm",
+    "type": "machinegun2",
+    "power": 1,
+    "effectSize": 1.0,
+    "airburstPower": 1,
+    "underwaterPower": 0,
+    "family": "CANNON"
+  }
+]

@@ -1,0 +1,231 @@
+{
+  "kind": "named-conventional-weapon-native-vfx-gallery",
+  "shipping_implementation_commit": "0482ad48dda6039106355157d2a7eef4abe0cdf9",
+  "backend": "VULKAN",
+  "device": "llvmpipe Mesa 25.0.7-2+deb13u1 (LLVM 19.1.7), software Vulkan",
+  "settings": {
+    "quality": "ENHANCED",
+    "style": "POLISHED",
+    "budget": "BALANCED",
+    "modern": false,
+    "adaptive": false,
+    "daylight": true
+  },
+  "captures": [
+    {
+      "file": "docs/screens/m8-explosion-smoke-gallery/agm114-age35.png",
+      "sha256": "54b3f389d2c29b651a554f2babb34769c84febffc61a6fdc0824edb118ca534e",
+      "width": 1280,
+      "height": 720,
+      "unedited_native_capture": true
+    },
+    {
+      "file": "docs/screens/m8-explosion-smoke-gallery/agm114-age8.png",
+      "sha256": "2bfc3c74f4aa8559ed6d14f9878b152b9262e657c1fb754304765352b1e78354",
+      "width": 1280,
+      "height": 720,
+      "unedited_native_capture": true
+    },
+    {
+      "file": "docs/screens/m8-explosion-smoke-gallery/agm158-age35.png",
+      "sha256": "970a441056b269c367e7169b417c2e5433f5b8e025de0172bd2b64b643fbdb49",
+      "width": 1280,
+      "height": 720,
+      "unedited_native_capture": true
+    },
+    {
+      "file": "docs/screens/m8-explosion-smoke-gallery/agm158-age8.png",
+      "sha256": "c6ba5887c50c9ddc5f706db4bc1a08a51e257c18bc332e3a76aea00b0e3b3407",
+      "width": 1280,
+      "height": 720,
+      "unedited_native_capture": true
+    },
+    {
+      "file": "docs/screens/m8-explosion-smoke-gallery/aim9-age35.png",
+      "sha256": "8ae1690efbf922d3bfee71789559604bea4a4496f4e8ee5b77c2708a82745b0d",
+      "width": 1280,
+      "height": 720,
+      "unedited_native_capture": true
+    },
+    {
+      "file": "docs/screens/m8-explosion-smoke-gallery/aim9-age8.png",
+      "sha256": "cfed21beb6253b23cf9179e37d8694536fa59f1406298ffbcef659932fa8bd17",
+      "width": 1280,
+      "height": 720,
+      "unedited_native_capture": true
+    },
+    {
+      "file": "docs/screens/m8-explosion-smoke-gallery/bofors40mm-age12-close.png",
+      "sha256": "5ae16cbcf813f7419bf602ede343566ec2e83702b1bff3cd537f33662800946e",
+      "width": 1280,
+      "height": 720,
+      "unedited_native_capture": true
+    },
+    {
+      "file": "docs/screens/m8-explosion-smoke-gallery/bofors40mm-age8.png",
+      "sha256": "0665fd45167d42749e28868f31de5beeef967ec549f82c5e2d5ba635ded21635",
+      "width": 1280,
+      "height": 720,
+      "unedited_native_capture": true
+    },
+    {
+      "file": "docs/screens/m8-explosion-smoke-gallery/cbu-72-age60.png",
+      "sha256": "953ce04475bc43a64bba9f3a98dddfa4281f81410fa6ea95d2ed564a1f168152",
+      "width": 1280,
+      "height": 720,
+      "unedited_native_capture": true
+    },
+    {
+      "file": "docs/screens/m8-explosion-smoke-gallery/cbu-72-age8.png",
+      "sha256": "1f80b643af442547126a3ad069c8e6545ef9e3e422ef7d53742edeb53434a5dc",
+      "width": 1280,
+      "height": 720,
+      "unedited_native_capture": true
+    },
+    {
+      "file": "docs/screens/m8-explosion-smoke-gallery/gbu-31-age35.png",
+      "sha256": "0b6e452d82021f1739749bdc814847006e712b7097b01f4c54975710e4abe5b8",
+      "width": 1280,
+      "height": 720,
+      "unedited_native_capture": true
+    },
+    {
+      "file": "docs/screens/m8-explosion-smoke-gallery/gbu-31-age8.png",
+      "sha256": "ffe52291f0e172a21f2adcd02dcaeb99bd5036be09470a3fec7e6f06cd8e2f4a",
+      "width": 1280,
+      "height": 720,
+      "unedited_native_capture": true
+    },
+    {
+      "file": "docs/screens/m8-explosion-smoke-gallery/gbu57-age35.png",
+      "sha256": "086fbb3e765ed583f8b70add0431cba6377f7fbd01a6d220f1697ed346f5b5e5",
+      "width": 1280,
+      "height": 720,
+      "unedited_native_capture": true
+    },
+    {
+      "file": "docs/screens/m8-explosion-smoke-gallery/gbu57-age8.png",
+      "sha256": "a3caf9a3b49f3f28c611e18438bc2a52d72ffd6bb23cce0433b413a181eb95c9",
+      "width": 1280,
+      "height": 720,
+      "unedited_native_capture": true
+    },
+    {
+      "file": "docs/screens/m8-explosion-smoke-gallery/hydra70-age35.png",
+      "sha256": "cf69738ee9ff93aa99917b00b389029be6190aa2fcd2105c28bfee76b546595e",
+      "width": 1280,
+      "height": 720,
+      "unedited_native_capture": true
+    },
+    {
+      "file": "docs/screens/m8-explosion-smoke-gallery/hydra70-age8.png",
+      "sha256": "c9e56aa7612c1551682c6721d4f5334002694c9fbae3bb42b0d1e2e2ab25eca8",
+      "width": 1280,
+      "height": 720,
+      "unedited_native_capture": true
+    },
+    {
+      "file": "docs/screens/m8-explosion-smoke-gallery/m230-age12-close.png",
+      "sha256": "423eae9e7521164ecebbaf54b86504fccaef7785522dbfe5dbe68865fa4d4956",
+      "width": 1280,
+      "height": 720,
+      "unedited_native_capture": true
+    },
+    {
+      "file": "docs/screens/m8-explosion-smoke-gallery/m230-age8.png",
+      "sha256": "c7d0545dbf6f5339a18e7795352d9d4db64f87bdbff05e4f881913a651cc89ec",
+      "width": 1280,
+      "height": 720,
+      "unedited_native_capture": true
+    },
+    {
+      "file": "docs/screens/m8-explosion-smoke-gallery/mk46-age35.png",
+      "sha256": "ce48f533ac687f0bdd646aae9403bdec1abfa91ce54855864c6c0f31e8247086",
+      "width": 1280,
+      "height": 720,
+      "unedited_native_capture": true
+    },
+    {
+      "file": "docs/screens/m8-explosion-smoke-gallery/mk46-age8.png",
+      "sha256": "1ea45a2b66ecd96aebc1b6b68b0ce7c5abca2ad319d1837e87953ed0ebfa20e4",
+      "width": 1280,
+      "height": 720,
+      "unedited_native_capture": true
+    },
+    {
+      "file": "docs/screens/m8-explosion-smoke-gallery/mk82-age35.png",
+      "sha256": "699f2353cc694d0b1d1e4f66978e905ae86bf9f32f476ed15df369a53f9257a1",
+      "width": 1280,
+      "height": 720,
+      "unedited_native_capture": true
+    },
+    {
+      "file": "docs/screens/m8-explosion-smoke-gallery/mk82-age8.png",
+      "sha256": "a268aee5d4ce49329dbc685b0337259d4295eafdb35e85c284297a26e71b351d",
+      "width": 1280,
+      "height": 720,
+      "unedited_native_capture": true
+    },
+    {
+      "file": "docs/screens/m8-explosion-smoke-gallery/s-8dm-age60.png",
+      "sha256": "6b4938b18441c906cc975c0de41f00e0135f42b27ecf87e25c8f45239092af78",
+      "width": 1280,
+      "height": 720,
+      "unedited_native_capture": true
+    },
+    {
+      "file": "docs/screens/m8-explosion-smoke-gallery/s-8dm-age8.png",
+      "sha256": "2c2e36d0375e48668875a5ca5b4abbdd120ef1f5f46787209870d595612bdba7",
+      "width": 1280,
+      "height": 720,
+      "unedited_native_capture": true
+    }
+  ],
+  "loaded_conventional_positive_explosion_definitions": 153,
+  "profile_definition_counts": {
+    "CANNON": 35,
+    "HEAVY": 19,
+    "BLAST": 81,
+    "PENETRATOR": 16,
+    "INCENDIARY": 2
+  },
+  "observed_scene_peak_total_particles": {
+    "m230": 6,
+    "bofors40mm": 10,
+    "hydra70": 20,
+    "agm114": 24,
+    "agm158": 45,
+    "mk82": 40,
+    "gbu-31": 42,
+    "gbu57": 30,
+    "s-8dm": 45,
+    "cbu-72": 52,
+    "aim9": 23,
+    "mk46": 362
+  },
+  "owned_particle_drain_passed": [
+    "m230",
+    "bofors40mm",
+    "hydra70",
+    "agm114",
+    "agm158",
+    "mk82",
+    "gbu-31",
+    "gbu57",
+    "s-8dm",
+    "cbu-72",
+    "aim9",
+    "mk46"
+  ],
+  "native_build_successful": true,
+  "production_sources_changed_for_gallery": false,
+  "target_hardware_fps_measured": false,
+  "preview_limitations": [
+    "Production client effect calls, not live weapon firing or combat captures.",
+    "Actual loaded profile and selected effect size; no crater simulation and empty affected-block footprint.",
+    "Common overview camera except labeled cannon close-ups; AIM-9 triggered nine blocks above ground.",
+    "CBU-72 effect is triggered at ground level, not its normal deployment altitude.",
+    "Local-only dependency init excludes unavailable optional JEI/NTM code and adds throwing stubs. No locally built JAR distributed.",
+    "Covers five conventional M8 profiles and underwater spray; excludes NTM Next effects and vanilla TNT."
+  ]
+}
