@@ -1064,6 +1064,10 @@ public final class AircraftWeapons {
     void supplyAmmoToOtherAircraft() {
         AircraftInfo info = this.ac.getAcInfo();
         float range = info != null ? info.ammoSupplyRange : 0.0F;
+        if (range > 0.0F && info.ammoSupplyStock > 0 && !this.ac.level().isClientSide()) {
+            this.supplyAmmoFromStock(range);
+            return;
+        }
         if (range <= 0.0F || this.ac.level().isClientSide() || this.ac.getCountOnUpdate() % 40 != 0) {
             return;
         }
@@ -1084,10 +1088,74 @@ public final class AircraftWeapons {
                             ws.reloadMag();
                         }
                         ow.sendAmmoNum(ow.playerUsingWeapon(wid), wid);
+                        io.github.mcheliceport.groundcrew.GroundCrew.mark(other,
+                                io.github.mcheliceport.groundcrew.GroundCrew.REARM);
                     }
                 }
             }
         }
+    }
+
+    /**
+     * M10c: a supply vehicle with a stock rearms one weapon of each vehicle in range per second (two
+     * with a manned loader seat), the emptiest first, paid from its stock.
+     */
+    private void supplyAmmoFromStock(float range) {
+        int interval = CrewRoles.manned(this.ac, io.github.mcheliceport.content.aircraft.CrewRole.LOADER) ? 10 : 20;
+        if (this.ac.getCountOnUpdate() % interval != 0 || this.ac.isDestroyed()) {
+            return;
+        }
+        for (AircraftEntity other : this.ac.level().getEntitiesOfClass(AircraftEntity.class,
+                this.ac.getBoundingBox().inflate(range))) {
+            int stock = this.ac.getAmmoStock();
+            if (stock <= 0) {
+                return;
+            }
+            if (other == this.ac || !other.canSupply()) {
+                continue;
+            }
+            int given = other.weapons().rearmEmptiest(stock);
+            if (given > 0) {
+                this.ac.setAmmoStock(stock - given);
+                io.github.mcheliceport.groundcrew.GroundCrew.mark(other, io.github.mcheliceport.groundcrew.GroundCrew.REARM);
+            }
+        }
+    }
+
+    /**
+     * M10c: tops up the weapon with the smallest share of its full load by a tenth of that load (at
+     * least one round, at most {@code maxRounds}), loading the magazine if it was empty. Returns the
+     * rounds given.
+     */
+    public int rearmEmptiest(int maxRounds) {
+        int best = -1;
+        float bestShare = 1.0F;
+        for (int wid = 0; wid < this.getWeaponNum(); wid++) {
+            WeaponSet ws = this.getWeapon(wid);
+            if (ws.getCurrentWeapon() == null || ws.getInfo() == null || ws.getMaxAmmo() <= 0) {
+                continue;
+            }
+            float share = (ws.getRestAllAmmoNum() + ws.getAmmo()) / (float) ws.getMaxAmmo();
+            if (share < bestShare) {
+                bestShare = share;
+                best = wid;
+            }
+        }
+        if (best < 0 || maxRounds <= 0) {
+            return 0;
+        }
+        WeaponSet ws = this.getWeapon(best);
+        int num = ws.getRestAllAmmoNum() + ws.getAmmo();
+        int give = Math.min(Math.min(Math.max(ws.getMaxAmmo() / 10, 1), ws.getMaxAmmo() - num), maxRounds);
+        ws.setReserveAmmo(ws.getRestAllAmmoNum() + give);
+        int given = ws.getRestAllAmmoNum() + ws.getAmmo() - num;
+        if (given > 0) {
+            if (ws.getAmmo() <= 0) {
+                ws.reloadMag();
+            }
+            this.sendAmmoNum(this.playerUsingWeapon(best), best);
+        }
+        return Math.max(given, 0);
     }
 
     /** Upstream {@code getEntityByWeaponId}: the player whose seat owns weapon {@code wid}. */

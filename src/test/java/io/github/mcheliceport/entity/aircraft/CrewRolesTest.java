@@ -45,6 +45,11 @@ class CrewRolesTest {
     void stockSeatsKeepWhoMayFire() {
         assertFalse(all().isEmpty());
         for (AircraftInfo info : all()) {
+            if (info.getName().equals("ammo_cart")) {
+                // M10c's ammo cart is the one stock vehicle with a crew role: its seat is a loader's.
+                assertEquals(CrewRole.LOADER, CrewRoles.role(info, 0));
+                continue;
+            }
             assertEquals(CrewRole.PILOT, CrewRoles.role(info, 0), info.toString());
             for (AircraftInfo.WeaponSet set : info.weaponSetList) {
                 for (AircraftInfo.Weapon w : set.weapons) {
@@ -57,7 +62,7 @@ class CrewRolesTest {
                             info + " seat " + sid);
                 }
             }
-            assertFalse(CrewRoles.hasRole(info, CrewRole.LOADER), info + " has no loader, so reloads are unchanged");
+            assertFalse(CrewRoles.hasRole(info, CrewRole.LOADER), info + " has no loader, so its reloads are unchanged");
             assertFalse(CrewRoles.hasRole(info, CrewRole.COMMANDER), info.toString());
         }
         HeliInfo ah64 = stock.heli().get("ah-64");

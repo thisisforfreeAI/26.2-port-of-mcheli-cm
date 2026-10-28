@@ -175,6 +175,13 @@ public abstract class AircraftEntity extends Entity
     private static final EntityDataAccessor<Integer> DATA_CREW_MARK =
             SynchedEntityData.defineId(AircraftEntity.class, EntityDataSerializers.INT);
 
+    /** M10c: which ground crew services the vehicle is getting ({@code groundcrew.GroundCrew} flags). */
+    private static final EntityDataAccessor<Integer> DATA_SERVICE =
+            SynchedEntityData.defineId(AircraftEntity.class, EntityDataSerializers.INT);
+    /** M10c: rounds left in a stocked supply vehicle, or -1 before it is first filled. */
+    private static final EntityDataAccessor<Integer> DATA_AMMO_STOCK =
+            SynchedEntityData.defineId(AircraftEntity.class, EntityDataSerializers.INT);
+
     private static final AircraftHitBox[] NO_HIT_BOXES = new AircraftHitBox[0];
     private static final SeatEntity[] NO_SEATS = new SeatEntity[0];
 
@@ -446,6 +453,8 @@ public abstract class AircraftEntity extends Entity
         builder.define(DATA_UAV_STATION, 0);
         builder.define(DATA_IRON_CURTAIN, 0);
         builder.define(DATA_CREW_MARK, -1);
+        builder.define(DATA_SERVICE, 0);
+        builder.define(DATA_AMMO_STOCK, -1);
     }
 
     @Override
@@ -780,6 +789,28 @@ public abstract class AircraftEntity extends Entity
 
     public void setComponentHealth(long packed) {
         this.entityData.set(DATA_COMPONENTS, packed);
+    }
+
+    /** M10c: the ground crew services under way, as {@code GroundCrew} flags. */
+    public int getServiceFlags() {
+        return this.entityData.get(DATA_SERVICE);
+    }
+
+    public void setServiceFlags(int flags) {
+        if (flags != this.getServiceFlags()) {
+            this.entityData.set(DATA_SERVICE, flags);
+        }
+    }
+
+    /** M10c: rounds left in a stocked supply vehicle (a full stock until first set). */
+    public int getAmmoStock() {
+        int stock = this.entityData.get(DATA_AMMO_STOCK);
+        return stock >= 0 || this.info == null ? Math.max(stock, 0) : this.info.ammoSupplyStock;
+    }
+
+    public void setAmmoStock(int stock) {
+        int max = this.info != null ? this.info.ammoSupplyStock : stock;
+        this.entityData.set(DATA_AMMO_STOCK, Math.clamp(stock, 0, Math.max(max, 0)));
     }
 
     /** M10b: the id of the entity the commander marked, or -1. */
@@ -1956,6 +1987,9 @@ public abstract class AircraftEntity extends Entity
         this.weapons.supplyAmmoToOtherAircraft();
         this.updateFuel();
         this.support.repairOtherAircraft();
+        if (!this.level().isClientSide()) {
+            io.github.mcheliceport.groundcrew.GroundCrew.tick(this);
+        }
         if (this.modeSwitchCooldown > 0) {
             this.modeSwitchCooldown--;
         }
@@ -3748,6 +3782,7 @@ public abstract class AircraftEntity extends Entity
             input.getInt("AcDamage").ifPresent(this::setDamageTaken);
         }
         this.setComponentHealth(input.getLongOr("AcComponents", io.github.mcheliceport.damage.ComponentHealth.FULL));
+        input.getInt("AcAmmoStock").ifPresent(stock -> this.entityData.set(DATA_AMMO_STOCK, stock));
         this.setCurrentThrottle(input.getDoubleOr("AcThrottle", 0.0));
         boolean hovering = input.getBooleanOr("AcHoveringMode", false);
         if (hovering != this.hoveringMode) {
@@ -3794,6 +3829,9 @@ public abstract class AircraftEntity extends Entity
         output.putIntArray("AcWeaponsAmmo", this.weapons.saveAmmo());
         output.putInt("AcDamage", this.getDamageTaken());
         output.putLong("AcComponents", this.getComponentHealth());
+        if (this.info != null && this.info.ammoSupplyStock > 0) {
+            output.putInt("AcAmmoStock", this.getAmmoStock());
+        }
         output.putDouble("AcThrottle", this.getCurrentThrottle());
         output.putBoolean("AcHoveringMode", this.hoveringMode);
         output.putDouble("AcBeforeHoverThrottle", this.beforeHoverThrottle);

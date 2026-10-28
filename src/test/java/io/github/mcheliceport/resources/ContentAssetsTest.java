@@ -54,7 +54,7 @@ class ContentAssetsTest {
         Map<Identifier, byte[]> files = stockAssets();
         JsonObject english = json(files.get(Identifier.fromNamespaceAndPath("mcheli_ce_port", "lang/en_us.json")))
                 .getAsJsonObject();
-        assertEquals(119, ModItems.contentItems().size());
+        assertEquals(120, ModItems.contentItems().size());
         for (ModItems.ContentItem item : ModItems.contentItems()) {
             Identifier id = item.id();
             assertNotNull(files.get(id.withPath("items/" + id.getPath() + ".json")), "item model definition of " + id);
@@ -119,7 +119,7 @@ class ContentAssetsTest {
             String key = (item instanceof BlockItem ? "block." : "item.") + id.toLanguageKey();
             assertTrue(english.has(key), "English name of " + id);
         }
-        assertEquals(23, fixed.size());
+        assertEquals(24, fixed.size());
         try (Stream<Path> models = Files.walk(GENERATED.resolve("assets/mcheli_ce_port/models"))) {
             for (Path file : models.filter(Files::isRegularFile).toList()) {
                 JsonObject model = json(Files.readAllBytes(file)).getAsJsonObject();

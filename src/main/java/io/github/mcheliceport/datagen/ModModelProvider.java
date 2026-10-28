@@ -76,6 +76,11 @@ public class ModModelProvider extends ModelProvider {
         blockModels.blockStateOutput.accept(MultiVariantGenerator.dispatch(ModBlocks.CHARGER.get(),
                 BlockModelGenerators.plainVariant(charger)));
         itemModels.itemModelOutput.accept(ModItems.CHARGER.get(), ItemModelUtils.plainModel(charger));
+        Identifier pad = ModelTemplates.CARPET.create(ModBlocks.REPAIR_PAD.get(),
+                TextureMapping.wool(new Material(mcheli("blocks/repair_pad"))), blockModels.modelOutput);
+        blockModels.blockStateOutput.accept(MultiVariantGenerator.dispatch(ModBlocks.REPAIR_PAD.get(),
+                BlockModelGenerators.plainVariant(pad)));
+        itemModels.itemModelOutput.accept(ModItems.REPAIR_PAD.get(), ItemModelUtils.plainModel(pad));
 
         wingmanMarker(blockModels);
         flatItem(itemModels, ModItems.WINGMAN_MARKER.get(), mcheli("items/wingman_marker"));

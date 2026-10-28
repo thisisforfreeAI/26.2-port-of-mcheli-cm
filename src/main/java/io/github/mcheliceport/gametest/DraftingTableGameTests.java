@@ -119,7 +119,7 @@ final class DraftingTableGameTests {
             check(h, p.getInventory().isEmpty(), "exactly one item per ingredient consumed: " + entry.id());
             crafted++;
         }
-        check(h, crafted == 115, "all 115 stock vehicle recipes craft, found " + crafted);
+        check(h, crafted == 116, "all 116 stock vehicle recipes craft, found " + crafted);
         h.succeed();
     }
 

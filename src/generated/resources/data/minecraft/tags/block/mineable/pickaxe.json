@@ -3,6 +3,7 @@
     "mcheli_ce_port:drafting_table",
     "mcheli_ce_port:lit_drafting_table",
     "mcheli_ce_port:charger",
-    "mcheli_ce_port:wingman_marker"
+    "mcheli_ce_port:wingman_marker",
+    "mcheli_ce_port:repair_pad"
   ]
 }

@@ -42,6 +42,9 @@ public class ContentParityTest {
     /** The port's NTM Next bombs (weapons/ntm_*.yml), which upstream did not ship. */
     public static final int NTM_BOMBS = 14;
 
+    /** The port's own stock vehicles (M10c's ammo cart), which upstream did not ship. */
+    public static final int PORT_VEHICLES = 1;
+
     /** Stock content counts, from PORTING_PLAN.md section 3.3. */
     private static final Map<String, Integer> EXPECTED_COUNTS = Map.of("helicopters", 34, "planes", 46, "ships", 5,
             "tanks", 12, "vehicles", 18, "weapons", 234, "throwable", 4, "hud", 19);
@@ -65,12 +68,12 @@ public class ContentParityTest {
 
     @Test
     void everyStockDefinitionLoadsFromTxt() {
-        assertCounts(txt, 0);
+        assertCounts(txt, 0, 0);
     }
 
     @Test
     void everyStockDefinitionLoadsFromYaml() {
-        assertCounts(yml, NTM_BOMBS);
+        assertCounts(yml, NTM_BOMBS, PORT_VEHICLES);
     }
 
     @Test
@@ -130,14 +133,14 @@ public class ContentParityTest {
         }
     }
 
-    /** {@code extraWeapons}: the port's own stock weapons, which only the YAML pack has. */
-    private static void assertCounts(ContentRegistries.Snapshot s, int extraWeapons) {
+    /** {@code extraWeapons}, {@code extraVehicles}: the port's own stock content, which only the YAML pack has. */
+    private static void assertCounts(ContentRegistries.Snapshot s, int extraWeapons, int extraVehicles) {
         Map<String, Integer> actual = new TreeMap<>();
         actual.put("helicopters", s.heli().size());
         actual.put("planes", s.plane().size());
         actual.put("ships", s.ship().size());
         actual.put("tanks", s.tank().size());
-        actual.put("vehicles", s.vehicle().size());
+        actual.put("vehicles", s.vehicle().size() - extraVehicles);
         actual.put("weapons", s.weapon().size() - extraWeapons);
         actual.put("throwable", s.throwable().size());
         actual.put("hud", s.hud().size());

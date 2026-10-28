@@ -1274,6 +1274,7 @@ public final class YamlEmitter {
         if (info.fuelConsumption != dummyInfo.fuelConsumption) root.put("FuelConsumption", info.fuelConsumption);
         if (info.fuelSupplyRange != dummyInfo.fuelSupplyRange) root.put("FuelSupplyRange", info.fuelSupplyRange);
         if (info.ammoSupplyRange != dummyInfo.ammoSupplyRange) root.put("AmmoSupplyRange", info.ammoSupplyRange);
+        if (info.ammoSupplyStock != dummyInfo.ammoSupplyStock) root.put("AmmoSupplyStock", info.ammoSupplyStock);
 
         if (info.repairOtherVehiclesRange != 0.0F || info.repairOtherVehiclesValue != 0) {
             Map<String, Object> repair = new LinkedHashMap<>();

@@ -121,6 +121,12 @@ public abstract class AircraftInfo extends BaseInfo {
     public float fuelSupplyRange = 0.0F;
     public String fuelSupplyType = "mch_fuel";
     public float ammoSupplyRange = 0.0F;
+    /**
+     * M10c: rounds a supply vehicle carries, 0 for upstream's endless supply. A vehicle with a stock
+     * rearms one weapon of each vehicle in range per second, the emptiest first, and restocks on a
+     * repair pad.
+     */
+    public int ammoSupplyStock = 0;
     public float repairOtherVehiclesRange = 0.0F;
     public int repairOtherVehiclesValue = 10;
     public float stealth = 0.0F;

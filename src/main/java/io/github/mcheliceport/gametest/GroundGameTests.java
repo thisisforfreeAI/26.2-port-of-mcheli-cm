@@ -103,7 +103,7 @@ final class GroundGameTests {
             GameTestSupport.cleanUp(placedAgain); GameTestSupport.cleanUp(roundTrip); GameTestSupport.cleanUp(entity);
             if (content.type() == ContentType.TANK) { tanks++; } else { vehicles++; }
         }
-        check(h, tanks == 12 && vehicles == 18, "all 12 tanks and 18 vehicles checked"); h.succeed();
+        check(h, tanks == 12 && vehicles == 19, "all 12 tanks and 19 vehicles (with the ammo cart) checked"); h.succeed();
     }
     private static void drive(GameTestHelper h) {
         for (String name : new String[] {"m1a2", "bnr32", "m1129", "centauro"}) {
