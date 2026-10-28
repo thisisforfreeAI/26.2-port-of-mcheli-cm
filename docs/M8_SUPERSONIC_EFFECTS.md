@@ -34,6 +34,9 @@ The visual pulse uses a crossing near 0.98 of that mapping, with a lower rearmin
 and cooldown. First observing an already-fast jet primes tracking rather than inventing an
 acceleration event. Observer-pass detection provides one boom when a sufficiently fast jet
 passes the listener. The listener aboard the aircraft is excluded from that flypast cue.
+Intrinsic crossings use an unpaused client-observation clock, so server time corrections
+do not erase a crossing. Observer relocation suppresses a false pass without cancelling
+condensation from the aircraft's own movement.
 
 Boom arrival is delayed by world-space distance, at 17.15 blocks per tick (343 m/s with one
 block per metre). This is a lightweight pass/arrival approximation, not a continuous acoustic
@@ -54,11 +57,18 @@ shed the cone while preserving bounded flypast audio.
 - At most two cone births per tick; 14-tick life bounds the new group to 28 live particles.
   Each cone has eight faces and pays eight quads of existing smoke screen-coverage admission.
   It shares the existing global particle limit. Radius is capped at six blocks.
-- Reuses the approved 16-frame smoke alpha and condensation material, with no new visual
+- Reuses the approved 16-frame smoke alpha and two-sided condensation material, with no new visual
   texture, shader, scene copy, collision queries or gameplay entity.
 - Rain needs actual exposed rain precipitation, with at most four weather checks per tick.
   Missing sections, landing, water, destruction and a source warp stop attached cones.
 
+The combined-main version passed 473 local unit tests. Three Vulkan supported-jet scenes and
+13 OpenGL transition/load scenes passed, including explicit clock corrections and cancellation
+of an attached cone before its ordinary expiry after a source warp. The 32-aircraft audio scene
+peaked at 14 pending arrivals and played four cues while respecting the four-voice limit.
+
+[Native examples](M8_SUPERSONIC_GALLERY.md) · [Recorded checks](performance/m8-realism/supersonic-effects.json)
+
 The flight/intact-vehicle batch is tracked in [M8_PLAN.md](M8_PLAN.md). Claude's wreck artwork,
-crash aftermath and AI work remain separate. Native examples and final measured check results
-are published with the feature; software Mesa validation does not establish target-PC 60 FPS.
+crash aftermath and AI work remain separate. Software Mesa validation does not establish
+target-PC 60 FPS. Local optional-dependency exclusions are validation-only; no local JAR is distributed.

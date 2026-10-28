@@ -461,9 +461,10 @@ change original weapon craters. Existing upstream features count as foundations 
   closed cockpit glazing and localized damage flicker. Keep aim/camera controls steady;
   exclude remote weapon cameras, open canopies and unsuitable seats. Provide an opt-out.
   [Implementation and limits](M8_COCKPIT_FEEDBACK.md) · [native examples](M8_COCKPIT_GALLERY.md).
-- [ ] **Supersonic effects:** brief humidity-dependent condensation and a distance-delayed
+- [x] **Supersonic effects:** brief humidity-dependent condensation and a distance-delayed
   boom for supported fast aircraft. Define the content/speed mapping explicitly, prevent
   repeated threshold chatter, and retain bounded particle and pending-audio admission.
+  [Implementation and limits](M8_SUPERSONIC_EFFECTS.md) · [native examples](M8_SUPERSONIC_GALLERY.md).
 - [ ] **Flyby audio:** refine existing directional engine audio with bounded Doppler, plus
   conventional rocket/shell approach cues. Avoid duplicate loops, rider Doppler and NTM audio.
 - [ ] **Landing feedback:** supported tire compression and suspension response, touchdown
