@@ -28,7 +28,7 @@ final class WreckEffects {
         if (fire>0 && Math.floorMod(tick+id,5*pressure)==0) {
             float radius=.4F+.5F*fire;
             if (VehicleAtmosphere.admit(level,pos,radius*1.35F)) {
-                engine.add(new WreckFlameParticle(level,pos.x,pos.y+.15,pos.z,radius,.85F*fire));
+                engine.add(AirflowFireEffects.flame(level,aircraft,pos.add(0,.15,0),radius,.85F*fire));
             }
         }
         if (fire>.1F && Math.floorMod(tick+id,17*pressure)==0

@@ -391,16 +391,21 @@ ideas below remain queued independently.
 
 ## Planned aircraft and destruction graphics additions
 
-The following eight ideas are approved for the roadmap and remain pending implementation.
+The following eight ideas are approved for the roadmap; checkboxes track implementation.
 Build on the existing engine fire, damaged trails, exposed interiors and mesh debris instead
 of treating those systems as absent. Implement and review additions separately with labeled
 native examples on several suitable vehicles.
 
-- [ ] **Airflow-shaped fire:** stretch damaged-engine flames backward with flight motion;
-  transition toward upward flames as the aircraft slows or stops.
-- [ ] **Fuel spray from torn wings:** brief droplets and faint vapor from a damaged structural
+- [x] **Airflow-shaped fire:** stretch damaged-engine flames backward with flight motion;
+  transition toward upward flames as the aircraft slows or stops. [Implementation and
+  bounds](M8_AIRFLOW_FIRE.md) use existing engine anchors and shared admission;
+  [native comparisons](M8_AIRFLOW_FIRE_GALLERY.md) cover three aircraft, repair, wrecks,
+  Classic and shared load. Target-PC/player acceptance remains separate.
+- [x] **Fuel spray from torn wings:** brief droplets and faint vapor from a damaged structural
   area, with restrained visual ignition near an existing fire. Keep separate from oil/coolant
   drips; no new gameplay damage or fuel-consumption rules in this graphics work.
+  [Implementation and limits](M8_WING_FUEL_SPRAY.md) ·
+  [native vehicle comparisons](M8_WING_FUEL_SPRAY_GALLERY.md).
 - [ ] **Fluttering damaged controls:** uneven motion on supported flaps, ailerons and rudders,
   with cosmetic separation as damage progresses; retain correct attachment poses.
 - [ ] **Richer broken edges:** refine existing exposed sections with more readable ribs, dark
@@ -414,7 +419,7 @@ native examples on several suitable vehicles.
 - [ ] **Altitude-dependent contrails:** thin cold-air trails behind suitable engines, widening
   and dispersing with age; keep distinct from hot exhaust and engine-damage smoke.
 
-Start with airflow-shaped fire, fuel spray and fluttering controls. Keep Minecraft's simple
+Airflow-shaped fire and fuel spray are implemented; fluttering controls are next. Keep Minecraft's simple
 look, existing flight handling/collision/gameplay damage and original craters. Respect Claude's
 NTM Next ownership: no NTM explosion bridge, gun/gore hooks or copied NTM assets. Retain the
 60 FPS / 1080p goal on RTX 3060 8 GB and Ryzen 7 7800X3D, with distance limits, shared admission

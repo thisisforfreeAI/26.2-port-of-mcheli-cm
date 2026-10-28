@@ -125,6 +125,8 @@ public final class VehicleAtmosphere {
                 }
             }
             if (ClientConfig.get(ClientConfig.VEHICLE_DAMAGE_DETAILS)) damage(level, aircraft, origins, now, state.cooling);
+            if (ClientConfig.get(ClientConfig.VEHICLE_DAMAGE_DETAILS)&&aircraft instanceof PlaneEntity plane)
+                FuelSprayEffects.emit(level,plane,origins,now);
         }
     }
 
@@ -200,7 +202,9 @@ public final class VehicleAtmosphere {
             smoke.motionYUpAge=.6F;smoke.diffusible=true;smoke.particleScale=1.5F;smoke.particleMaxScale=5.5F;
             Minecraft.getInstance().particleEngine.add(smoke);
         }
-        Vec3 position = origins.get(Math.floorMod((int) (now / 11 + aircraft.getId()), origins.size()));
+        int engineIndex=Math.floorMod((int) (now / 11 + aircraft.getId()), origins.size());
+        Vec3 position = origins.get(engineIndex);
+        AirflowFireEffects.damage(level,aircraft,position,engineIndex,severity,now);
         int period = 3 * (1 + EffectPerformance.pressure());
         if (Math.floorMod(now + aircraft.getId(), period) == 0
                 && VehicleAtmosphereLook.smokePulse(now, aircraft.getId(), severity)) {

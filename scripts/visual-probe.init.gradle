@@ -63,6 +63,13 @@ gradle.projectsEvaluated {
     project.neoForge.runs.client.systemProperty('mcheli.probeSmokeMode',System.getProperty('mcheli.probeSmokeMode','0'))
     if(Boolean.getBoolean('mcheli.probeExplosionSmokeGallery'))project.sourceSets.main.java.exclude('io/github/mcheliceport/probe/EffectsProbe.java')
     project.neoForge.runs.client.systemProperty('mcheli.probeExplosionSmokeGallery',System.getProperty('mcheli.probeExplosionSmokeGallery','false'))
+    if(Boolean.getBoolean('mcheli.probeAirflowFire'))project.sourceSets.main.java.exclude('io/github/mcheliceport/probe/EffectsProbe.java')
+    project.neoForge.runs.client.systemProperty('mcheli.probeAirflowFire',System.getProperty('mcheli.probeAirflowFire','false'))
+    project.neoForge.runs.client.systemProperty('mcheli.probeAirflowStart',System.getProperty('mcheli.probeAirflowStart','0'))
+    if(Boolean.getBoolean('mcheli.probeWingFuel'))project.sourceSets.main.java.exclude('io/github/mcheliceport/probe/EffectsProbe.java')
+    project.neoForge.runs.client.systemProperty('mcheli.probeWingFuel',System.getProperty('mcheli.probeWingFuel','false'))
+    project.neoForge.runs.client.systemProperty('mcheli.probeWingFuelStart',System.getProperty('mcheli.probeWingFuelStart','0'))
+    project.neoForge.runs.client.systemProperty('mcheli.probeWingFuelEnd',System.getProperty('mcheli.probeWingFuelEnd','10'))
     project.neoForge.runs.client.gameDirectory = project.file('.run/m8-preview')
     project.neoForge.runs.client.programArguments.addAll('--quickPlaySingleplayer', 'M6Smoke',
             '--graphicsBackend', System.getProperty('mcheli.probeBackend', 'VULKAN'), '--width', System.getProperty('mcheli.probeWidth', '1920'),
