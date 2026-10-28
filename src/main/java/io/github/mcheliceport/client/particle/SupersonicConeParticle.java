@@ -26,7 +26,7 @@ public final class SupersonicConeParticle extends SmokeParticle {
     private final Quaternionf rotation=new Quaternionf();
     SupersonicConeParticle(ClientLevel level,PlaneEntity plane,Vec3 local,float radius,float wetness){
         super(level,plane.getX(),plane.getY(),plane.getZ(),0,0,0);
-        this.plane=new WeakReference<>(plane);this.local=local;this.radius=radius;opacity=.5F*wetness;
+        this.plane=new WeakReference<>(plane);this.local=local;this.radius=radius;opacity=.32F*wetness;
         previousSource=plane.position();
         useBillow(SmokeAtlas.EXPLOSION);setColor(.93F,.95F,.98F);enhanced=true;lifetime=14;hasPhysics=false;
         follow(plane);xo=x;yo=y;zo=z;

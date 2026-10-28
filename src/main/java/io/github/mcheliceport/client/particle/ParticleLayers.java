@@ -41,6 +41,7 @@ public final class ParticleLayers {
     private static final RenderPipeline CONDENSATION_PIPELINE=RenderPipeline.builder(RenderPipelines.PARTICLE_SNIPPET)
             .withLocation(Identifier.fromNamespaceAndPath(McheliCePort.MOD_ID,"pipeline/condensation"))
             .withFragmentShader(Identifier.fromNamespaceAndPath(McheliCePort.MOD_ID,"core/condensation"))
+            .withCull(false)
             .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
             .withDepthStencilState(new DepthStencilState(CompareOp.GREATER_THAN_OR_EQUAL,false)).build();
     static final SingleQuadParticle.Layer CONDENSATION=new SingleQuadParticle.Layer(true,TextureAtlas.LOCATION_PARTICLES,CONDENSATION_PIPELINE);
