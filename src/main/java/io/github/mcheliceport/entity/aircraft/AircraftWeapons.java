@@ -474,6 +474,27 @@ public final class AircraftWeapons {
         this.packetWeaponUserPitch = pitch;
     }
 
+    /**
+     * A port addition: fires {@code ws} for an AI pilot along {@code yaw}/{@code pitch} (the shot
+     * direction of {@code prm.user}, who rides no seat), and puts back any rider's aim after.
+     */
+    public boolean useAimed(WeaponSet ws, WeaponParam prm, float yaw, float pitch) {
+        boolean active = this.packetWeaponUserAimActive;
+        Entity user = this.packetWeaponUserAimUser;
+        float userYaw = this.packetWeaponUserYaw;
+        float userPitch = this.packetWeaponUserPitch;
+        // A shot of exactly 0/0 would take the weapon's fixed direction instead.
+        this.setPacketWeaponUserAim(prm.user, yaw, yaw == 0.0F && pitch == 0.0F ? 1.0E-3F : pitch);
+        try {
+            return ws.use(prm);
+        } finally {
+            this.packetWeaponUserAimActive = active;
+            this.packetWeaponUserAimUser = user;
+            this.packetWeaponUserYaw = userYaw;
+            this.packetWeaponUserPitch = userPitch;
+        }
+    }
+
     public void clearPacketWeaponUserAim() {
         this.packetWeaponUserAimActive = false;
         this.packetWeaponUserAimUser = null;

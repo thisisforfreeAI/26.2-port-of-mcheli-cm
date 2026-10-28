@@ -2,7 +2,8 @@
 
 Part of the M10 plan (gameplay). Wingmen and aircraft flying mission orders (the port's NPC
 pilots) now watch the terrain, answer missiles and leave a fight when badly hit. The code is in
-`wingman/ai` (`PilotAi`, `TerrainAvoidance`, `AiSkill`) and hooks into `WingmanTickHandler`.
+`wingman/ai` (`PilotAi`, `TerrainAvoidance`, `AiSkill`) and hooks into `WingmanTickHandler`. How they
+aim, choose weapons and fly their passes is in [M10_AI_FIRE_CONTROL.md](M10_AI_FIRE_CONTROL.md).
 
 ## Difficulty
 
