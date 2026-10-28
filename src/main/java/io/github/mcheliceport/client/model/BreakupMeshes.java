@@ -26,6 +26,12 @@ public final class BreakupMeshes {
     public static McheliModel.Group controlFragment(McheliModel.Group source,ControlSurfaceMeshes.Model profile,int missing) {
         return (McheliModel.Group)get(new Key(source,"control_fragment_"+missing,Vec3.ZERO),()->ControlSurfaceMeshes.strip(source,profile,missing));
     }
+    @SuppressWarnings("unchecked")
+    public static List<SkinDebrisMeshes.Chip> skinDebris(McheliModel.Group section,int axis,float cut,int outward) {
+        if(section.vertexCount()<3||section.vertexCount()>9000)return List.of();
+        return (List<SkinDebrisMeshes.Chip>)get(new Key(section,"skin_debris",new Vec3(axis,cut,outward)),
+                ()->SkinDebrisMeshes.build(section,axis,cut,outward));
+    }
     /** Disjoint left/right/tail sections: combinations cannot duplicate or regrow removed surfaces. */
     public static Airframe airframeBuild(McheliModel.Group source,int requested) {
         var b=bounds(source);float left=b.low.x*.55F,right=b.high.x*.55F,tail=b.low.z+(b.high.z-b.low.z)*.27F;

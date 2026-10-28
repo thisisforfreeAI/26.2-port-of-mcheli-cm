@@ -1,0 +1,218 @@
+{
+  "kind": "aircraft-small-skin-shedding",
+  "base_commit": "530fc3d95641a851bc009d94c30e3ade039332da",
+  "unit_results": {
+    "tests": 412,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "runs": [
+    {
+      "backend": "VULKAN",
+      "all_passed": true,
+      "scenes": [
+        {
+          "scene": "f-35a",
+          "repair_clear_passed": true,
+          "peak_shared_mesh_pieces": 6,
+          "peak_skin_pieces": 3
+        },
+        {
+          "scene": "f-15e",
+          "repair_clear_passed": true,
+          "peak_shared_mesh_pieces": 6,
+          "peak_skin_pieces": 3
+        },
+        {
+          "scene": "a-10",
+          "repair_clear_passed": true,
+          "peak_shared_mesh_pieces": 6,
+          "peak_skin_pieces": 3
+        },
+        {
+          "scene": "loaded-damage",
+          "repair_clear_passed": true,
+          "peak_shared_mesh_pieces": 0,
+          "peak_skin_pieces": 0
+        },
+        {
+          "scene": "classic-transition",
+          "repair_clear_passed": true,
+          "peak_shared_mesh_pieces": 0,
+          "peak_skin_pieces": 0
+        },
+        {
+          "scene": "settings-transition",
+          "repair_clear_passed": true,
+          "peak_shared_mesh_pieces": 3,
+          "peak_skin_pieces": 1
+        },
+        {
+          "scene": "fresh-wreck",
+          "repair_clear_passed": true,
+          "peak_shared_mesh_pieces": 4,
+          "peak_skin_pieces": 2
+        },
+        {
+          "scene": "shared-load",
+          "repair_clear_passed": true,
+          "peak_shared_mesh_pieces": 8,
+          "peak_skin_pieces": 0
+        }
+      ]
+    },
+    {
+      "backend": "OPENGL",
+      "all_passed": true,
+      "scenes": [
+        {
+          "scene": "loaded-damage",
+          "repair_clear_passed": true,
+          "peak_shared_mesh_pieces": 0,
+          "peak_skin_pieces": 0
+        },
+        {
+          "scene": "classic-transition",
+          "repair_clear_passed": true,
+          "peak_shared_mesh_pieces": 0,
+          "peak_skin_pieces": 0
+        },
+        {
+          "scene": "settings-transition",
+          "repair_clear_passed": true,
+          "peak_shared_mesh_pieces": 2,
+          "peak_skin_pieces": 0
+        },
+        {
+          "scene": "fresh-wreck",
+          "repair_clear_passed": true,
+          "peak_shared_mesh_pieces": 4,
+          "peak_skin_pieces": 3
+        },
+        {
+          "scene": "shared-load",
+          "repair_clear_passed": true,
+          "peak_shared_mesh_pieces": 8,
+          "peak_skin_pieces": 0
+        }
+      ]
+    }
+  ],
+  "bounds": {
+    "skin_shapes_per_cut": 3,
+    "vertices_per_chip": 96,
+    "area_per_chip_square_blocks": 0.25,
+    "skin_life_ticks": 36,
+    "fresh_loss_window_ticks": [
+      8,
+      40
+    ],
+    "attempt_period_ticks": 8,
+    "shared_mesh_pieces": 8,
+    "shared_mesh_births_per_tick": 2,
+    "shared_piece_vertices": 24000,
+    "shared_collision_rays_per_tick": 2,
+    "cache_entries": 32,
+    "pending_builds": 4,
+    "workers": 1
+  },
+  "notes": [
+    "Unedited Vulkan PNGs of held client component/wreck states; not combat recordings.",
+    "Shared load fills existing slots with main fragments, so tiny skin debris yields and may be skipped.",
+    "Local optional-dependency exclusions/throwing stubs; no local JAR distributed.",
+    "Software Mesa rendering validation does not establish target-PC 60 FPS / 1080p."
+  ],
+  "screens": [
+    {
+      "file": "docs/screens/m8-skin-shedding/m8-skin-f-35a-wing-overview.png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "32faac55de826f577173e1325a81f7f55508a13f86f9a9d120ae3166bb8608af"
+    },
+    {
+      "file": "docs/screens/m8-skin-shedding/m8-skin-f-35a-wing-close.png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "5c227052d32eb944d6d1f1882d214b566402d97e290e0c381d1362b11dc999ce"
+    },
+    {
+      "file": "docs/screens/m8-skin-shedding/m8-skin-f-35a-tail-close.png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "cfb7ee21dc82a5e484d6228f1268da3d2356c42f0fd7560aa1bce55d71d6368c"
+    },
+    {
+      "file": "docs/screens/m8-skin-shedding/m8-skin-f-35a-repaired.png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "089d4884f6aa8c619d5b8083fe54f40697d888821dbac90732e095cb9b8629d0"
+    },
+    {
+      "file": "docs/screens/m8-skin-shedding/m8-skin-f-15e-wing-overview.png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "4548100595698014ba3acb0edf2edda1a23f26c0d1fef8196900860df3d9f768"
+    },
+    {
+      "file": "docs/screens/m8-skin-shedding/m8-skin-f-15e-wing-close.png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "4bccefc223c6a8c035894176a898b010ecc989d91b22181e5d2ef7a810e48536"
+    },
+    {
+      "file": "docs/screens/m8-skin-shedding/m8-skin-f-15e-tail-close.png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "dd94af25959defe7af62dc9475f38703972b79dc8fbe192e9216697e26ede147"
+    },
+    {
+      "file": "docs/screens/m8-skin-shedding/m8-skin-f-15e-repaired.png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "2e958d266edf6a5f16734333a03403468b478e7db10c6907fe44a6d184579864"
+    },
+    {
+      "file": "docs/screens/m8-skin-shedding/m8-skin-a-10-wing-overview.png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "dd818126c9121b4484410004245c89cc4a98581954fde4f6db1f0345e0d1073e"
+    },
+    {
+      "file": "docs/screens/m8-skin-shedding/m8-skin-a-10-wing-close.png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "fe218ae13a10282934280cfb7114eb6a8a5645d0b74935053d6fa0c6acb720d0"
+    },
+    {
+      "file": "docs/screens/m8-skin-shedding/m8-skin-a-10-tail-close.png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "37f536337cef82ed68562378e601e0e7180a6aae92c7b59042a8b108655cc59c"
+    },
+    {
+      "file": "docs/screens/m8-skin-shedding/m8-skin-a-10-repaired.png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "d6e7b319ac5f44d2fd9664905d3eb11ac2aa795165a711718d41453b5a2972b4"
+    },
+    {
+      "file": "docs/screens/m8-skin-shedding/m8-skin-fresh-wreck-wing-close.png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "1c7e7419c1b506f27acb595e7b98c916a76c3f52c630473a6d049f5d2dec215f"
+    },
+    {
+      "file": "docs/screens/m8-skin-shedding/m8-skin-fresh-wreck-tail-close.png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "e4c7dd03ac250935283757642b6d79461369f7cdf7fc5ba987b875c3372f8dc0"
+    },
+    {
+      "file": "docs/screens/m8-skin-shedding/m8-skin-shared-load-wing-overview.png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "2a44590cb7e961931126ca30ccdf233b38b315a9f5cee7e4270e6c8ea2d71819"
+    }
+  ]
+}
