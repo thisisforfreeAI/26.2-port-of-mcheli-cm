@@ -125,6 +125,8 @@ public final class VehicleAtmosphere {
                 }
             }
             if (ClientConfig.get(ClientConfig.VEHICLE_DAMAGE_DETAILS)) damage(level, aircraft, origins, now, state.cooling);
+            if (ClientConfig.get(ClientConfig.VEHICLE_DAMAGE_DETAILS)&&aircraft instanceof PlaneEntity plane)
+                FuelSprayEffects.emit(level,plane,origins,now);
         }
     }
 

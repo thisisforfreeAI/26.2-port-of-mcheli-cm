@@ -1,0 +1,351 @@
+{
+  "kind": "newly-torn-wing-cosmetic-fuel-spray",
+  "parent_fire_commit": "4bd7dd1c148ed7ac3cbb166c33e88e66a96048ce",
+  "unit_results": {
+    "tests": 393,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "runs": [
+    {
+      "backend": "VULKAN",
+      "scope": "full nine scenes",
+      "scenes": [
+        {
+          "scene": "f-35a",
+          "peak_total_particles": 13,
+          "peak_fuel_particles": 7,
+          "peak_hot_fuel": 0,
+          "drained": true
+        },
+        {
+          "scene": "f-15e",
+          "peak_total_particles": 16,
+          "peak_fuel_particles": 8,
+          "peak_hot_fuel": 0,
+          "drained": true
+        },
+        {
+          "scene": "a-10",
+          "peak_total_particles": 14,
+          "peak_fuel_particles": 8,
+          "peak_hot_fuel": 0,
+          "drained": true
+        },
+        {
+          "scene": "burning-f35",
+          "peak_total_particles": 27,
+          "peak_fuel_particles": 7,
+          "peak_hot_fuel": 0,
+          "drained": true
+        },
+        {
+          "scene": "loaded-missing",
+          "peak_total_particles": 9,
+          "peak_fuel_particles": 0,
+          "peak_hot_fuel": 0,
+          "drained": true
+        },
+        {
+          "scene": "classic",
+          "peak_total_particles": 5,
+          "peak_fuel_particles": 0,
+          "peak_hot_fuel": 0,
+          "drained": true
+        },
+        {
+          "scene": "details-off",
+          "peak_total_particles": 6,
+          "peak_fuel_particles": 0,
+          "peak_hot_fuel": 0,
+          "drained": true
+        },
+        {
+          "scene": "sequences-off",
+          "peak_total_particles": 8,
+          "peak_fuel_particles": 0,
+          "peak_hot_fuel": 0,
+          "drained": true
+        },
+        {
+          "scene": "shared-load",
+          "peak_total_particles": 375,
+          "peak_fuel_particles": 104,
+          "peak_hot_fuel": 0,
+          "drained": true
+        }
+      ],
+      "log_sha256": "745b9bd7f47f19008ce57122ca086f6583b593f062286e1628f404d5d7f357e4",
+      "all_passed": true
+    },
+    {
+      "backend": "OPENGL",
+      "scope": "ten scenes including manual ignition",
+      "scenes": [
+        {
+          "scene": "f-35a",
+          "peak_total_particles": 9,
+          "peak_fuel_particles": 7,
+          "peak_hot_fuel": 0,
+          "drained": true
+        },
+        {
+          "scene": "f-15e",
+          "peak_total_particles": 9,
+          "peak_fuel_particles": 8,
+          "peak_hot_fuel": 0,
+          "drained": true
+        },
+        {
+          "scene": "a-10",
+          "peak_total_particles": 7,
+          "peak_fuel_particles": 7,
+          "peak_hot_fuel": 0,
+          "drained": true
+        },
+        {
+          "scene": "burning-f35",
+          "peak_total_particles": 30,
+          "peak_fuel_particles": 8,
+          "peak_hot_fuel": 0,
+          "drained": true
+        },
+        {
+          "scene": "loaded-missing",
+          "peak_total_particles": 3,
+          "peak_fuel_particles": 0,
+          "peak_hot_fuel": 0,
+          "drained": true
+        },
+        {
+          "scene": "classic",
+          "peak_total_particles": 0,
+          "peak_fuel_particles": 0,
+          "peak_hot_fuel": 0,
+          "drained": true
+        },
+        {
+          "scene": "details-off",
+          "peak_total_particles": 3,
+          "peak_fuel_particles": 0,
+          "peak_hot_fuel": 0,
+          "drained": true
+        },
+        {
+          "scene": "sequences-off",
+          "peak_total_particles": 5,
+          "peak_fuel_particles": 0,
+          "peak_hot_fuel": 0,
+          "drained": true
+        },
+        {
+          "scene": "shared-load",
+          "peak_total_particles": 375,
+          "peak_fuel_particles": 100,
+          "peak_hot_fuel": 0,
+          "drained": true
+        },
+        {
+          "scene": "ignition-fixture",
+          "peak_total_particles": 30,
+          "peak_fuel_particles": 10,
+          "peak_hot_fuel": 2,
+          "drained": true
+        }
+      ],
+      "log_sha256": "3f0343450e381b400c0b8690c1572d2c37f4f32fe909c6cc19620afb6ab30344",
+      "all_passed": true
+    },
+    {
+      "backend": "VULKAN",
+      "scope": "three vehicle close-up captures",
+      "scenes": [
+        {
+          "scene": "f-35a",
+          "peak_total_particles": 7,
+          "peak_fuel_particles": 7,
+          "peak_hot_fuel": 0,
+          "drained": true
+        },
+        {
+          "scene": "f-15e",
+          "peak_total_particles": 8,
+          "peak_fuel_particles": 7,
+          "peak_hot_fuel": 0,
+          "drained": true
+        },
+        {
+          "scene": "a-10",
+          "peak_total_particles": 8,
+          "peak_fuel_particles": 7,
+          "peak_hot_fuel": 0,
+          "drained": true
+        }
+      ],
+      "log_sha256": "dba84965ba7e2407e33d25d6b0aa81f47cbe5deaa5c04af50111355944ffeebf",
+      "all_passed": true
+    }
+  ],
+  "captures": [
+    {
+      "file": "docs/screens/m8-wing-fuel/f-35a-early.png",
+      "backend": "VULKAN",
+      "sha256": "be719dbcb334249297e66de8e0e038a410f0411dc4437a33377c1266d4ef0f02",
+      "width": 1280,
+      "height": 720,
+      "unedited_native": true
+    },
+    {
+      "file": "docs/screens/m8-wing-fuel/f-35a-spray.png",
+      "backend": "VULKAN",
+      "sha256": "e199e28c6960f26c842803bcf1982c352309a3b060578ccdeaa0d42613fe7628",
+      "width": 1280,
+      "height": 720,
+      "unedited_native": true
+    },
+    {
+      "file": "docs/screens/m8-wing-fuel/f-35a-repaired.png",
+      "backend": "VULKAN",
+      "sha256": "743705546310a6985c0129c49e4a47ab9e1b077f4099227df656f635eca4e112",
+      "width": 1280,
+      "height": 720,
+      "unedited_native": true
+    },
+    {
+      "file": "docs/screens/m8-wing-fuel/f-15e-early.png",
+      "backend": "VULKAN",
+      "sha256": "3982dc291de7949fa8ca31fa7678cb0cefade29023ddef9d8dd91eacffc6b681",
+      "width": 1280,
+      "height": 720,
+      "unedited_native": true
+    },
+    {
+      "file": "docs/screens/m8-wing-fuel/f-15e-spray.png",
+      "backend": "VULKAN",
+      "sha256": "1f900d3661699b3b2a3348510be1e1c417f838c48e93233d672a6f3c018de50c",
+      "width": 1280,
+      "height": 720,
+      "unedited_native": true
+    },
+    {
+      "file": "docs/screens/m8-wing-fuel/f-15e-repaired.png",
+      "backend": "VULKAN",
+      "sha256": "8bb4ba7082aa027cf464668986cd1983a3f3ed12a696e3512f450567413d6a75",
+      "width": 1280,
+      "height": 720,
+      "unedited_native": true
+    },
+    {
+      "file": "docs/screens/m8-wing-fuel/a-10-early.png",
+      "backend": "VULKAN",
+      "sha256": "a8988902b323d05b01f42dbf35efbd6767a567054c03fb304f4da33a6e5e50f2",
+      "width": 1280,
+      "height": 720,
+      "unedited_native": true
+    },
+    {
+      "file": "docs/screens/m8-wing-fuel/a-10-spray.png",
+      "backend": "VULKAN",
+      "sha256": "d5945ff7d88bf56dcc843104caa4778f1d262a6fb7cca78affd504e6216fc523",
+      "width": 1280,
+      "height": 720,
+      "unedited_native": true
+    },
+    {
+      "file": "docs/screens/m8-wing-fuel/a-10-repaired.png",
+      "backend": "VULKAN",
+      "sha256": "9946a7b00399f3d15b7b1f5e6bf49ed15e5db11223fb64f95000f555040cdc6e",
+      "width": 1280,
+      "height": 720,
+      "unedited_native": true
+    },
+    {
+      "file": "docs/screens/m8-wing-fuel/burning-f35-early.png",
+      "backend": "OPENGL",
+      "sha256": "843470318fdc4aba6c3dcf25bfa5da7c30fdad6941a5d2f280ae988e337c278b",
+      "width": 1280,
+      "height": 720,
+      "unedited_native": true
+    },
+    {
+      "file": "docs/screens/m8-wing-fuel/burning-f35-spray.png",
+      "backend": "OPENGL",
+      "sha256": "cc5912eda9a6324db694f2c1c445a4a756f68743f0b77a14f545aa5c77e82888",
+      "width": 1280,
+      "height": 720,
+      "unedited_native": true
+    },
+    {
+      "file": "docs/screens/m8-wing-fuel/loaded-missing-spray.png",
+      "backend": "OPENGL",
+      "sha256": "7fdbb59710998b743d4741f76ead8e6ca2768a89da684e02a6b9f620e272512c",
+      "width": 1280,
+      "height": 720,
+      "unedited_native": true
+    },
+    {
+      "file": "docs/screens/m8-wing-fuel/ignition-fixture-spray.png",
+      "backend": "OPENGL",
+      "sha256": "f4d673e1c40e3ea0b52d28a3ec0cf8ecfaba03b4e1b9087aaa073172dccb9df6",
+      "width": 1280,
+      "height": 720,
+      "unedited_native": true
+    },
+    {
+      "file": "docs/screens/m8-wing-fuel/vulkan-shared-load-spray.png",
+      "backend": "VULKAN",
+      "sha256": "ef4012566cd93e347805c996ead0f1f13db7985bcf6e7843656045657b27f4cc",
+      "width": 1280,
+      "height": 720,
+      "unedited_native": true
+    }
+  ],
+  "shipping_sources": [
+    {
+      "file": "src/main/java/io/github/mcheliceport/client/model/BreakupMeshes.java",
+      "sha256": "c78e86f1cbd9fb3d9e48a657e3d8d264568df5d7e694cb051244b5bb88700d6f"
+    },
+    {
+      "file": "src/main/java/io/github/mcheliceport/client/particle/VehicleAtmosphere.java",
+      "sha256": "24e775261c57c5be2528ad63b6f73ce18007b0f29dbb571cc90a3a36fa0ede96"
+    },
+    {
+      "file": "src/main/java/io/github/mcheliceport/client/particle/AirframeFuelLook.java",
+      "sha256": "f2e5fa6e2778b36d02aa26a1b97f15aa8e2c8a8f9a55ddb8f7af0047a35677ce"
+    },
+    {
+      "file": "src/main/java/io/github/mcheliceport/client/particle/FuelSprayEffects.java",
+      "sha256": "e9049f5ee7e43011e27b38b4cfa4e00a62d73679500d1029ce164fc81c79d2d6"
+    },
+    {
+      "file": "src/main/java/io/github/mcheliceport/client/particle/FuelSprayParticle.java",
+      "sha256": "812b69a3dcb7933fc8221843d4c8a9660e18439e2083e180e020769518bfb8ad"
+    }
+  ],
+  "configured_limits": {
+    "balanced_shared_effects": 1536,
+    "balanced_separate_flash": 96,
+    "balanced_atmosphere_births_per_tick": 16,
+    "fuel_request_period_ticks": "3 * (1 + pressure), one per aircraft",
+    "window_ticks": 90,
+    "drop_lifetime_ticks": 18,
+    "vapor_lifetime_ticks": 24,
+    "range_blocks": 48
+  },
+  "native_optional_mods_installed": false,
+  "local_limit": "Existing local-only init excludes unavailable optional JEI/NTM sources and uses throwing bridge stubs. No local JAR distributed.",
+  "target_hardware_fps_measured": false,
+  "ignition_captures": {
+    "ordinary_wing_streams_ignited": false,
+    "separate_manual_fixture_hot_peak": 2
+  },
+  "limits": [
+    "Controlled component damage and held airborne motion, not player-driven combat.",
+    "Main three vehicles use approximately85%hullHP to show leaks independently of engine smoke.",
+    "Natural photographed streams remain unlit when missing the engine fire.",
+    "Ignition fixture manually injects a few droplets beside a real critical engine fire; it is not a natural wing-ignition capture.",
+    "Vulkan/OpenGL shipping sources are identical; only opt-in camera framing and manual branch fixture differ.",
+    "Software Mesa is not target hardware."
+  ]
+}
