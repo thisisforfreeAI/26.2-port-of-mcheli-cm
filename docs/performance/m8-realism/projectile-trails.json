@@ -1,0 +1,264 @@
+{
+  "kind": "conventional-projectile-trails",
+  "base_commit": "929caab502ab4cb344212fe52b40a8fab3b70a45",
+  "unit_results": {
+    "tests": 418,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "runs": [
+    {
+      "backend": "VULKAN",
+      "all_passed": true,
+      "scenes": [
+        {
+          "scene": "hydra70",
+          "drained": true,
+          "peak_mod_particles": 150,
+          "peak_new_trail_particles": 150
+        },
+        {
+          "scene": "aim9",
+          "drained": true,
+          "peak_mod_particles": 179,
+          "peak_new_trail_particles": 179
+        },
+        {
+          "scene": "agm84",
+          "drained": true,
+          "peak_mod_particles": 178,
+          "peak_new_trail_particles": 178
+        },
+        {
+          "scene": "agm158-smokeless",
+          "drained": true,
+          "peak_mod_particles": 0,
+          "peak_new_trail_particles": 0
+        },
+        {
+          "scene": "authored-burnout",
+          "drained": true,
+          "peak_mod_particles": 149,
+          "peak_new_trail_particles": 149
+        },
+        {
+          "scene": "classic",
+          "drained": true,
+          "peak_mod_particles": 116,
+          "peak_new_trail_particles": 0
+        },
+        {
+          "scene": "ntm-bypass",
+          "drained": true,
+          "peak_mod_particles": 120,
+          "peak_new_trail_particles": 0
+        },
+        {
+          "scene": "shared-load",
+          "drained": true,
+          "peak_mod_particles": 1426,
+          "peak_new_trail_particles": 1426
+        },
+        {
+          "scene": "low-load",
+          "drained": true,
+          "peak_mod_particles": 384,
+          "peak_new_trail_particles": 384
+        }
+      ]
+    },
+    {
+      "backend": "OPENGL",
+      "all_passed": true,
+      "scenes": [
+        {
+          "scene": "hydra70",
+          "drained": true,
+          "peak_mod_particles": 149,
+          "peak_new_trail_particles": 149
+        },
+        {
+          "scene": "aim9",
+          "drained": true,
+          "peak_mod_particles": 178,
+          "peak_new_trail_particles": 178
+        },
+        {
+          "scene": "agm84",
+          "drained": true,
+          "peak_mod_particles": 178,
+          "peak_new_trail_particles": 178
+        },
+        {
+          "scene": "agm158-smokeless",
+          "drained": true,
+          "peak_mod_particles": 0,
+          "peak_new_trail_particles": 0
+        },
+        {
+          "scene": "authored-burnout",
+          "drained": true,
+          "peak_mod_particles": 141,
+          "peak_new_trail_particles": 141
+        },
+        {
+          "scene": "classic",
+          "drained": true,
+          "peak_mod_particles": 106,
+          "peak_new_trail_particles": 0
+        },
+        {
+          "scene": "ntm-bypass",
+          "drained": true,
+          "peak_mod_particles": 110,
+          "peak_new_trail_particles": 0
+        },
+        {
+          "scene": "shared-load",
+          "drained": true,
+          "peak_mod_particles": 1425,
+          "peak_new_trail_particles": 1425
+        },
+        {
+          "scene": "low-load",
+          "drained": true,
+          "peak_mod_particles": 384,
+          "peak_new_trail_particles": 384
+        }
+      ]
+    }
+  ],
+  "bounds": {
+    "tracked_projectiles": 128,
+    "cached_weapon_profiles": 256,
+    "samples_per_update": 3,
+    "birth_limits_per_tick": {
+      "LOW": 12,
+      "BALANCED": 24,
+      "HIGH": 36
+    },
+    "scope_blocks": 144,
+    "distant_simplification_blocks": 64,
+    "teleport_rejection_blocks": 32,
+    "core_life_ticks_max": 96,
+    "max_quad_half_size_blocks": 2.464,
+    "shared_particle_limits_unchanged": true
+  },
+  "notes": [
+    "Held trajectories through BaseBullet.spawnParticle, not combat recordings.",
+    "Carrier aircraft are context; no weapon was fired through its gameplay weapon controller.",
+    "Authored motor-window/NTM-bypass definitions are isolated fixture copies; registered content is unchanged.",
+    "AGM-158 stock DisableSmoke is preserved.",
+    "Only final refined source runs are reported; initial previews prompted better overlap and lifecycle cleanup.",
+    "Native optional-dependency exclusions/throwing stubs; no local JAR distributed.",
+    "Software Mesa does not establish target-PC 60 FPS / 1080p."
+  ],
+  "screens": [
+    {
+      "file": "docs/screens/m8-projectile-trails/m8-projectile-hydra70-launch.png",
+      "backend": "OPENGL",
+      "width": 1280,
+      "height": 720,
+      "sha256": "c8b0821d5454540604033505025e225e6ea0a8ff4183982fff8578b9a4327a18"
+    },
+    {
+      "file": "docs/screens/m8-projectile-trails/m8-projectile-hydra70-flight.png",
+      "backend": "VULKAN",
+      "width": 1280,
+      "height": 720,
+      "sha256": "676fcf55a21bdd86c40c7975c32834fddc89b1157d06d2b4badbd63d8c65c139"
+    },
+    {
+      "file": "docs/screens/m8-projectile-trails/m8-projectile-hydra70-late.png",
+      "backend": "VULKAN",
+      "width": 1280,
+      "height": 720,
+      "sha256": "c6040114db8723f22fdde7bfb62e36ffb0909218eb1eb6c11331a6613b849dd8"
+    },
+    {
+      "file": "docs/screens/m8-projectile-trails/m8-projectile-aim9-launch.png",
+      "backend": "OPENGL",
+      "width": 1280,
+      "height": 720,
+      "sha256": "fc94ea6b325aa8b83a4a9d2271668f6b125f2cac77ff66741096aa9a077f63ee"
+    },
+    {
+      "file": "docs/screens/m8-projectile-trails/m8-projectile-aim9-flight.png",
+      "backend": "VULKAN",
+      "width": 1280,
+      "height": 720,
+      "sha256": "ae5034df9a1eb574e47634c0be7a5d84376dcce1f86dafa49858968f73cc6fd7"
+    },
+    {
+      "file": "docs/screens/m8-projectile-trails/m8-projectile-aim9-late.png",
+      "backend": "VULKAN",
+      "width": 1280,
+      "height": 720,
+      "sha256": "f0c95d98b670fec52f5f4eb4afb5ee7dc12c881341f8d79560f55eb06f283c57"
+    },
+    {
+      "file": "docs/screens/m8-projectile-trails/m8-projectile-agm84-launch.png",
+      "backend": "OPENGL",
+      "width": 1280,
+      "height": 720,
+      "sha256": "6baf686e55a9ebeb5411cb7db3b966ca8723e16f20d261457d4bd69905e38aa2"
+    },
+    {
+      "file": "docs/screens/m8-projectile-trails/m8-projectile-agm84-flight.png",
+      "backend": "VULKAN",
+      "width": 1280,
+      "height": 720,
+      "sha256": "89f2e0d710ca4b78eb835b5aeba93ec2c55b5f45df16543592014b8100c3fd61"
+    },
+    {
+      "file": "docs/screens/m8-projectile-trails/m8-projectile-agm84-late.png",
+      "backend": "VULKAN",
+      "width": 1280,
+      "height": 720,
+      "sha256": "ab9459dfb5dad52605f48e70d285533f1493387e9819513dab2b3f1a4f820769"
+    },
+    {
+      "file": "docs/screens/m8-projectile-trails/m8-projectile-agm158-smokeless-launch.png",
+      "backend": "OPENGL",
+      "width": 1280,
+      "height": 720,
+      "sha256": "995c9ec13d58f4d05daab88a58ae587bc2a8d72355650e0932c5d6aa83deee63"
+    },
+    {
+      "file": "docs/screens/m8-projectile-trails/m8-projectile-agm158-smokeless-late.png",
+      "backend": "VULKAN",
+      "width": 1280,
+      "height": 720,
+      "sha256": "dd63fa651ea91a02df5b4eb6c2fa2c3275df72ff4ea7987040124a04d587bec9"
+    },
+    {
+      "file": "docs/screens/m8-projectile-trails/m8-projectile-authored-burnout-flight.png",
+      "backend": "VULKAN",
+      "width": 1280,
+      "height": 720,
+      "sha256": "743e69511bbd29a325f6f65b703aec0422a4039b192728ddfef406ba76fdb068"
+    },
+    {
+      "file": "docs/screens/m8-projectile-trails/m8-projectile-authored-burnout-late.png",
+      "backend": "VULKAN",
+      "width": 1280,
+      "height": 720,
+      "sha256": "51ee4a4058a9e3d021749d998d1f332d39090f45b8f1f7e436b7802b48600ced"
+    },
+    {
+      "file": "docs/screens/m8-projectile-trails/m8-projectile-shared-load-late.png",
+      "backend": "VULKAN",
+      "width": 1280,
+      "height": 720,
+      "sha256": "2572ab66bdbe3436c99e4b1dcd52fc14278f59130e3e3772c16a9b231d4cbf06"
+    },
+    {
+      "file": "docs/screens/m8-projectile-trails/m8-projectile-low-load-late.png",
+      "backend": "VULKAN",
+      "width": 1280,
+      "height": 720,
+      "sha256": "0cda600b22f3c576c385076002e3c42d99e58f1028ae6ec7c7e1d410ec28af38"
+    }
+  ]
+}
