@@ -300,6 +300,7 @@ public abstract class BaseBulletEntity extends Entity implements WeaponTargets.P
         if (!this.level().isClientSide() || name.isEmpty() || num < 1 || num > 50) {
             return;
         }
+        if(McheliEffects.projectileTrail(this,name,num,size))return;
         double x = (this.getX() - this.xo) / num;
         double y = (this.getY() - this.yo) / num;
         double z = (this.getZ() - this.zo) / num;

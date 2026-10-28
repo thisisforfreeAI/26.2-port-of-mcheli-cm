@@ -23,6 +23,10 @@ public final class EffectTuning {
         return switch (quality) { case LOW -> 96; case BALANCED -> 192; case HIGH -> 256; };
     }
 
+    /** Thin contrails have their own sparse emitter; other effect distances remain unchanged. */
+    public static int contrailDistance(EffectBudget quality){return quality==EffectBudget.LOW?distance(quality):256;}
+    public static int contrailStride(int particleSetting){return 1<<Math.clamp(particleSetting,0,2);}
+
     /** Stratified thinning keeps nearby trails solid and bounds distant overdraw. */
     public static int stride(double distanceSquared, int particleSetting, boolean flash) {
         if (flash) {

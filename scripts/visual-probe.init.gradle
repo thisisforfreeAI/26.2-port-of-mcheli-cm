@@ -85,6 +85,18 @@ gradle.projectsEvaluated {
     if(Boolean.getBoolean('mcheli.probeBreakaway'))project.sourceSets.main.java.exclude('io/github/mcheliceport/probe/EffectsProbe.java')
     project.neoForge.runs.client.systemProperty('mcheli.probeSkinShedding',System.getProperty('mcheli.probeSkinShedding','false'))
     project.neoForge.runs.client.systemProperty('mcheli.probeSkinStart',System.getProperty('mcheli.probeSkinStart','0'))
+    if(Boolean.getBoolean('mcheli.probeManeuverSmoke'))project.sourceSets.main.java.exclude('io/github/mcheliceport/probe/EffectsProbe.java')
+    project.neoForge.runs.client.systemProperty('mcheli.probeManeuverSmoke',System.getProperty('mcheli.probeManeuverSmoke','false'))
+    project.neoForge.runs.client.systemProperty('mcheli.probeManeuverStart',System.getProperty('mcheli.probeManeuverStart','0'))
+    if(Boolean.getBoolean('mcheli.probeProjectileTrails'))project.sourceSets.main.java.exclude('io/github/mcheliceport/probe/EffectsProbe.java')
+    project.neoForge.runs.client.systemProperty('mcheli.probeProjectileTrails',System.getProperty('mcheli.probeProjectileTrails','false'))
+    project.neoForge.runs.client.systemProperty('mcheli.probeProjectileStart',System.getProperty('mcheli.probeProjectileStart','0'))
+    if(Boolean.getBoolean('mcheli.probeWingVapor'))project.sourceSets.main.java.exclude('io/github/mcheliceport/probe/EffectsProbe.java')
+    project.neoForge.runs.client.systemProperty('mcheli.probeWingVapor',System.getProperty('mcheli.probeWingVapor','false'))
+    project.neoForge.runs.client.systemProperty('mcheli.probeWingVaporStart',System.getProperty('mcheli.probeWingVaporStart','0'))
+    if(Boolean.getBoolean('mcheli.probeContrails'))project.sourceSets.main.java.exclude('io/github/mcheliceport/probe/EffectsProbe.java')
+    project.neoForge.runs.client.systemProperty('mcheli.probeContrails',System.getProperty('mcheli.probeContrails','false'))
+    project.neoForge.runs.client.systemProperty('mcheli.probeContrailStart',System.getProperty('mcheli.probeContrailStart','0'))
     project.neoForge.runs.client.gameDirectory = project.file('.run/m8-preview')
     project.neoForge.runs.client.programArguments.addAll('--quickPlaySingleplayer', 'M6Smoke',
             '--graphicsBackend', System.getProperty('mcheli.probeBackend', 'VULKAN'), '--width', System.getProperty('mcheli.probeWidth', '1920'),

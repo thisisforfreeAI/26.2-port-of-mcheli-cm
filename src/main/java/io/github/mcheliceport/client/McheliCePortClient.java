@@ -79,6 +79,7 @@ public final class McheliCePortClient {
         modBus.addListener(io.github.mcheliceport.client.particle.ParticleLayers::registerPipelines);
         modBus.addListener(io.github.mcheliceport.client.particle.BlastDustWedges::register);
         modBus.addListener(io.github.mcheliceport.client.particle.AirflowFireParticle::register);
+        modBus.addListener(io.github.mcheliceport.client.particle.CondensationParticle::register);
         modBus.addListener(io.github.mcheliceport.client.render.EngineHeat::registerPipelines);
         modBus.addListener(io.github.mcheliceport.client.render.GlowGeometry::registerPipelines);
         modBus.addListener(io.github.mcheliceport.client.render.DraftingModelRenderer::registerPipelines);

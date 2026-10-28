@@ -77,6 +77,7 @@ public class BulletRenderer<T extends BaseBulletEntity> extends EntityRenderer<T
         public double motionZ;
         /** M8: a glow at the missile's flame. */
         public boolean flameGlow;
+        public float flameScale=1;
         public float tracerAlpha;
     }
 
@@ -101,6 +102,7 @@ public class BulletRenderer<T extends BaseBulletEntity> extends EntityRenderer<T
         state.flame = false;
         state.tracer = false;
         state.flameGlow = false;
+        state.flameScale = 1;
         WeaponInfo info = entity.getInfo();
         if (info == null || !this.isVisible(entity, info)) {
             return;
@@ -143,7 +145,9 @@ public class BulletRenderer<T extends BaseBulletEntity> extends EntityRenderer<T
                 state.pitch = entity.getXRot();
             }
         }
-        if (this.kind == Kind.AA_MISSILE || this.kind == Kind.AS_MISSILE || this.kind == Kind.TV_MISSILE) {
+        if (this.kind == Kind.AA_MISSILE || this.kind == Kind.AS_MISSILE || this.kind == Kind.TV_MISSILE
+                || enhanced&&entity instanceof io.github.mcheliceport.entity.weapon.RocketEntity
+                &&io.github.mcheliceport.client.particle.ProjectileTrailEffects.conventional(entity)) {
             // Upstream renderMissileFlame(entity, ..., 0.8, 4.0): a camera-facing quad behind the missile.
             double len = Math.sqrt(mx * mx + my * my + mz * mz);
             state.flame = true;
@@ -152,6 +156,9 @@ public class BulletRenderer<T extends BaseBulletEntity> extends EntityRenderer<T
             state.flameZ = len > 1.0E-4 ? -mz / len * 0.8 : 0.0;
             state.flameTexture = entity.tickCount / 5 % 2 == 0 ? TEX_FLAME : TEX_FLAME_1;
             state.flameGlow = enhanced && EffectPerformance.optionalGlows();
+            state.flameScale=io.github.mcheliceport.client.particle.ProjectileTrailEffects.motorScale(entity);
+            state.flame=state.flameScale>.001F;
+            if(state.flameScale<.08F||entity instanceof io.github.mcheliceport.entity.weapon.RocketEntity)state.flameGlow=false;
         }
     }
 
@@ -203,12 +210,12 @@ public class BulletRenderer<T extends BaseBulletEntity> extends EntityRenderer<T
         if (state.flameGlow) {
             poseStack.pushPose();
             poseStack.translate(state.flameX, state.flameY, state.flameZ);
-            GlowGeometry.disc(poseStack, collector, camera, 1.6F, 0xFFA850, 0.55F);
+            GlowGeometry.disc(poseStack, collector, camera, 1.6F*state.flameScale, 0xFFA850, 0.55F);
             poseStack.popPose();
         }
         if (state.flame) {
             submitFlame(poseStack, collector, camera, state.flameX, state.flameY, state.flameZ, state.flameTexture,
-                    4.0F);
+                    4.0F*state.flameScale);
         }
         super.submit(state, poseStack, collector, camera);
     }

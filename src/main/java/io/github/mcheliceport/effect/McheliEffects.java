@@ -14,6 +14,8 @@ public final class McheliEffects {
 
     /** What the client draws. Every method is only called on the client thread. */
     public interface Sink {
+        /** True replaces a conventional projectile's cosmetic smoke trail on this client. */
+        default boolean projectileTrail(io.github.mcheliceport.entity.weapon.BaseBulletEntity projectile,String name,int count,float size){return false;}
         /** True when a bounded client emitter owns damage smoke for this vehicle. */
         default boolean damageSmoke(io.github.mcheliceport.entity.aircraft.AircraftEntity aircraft) { return false; }
         /** True replaces a plane's legacy nozzle smoke; false preserves that emitter. */
@@ -91,6 +93,9 @@ public final class McheliEffects {
         if (s != null) {
             s.spawnParticle(level, param);
         }
+    }
+    public static boolean projectileTrail(io.github.mcheliceport.entity.weapon.BaseBulletEntity projectile,String name,int count,float size){
+        Sink s=sink(projectile.level());return s!=null&&s.projectileTrail(projectile,name,count,size);
     }
 
     public static void spawnMuzzleFlash(Level level, double x, double y, double z, float size, float r, float g,
