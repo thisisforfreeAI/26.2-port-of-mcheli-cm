@@ -1,0 +1,260 @@
+{
+  "kind": "airflow-shaped-aircraft-fire",
+  "base_commit": "4284b9d",
+  "unit_results": {
+    "tests": 390,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "runs": [
+    {
+      "backend": "VULKAN",
+      "scenes": [
+        {
+          "scene": "f-35a",
+          "peak_total_particles": 43,
+          "peak_airflow_fire": 7,
+          "repair_drain": true
+        },
+        {
+          "scene": "ah-64",
+          "peak_total_particles": 53,
+          "peak_airflow_fire": 7,
+          "repair_drain": true
+        },
+        {
+          "scene": "f22a",
+          "peak_total_particles": 50,
+          "peak_airflow_fire": 7,
+          "repair_drain": true
+        },
+        {
+          "scene": "f-35a-wreck",
+          "peak_total_particles": 37,
+          "peak_airflow_fire": 5,
+          "repair_drain": true
+        },
+        {
+          "scene": "classic-wreck",
+          "peak_total_particles": 34,
+          "peak_airflow_fire": 0,
+          "repair_drain": true
+        },
+        {
+          "scene": "shared-load",
+          "peak_total_particles": 418,
+          "peak_airflow_fire": 156,
+          "repair_drain": true
+        }
+      ],
+      "log_sha256": "adf241f606da9e7339af12f535678d94dad7176b5eb13238022871e9272b7e99",
+      "all_passed": true
+    },
+    {
+      "backend": "OPENGL",
+      "scenes": [
+        {
+          "scene": "f-35a",
+          "peak_total_particles": 38,
+          "peak_airflow_fire": 7,
+          "repair_drain": true
+        },
+        {
+          "scene": "ah-64",
+          "peak_total_particles": 51,
+          "peak_airflow_fire": 7,
+          "repair_drain": true
+        },
+        {
+          "scene": "f22a",
+          "peak_total_particles": 54,
+          "peak_airflow_fire": 7,
+          "repair_drain": true
+        },
+        {
+          "scene": "f-35a-wreck",
+          "peak_total_particles": 51,
+          "peak_airflow_fire": 4,
+          "repair_drain": true
+        },
+        {
+          "scene": "classic-wreck",
+          "peak_total_particles": 32,
+          "peak_airflow_fire": 0,
+          "repair_drain": true
+        },
+        {
+          "scene": "shared-load",
+          "peak_total_particles": 418,
+          "peak_airflow_fire": 157,
+          "repair_drain": true
+        }
+      ],
+      "log_sha256": "6adfe891f78dab27c18291e8cf654a17ecac920eb8cb0d8d313a7ec56e07b114",
+      "all_passed": true
+    }
+  ],
+  "captures": [
+    {
+      "file": "docs/screens/m8-airflow-fire/f-35a-flight.png",
+      "backend": "OPENGL",
+      "sha256": "07cf3e8a46a243b4e2a5bb609fd919c8cf04a3cfb426b4d79ba7af81f9e87aa2",
+      "width": 1280,
+      "height": 720,
+      "unedited_native": true
+    },
+    {
+      "file": "docs/screens/m8-airflow-fire/f-35a-stopped.png",
+      "backend": "OPENGL",
+      "sha256": "dfc725a925f56f25cbdfd1ccb84c8068887f5b9996a88a8f030efed9792acc92",
+      "width": 1280,
+      "height": 720,
+      "unedited_native": true
+    },
+    {
+      "file": "docs/screens/m8-airflow-fire/f-35a-repaired.png",
+      "backend": "OPENGL",
+      "sha256": "9f9ef65a95af3a0791cc40dde867ec7495c67641c9e350778f78c5ccc1a75c9a",
+      "width": 1280,
+      "height": 720,
+      "unedited_native": true
+    },
+    {
+      "file": "docs/screens/m8-airflow-fire/ah-64-flight.png",
+      "backend": "OPENGL",
+      "sha256": "64f95d9ece3738ec36be3003a3b3a5e6248118a98b3827b7d7c759b6e505edf4",
+      "width": 1280,
+      "height": 720,
+      "unedited_native": true
+    },
+    {
+      "file": "docs/screens/m8-airflow-fire/ah-64-stopped.png",
+      "backend": "OPENGL",
+      "sha256": "88129682e88ae9fefd33dbcdff19e2cff91eca9d81fa441e9ed60327ab0ad9ea",
+      "width": 1280,
+      "height": 720,
+      "unedited_native": true
+    },
+    {
+      "file": "docs/screens/m8-airflow-fire/ah-64-repaired.png",
+      "backend": "OPENGL",
+      "sha256": "c850a664a10d48e926a56c8142efd80562f7f357f6931c7193abb766b58f617f",
+      "width": 1280,
+      "height": 720,
+      "unedited_native": true
+    },
+    {
+      "file": "docs/screens/m8-airflow-fire/f22a-flight.png",
+      "backend": "OPENGL",
+      "sha256": "bddadaa5530e085c3c6359c02182e1a198f928b9048e9c57a75b616098903d67",
+      "width": 1280,
+      "height": 720,
+      "unedited_native": true
+    },
+    {
+      "file": "docs/screens/m8-airflow-fire/f22a-stopped.png",
+      "backend": "OPENGL",
+      "sha256": "7e1920f24be6f9a722a35478bce717e66cffce344afcd75959dc4a1dd7f64e6f",
+      "width": 1280,
+      "height": 720,
+      "unedited_native": true
+    },
+    {
+      "file": "docs/screens/m8-airflow-fire/f22a-repaired.png",
+      "backend": "OPENGL",
+      "sha256": "752628448db8a0053b4624c84addfd907af0851d4a98fbab69fafd311bcc19b4",
+      "width": 1280,
+      "height": 720,
+      "unedited_native": true
+    },
+    {
+      "file": "docs/screens/m8-airflow-fire/f-35a-wreck-flight.png",
+      "backend": "OPENGL",
+      "sha256": "40b5a8b377315bec83af983e109599f0fd1af958039e3229d7327373f9622807",
+      "width": 1280,
+      "height": 720,
+      "unedited_native": true
+    },
+    {
+      "file": "docs/screens/m8-airflow-fire/f-35a-wreck-stopped.png",
+      "backend": "OPENGL",
+      "sha256": "e299792fcf9d00288c1e57f40ea6359f6597ff859c2b3873c3755340b4bb4216",
+      "width": 1280,
+      "height": 720,
+      "unedited_native": true
+    },
+    {
+      "file": "docs/screens/m8-airflow-fire/classic-wreck-stopped.png",
+      "backend": "OPENGL",
+      "sha256": "f322c671c2809e6fbe58ee95d63190dce69a3156a3f29ab7934bf1772cd332a5",
+      "width": 1280,
+      "height": 720,
+      "unedited_native": true
+    },
+    {
+      "file": "docs/screens/m8-airflow-fire/vulkan-shared-load-stopped.png",
+      "backend": "VULKAN",
+      "sha256": "a16b9e6c141abb8ee6ffab92f078c6accbf3745231af11873ea727aae09e8f35",
+      "width": 1280,
+      "height": 720,
+      "unedited_native": true
+    }
+  ],
+  "shipping_sources": [
+    {
+      "file": "src/main/java/io/github/mcheliceport/client/McheliCePortClient.java",
+      "sha256": "2e2aba1a244e31e85756aeb090ee3b1d9ca5ac2c1e4b0d4e59d42ce202f316a8"
+    },
+    {
+      "file": "src/main/java/io/github/mcheliceport/client/particle/AirflowFireLook.java",
+      "sha256": "14795dabfb50ebd7d626fafb0b74024bb182d1deef90acf27831bc946ae70ef6"
+    },
+    {
+      "file": "src/main/java/io/github/mcheliceport/client/particle/AirflowFireParticle.java",
+      "sha256": "b8ae7daaa0cc9d41a803b023f8a39145fb4a6201348c3ce04cfb24c06f597cf3"
+    },
+    {
+      "file": "src/main/java/io/github/mcheliceport/client/particle/AirflowFireEffects.java",
+      "sha256": "78130670ae5cd7513734cc25841c53d34e6d086c8ef505dd25f3959fcba7aadf"
+    },
+    {
+      "file": "src/main/java/io/github/mcheliceport/client/particle/VehicleAtmosphere.java",
+      "sha256": "f488a6f4aa507f783856ea441edea755c8ba10292270b856d497b6b63293d72a"
+    },
+    {
+      "file": "src/main/java/io/github/mcheliceport/client/particle/WreckEffects.java",
+      "sha256": "291b2a4f720533896ca5aca87c5d57717de76b88f194603d22fadf71b49bda94"
+    }
+  ],
+  "settings": {
+    "quality": "ENHANCED",
+    "style": "POLISHED (Classic in fallback scene)",
+    "budget": "BALANCED",
+    "adaptive": false,
+    "damage_details": true,
+    "destruction_sequences": false,
+    "startup_effects": false
+  },
+  "configured_limits": {
+    "balanced_shared_effects": 1536,
+    "balanced_separate_flash": 96,
+    "balanced_atmosphere_births_per_tick": 16,
+    "alive_fire_request_period_ticks": "3 * (1 + pressure)",
+    "fire_lifetime_ticks": [
+      12,
+      20
+    ],
+    "alive_range_blocks": 48
+  },
+  "native_optional_mods_installed": false,
+  "local_limit": "Existing local-only init excludes unavailable optional JEI/NTM sources and uses throwing bridge stubs. No local JAR distributed.",
+  "target_hardware_fps_measured": false,
+  "limits": [
+    "Software Mesa Vulkan/OpenGL, not target PC.",
+    "Controlled HP/motion fixtures, not player-driven flight or combat.",
+    "Living fire requires identifiable plane outlets; unsupported planes keep their damage smoke.",
+    "Overall HP drives cosmetic fire, not a new per-engine ignition/health system.",
+    "Native Vulkan and OpenGL use identical shipping sources; only opt-in camera framing differs."
+  ]
+}

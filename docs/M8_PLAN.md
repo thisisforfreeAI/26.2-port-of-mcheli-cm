@@ -391,13 +391,16 @@ ideas below remain queued independently.
 
 ## Planned aircraft and destruction graphics additions
 
-The following eight ideas are approved for the roadmap and remain pending implementation.
+The following eight ideas are approved for the roadmap; checkboxes track implementation.
 Build on the existing engine fire, damaged trails, exposed interiors and mesh debris instead
 of treating those systems as absent. Implement and review additions separately with labeled
 native examples on several suitable vehicles.
 
-- [ ] **Airflow-shaped fire:** stretch damaged-engine flames backward with flight motion;
-  transition toward upward flames as the aircraft slows or stops.
+- [x] **Airflow-shaped fire:** stretch damaged-engine flames backward with flight motion;
+  transition toward upward flames as the aircraft slows or stops. [Implementation and
+  bounds](M8_AIRFLOW_FIRE.md) use existing engine anchors and shared admission;
+  [native comparisons](M8_AIRFLOW_FIRE_GALLERY.md) cover three aircraft, repair, wrecks,
+  Classic and shared load. Target-PC/player acceptance remains separate.
 - [ ] **Fuel spray from torn wings:** brief droplets and faint vapor from a damaged structural
   area, with restrained visual ignition near an existing fire. Keep separate from oil/coolant
   drips; no new gameplay damage or fuel-consumption rules in this graphics work.
