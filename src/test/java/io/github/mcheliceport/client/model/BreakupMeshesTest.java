@@ -31,6 +31,13 @@ class BreakupMeshesTest {
         var box=new DetailBoxes();box.box(-7,0,-10,7,2,6);var source=box.group("$body");var original=source.data().clone();
         for(int mask=0;mask<8;mask++){
             var frame=BreakupMeshes.airframeBuild(source,mask);assertEquals(mask,frame.mask());
+            assertEquals(Integer.bitCount(mask),frame.openings().size());
+            for(var entry:frame.openings().entrySet()){
+                var at=entry.getValue();assertTrue(Double.isFinite(at.lengthSqr()));
+                assertTrue(at.y>=0&&at.y<=2&&at.z>=-10&&at.z<=6);
+                assertEquals(entry.getKey()==1?frame.leftCut():entry.getKey()==2?frame.rightCut():frame.tailCut(),
+                        entry.getKey()==4?at.z:at.x,.002);
+            }
             double total=area(frame.kept());
             for(int i=0;i<3;i++)if((mask&(1<<i))!=0)total+=area(frame.sections().get(i));
             assertEquals(area(source),total,.01,"mask "+mask);assertTrue(frame.kept().vertexCount()>0);
