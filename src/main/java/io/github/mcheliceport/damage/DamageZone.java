@@ -2,8 +2,29 @@ package io.github.mcheliceport.damage;
 
 import net.minecraft.world.phys.Vec3;
 
-/** Where a component sits, as a box in the vehicle's unanimated body coordinates. */
-public record DamageZone(ComponentKind kind, int index, Vec3 center, Vec3 halfSize, String partName) {
+/**
+ * Where a component sits, as a box in the vehicle's unanimated body coordinates. {@code share} is
+ * the part of a hit's hull damage it takes; {@code health} its whole health as a share of the
+ * vehicle's max HP.
+ */
+public record DamageZone(ComponentKind kind, int index, Vec3 center, Vec3 halfSize, String partName, float share,
+        float health) {
+
+    /** A zone with its kind's damage share and the default health. */
+    public DamageZone(ComponentKind kind, int index, Vec3 center, Vec3 halfSize, String partName) {
+        this(kind, index, center, halfSize, partName, kind.damageShare, ComponentDamage.HEALTH_SHARE_OF_MAX_HP);
+    }
+
+    /** This zone grown by {@code slack} on every side. */
+    public DamageZone grown(double slack) {
+        return new DamageZone(this.kind, this.index, this.center, this.halfSize.add(slack, slack, slack),
+                this.partName, this.share, this.health);
+    }
+
+    /** This zone's whole health in hull HP for a vehicle of {@code maxHp}. */
+    public float capacity(int maxHp) {
+        return Math.max(1.0F, this.health * maxHp);
+    }
 
     /**
      * Where a ray enters this box, as a distance along {@code dir} from {@code from} (both in body

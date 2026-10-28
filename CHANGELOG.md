@@ -11,6 +11,10 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 ## [Unreleased]
 
 ### Added
+- Addon damage zones (M10a): a vehicle file can place its own engine, rotor and fuel tank zones with
+  a `DamageZones:` list under `AircraftFeatures` (or `AddDamageZone` lines in TXT), each with an
+  optional damage share and health. They replace the derived M9 zones for that vehicle; vehicles
+  without the list are unchanged. See `docs/M10_DAMAGE_ZONES.md`.
 - Lag compensation (M9): a player's gun rounds hit vehicles where that player saw them, about one
   round trip plus 100 ms of interpolation in the past, capped at 250 ms by the new server setting
   `projectiles.lagCompensationMaxMs` (0 turns it off). A jet crossing at 250 km/h is about 17 blocks

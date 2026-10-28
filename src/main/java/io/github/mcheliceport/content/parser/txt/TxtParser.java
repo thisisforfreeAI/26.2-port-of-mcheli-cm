@@ -42,6 +42,7 @@ import io.github.mcheliceport.content.weapon.SightType;
 import io.github.mcheliceport.content.weapon.WeaponInfo;
 import io.github.mcheliceport.content.weapon.WeaponInfo.MuzzleFlash;
 import io.github.mcheliceport.content.weapon.WeaponInfo.RoundItem;
+import io.github.mcheliceport.damage.ComponentKind;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -246,6 +247,21 @@ public final class TxtParser implements ContentParser {
                 info.engineOutlets.add(new AircraftInfo.EngineOutlet(info.toVec3(s[0], s[1], s[2]),
                         info.toVec3(s[3], s[4], s[5]), s.length > 6 ? info.toFloat(s[6]) : 1,
                         s.length > 7 && info.toBool(s[7])));
+            }
+            case "adddamagezone" -> {
+                // kind,x,y,z,hx,hy,hz[,share[,health]] or a rotor by part: kind,part[,share[,health]]
+                String[] s = info.splitParam(data);
+                try {
+                    ComponentKind kind = ComponentKind.valueOf(s[0].trim().toUpperCase(Locale.ROOT));
+                    boolean box = s.length >= 7;
+                    int rest = box ? 7 : 2;
+                    info.damageZones.add(new AircraftInfo.DamageZoneSpec(kind,
+                            box ? info.toVec3(s[1], s[2], s[3]) : null, box ? info.toVec3(s[4], s[5], s[6]) : null,
+                            box ? "" : s[1], s.length > rest ? info.toFloat(s[rest]) : Float.NaN,
+                            s.length > rest + 1 ? info.toFloat(s[rest + 1]) : Float.NaN));
+                } catch (RuntimeException e) {
+                    LOGGER.warn("Skipping AddDamageZone '{}' in {}: {}", data, info.name, e.getMessage());
+                }
             }
             case "enableseasurfaceparticle" -> info.enableSeaSurfaceParticle = info.toBool(data);
             case "addparticlesplash" -> {

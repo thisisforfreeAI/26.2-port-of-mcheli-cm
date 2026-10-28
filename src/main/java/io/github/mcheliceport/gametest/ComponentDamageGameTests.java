@@ -3,10 +3,13 @@ package io.github.mcheliceport.gametest;
 import static io.github.mcheliceport.gametest.GameTestSupport.check;
 
 import io.github.mcheliceport.content.ContentType;
+import io.github.mcheliceport.content.aircraft.AircraftInfo;
+import io.github.mcheliceport.damage.ComponentDamage;
 import io.github.mcheliceport.damage.ComponentHealth;
 import io.github.mcheliceport.damage.ComponentKind;
 import io.github.mcheliceport.damage.ComponentState;
 import io.github.mcheliceport.damage.ComponentView;
+import io.github.mcheliceport.damage.DamageZones;
 import io.github.mcheliceport.damage.VehicleComponents;
 import io.github.mcheliceport.effect.VehicleImpactLook;
 import io.github.mcheliceport.entity.aircraft.AircraftEntity;
@@ -14,6 +17,7 @@ import io.github.mcheliceport.entity.weapon.BulletEntity;
 import io.github.mcheliceport.item.AircraftItem;
 import io.github.mcheliceport.registry.ModEntityTypes;
 import io.github.mcheliceport.registry.ModItems;
+import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -31,6 +35,7 @@ final class ComponentDamageGameTests {
 
     static void register() {
         ModGameTests.test("component_damage_hits_repair_save", 30, ComponentDamageGameTests::ah64);
+        ModGameTests.test("component_damage_addon_zones", 30, ComponentDamageGameTests::addonZones);
     }
 
     private static AircraftEntity spawn(GameTestHelper h) {
@@ -102,6 +107,64 @@ final class ComponentDamageGameTests {
 
         GameTestSupport.cleanUp(heli);
         GameTestSupport.cleanUp(loaded);
+        h.succeed();
+    }
+
+    /** A round from body +X straight at {@code bodyTarget}, hitting with {@code damage}. */
+    private static void shoot(GameTestHelper h, AircraftEntity ac, Vec3 bodyTarget, float damage) {
+        Vec3 target = world(ac, bodyTarget);
+        Vec3 outward = world(ac, bodyTarget.add(1, 0, 0)).subtract(target).normalize();
+        BulletEntity round = new BulletEntity(ModEntityTypes.BULLET.get(), h.getLevel());
+        round.setPos(target.add(outward.scale(6.0)));
+        round.setDeltaMovement(outward.scale(-3.0));
+        ac.timeSinceHit = 0;
+        ac.hurtServer(h.getLevel(), h.getLevel().damageSources().thrown(round, null), damage);
+    }
+
+    /**
+     * M10a: an AH-64 given its own zone list (a nose engine with its own share and health, and the
+     * main rotor by part) is hit there and no longer at its derived engines.
+     */
+    private static void addonZones(GameTestHelper h) {
+        AircraftEntity probe = spawn(h);
+        AircraftInfo info = probe.getAcInfo();
+        Vec3 derivedEngine = VehicleComponents.first(probe, ComponentKind.ENGINE).center();
+        Vec3 derivedRotor = VehicleComponents.first(probe, ComponentKind.MAIN_ROTOR).center();
+        GameTestSupport.cleanUp(probe);
+        List<AircraftInfo.DamageZoneSpec> before = new ArrayList<>(info.damageZones);
+        Vec3 nose = new Vec3(0, 1.2, 5.0);
+        try {
+            info.damageZones.clear();
+            info.damageZones.add(new AircraftInfo.DamageZoneSpec(ComponentKind.ENGINE, nose, new Vec3(0.6, 0.6, 0.6),
+                    "", 0.5F, 0.7F));
+            info.damageZones.add(new AircraftInfo.DamageZoneSpec(ComponentKind.MAIN_ROTOR, null, null, "blade0",
+                    Float.NaN, Float.NaN));
+            DamageZones.forget(info);
+            AircraftEntity heli = spawn(h);
+            List<ComponentView> views = VehicleComponents.of(heli);
+            check(h, views.size() == 2 && views.get(0).kind() == ComponentKind.ENGINE
+                    && views.get(1).kind() == ComponentKind.MAIN_ROTOR, "the file's zones replace the derived ones: " + views);
+            check(h, views.get(1).center().equals(derivedRotor) && views.get(1).partName().equals("blade0"),
+                    "a rotor named by part sits on its hub");
+
+            shoot(h, heli, derivedEngine, 20.0F);
+            check(h, heli.getComponentHealth() == ComponentHealth.FULL, "the derived engine spot is now empty");
+
+            shoot(h, heli, nose, 20.0F);
+            float expected = 1.0F - ComponentDamage.fraction(20.0F, DamageZones.of(info).getFirst(), heli.getMaxHP());
+            float health = VehicleComponents.of(heli).getFirst().health();
+            check(h, Math.abs(health - expected) <= 1.5F / ComponentHealth.MAX_LEVEL,
+                    "the nose engine takes the hit with its own share and health: " + health + " vs " + expected);
+            check(h, VehicleComponents.of(heli).get(1).health() == 1.0F, "the rotor is untouched");
+
+            heli.repair(heli.getMaxHP());
+            check(h, heli.getComponentHealth() == ComponentHealth.FULL, "a full repair restores it");
+            GameTestSupport.cleanUp(heli);
+        } finally {
+            info.damageZones.clear();
+            info.damageZones.addAll(before);
+            DamageZones.forget(info);
+        }
         h.succeed();
     }
 }
