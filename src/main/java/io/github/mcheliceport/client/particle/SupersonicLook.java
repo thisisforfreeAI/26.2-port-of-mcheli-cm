@@ -9,6 +9,9 @@ public final class SupersonicLook {
     private boolean armed;
     public void reset(){previous=Long.MIN_VALUE;below=0;armed=false;nextCone=nextBoom=0;}
     public Event tick(long now,double speed,double machOne,double ahead,double distance,boolean stable,boolean active){
+        return tick(now,speed,machOne,ahead,distance,stable,active,true);
+    }
+    public Event tick(long now,double speed,double machOne,double ahead,double distance,boolean stable,boolean active,boolean listenerStable){
         if(!active||!Double.isFinite(speed)||speed<0||!Double.isFinite(machOne)||machOne<=0||!Double.isFinite(ahead)||!Double.isFinite(distance)||distance>512){reset();return Event.NONE;}
         if(now==previous)return Event.NONE;
         double mach=speed/machOne;
@@ -17,7 +20,7 @@ public final class SupersonicLook {
         }
         below=mach<.9?Math.min(10,below+1):0;if(below>=10)armed=true;
         boolean cone=armed&&previousMach<.98&&mach>=.98&&now>=nextCone;
-        boolean boom=mach>=1.02&&previousAhead>0&&ahead<=0&&now>=nextBoom;
+        boolean boom=listenerStable&&mach>=1.02&&previousAhead>0&&ahead<=0&&now>=nextBoom;
         if(cone){armed=false;nextCone=now+200;}if(boom)nextBoom=now+200;
         previous=now;previousMach=mach;previousAhead=ahead;return cone||boom?new Event(cone,boom):Event.NONE;
     }

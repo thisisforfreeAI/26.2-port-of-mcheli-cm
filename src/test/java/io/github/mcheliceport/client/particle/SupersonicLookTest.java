@@ -38,4 +38,9 @@ class SupersonicLookTest {
         var look=new SupersonicLook();look.tick(0,1.2,1,1,50,true,true);
         assertTrue(look.tick(2,1.2,1,-1,50,SupersonicLook.continuous(2,2.4,1),true).boom());
     }
+    @Test void relocatingTheListenerSuppressesAFakeBoomWithoutLosingAircraftCondensation(){
+        var look=new SupersonicLook();look.tick(0,.8,1,20,50,true,true,true);
+        var moved=look.tick(1,1.05,1,-20,50,true,true,false);assertTrue(moved.cone());assertFalse(moved.boom());
+        assertFalse(look.tick(2,1.2,1,-21,50,true,true,true).boom());
+    }
 }

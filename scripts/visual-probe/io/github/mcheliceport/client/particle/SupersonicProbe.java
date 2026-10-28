@@ -17,8 +17,8 @@ import net.neoforged.neoforge.client.event.*;
 @EventBusSubscriber(modid="mcheli_ce_port",value=Dist.CLIENT)
 public final class SupersonicProbe {
     private static final boolean ENABLED=Boolean.getBoolean("mcheli.probeSupersonic");
-    private static final int START=Integer.getInteger("mcheli.probeSonicStart",0),END=Integer.getInteger("mcheli.probeSonicEnd",15);
-    private static final String[] NAMES={"f-35a-wet","f-15e-wet","f22a-wet","dry-pass","already-fast","unsupported-a-10","distant-pass","missing-wing","disabled","classic","remote-motion","shared-load","warp","low","boom-load"};
+    private static final int START=Integer.getInteger("mcheli.probeSonicStart",0),END=Integer.getInteger("mcheli.probeSonicEnd",16);
+    private static final String[] NAMES={"f-35a-wet","f-15e-wet","f22a-wet","dry-pass","already-fast","unsupported-a-10","distant-pass","missing-wing","disabled","classic","remote-motion","shared-load","warp","low","boom-load","clock-correction"};
     private static final List<Plane> actors=new ArrayList<>();
     private static int ticks,phase=-1,age,peak,conePeak,pendingPeak;private static String capture;
     private static boolean fixed(){return phase==3||phase==4||phase==6||phase==13||phase==14;}
@@ -26,11 +26,11 @@ public final class SupersonicProbe {
         Plane(Minecraft mc){super(ModEntityTypes.PLANE.get(),mc.level);}
         @Override public void tick(){
             int i=actors.indexOf(this);double threshold=getAcInfo().machOneSpeed>0?getAcInfo().machOneSpeed:.75;
-            int crossing=phase==3?100:40;
+            int crossing=phase==3?100:80;
             double mach=phase==4?1.2:age<crossing?.75:Math.min(1.2,.75+(age-crossing)*.02);
             double speed=age>=170?0:threshold*mach;
             xo=getX();yo=getY();zo=getZ();yRotO=0;xRotO=0;prevRoll=0;
-            setPos(getX()+(phase==12&&age==56?100:0),100,getZ()+speed);setDeltaMovement(phase==10?Vec3.ZERO:new Vec3(0,0,speed));
+            setPos(getX()+(phase==12&&age==96?100:0),100,getZ()+speed);setDeltaMovement(phase==10?Vec3.ZERO:new Vec3(0,0,speed));
             setYaw(0);setPitch(0);setRoll(0);setOnGround(false);
         }
         @Override public double getCurrentThrottle(){return .9;}
@@ -67,17 +67,18 @@ public final class SupersonicProbe {
         if(total>1664||cone>28||SupersonicEffects.conesThisTick()>2||SupersonicEffects.stateCount()>64||pendingPeak>16||SupersonicEffects.voicesPlaying()>4)throw new IllegalStateException("Supersonic bounds exceeded");
         if((phase==3||phase==5||phase==7||phase==8||phase==9||phase==13)&&cone!=0)throw new IllegalStateException("Excluded cone "+NAMES[phase]);
         if(phase==4&&age<45&&(cone!=0||SupersonicEffects.boomsPlayed()!=0))throw new IllegalStateException("Already-fast aircraft invented initial events");
-        if(phase==12&&age==59&&cone!=0)throw new IllegalStateException("Warp dragged the vapor cone");
-        if(age==140&&(phase<3||phase==10||phase==11)&&conePeak==0)throw new IllegalStateException("No wet transonic cone "+NAMES[phase]);
+        if(phase==12&&age==99&&cone!=0)throw new IllegalStateException("Warp dragged the vapor cone");
+        if(phase==15&&(age==91||age==95))mc.level.setTimeFromServer(mc.level.getGameTime()+(age==91?100:-100));
+        if(age==140&&(phase<3||phase==10||phase==11||phase==15)&&conePeak==0)throw new IllegalStateException("No wet transonic cone "+NAMES[phase]);
         if(age==165&&fixed()&&SupersonicEffects.boomsPlayed()==0)throw new IllegalStateException("No delayed observer boom "+NAMES[phase]);
-        if(age==55||age==58||age==145)capture=NAMES[phase]+(age==55?"-crossing":age==58?"-cone":"-after");
+        if(age==95||age==98||age==145)capture=NAMES[phase]+(age==95?"-crossing":age==98?"-cone":"-after");
         if(age==205){if(cone!=0)throw new IllegalStateException("Cone failed to drain");System.out.println("M8_SONIC passed=true scene="+NAMES[phase]+" peak_mod="+peak+" peak_cones="+conePeak+" peak_pending="+pendingPeak+" booms="+SupersonicEffects.boomsPlayed());}
     }
     private static Collection<?> particles(Minecraft mc){try{
         var f=net.minecraft.client.particle.ParticleEngine.class.getDeclaredField("particles");f.setAccessible(true);var p=net.minecraft.client.particle.ParticleGroup.class.getDeclaredField("particles");p.setAccessible(true);var all=new ArrayList<>();
         for(var group:((Map<?,?>)f.get(mc.particleEngine)).values())all.addAll((Collection<?>)p.get(group));return all;
     }catch(ReflectiveOperationException ex){throw new IllegalStateException(ex);}}
-    @SubscribeEvent public static void camera(ViewportEvent.ComputeFov e){if(ENABLED&&!actors.isEmpty())e.getCamera().setPosition(fixed()?new Vec3(15,phase==6?300:180,90):actors.getFirst().position().add(14,9,-24));}
+    @SubscribeEvent public static void camera(ViewportEvent.ComputeFov e){if(ENABLED&&!actors.isEmpty())e.getCamera().setPosition(fixed()?new Vec3(15,phase==6?300:180,90):actors.getFirst().position().add(age>=96&&age<=100?new Vec3(9,5,-15):new Vec3(14,9,-24)));}
     @SubscribeEvent public static void angles(ViewportEvent.ComputeCameraAngles e){if(ENABLED&&phase>=0){e.setYaw(30);e.setPitch(fixed()?60:18);e.setRoll(0);}}
     @SubscribeEvent public static void frame(RenderFrameEvent.Post e){if(capture!=null){var mc=Minecraft.getInstance();String n=capture;capture=null;Screenshot.grab(mc.gameDirectory,"m8-sonic-"+n+".png",mc.gameRenderer.mainRenderTarget(),1,m->System.out.println("M8_SONIC "+m.getString()));}}
 }

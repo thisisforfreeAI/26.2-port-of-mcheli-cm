@@ -4,7 +4,7 @@ gradle.projectsEvaluated {
     if(Boolean.getBoolean('mcheli.probeSupersonic'))project.sourceSets.main.java.exclude('io/github/mcheliceport/probe/EffectsProbe.java')
     project.neoForge.runs.client.systemProperty('mcheli.probeSupersonic',System.getProperty('mcheli.probeSupersonic','false'))
     project.neoForge.runs.client.systemProperty('mcheli.probeSonicStart',System.getProperty('mcheli.probeSonicStart','0'))
-    project.neoForge.runs.client.systemProperty('mcheli.probeSonicEnd',System.getProperty('mcheli.probeSonicEnd','15'))
+    project.neoForge.runs.client.systemProperty('mcheli.probeSonicEnd',System.getProperty('mcheli.probeSonicEnd','16'))
     if(Boolean.getBoolean('mcheli.probeCockpit'))project.sourceSets.main.java.exclude('io/github/mcheliceport/probe/EffectsProbe.java')
     project.neoForge.runs.client.systemProperty('mcheli.probeCockpit',System.getProperty('mcheli.probeCockpit','false'))
     project.neoForge.runs.client.systemProperty('mcheli.probeCockpitStart',System.getProperty('mcheli.probeCockpitStart','0'))
