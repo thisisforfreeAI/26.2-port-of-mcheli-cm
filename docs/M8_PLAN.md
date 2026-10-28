@@ -411,8 +411,9 @@ native examples on several suitable vehicles.
   [Implementation and bounds](M8_DAMAGED_CONTROLS.md) ·
   [native comparisons](M8_DAMAGED_CONTROLS_GALLERY.md). Original UVs/hinges and existing global
   fragment caps are retained; gameplay handling is unchanged.
-- [ ] **Richer broken edges:** refine existing exposed sections with more readable ribs, dark
-  cavities and a few hanging cables at severed wings/tails.
+- [x] **Richer broken edges:** exposed spars, inset closed-cut cavities and a few hanging
+  cables at severed wings/tails. [Implementation and bounds](M8_FRACTURE_INTERIORS.md) ·
+  [native comparisons](M8_FRACTURE_INTERIORS_GALLERY.md).
 - [ ] **Debris shedding:** small skin fragments after the main breakup, with restrained,
   non-emissive sunlight highlights. Reuse existing global mesh/particle limits.
 - [ ] **Maneuver-readable smoke trails:** preserve the path of turns before older trail segments
@@ -427,7 +428,7 @@ native examples on several suitable vehicles.
 - [ ] **Altitude-dependent contrails:** thin cold-air trails behind suitable engines, widening
   and dispersing with age; keep distinct from hot exhaust and engine-damage smoke.
 
-Airflow-shaped fire, fuel spray and damaged controls are implemented. Continue the remaining
+Airflow-shaped fire, fuel spray, damaged controls and richer broken edges are implemented. Continue the remaining
 graphics items while keeping Minecraft's simple
 look, existing flight handling/collision/gameplay damage and original craters. Respect Claude's
 NTM Next ownership: no NTM explosion bridge, gun/gore hooks or copied NTM assets. Retain the

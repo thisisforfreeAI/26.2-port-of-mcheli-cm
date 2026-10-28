@@ -46,7 +46,13 @@ public final class PlaneAirframeParts {
                 output.add(new AircraftPartPoses.Draw(pose,List.of(frame==null?group:frame.kept())));
                 var settled=new Matrix4f(WreckAppearance.root(ac)).mul(pose);
                 if(nearby&&frame!=null&&actual!=0){
-                    VehicleDetailLayers.add(render,settled,METAL,List.of(frame.ribs()),0xFF595752);
+                    var detail=frame.fracture();
+                    if(io.github.mcheliceport.config.ClientConfig.get(io.github.mcheliceport.config.ClientConfig.EFFECT_STYLE)
+                            ==io.github.mcheliceport.config.ClientConfig.EffectStyle.POLISHED&&detail.vertices()>0) {
+                        VehicleDetailLayers.add(render,settled,METAL,List.of(detail.cavity()),0xFF3D3934);
+                        VehicleDetailLayers.add(render,settled,METAL,List.of(detail.ribs()),0xFF777168);
+                        VehicleDetailLayers.add(render,settled,METAL,List.of(detail.cables()),0xFF302C27);
+                    }else VehicleDetailLayers.add(render,settled,METAL,List.of(frame.ribs()),0xFF595752);
                     if((actual&4)!=0){
                         var b=frame.bounds();var at=settled.transformPosition(new Vector3f(0,(b.low().y+b.high().y)*.45F,frame.tailCut()+.1F));
                         state.opening=ac.position().add(at.x,at.y,at.z);

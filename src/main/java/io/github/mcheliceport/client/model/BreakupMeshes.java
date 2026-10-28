@@ -13,7 +13,7 @@ public final class BreakupMeshes {
             McheliModel.Group cover,McheliModel.Group wing,McheliModel.Group tail,McheliModel.Group machinery,
             Bounds bounds,Vec3 opening,float wingCut,float tailCut){}
     public record Airframe(McheliModel.Group kept,List<McheliModel.Group> sections,McheliModel.Group ribs,
-            Bounds bounds,float leftCut,float rightCut,float tailCut,int mask,Map<Integer,Vec3> openings) {}
+            Bounds bounds,float leftCut,float rightCut,float tailCut,int mask,Map<Integer,Vec3> openings,FractureInteriorMeshes.Details fracture) {}
     public static Airframe airframe(McheliModel.Group source,int mask) {
         if(source.vertexCount()<3||source.vertexCount()>60000)return null;
         return (Airframe)get(new Key(source,"airframe-"+(mask&7),Vec3.ZERO),()->airframeBuild(source,mask&7));
@@ -36,20 +36,26 @@ public final class BreakupMeshes {
         for(int i=0;i<3;i++)if((requested&(1<<i))!=0&&sections.get(i).vertexCount()>0&&sections.get(i).vertexCount()<=9000)mask|=1<<i;
         var kept=new ArrayList<McheliModel.Group>();kept.add(starboard[0]);
         for(int i=0;i<3;i++)if((mask&(1<<i))==0)kept.add(sections.get(i));
-        var frame=mask==0?source:join("$body",kept);var ribs=new DetailBoxes();var openings=new HashMap<Integer,Vec3>();
+        var frame=mask==0?source:join("$body",kept);var ribs=new ArrayList<McheliModel.Group>();var openings=new HashMap<Integer,Vec3>();
+        var fracture=new ArrayList<FractureInteriorMeshes.Details>();
         for(int i=0;i<3;i++)if((mask&(1<<i))!=0){
             int axis=i==2?2:0;float cut=i==0?left:i==1?right:tail;var points=edge(frame,axis,cut);
             if(points.isEmpty())continue;
             double x=0,y=0,z=0;for(var v:points){x+=v.x;y+=v.y;z+=v.z;}
             openings.put(1<<i,new Vec3(x/points.size(),y/points.size(),z/points.size()));
+            var baseline=new DetailBoxes();
             for(int n=0;n<Math.min(3,points.size());n++){
                 var v=points.get(n*points.size()/Math.min(3,points.size()));
-                if(axis==0)ribs.box(v.x-.12F,v.y-.025F,v.z-.04F,v.x+.12F,v.y+.025F,v.z+.04F);
-                else ribs.box(v.x-.12F,v.y-.025F,v.z-.10F,v.x+.12F,v.y+.025F,v.z+.10F);
+                if(axis==0)baseline.box(v.x-.12F,v.y-.025F,v.z-.04F,v.x+.12F,v.y+.025F,v.z+.04F);
+                else baseline.box(v.x-.12F,v.y-.025F,v.z-.10F,v.x+.12F,v.y+.025F,v.z+.10F);
             }
+            var old=baseline.group("$airframe_spars");ribs.add(old);
+            var detail=FractureInteriorMeshes.build(frame,axis,cut,i==1?1:-1);
+            if(detail.vertices()==0){var empty=FractureInteriorMeshes.empty();detail=new FractureInteriorMeshes.Details(empty.cavity(),old,empty.cables(),0);}
+            fracture.add(detail);
         }
         if(mask!=0)prepare(frame);
-        return new Airframe(frame,sections,ribs.group("$airframe_spars"),b,left,right,tail,mask,Map.copyOf(openings));
+        return new Airframe(frame,sections,join("$airframe_spars",ribs),b,left,right,tail,mask,Map.copyOf(openings),FractureInteriorMeshes.merge(fracture));
     }
     private static McheliModel.Group join(String name,List<McheliModel.Group> groups){
         int size=groups.stream().mapToInt(g->g.data().length).sum();float[] data=new float[size];int at=0;
