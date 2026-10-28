@@ -1,0 +1,337 @@
+{
+  "kind": "cosmetic-aircraft-fracture-interiors",
+  "base_commit": "5db0a6267125612e034142f0adc1fd5cf49417df",
+  "unit_results": {
+    "tests": 410,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "runs": [
+    {
+      "backend": "VULKAN",
+      "all_passed": true,
+      "scenes": [
+        {
+          "scene": "f-35a",
+          "repair_clear_passed": true
+        },
+        {
+          "scene": "f-15e",
+          "repair_clear_passed": true
+        },
+        {
+          "scene": "a-10",
+          "repair_clear_passed": true
+        },
+        {
+          "scene": "classic",
+          "repair_clear_passed": true
+        },
+        {
+          "scene": "details-off",
+          "repair_clear_passed": true
+        },
+        {
+          "scene": "shared-load",
+          "repair_clear_passed": true
+        }
+      ],
+      "profiles": [
+        {
+          "vehicle": "f-35a",
+          "part": "wing",
+          "closed_contours": 0,
+          "cavity_vertices": 0,
+          "spar_vertices": 180,
+          "cable_vertices": 144
+        },
+        {
+          "vehicle": "f-35a",
+          "part": "tail",
+          "closed_contours": 1,
+          "cavity_vertices": 165,
+          "spar_vertices": 180,
+          "cable_vertices": 144
+        },
+        {
+          "vehicle": "f-15e",
+          "part": "wing",
+          "closed_contours": 0,
+          "cavity_vertices": 0,
+          "spar_vertices": 180,
+          "cable_vertices": 144
+        },
+        {
+          "vehicle": "f-15e",
+          "part": "tail",
+          "closed_contours": 1,
+          "cavity_vertices": 222,
+          "spar_vertices": 180,
+          "cable_vertices": 144
+        },
+        {
+          "vehicle": "a-10",
+          "part": "wing",
+          "closed_contours": 2,
+          "cavity_vertices": 24,
+          "spar_vertices": 180,
+          "cable_vertices": 144
+        },
+        {
+          "vehicle": "a-10",
+          "part": "tail",
+          "closed_contours": 3,
+          "cavity_vertices": 144,
+          "spar_vertices": 180,
+          "cable_vertices": 144
+        },
+        {
+          "vehicle": "shared-load",
+          "part": "wing",
+          "closed_contours": 0,
+          "cavity_vertices": 0,
+          "spar_vertices": 180,
+          "cable_vertices": 144
+        },
+        {
+          "vehicle": "shared-load",
+          "part": "tail",
+          "closed_contours": 1,
+          "cavity_vertices": 165,
+          "spar_vertices": 180,
+          "cable_vertices": 144
+        }
+      ]
+    },
+    {
+      "backend": "OPENGL",
+      "all_passed": true,
+      "scenes": [
+        {
+          "scene": "f-35a",
+          "repair_clear_passed": true,
+          "peak_shared_detail_vertices": 3081
+        },
+        {
+          "scene": "f-15e",
+          "repair_clear_passed": true,
+          "peak_shared_detail_vertices": 3699
+        },
+        {
+          "scene": "a-10",
+          "repair_clear_passed": true,
+          "peak_shared_detail_vertices": 3279
+        },
+        {
+          "scene": "classic",
+          "repair_clear_passed": true,
+          "peak_shared_detail_vertices": 0
+        },
+        {
+          "scene": "details-off",
+          "repair_clear_passed": true,
+          "peak_shared_detail_vertices": 0
+        },
+        {
+          "scene": "shared-load",
+          "repair_clear_passed": true,
+          "peak_shared_detail_vertices": 12288
+        }
+      ],
+      "profiles": [
+        {
+          "vehicle": "f-35a",
+          "part": "wing",
+          "closed_contours": 0,
+          "cavity_vertices": 0,
+          "spar_vertices": 180,
+          "cable_vertices": 144
+        },
+        {
+          "vehicle": "f-35a",
+          "part": "tail",
+          "closed_contours": 1,
+          "cavity_vertices": 165,
+          "spar_vertices": 180,
+          "cable_vertices": 144
+        },
+        {
+          "vehicle": "f-15e",
+          "part": "wing",
+          "closed_contours": 0,
+          "cavity_vertices": 0,
+          "spar_vertices": 180,
+          "cable_vertices": 144
+        },
+        {
+          "vehicle": "f-15e",
+          "part": "tail",
+          "closed_contours": 1,
+          "cavity_vertices": 222,
+          "spar_vertices": 180,
+          "cable_vertices": 144
+        },
+        {
+          "vehicle": "a-10",
+          "part": "wing",
+          "closed_contours": 2,
+          "cavity_vertices": 24,
+          "spar_vertices": 180,
+          "cable_vertices": 144
+        },
+        {
+          "vehicle": "a-10",
+          "part": "tail",
+          "closed_contours": 3,
+          "cavity_vertices": 144,
+          "spar_vertices": 180,
+          "cable_vertices": 144
+        },
+        {
+          "vehicle": "shared-load",
+          "part": "wing",
+          "closed_contours": 0,
+          "cavity_vertices": 0,
+          "spar_vertices": 180,
+          "cable_vertices": 144
+        },
+        {
+          "vehicle": "shared-load",
+          "part": "tail",
+          "closed_contours": 1,
+          "cavity_vertices": 165,
+          "spar_vertices": 180,
+          "cable_vertices": 144
+        }
+      ]
+    }
+  ],
+  "bounds": {
+    "cut_nodes": 128,
+    "cut_edges": 256,
+    "all_cut_detail_vertices": 3072,
+    "balanced_shared_detail_vertices_per_extraction": 12288,
+    "shared_loose_pieces": 8,
+    "breakup_cache": 32,
+    "pending_builds": 4,
+    "workers": 1
+  },
+  "notes": [
+    "Held client component/wreck states, not combat recordings.",
+    "All PNGs are unchanged Vulkan captures.",
+    "The opt-in OpenGL fixture samples detail counts before RenderFrame.Pre resets them after entity extraction in 26.2.",
+    "Locally built with existing optional-dependency exclusions/throwing stubs; no local JAR distributed.",
+    "Software Mesa rendering checks do not measure the target-PC 60 FPS / 1080p."
+  ],
+  "screens": [
+    {
+      "file": "docs/screens/m8-fracture-interiors/m8-fracture-f-35a-wing-overview.png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "bb0589569ca2ee1eb65e58458c1073130fbc12eec737b9416f415abb3c89e34b"
+    },
+    {
+      "file": "docs/screens/m8-fracture-interiors/m8-fracture-f-35a-wing-close.png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "b1baa77e67cd4a8d41f5f7666860cd1c155b67fd5c56b4009f662cce6d1db6fe"
+    },
+    {
+      "file": "docs/screens/m8-fracture-interiors/m8-fracture-f-35a-tail-close.png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "09639bf8fc7c823caa49beaf2859cb375501ba424f18c884ba24836d71605818"
+    },
+    {
+      "file": "docs/screens/m8-fracture-interiors/m8-fracture-f-35a-wreck-close.png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "8b7f048f8ec09c668d09d7728bd90416e70f4810b41f84c80bfdc9e87225ebe2"
+    },
+    {
+      "file": "docs/screens/m8-fracture-interiors/m8-fracture-f-35a-repaired.png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "83831e082e5fcaabeec025f0aadb44e32d22489a1186f5a800f093cbd8e8b1b5"
+    },
+    {
+      "file": "docs/screens/m8-fracture-interiors/m8-fracture-f-15e-wing-overview.png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "a5cdbce6ac1f7bafa9d7211402e36c76dc2cc4d484f88810d15a5f5b9938a67e"
+    },
+    {
+      "file": "docs/screens/m8-fracture-interiors/m8-fracture-f-15e-wing-close.png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "7a0a1183b956ac2b3b46ab2f1ef6bd367a8ba415f29c2b15296c0a5a941c450e"
+    },
+    {
+      "file": "docs/screens/m8-fracture-interiors/m8-fracture-f-15e-tail-close.png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "2b36585a2862eb5e831fa107111914bd1fcc51a240efbdbcd494c627e6f88547"
+    },
+    {
+      "file": "docs/screens/m8-fracture-interiors/m8-fracture-f-15e-wreck-close.png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "cd245d54cf34165720b4e3e3d839b9b6cc6d7782848c8a540c96334fa913f4e1"
+    },
+    {
+      "file": "docs/screens/m8-fracture-interiors/m8-fracture-f-15e-repaired.png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "15effefda41a6320dea4710bd0170bfe18640fb8a5cd46accf1feea4ee83f595"
+    },
+    {
+      "file": "docs/screens/m8-fracture-interiors/m8-fracture-a-10-wing-overview.png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "b4f141f1434b7e21a00c6a93aafff148899a7ff345e0e40400b6134203debda6"
+    },
+    {
+      "file": "docs/screens/m8-fracture-interiors/m8-fracture-a-10-wing-close.png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "52390f378f322f55c56f90531c442f0b43c348b7a24125b658725a2f5307164b"
+    },
+    {
+      "file": "docs/screens/m8-fracture-interiors/m8-fracture-a-10-tail-close.png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "c0eb7bfcda91aa35a6a059b922b63af1316465c1457c96a0d4dbc6e1636d88e7"
+    },
+    {
+      "file": "docs/screens/m8-fracture-interiors/m8-fracture-a-10-wreck-close.png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "afe9323bba53fe53f8e9676c5b76391d3832bdcee83681d3a901ea2fbc648c53"
+    },
+    {
+      "file": "docs/screens/m8-fracture-interiors/m8-fracture-a-10-repaired.png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "93c2a9fc90f7c35c0d0a44eca8e980cc1fe23a0485e826f99a514aa8000f12ee"
+    },
+    {
+      "file": "docs/screens/m8-fracture-interiors/m8-fracture-classic-wing-overview.png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "454a97db2e327deb31f0d695c40c3bde5957a8c4bfc434066ae2bcb3cf1be985"
+    },
+    {
+      "file": "docs/screens/m8-fracture-interiors/m8-fracture-details-off-wing-overview.png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "45a37eb4ea8bd576eeff833a8a07f73be2d72c37d7840ae8008e927fcb5212e1"
+    },
+    {
+      "file": "docs/screens/m8-fracture-interiors/m8-fracture-shared-load-wing-overview.png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "b99c32239fa53030152c713a607578453543e69022081178b2cc12f5ecebf3ce"
+    }
+  ]
+}

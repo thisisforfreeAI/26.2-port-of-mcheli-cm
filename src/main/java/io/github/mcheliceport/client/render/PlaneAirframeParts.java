@@ -21,7 +21,8 @@ public final class PlaneAirframeParts {
         long now=ac.level().getGameTime();int missing=AirframeDamage.missing(ac);
         if(state.liveMask>=0&&!ac.isDestroyed())for(int bit:new int[]{1,2,4}){
             if((missing&bit)!=0&&(state.liveMask&bit)==0)state.airframeLossAt.put(bit,now);
-            if((missing&bit)==0){state.airframeLossAt.remove(bit);state.scattered.remove("liveAirframe"+bit);}
+            if((missing&bit)==0){state.airframeLossAt.remove(bit);state.scattered.remove("liveAirframe"+bit);
+                for(int i=0;i<3;i++)state.scattered.remove("skin"+bit+":"+i);}
         }
         state.liveMask=missing;
         int requested=missing|(state.age>=56?AirframeDamage.RIGHT:0)|(state.age>=110?AirframeDamage.TAIL:0);
@@ -46,12 +47,21 @@ public final class PlaneAirframeParts {
                 output.add(new AircraftPartPoses.Draw(pose,List.of(frame==null?group:frame.kept())));
                 var settled=new Matrix4f(WreckAppearance.root(ac)).mul(pose);
                 if(nearby&&frame!=null&&actual!=0){
-                    VehicleDetailLayers.add(render,settled,METAL,List.of(frame.ribs()),0xFF595752);
+                    var detail=frame.fracture();
+                    if(io.github.mcheliceport.config.ClientConfig.get(io.github.mcheliceport.config.ClientConfig.EFFECT_STYLE)
+                            ==io.github.mcheliceport.config.ClientConfig.EffectStyle.POLISHED&&detail.vertices()>0) {
+                        VehicleDetailLayers.add(render,settled,METAL,List.of(detail.cavity()),0xFF3D3934);
+                        VehicleDetailLayers.add(render,settled,METAL,List.of(detail.ribs()),0xFF777168);
+                        VehicleDetailLayers.add(render,settled,METAL,List.of(detail.cables()),0xFF302C27);
+                    }else VehicleDetailLayers.add(render,settled,METAL,List.of(frame.ribs()),0xFF595752);
                     if((actual&4)!=0){
                         var b=frame.bounds();var at=settled.transformPosition(new Vector3f(0,(b.low().y+b.high().y)*.45F,frame.tailCut()+.1F));
                         state.opening=ac.position().add(at.x,at.y,at.z);
                     }
-                    for(int i=0;i<3;i++)if((actual&(1<<i))!=0)detach(ac,render,state,frame.sections().get(i),pose,i,now,missing);
+                    for(int i=0;i<3;i++)if((actual&(1<<i))!=0){
+                        detach(ac,render,state,frame.sections().get(i),pose,i,now,missing);
+                        shed(ac,render,state,frame,pose,i,now,missing);
+                    }
                 }
                 if(nearby&&state.age>=36&&engineBody!=null&&engineBody.cover().vertexCount()>0){
                     state.cover=true;state.parts|=1;
@@ -80,6 +90,7 @@ public final class PlaneAirframeParts {
     }
     private static void detach(PlaneEntity ac,AircraftRenderState render,WreckSequenceEffects.State state,
             McheliModel.Group group,Matrix4f pose,int index,long now,int missing){
+        group=DamagedControlSurfaces.fragment(state,group,index);if(group==null||group.vertexCount()==0)return;
         int bit=1<<index;String key="liveAirframe"+bit;
         Long born=state.airframeLossAt.get(bit);
         if(born!=null&&now>=born&&now-born<=60&&!state.scattered.contains(key)){
@@ -89,6 +100,30 @@ public final class PlaneAirframeParts {
         } else if((missing&bit)==0){
             int age=index==2?110:56;String wreck=index==2?"tail":index==0?"left_wing":"wing";
             scatterWreck(ac,render,state,wreck,group,pose,age,new Vec3(index==0?-.13:.13,.18,index==2?-.12:.02));
+        }
+    }
+    private static void shed(PlaneEntity ac,AircraftRenderState render,WreckSequenceEffects.State state,
+            BreakupMeshes.Airframe frame,Matrix4f pose,int index,long now,int missing) {
+        int bit=1<<index;Long born=state.airframeLossAt.get(bit);long age;
+        if(!ac.isDestroyed()) {
+            if(born==null||now<born)return;age=now-born;
+        }else {
+            if(!state.seenAlive)return;
+            if((missing&bit)!=0){if(born==null||now<born)return;age=now-born;}
+            else age=state.age-(index==2?110:56);
+        }
+        int period=8*(1+io.github.mcheliceport.client.particle.EffectPerformance.pressure());
+        if(age<8||age>40||Math.floorMod(now+ac.getId(),period)!=0)return;
+        var section=DamagedControlSurfaces.fragment(state,frame.sections().get(index),index);
+        if(section==null)return;int axis=index==2?2:0,sign=index==1?1:-1;
+        float cut=index==0?frame.leftCut():index==1?frame.rightCut():frame.tailCut();
+        var chips=BreakupMeshes.skinDebris(section,axis,cut,sign);if(chips==null)return;
+        for(int i=0;i<chips.size();i++) {
+            String key="skin"+bit+":"+i;if(state.scattered.contains(key))continue;
+            var chip=chips.get(i);var impulse=index==2?new Vec3((i-1)*.025,.04,-.065):new Vec3(sign*.065,.04,(i-1)*.025);
+            var settled=new Matrix4f(WreckAppearance.root(ac)).mul(pose);
+            if(LoosePanels.skinPiece(ac,render.texture,chip.skin(),settled,chip.bounds().center(),impulse,bit))state.scattered.add(key);
+            break;
         }
     }
     private static void scatterWreck(PlaneEntity ac,AircraftRenderState render,WreckSequenceEffects.State state,String key,

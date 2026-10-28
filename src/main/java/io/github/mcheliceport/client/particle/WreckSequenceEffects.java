@@ -18,6 +18,9 @@ public final class WreckSequenceEffects {
         public int age=-1,ammo,heavyAmmo,seed,parts,strikes,bursts;long tick=Long.MIN_VALUE;public boolean seenAlive;
         public boolean turret,cover,wing,tail,track;
         public int liveMask=-1;
+        public int controlMask=-1;
+        public io.github.mcheliceport.client.model.ControlSurfaceMeshes.Model controlLayout;
+        public final Map<Integer,Long> controlLossAt=new HashMap<>();
         public final Map<Integer,Long> airframeLossAt=new HashMap<>();
         public io.github.mcheliceport.client.model.BreakupMeshes.Airframe airframe;
         public Vec3 opening,ring;
@@ -40,6 +43,7 @@ public final class WreckSequenceEffects {
         if(STATES.size()>=128&&!STATES.containsKey(ac))return;
         var s=STATES.computeIfAbsent(ac,k->new State());if(s.tick==level.getGameTime())return;s.tick=level.getGameTime();s.seed=ac.getUUID().hashCode();
         if(age<0){if(s.age>=0){s.scattered.clear();s.struck.clear();s.fragments.clear();s.rotorStarts.clear();s.rotorSpeeds.clear();s.tips.clear();s.opening=s.ring=null;s.turret=s.cover=s.wing=s.tail=s.track=false;s.parts=s.strikes=s.bursts=0;}
+            if(s.age>=0)s.controlLossAt.clear();
             s.age=-1;s.seenAlive=true;if(level.getGameTime()%20==0||s.ammo==0){s.ammo=CookoffEffects.conventionalAmmo(ac);s.heavyAmmo=CookoffEffects.explosiveAmmo(ac);}return;}
         if(s.age<0&&!s.seenAlive){s.ammo=CookoffEffects.conventionalAmmo(ac);s.heavyAmmo=CookoffEffects.explosiveAmmo(ac);}
         s.age=age;if(!s.seenAlive)return; // Old wrecks keep their static silhouette, without fresh bursts.
