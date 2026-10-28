@@ -442,8 +442,8 @@ effects, admission and rendering behavior without duplicating that art work.
 
 Airflow-shaped fire, fuel spray, damaged controls, richer broken edges, skin shedding and
 maneuver-readable damage smoke, conventional projectile trails, wet-turn wing vapor and
-altitude-dependent contrails are implemented. The current Codex graphics follow-up list is
-complete; target-PC profiling and player visual acceptance remain. Keep Minecraft's simple
+altitude-dependent contrails are implemented. That graphics follow-up batch is complete;
+target-PC profiling and player visual acceptance remain. Keep Minecraft's simple
 look, existing flight handling/collision/gameplay damage and original craters. Respect Claude's
 NTM Next ownership: no NTM explosion bridge, gun/gore hooks or copied NTM assets. Retain the
 60 FPS / 1080p goal on RTX 3060 8 GB and Ryzen 7 7800X3D, with distance limits, shared admission
@@ -457,9 +457,10 @@ crash debris/skid fields, impact scars/fuel pools, and AI lead prediction/pursui
 Coordinate through existing part poses and synced state; do not duplicate those systems or
 change original weapon craters. Existing upstream features count as foundations to refine.
 
-- [ ] **Cockpit feedback:** restrained instrument vibration, truthful warning lamps, rain on
+- [x] **Cockpit feedback:** restrained instrument vibration, truthful warning lamps, rain on
   closed cockpit glazing and localized damage flicker. Keep aim/camera controls steady;
   exclude remote weapon cameras, open canopies and unsuitable seats. Provide an opt-out.
+  [Implementation and limits](M8_COCKPIT_FEEDBACK.md) · [native examples](M8_COCKPIT_GALLERY.md).
 - [ ] **Supersonic effects:** brief humidity-dependent condensation and a distance-delayed
   boom for supported fast aircraft. Define the content/speed mapping explicitly, prevent
   repeated threshold chatter, and retain bounded particle and pending-audio admission.

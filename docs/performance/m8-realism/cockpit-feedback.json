@@ -1,0 +1,152 @@
+{
+  "kind": "cockpit-feedback",
+  "unit_results": {
+    "tests": 452,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "runs": [
+    {
+      "backend": "VULKAN",
+      "all_passed": true,
+      "scenes": [
+        {
+          "scene": "f-35a-rain",
+          "passed": true,
+          "peak_drops": 20,
+          "damage": 0.0
+        },
+        {
+          "scene": "f-15e-damage",
+          "passed": true,
+          "peak_drops": 20,
+          "damage": 0.7490196
+        },
+        {
+          "scene": "a-10-night",
+          "passed": true,
+          "peak_drops": 20,
+          "damage": 0.0
+        }
+      ]
+    },
+    {
+      "backend": "OPENGL",
+      "all_passed": true,
+      "scenes": [
+        {
+          "scene": "repaired",
+          "passed": true,
+          "peak_drops": 20,
+          "damage": 0.0
+        },
+        {
+          "scene": "open-canopy",
+          "passed": true,
+          "peak_drops": 0,
+          "damage": 0.0
+        },
+        {
+          "scene": "third-person",
+          "passed": true,
+          "peak_drops": 0,
+          "damage": 0.0
+        },
+        {
+          "scene": "remote-camera",
+          "passed": true,
+          "peak_drops": 0,
+          "damage": 0.0
+        },
+        {
+          "scene": "disabled",
+          "passed": true,
+          "peak_drops": 0,
+          "damage": 0.0
+        },
+        {
+          "scene": "classic",
+          "passed": true,
+          "peak_drops": 0,
+          "damage": 0.0
+        },
+        {
+          "scene": "unmounted",
+          "passed": true,
+          "peak_drops": 0,
+          "damage": 0.0
+        },
+        {
+          "scene": "engine-off",
+          "passed": true,
+          "peak_drops": 20,
+          "damage": 0.0
+        }
+      ]
+    }
+  ],
+  "bounds": {
+    "local_states": 1,
+    "weather_sample_period_ticks": 10,
+    "rain_drops": {
+      "LOW": 12,
+      "BALANCED": 20,
+      "HIGH": 28
+    },
+    "rain_gui_batches": 2,
+    "max_instrument_shift_gui_pixels": 0.4,
+    "max_model_shift_per_axis_blocks": 0.002,
+    "new_textures": 0,
+    "new_shaders": 0,
+    "new_scene_copies": 0,
+    "new_particle_pools": 0
+  },
+  "notes": [
+    "Unedited native real-model client-held states; not combat recordings.",
+    "Vulkan covers three powered cockpit models; OpenGL covers repair, open/third/remote/config/Classic/unmounted and engine-off transitions.",
+    "Engine-off fixture uses finite-fuel rules so its Creative camera driver does not grant infinite fuel.",
+    "Rain is a sparse screen-space windshield overlay; aiming center stays clear.",
+    "Vibration moves existing cockpit assembly and supplementary instrument strip, not camera or targeting HUD.",
+    "Local optional-dependency exclusions/throwing stubs; no local JAR distributed.",
+    "Software Mesa does not establish target-PC 60 FPS / 1080p."
+  ],
+  "screens": [
+    {
+      "file": "docs/screens/m8-cockpit/m8-cockpit-a-10-night.png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "f33fae13b26514aeae34a5cc8c870e9ebe92ea5a5b5bbcc689d19b7a52059be6"
+    },
+    {
+      "file": "docs/screens/m8-cockpit/m8-cockpit-engine-off.png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "0dee7740ae82924fe563e0677c35a0251549737e6ff68dc57c3b3d62b2782159"
+    },
+    {
+      "file": "docs/screens/m8-cockpit/m8-cockpit-f-15e-damage.png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "f645998312e486a3584d4156ab3a05e2755498b6857f1bf135005c4078101833"
+    },
+    {
+      "file": "docs/screens/m8-cockpit/m8-cockpit-f-35a-rain.png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "016d33168fdecb114fd1e3b822942eb885340e5f3d6dcafe28ba718a30303a6f"
+    },
+    {
+      "file": "docs/screens/m8-cockpit/m8-cockpit-open-canopy.png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "2a9eae3273d751e5455b5792e65f862fc63ccafdc6412d0638d0cd1c3cec974a"
+    },
+    {
+      "file": "docs/screens/m8-cockpit/m8-cockpit-repaired.png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "c34e19fdc8668f8feab7e66a16a942770f5fb2b3d1c69e3bc9a95e2867aa77db"
+    }
+  ]
+}

@@ -26,6 +26,8 @@ public final class CockpitProbe {
         @Override public void tick(){xo=getX();yo=getY();zo=getZ();yRotO=0;xRotO=0;prevRoll=0;setYaw(0);setPitch(0);setRoll(0);setDeltaMovement(.04,0,.6);setOnGround(false);}
         @Override public int getHP(){return damaged()?Math.max(1,getMaxHP()/3):getMaxHP();}
         @Override public int getFuel(){return phase==10?0:damaged()?Math.max(1,getMaxFuel()/10):getMaxFuel();}
+        // Keep the engine-off state finite-fuel even though the camera driver is Creative.
+        @Override public boolean isInfinityFuel(net.minecraft.world.entity.Entity rider,boolean others){return phase!=10&&super.isInfinityFuel(rider,others);}
         @Override public double getCurrentThrottle(){return .7;}
         @Override public int getRadarBlankTicks(){return damaged()?100:0;}
         @Override public boolean isDestroyed(){return false;}

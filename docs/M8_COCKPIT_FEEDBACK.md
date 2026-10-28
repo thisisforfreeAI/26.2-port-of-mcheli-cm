@@ -34,6 +34,8 @@ scans, particle allocations or audio loops.
 The new flight/intact-vehicle batch is tracked in [M8_PLAN.md](M8_PLAN.md). Claude owns the
 wreck-art, persistent-crash aftermath and AI prediction/pursuit work separately.
 
-Native examples and recorded checks are published with this feature. Controlled client-held
+[Native examples](M8_COCKPIT_GALLERY.md) and [recorded checks](performance/m8-realism/cockpit-feedback.json)
+cover F-35A/F-15E/A-10 views on Vulkan and eight repair/view/settings/finite-fuel checks on
+OpenGL. The 452-test local unit suite passed. Controlled client-held
 states are not combat recordings. Local optional-dependency exclusions are validation-only;
 the target 60 FPS at 1080p on RTX 3060 8 GB / Ryzen 7 7800X3D still needs hardware testing.
