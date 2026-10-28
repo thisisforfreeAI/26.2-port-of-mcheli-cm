@@ -89,6 +89,8 @@
   "key.mcheli_ce_port.wingman_panel": "Wingman Panel",
   "key.mcheli_ce_port.zoom": "Zoom / Hatch",
   "mcheli.effects.adaptive": "Adaptive detail: %s",
+  "mcheli.effects.blood": "Vehicle-kill blood: %s",
+  "mcheli.effects.blood.tip": "Blood from conventional MC Heli vehicle kills of supported mobs. NTM guns and payloads keep their own gore. Requires Enhanced effects.",
   "mcheli.effects.detail": "Detail: %s",
   "mcheli.effects.detail.balanced": "Balanced",
   "mcheli.effects.detail.high": "High",

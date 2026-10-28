@@ -56,7 +56,7 @@ public final class ComponentDamage {
                 double falloff = 1.0 - zones.get(i).distanceTo(body) / BLAST_FALLOFF_BLOCKS;
                 if (falloff > 0.0) {
                     packed = ComponentHealth.damage(packed, i,
-                            fraction(damage * (float) falloff, zones.get(i).kind().damageShare, ac.getMaxHP()));
+                            fraction(damage * (float) falloff, zones.get(i), ac.getMaxHP()));
                 }
             }
         } else if (direct instanceof BaseBulletEntity bullet) {
@@ -72,7 +72,7 @@ public final class ComponentDamage {
             int slot = pick(zones, from, dir, 2.0 * motion.length() + PENETRATION);
             if (slot >= 0) {
                 packed = ComponentHealth.damage(packed, slot,
-                        fraction(damage, zones.get(slot).kind().damageShare, ac.getMaxHP()));
+                        fraction(damage, zones.get(slot), ac.getMaxHP()));
             }
         }
         if (packed != before) {
@@ -90,14 +90,22 @@ public final class ComponentDamage {
             ac.setComponentHealth(ComponentHealth.FULL);
             return;
         }
-        int count = DamageZones.of(info).size();
-        ac.setComponentHealth(ComponentHealth.repair(ac.getComponentHealth(), count,
-                amount / Math.max(1.0F, HEALTH_SHARE_OF_MAX_HP * ac.getMaxHP())));
+        List<DamageZone> zones = DamageZones.of(info);
+        float[] capacity = new float[zones.size()];
+        for (int i = 0; i < capacity.length; i++) {
+            capacity[i] = zones.get(i).capacity(ac.getMaxHP());
+        }
+        ac.setComponentHealth(ComponentHealth.repairHp(ac.getComponentHealth(), capacity, amount));
     }
 
     /** The share of a component's whole health a hit takes. */
     public static float fraction(float damage, float share, int maxHp) {
         return damage * share / Math.max(1.0F, HEALTH_SHARE_OF_MAX_HP * maxHp);
+    }
+
+    /** The share of {@code zone}'s whole health a hit takes, with its own share and health. */
+    public static float fraction(float damage, DamageZone zone, int maxHp) {
+        return damage * zone.share() / zone.capacity(maxHp);
     }
 
     /**
@@ -110,9 +118,7 @@ public final class ComponentDamage {
         double bestVolume = Double.POSITIVE_INFINITY;
         for (int i = 0; i < zones.size(); i++) {
             DamageZone z = zones.get(i);
-            DamageZone grown = new DamageZone(z.kind(), z.index(), z.center(),
-                    z.halfSize().add(RAY_SLACK, RAY_SLACK, RAY_SLACK), z.partName());
-            double t = grown.entry(from, dir);
+            double t = z.grown(RAY_SLACK).entry(from, dir);
             double volume = z.halfSize().x * z.halfSize().y * z.halfSize().z;
             // Broad fallback engine boxes can share the wing/tail surface. Prefer the specific zone
             // at the same entry point, retaining nearest-entry behavior for separate components.

@@ -8,6 +8,9 @@ import net.minecraft.world.phys.Vec3;
 /** Finite fire pockets, rising embers and cooler smoke, on the shared atmosphere budget. */
 final class WreckEffects {
     private WreckEffects() {}
+    static boolean refined(){return io.github.mcheliceport.config.EffectQuality.enhanced()
+            && io.github.mcheliceport.config.ClientConfig.get(io.github.mcheliceport.config.ClientConfig.EFFECT_STYLE)
+            ==io.github.mcheliceport.config.ClientConfig.EffectStyle.POLISHED;}
     static void emit(ClientLevel level, List<Vec3> origins, WreckCoolingLook cooling, io.github.mcheliceport.entity.aircraft.AircraftEntity aircraft, long tick) {
         var sequence=WreckSequenceEffects.get(aircraft);
         if(sequence!=null&&sequence.opening!=null&&(sequence.cover||sequence.tail))origins=List.of(sequence.opening);
@@ -35,6 +38,18 @@ final class WreckEffects {
         }
         int period=(density>.65F?4:density>.25F?8:16)*pressure;
         if (Math.floorMod(tick+id,period)!=0) return;
+        if(refined()){
+            if(SmokeBillowLook.quiet(density,tick,id))return;
+            float pulse=SmokeBillowLook.surge(tick,id);
+            boolean wisp=Math.floorMod(Math.floorDiv(tick+id,period),5)==4;
+            float radius=(1.25F+density*.95F)*(wisp?.66F:1);
+            Vec3 at=pos.add(Math.sin(tick*.075+id)*.24,wisp?1.05:.15,Math.cos(tick*.075+id)*.24);
+            if(!VehicleAtmosphere.admit(level,at,radius))return;
+            float variation=Math.floorMod((int)(tick/period)+id,17)/16F;
+            engine.add(new WreckSmokeParticle(level,at.x,at.y,at.z,radius,fire,
+                    Math.min(.76F,density*(wisp?.38F:.58F)*(.8F+pulse*.35F)),wisp,id,variation));
+            return;
+        }
         float radius=.7F+density*.6F;
         if (!VehicleAtmosphere.admit(level,pos,radius)) return;
         var smoke=new SmokeParticle(level,pos.x,pos.y+.15,pos.z,0,.045,0);

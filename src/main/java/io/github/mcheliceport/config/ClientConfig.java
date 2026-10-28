@@ -45,6 +45,7 @@ public final class ClientConfig {
     public static final ModConfigSpec.BooleanValue ENGINE_HEAT_HAZE;
     public static final ModConfigSpec.BooleanValue ROTOR_WASH_DEBRIS;
     public static final ModConfigSpec.BooleanValue ENGINE_STARTUP_EFFECTS;
+    public static final ModConfigSpec.BooleanValue VEHICLE_BLOOD;
     public static final ModConfigSpec.BooleanValue VEHICLE_DESTRUCTION_SEQUENCES;
     public static final ModConfigSpec.BooleanValue VEHICLE_DAMAGE_DETAILS;
     public static final ModConfigSpec.BooleanValue WEAPON_HEAT;
@@ -156,8 +157,8 @@ public final class ClientConfig {
                         "Both styles use Minecraft's supported Vulkan/OpenGL rendering pipelines.")
                 .defineEnum("style", EffectStyle.POLISHED);
         EFFECT_BUDGET = builder
-                .comment("Custom smoke/flash budget: LOW (96 blocks, 384 smoke), BALANCED (192 blocks, 768 smoke),",
-                        "HIGH (256 blocks, 1536 smoke). Also respects Minecraft's particle setting.",
+                .comment("Custom effect/flash budgets: LOW (96 blocks, 384 effects / 48 flashes), BALANCED (192 blocks, 1536 / 96),",
+                        "HIGH (256 blocks, 3072 / 192). Also respects Minecraft's particle setting.",
                         "LOW disables flare halos. McHeli block dust shares the smoke budget; gameplay is unchanged.")
                 .defineEnum("quality", EffectBudget.BALANCED);
         BLAST_MARKS = builder
@@ -182,6 +183,8 @@ public final class ClientConfig {
         VEHICLE_SURFACE_BUILDUP = builder.comment("Mud and dust on lower panels, washed by water and rain; soot near exhausts.").define("vehicleSurfaceBuildup",true);
         VEHICLE_WEATHER = builder.comment("Rain darkens paint; cold precipitation collects on parked vehicles and sheds with movement.").define("vehicleWeather",true);
         WEAPON_HEAT = builder.comment("Cosmetic barrel discoloration, shared heat haze and cooling smoke after sustained gunfire.").define("weaponHeat",true);
+        VEHICLE_BLOOD = builder.comment("Restrained blood on confirmed MC Heli vehicle kills of tagged mobs. Excludes NTM weapons/payloads and NTM mobs.")
+                .define("vehicleBlood", true);
         VEHICLE_DESTRUCTION_SEQUENCES = builder.comment("Cosmetic staged turret/track/cover/airframe breakup, rotor strikes and smoldering interiors. Supported models only.").define("vehicleDestructionSequences",true);
         VEHICLE_DAMAGE_DETAILS = builder.comment("Cosmetic impact/blast scars, progressive glass cracks, fluid leaks, damaged lamps, loose panels and cooling wrecks.")
                 .define("vehicleDamageDetails", true);

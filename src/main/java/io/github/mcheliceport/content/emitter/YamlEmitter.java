@@ -1818,6 +1818,23 @@ public final class YamlEmitter {
         }
         if (!impactAngles.isEmpty()) feats.put("ImpactAngles", impactAngles);
 
+        if (!info.damageZones.isEmpty()) {
+            List<Map<String, Object>> zones = new ArrayList<>();
+            for (AircraftInfo.DamageZoneSpec spec : info.damageZones) {
+                Map<String, Object> zone = new LinkedHashMap<>();
+                zone.put("Kind", spec.kind().name());
+                if (spec.center() != null) {
+                    zone.put("Center", vec(spec.center()));
+                    zone.put("HalfSize", vec(spec.halfSize()));
+                }
+                if (!spec.part().isEmpty()) zone.put("Part", spec.part());
+                if (!Float.isNaN(spec.share())) zone.put("Share", spec.share());
+                if (!Float.isNaN(spec.health())) zone.put("Health", spec.health());
+                zones.add(zone);
+            }
+            feats.put("DamageZones", zones);
+        }
+
         if (!feats.isEmpty()) root.put("AircraftFeatures", feats);
 
         return root;

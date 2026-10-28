@@ -103,6 +103,10 @@ public final class WeaponClient implements WeaponClientHooks.Hooks {
         recoilControl = recoverFactor;
     }
 
+    @Override public void vehicleBlood(io.github.mcheliceport.net.VehicleBloodPayload payload) {
+        io.github.mcheliceport.client.particle.VehicleBloodEffects.receive(payload);
+    }
+
     @Override public void vehicleImpact(io.github.mcheliceport.net.VehicleImpactPayload payload) {
         io.github.mcheliceport.client.render.VehicleImpactMarks.receive(payload);
     }

@@ -3,6 +3,7 @@ package io.github.mcheliceport.content.aircraft;
 import io.github.mcheliceport.content.BaseInfo;
 import io.github.mcheliceport.content.ContentLocation;
 import io.github.mcheliceport.content.hud.Hud;
+import io.github.mcheliceport.damage.ComponentKind;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -168,6 +169,8 @@ public abstract class AircraftInfo extends BaseInfo {
     public float particlesScale = 1.0F;
     /** Optional cosmetic engine outlets, in model coordinates; absent outlets are never guessed. */
     public final List<EngineOutlet> engineOutlets = new ArrayList<>();
+    /** Addon-placed component zones (M10a); when present they replace the derived M9 zones. */
+    public final List<DamageZoneSpec> damageZones = new ArrayList<>();
     public boolean hideEntity = false;
     public boolean smoothShading = true;
     /** Engine sound event name in the {@code mcheli} namespace, or null for the type's default. */
@@ -695,9 +698,41 @@ public abstract class AircraftInfo extends BaseInfo {
             }
             direction = direction.normalize();
         }
-        private static boolean finite(Vec3 value) {
+        static boolean finite(Vec3 value) {
             return Double.isFinite(value.x) && Double.isFinite(value.y) && Double.isFinite(value.z)
                     && Math.abs(value.x) <= 1024 && Math.abs(value.y) <= 1024 && Math.abs(value.z) <= 1024;
+        }
+    }
+
+    /**
+     * A component zone placed by the vehicle's own file (M10a). {@code center} and {@code halfSize}
+     * are in body coordinates; a rotor may name its {@code part} instead and take its hub's box.
+     * A NaN {@code share} or {@code health} means the kind's default.
+     */
+    public record DamageZoneSpec(ComponentKind kind, @Nullable Vec3 center, @Nullable Vec3 halfSize, String part,
+            float share, float health) {
+        public DamageZoneSpec {
+            if (kind == null) {
+                throw new IllegalArgumentException("Damage zone needs a kind");
+            }
+            part = part == null ? "" : part.trim();
+            if (center == null || halfSize == null) {
+                if (part.isEmpty() || (kind != ComponentKind.MAIN_ROTOR && kind != ComponentKind.TAIL_ROTOR)) {
+                    throw new IllegalArgumentException("Damage zone needs Center and HalfSize, or a rotor Part");
+                }
+                center = null;
+                halfSize = null;
+            } else if (!EngineOutlet.finite(center) || !EngineOutlet.finite(halfSize)
+                    || Math.min(halfSize.x, Math.min(halfSize.y, halfSize.z)) <= 0
+                    || Math.max(halfSize.x, Math.max(halfSize.y, halfSize.z)) > 64) {
+                throw new IllegalArgumentException("Damage zone needs a finite Center and a HalfSize in (0,64]");
+            }
+            if (!Float.isNaN(share) && !(share >= 0 && share <= 10)) {
+                throw new IllegalArgumentException("Damage zone Share must be in [0,10]");
+            }
+            if (!Float.isNaN(health) && !(health >= 0.01F && health <= 10)) {
+                throw new IllegalArgumentException("Damage zone Health must be in [0.01,10]");
+            }
         }
     }
 
