@@ -449,6 +449,40 @@ NTM Next ownership: no NTM explosion bridge, gun/gore hooks or copied NTM assets
 60 FPS / 1080p goal on RTX 3060 8 GB and Ryzen 7 7800X3D, with distance limits, shared admission
 and adaptive reduction. Target-PC profiling and player visual acceptance remain separate checks.
 
+## Flight and intact-vehicle follow-ups
+
+Approved after the trail pass. Implement these one at a time with native examples and shared
+budgets, retaining the 60 FPS / 1080p target. Claude owns burnt/crumpled persistent wrecks,
+crash debris/skid fields, impact scars/fuel pools, and AI lead prediction/pursuit/weapon choice.
+Coordinate through existing part poses and synced state; do not duplicate those systems or
+change original weapon craters. Existing upstream features count as foundations to refine.
+
+- [ ] **Cockpit feedback:** restrained instrument vibration, truthful warning lamps, rain on
+  closed cockpit glazing and localized damage flicker. Keep aim/camera controls steady;
+  exclude remote weapon cameras, open canopies and unsuitable seats. Provide an opt-out.
+- [ ] **Supersonic effects:** brief humidity-dependent condensation and a distance-delayed
+  boom for supported fast aircraft. Define the content/speed mapping explicitly, prevent
+  repeated threshold chatter, and retain bounded particle and pending-audio admission.
+- [ ] **Flyby audio:** refine existing directional engine audio with bounded Doppler, plus
+  conventional rocket/shell approach cues. Avoid duplicate loops, rider Doppler and NTM audio.
+- [ ] **Landing feedback:** supported tire compression and suspension response, touchdown
+  smoke and hard-contact sparks from real contact/motion transitions; no handling changes.
+- [ ] **Night-flight lighting:** authored navigation strobes, restrained cockpit illumination
+  and terrain-connected landing lights. Reuse existing light/ground-patch rendering and
+  distance/detail reduction rather than adding an unrestricted world-light simulation.
+- [ ] **Weapon mechanisms:** refine supported rotating barrels, recoil, casing ejection and
+  launcher-door sequencing. Respect existing animations, authored mounts and real shot events;
+  do not alter weapon fire rates or Claude's weapon-selection logic.
+- [ ] **Aircraft customization:** expose existing selectable liveries and add supported
+  markings/identifiers and restrained wear choices. Persist and sync selections with validation;
+  avoid replacing Claude's broken-section/wreck artwork.
+- [ ] **Effects test range:** a player-facing controlled comparison of weapons, lighting and
+  quality presets, with reset/cleanup and a clear singleplayer/operator boundary. Use actual
+  production effects and distinguish frame-rate measurements from particle counts.
+
+The earlier graphics follow-up batch is complete. This new approved batch is separate from
+hardware and player acceptance, which remain outstanding throughout implementation.
+
 ## Default graphics refinement
 
 [Default visual refinement](M8_DEFAULT_VISUAL_REFINEMENT.md) improves smoke silhouettes,

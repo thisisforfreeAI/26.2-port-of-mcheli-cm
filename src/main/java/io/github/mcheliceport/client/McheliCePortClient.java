@@ -70,6 +70,7 @@ public final class McheliCePortClient {
         modBus.addListener(io.github.mcheliceport.client.hud.CrewHudLayer::register);
         modBus.addListener(io.github.mcheliceport.client.hud.GroundCrewHudLayer::register);
         modBus.addListener(io.github.mcheliceport.client.hud.WeatherHudLayer::register);
+        modBus.addListener(io.github.mcheliceport.client.hud.CockpitFeedbackLayer::register);
         modBus.addListener(io.github.mcheliceport.client.render.GunnerRenderer::registerLayer);
         modBus.addListener(io.github.mcheliceport.client.hud.TeamListOverlay::register);
         modBus.addListener(io.github.mcheliceport.client.hud.GltdHudLayer::register);
