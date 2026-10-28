@@ -25,6 +25,9 @@ import org.joml.Vector3f;
 @EventBusSubscriber(modid="mcheli_ce_port",value=Dist.CLIENT)
 public final class LoosePanels {
     private static final Map<McheliModel.Group,LoosePanelLook.Spec> SPECS=new WeakHashMap<>();
+    private static final Identifier METAL=Identifier.withDefaultNamespace("textures/block/iron_block.png");
+    /** A structural section's cut plane in model space, and a point on it where the tear burns. */
+    public record Tear(int axis,float cut,int outward,Vector3f edge){}
     private static final Map<AircraftEntity,State> STATES=new LinkedHashMap<>();
     private static final List<Piece> PIECES=new ArrayList<>();
     private static ClientLevel world;private static long birthTick=Long.MIN_VALUE;private static int births,collisionCursor;
@@ -36,6 +39,7 @@ public final class LoosePanels {
         final AircraftEntity owner;final McheliModel.Group group;final Identifier texture;final Matrix4f local;
         Vec3 position,previous,velocity,sampled;float phase;final int light;
         int age,restAge,life=60,airframeBit,controlSlot=-1;boolean scar,skin;boolean bounced,settled;
+        Tear tear;Vector3f edge;
         Piece(AircraftEntity owner,McheliModel.Group group,Identifier texture,Matrix4f local,Vec3 position,int light){
             this.owner=owner;this.group=group;this.texture=texture;this.local=local;this.position=this.previous=this.sampled=position;
             this.velocity=owner.getDeltaMovement().scale(.3).add(position.subtract(owner.position()).multiply(1,0,1).normalize().scale(.12)).add(0,.22,0);this.light=light;phase=(owner.getId()%17)*.2F;
@@ -63,6 +67,21 @@ public final class LoosePanels {
                 .transformDirection(new Vector3f((float)impulse.x,(float)impulse.y,(float)impulse.z));
         piece.velocity=io.github.mcheliceport.damage.AirframeDamage.fragmentMotion(owner.getDeltaMovement(),
                 owner.position().subtract(new Vec3(owner.xo,owner.yo,owner.zo))).add(v.x,v.y,v.z);return true;
+    }
+    /**
+     * Marks the piece just admitted as a torn structural section: it is drawn closed (lining and cap)
+     * and its torn edge sparks, burns and trails smoke while it falls.
+     */
+    public static void tear(Tear tear){
+        if(PIECES.isEmpty()||tear==null)return;var p=PIECES.getLast();if(p.skin||p.tear!=null)return;
+        p.tear=tear;p.edge=p.local.transformPosition(new Vector3f(tear.edge()));
+        io.github.mcheliceport.client.particle.BreakawayEffects.tear(world,edge(p,0),p.velocity,p.owner.getId());
+    }
+    private static Matrix4f spin(Piece p,float age){
+        float a=p.settled?p.restAge:age;return new Matrix4f().rotateXYZ(a*.09F+p.phase,a*.05F,a*.025F);
+    }
+    private static Vec3 edge(Piece p,float age){
+        var v=spin(p,age).transformDirection(new Vector3f(p.edge));return p.position.add(v.x,v.y,v.z);
     }
     public static int airframePieces(AircraftEntity owner){return (int)PIECES.stream().filter(p->p.owner==owner&&p.airframeBit!=0).count();}
     public static boolean skinPiece(AircraftEntity owner,Identifier texture,McheliModel.Group group,
@@ -145,6 +164,8 @@ public final class LoosePanels {
                 || (io.github.mcheliceport.damage.AirframeDamage.missing(p.owner)&p.airframeBit)==0
                 : p.life>60&&!p.owner.isDestroyed()));
         for(var p:PIECES){p.previous=p.position;if(!p.settled){p.position=p.position.add(p.velocity);p.velocity=p.velocity.multiply(.98,1,.98).add(0,-.025,0);}}
+        for(var p:PIECES)if(p.edge!=null&&p.age<p.life-10)
+            io.github.mcheliceport.client.particle.BreakawayEffects.trail(world,edge(p,p.age),p.velocity,p.age,p.settled?p.age-p.restAge:-1,p.owner.getId());
         // Round-robin swept segments: at most two world rays per tick, even with eight pieces.
         for(int i=0;i<2&&!PIECES.isEmpty();i++){
             var p=PIECES.get(Math.floorMod(collisionCursor++,PIECES.size()));if(p.settled)continue;
@@ -170,14 +191,24 @@ public final class LoosePanels {
         for(var p:PIECES){
             if(camera.distanceToSqr(p.position)>40*40)continue;
             Vec3 at=p.previous.lerp(p.position,partial).subtract(camera);float age=p.age+partial;
-            var transform=new Matrix4f().translation((float)at.x,(float)at.y,(float)at.z)
-                    .rotateXYZ((p.settled?p.restAge:age)*.09F+p.phase,(p.settled?p.restAge:age)*.05F,(p.settled?p.restAge:age)*.025F).mul(p.local);
+            var transform=new Matrix4f().translation((float)at.x,(float)at.y,(float)at.z).mul(spin(p,age)).mul(p.local);
             boolean thermal=ThermalVision.drawsWhite(p.owner);
             Identifier texture=thermal?ThermalVision.WHITE:p.texture;
             int pieceLight=thermal?LightCoordsUtil.FULL_BRIGHT:p.light;
             int color=((int)(255*Math.clamp((p.life-age)/15,0,1))<<24)|(thermal?0xFFFFFF:0xDADADA);
             event.getSubmitNodeCollector().submitCustomGeometry(event.getPoseStack(),RenderTypes.entityTranslucent(texture,false),(pose,buffer)->{
                 var local=pose.copy();local.mulPose(transform);ModelVertices.emit(buffer,local,List.of(p.group),color,pieceLight,false);
+            });
+            var shell=p.tear==null?null:io.github.mcheliceport.client.model.BreakupMeshes.shell(p.group,p.tear.axis(),p.tear.cut(),p.tear.outward());
+            if(shell==null)continue;
+            int alpha=color&0xFF000000;
+            event.getSubmitNodeCollector().submitCustomGeometry(event.getPoseStack(),RenderTypes.entityTranslucent(texture,false),(pose,buffer)->{
+                var local=pose.copy();local.mulPose(transform);
+                ModelVertices.emit(buffer,local,List.of(shell.lining()),alpha|(thermal?0xFFFFFF:PlaneAirframeParts.LINING&0xFFFFFF),pieceLight,false);
+            });
+            event.getSubmitNodeCollector().submitCustomGeometry(event.getPoseStack(),RenderTypes.entityTranslucent(thermal?texture:METAL,false),(pose,buffer)->{
+                var local=pose.copy();local.mulPose(transform);
+                ModelVertices.emit(buffer,local,List.of(shell.cap()),alpha|(thermal?0xFFFFFF:PlaneAirframeParts.CAP&0xFFFFFF),pieceLight,false);
             });
         }
     }
