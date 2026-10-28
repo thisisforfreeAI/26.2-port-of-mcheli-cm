@@ -205,31 +205,18 @@ public final class VehicleAtmosphere {
         int engineIndex=Math.floorMod((int) (now / 11 + aircraft.getId()), origins.size());
         Vec3 position = origins.get(engineIndex);
         AirflowFireEffects.damage(level,aircraft,position,engineIndex,severity,now);
-        int period = 3 * (1 + EffectPerformance.pressure());
-        if (Math.floorMod(now + aircraft.getId(), period) == 0
-                && VehicleAtmosphereLook.smokePulse(now, aircraft.getId(), severity)) {
-            boolean wisp=DamageTrailLook.wisp(now,aircraft.getId());
-            double speed=aircraft.getDeltaMovement().length();
-            float radius=DamageTrailLook.radius(severity,speed);
-            if (admit(level, position, radius)) {
-                float gray = DamageTrailLook.gray(severity,wisp);
-                Vec3 shed=aircraft.getDeltaMovement();
-                SmokeParticle smoke = new SmokeParticle(level, position.x, position.y, position.z,
-                        DamageTrailLook.inherited(shed.x)+Math.sin(now*.37+aircraft.getId())*.012,
-                        DamageTrailLook.inherited(shed.y)+.025+severity*.02,
-                        DamageTrailLook.inherited(shed.z)+Math.cos(now*.29+aircraft.getId())*.012);
-                smoke.enhanced = true;
-                smoke.coherentDrift = true;
-                smoke.disableCollision();
-                smoke.setColor(gray, gray, gray);
-                smoke.setAlphaF((0.4F + severity * 0.35F)*(wisp?.62F:1));
-                smoke.setParticleMaxAge(DamageTrailLook.lifetime(severity,wisp));
-                smoke.motionYUpAge=wisp?.45F:.7F;
-                smoke.diffusible = true;
-                smoke.particleScale = (3+severity*3)*(wisp?.7F:1);
-                smoke.particleMaxScale = radius*10*(wisp?.78F:1);
-                Minecraft.getInstance().particleEngine.add(smoke);
-            }
+        Vec3 shed=io.github.mcheliceport.damage.AirframeDamage.fragmentMotion(aircraft.getDeltaMovement(),
+                aircraft.position().subtract(aircraft.xo,aircraft.yo,aircraft.zo));
+        double distance=Minecraft.getInstance().gameRenderer.mainCamera().position().distanceToSqr(aircraft.position());
+        int period=DamageTrailLook.period(shed.length(),distance,EffectPerformance.pressure(),
+                ClientConfig.get(ClientConfig.EFFECT_BUDGET)==ClientConfig.EffectBudget.LOW);
+        if(DamageTrailLook.emit(now,aircraft.getId(),severity,period)) {
+            boolean surge=VehicleAtmosphereLook.smokePulse(now,aircraft.getId(),severity);
+            boolean wisp=severity<.4F&&!surge||DamageTrailLook.wisp(now,aircraft.getId());
+            float variation=.94F+.06F*(1+(float)Math.sin(now*.37+aircraft.getId()*.7));
+            float radius=DamageTrailLook.radius(severity,shed.length())*variation;
+            if(admit(level,position,radius*1.1F))Minecraft.getInstance().particleEngine.add(
+                    new DamageSmokeParticle(level,position,shed,severity,radius,wisp,surge?1:.72F,aircraft.getId()));
         }
         FluidLeaks.emit(level,aircraft,position,severity,now);
         if (severity > 0.4F && EffectPerformance.optionalGlows()

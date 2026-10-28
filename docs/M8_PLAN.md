@@ -417,8 +417,10 @@ native examples on several suitable vehicles.
 - [x] **Debris shedding:** small textured skin fragments after fresh breakup, with ambient,
   non-emissive highlights. [Implementation and limits](M8_SKIN_SHEDDING.md) ·
   [native examples](M8_SKIN_SHEDDING_GALLERY.md). Existing global mesh limits are unchanged.
-- [ ] **Maneuver-readable smoke trails:** preserve the path of turns before older trail segments
-  spread and drift with the shared wind; avoid chains of identical round puffs.
+- [x] **Maneuver-readable smoke trails:** approved 16-frame cores/wisps retain the path through
+  turns before dispersing with shared wind. [Implementation and limits](M8_MANEUVER_SMOKE.md) ·
+  [native comparisons](M8_MANEUVER_SMOKE_GALLERY.md). Remote observed motion and severe-damage
+  continuity are included; shared admission is unchanged.
 - [ ] **Refreshed missile and rocket trails:** update missile, rocket and similar projectile
   trails with the new smoke style, weapon-specific motor effects, and clearer burnout/fading.
   Scale smoke thickness and persistence to the weapon, retain the path through turns, and use
@@ -429,8 +431,8 @@ native examples on several suitable vehicles.
 - [ ] **Altitude-dependent contrails:** thin cold-air trails behind suitable engines, widening
   and dispersing with age; keep distinct from hot exhaust and engine-damage smoke.
 
-Airflow-shaped fire, fuel spray, damaged controls, richer broken edges and skin shedding are
-implemented. Continue the remaining
+Airflow-shaped fire, fuel spray, damaged controls, richer broken edges, skin shedding and
+maneuver-readable damage smoke are implemented. Continue the remaining
 graphics items while keeping Minecraft's simple
 look, existing flight handling/collision/gameplay damage and original craters. Respect Claude's
 NTM Next ownership: no NTM explosion bridge, gun/gore hooks or copied NTM assets. Retain the
