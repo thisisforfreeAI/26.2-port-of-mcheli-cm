@@ -62,4 +62,33 @@ public final class ComponentHealth {
         }
         return packed;
     }
+
+    /**
+     * Restores {@code hp} hull HP across the components whose whole health is {@code capacity[i]}
+     * HP, the most damaged first, spilling what is left over to the next. With equal capacities it
+     * matches {@link #repair}.
+     */
+    public static long repairHp(long packed, float[] capacity, float hp) {
+        float budget = hp;
+        while (budget > 0.0F) {
+            int worst = -1;
+            for (int i = 0; i < capacity.length; i++) {
+                if (level(packed, i) < MAX_LEVEL && (worst < 0 || level(packed, i) < level(packed, worst))) {
+                    worst = i;
+                }
+            }
+            if (worst < 0) {
+                break;
+            }
+            int missing = MAX_LEVEL - level(packed, worst);
+            float perLevel = capacity[worst] / MAX_LEVEL;
+            int gain = Math.min(missing, Math.round(budget / perLevel));
+            if (gain <= 0) {
+                break;
+            }
+            packed = withLevel(packed, worst, level(packed, worst) + gain);
+            budget -= gain * perLevel;
+        }
+        return packed;
+    }
 }

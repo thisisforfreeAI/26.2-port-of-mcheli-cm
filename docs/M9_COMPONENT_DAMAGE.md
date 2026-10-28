@@ -93,8 +93,9 @@ so the pilot's client, which flies the vehicle, and the server agree.
 
 ## Not yet
 
-- A `DamageZones:` list in vehicle YAML to place zones by hand for addon vehicles. Until then an
-  addon can mark engine boxes with `Type: ENGINE`.
+- Done in M10a: a `DamageZones:` list in vehicle YAML (or `AddDamageZone` in TXT) places zones by
+  hand. See [M10_DAMAGE_ZONES.md](M10_DAMAGE_ZONES.md). Marking engine boxes with `Type: ENGINE`
+  still works.
 
 ## Tests
 

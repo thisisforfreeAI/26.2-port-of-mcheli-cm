@@ -25,7 +25,8 @@ import net.minecraft.world.phys.Vec3;
  * <li>a fuel tank in the middle third of the hull, for vehicles that burn fuel.</li>
  * </ul>
  *
- * At most {@link ComponentHealth#SLOTS} zones; engines are capped at four.
+ * At most {@link ComponentHealth#SLOTS} zones; engines are capped at four. A vehicle file that lists
+ * its own {@code DamageZones} (M10a) gets exactly those instead, in file order.
  */
 public final class DamageZones {
 
@@ -42,7 +43,17 @@ public final class DamageZones {
         }
     }
 
+    /** Drops a type's cached zones after its content changed at runtime (tests, live edits). */
+    public static void forget(AircraftInfo info) {
+        synchronized (CACHE) {
+            CACHE.remove(info);
+        }
+    }
+
     static List<DamageZone> derive(AircraftInfo info) {
+        if (!info.damageZones.isEmpty()) {
+            return placed(info);
+        }
         List<DamageZone> zones = new ArrayList<>();
         AABB hull = hull(info);
         List<Vec3[]> engines = new ArrayList<>();
@@ -101,6 +112,46 @@ public final class DamageZones {
             zones = zones.subList(0, ComponentHealth.SLOTS);
         }
         return Collections.unmodifiableList(new ArrayList<>(zones));
+    }
+
+    /**
+     * Zones from the vehicle's own list. A rotor zone given by part takes a 1-block box around the
+     * hub of the rotor drawn by that model group; one naming no rotor of the vehicle is skipped.
+     */
+    static List<DamageZone> placed(AircraftInfo info) {
+        List<DamageZone> zones = new ArrayList<>();
+        int[] counts = new int[ComponentKind.values().length];
+        for (AircraftInfo.DamageZoneSpec spec : info.damageZones) {
+            if (zones.size() >= ComponentHealth.SLOTS) {
+                break;
+            }
+            Vec3 center = spec.center();
+            Vec3 halfSize = spec.halfSize();
+            if (center == null) {
+                AircraftInfo.DrawnPart rotor = rotor(info, spec.part());
+                if (rotor == null) {
+                    continue;
+                }
+                center = rotor.pos;
+                halfSize = HUB;
+            }
+            float share = Float.isNaN(spec.share()) ? spec.kind().damageShare : spec.share();
+            float health = Float.isNaN(spec.health()) ? ComponentDamage.HEALTH_SHARE_OF_MAX_HP : spec.health();
+            zones.add(new DamageZone(spec.kind(), counts[spec.kind().ordinal()]++, center, halfSize, spec.part(),
+                    share, health));
+        }
+        return Collections.unmodifiableList(zones);
+    }
+
+    private static AircraftInfo.DrawnPart rotor(AircraftInfo info, String part) {
+        List<? extends AircraftInfo.DrawnPart> rotors = info instanceof HeliInfo heli ? heli.rotorList
+                : info instanceof WingedAircraftInfo winged ? winged.rotorList : List.of();
+        for (AircraftInfo.DrawnPart rotor : rotors) {
+            if (part.equals(rotor.modelName)) {
+                return rotor;
+            }
+        }
+        return null;
     }
 
     /** The hull: the main box joined with every extra box. */

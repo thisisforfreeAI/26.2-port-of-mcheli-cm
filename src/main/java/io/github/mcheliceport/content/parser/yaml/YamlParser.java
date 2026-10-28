@@ -18,6 +18,7 @@ import io.github.mcheliceport.content.aircraft.PlaneInfo;
 import io.github.mcheliceport.content.aircraft.RadarType;
 import io.github.mcheliceport.content.aircraft.RwrType;
 import io.github.mcheliceport.content.aircraft.SeatInfo;
+import io.github.mcheliceport.damage.ComponentKind;
 import io.github.mcheliceport.content.aircraft.SeatRackInfo;
 import io.github.mcheliceport.content.aircraft.ShipInfo;
 import io.github.mcheliceport.content.aircraft.TankInfo;
@@ -901,9 +902,29 @@ public final class YamlParser implements ContentParser {
                 case "RWR" -> parseRWR(info, (Map<String, Object>) entry.getValue());
                 case "ECM" -> parseECM(info, (Map<String, Object>) entry.getValue());
                 case "ImpactAngles" -> parseImpactAngles(info, (Map<String, Object>) entry.getValue());
+                case "DamageZones" -> parseDamageZones(info, (List<Map<String, Object>>) entry.getValue());
                 case "ArmorExplosionDamageMultiplier", "ArmorExplosionDamage" ->
                         info.armorExplosionDamageMultiplier = ((Number) entry.getValue()).floatValue();
                 default -> logUnknownEntry(entry, "AircraftFeatures");
+            }
+        }
+    }
+
+    /** M10a: component zones placed by the vehicle file; a bad entry is logged and skipped. */
+    private void parseDamageZones(AircraftInfo info, List<Map<String, Object>> zones) {
+        info.damageZones.clear();
+        for (Map<String, Object> zone : zones) {
+            try {
+                ComponentKind kind = ComponentKind.valueOf(
+                        String.valueOf(zone.get("Kind")).trim().toUpperCase(Locale.ROOT));
+                info.damageZones.add(new AircraftInfo.DamageZoneSpec(kind,
+                        zone.containsKey("Center") ? parseVector(zone.get("Center")) : null,
+                        zone.containsKey("HalfSize") ? parseVector(zone.get("HalfSize")) : null,
+                        String.valueOf(zone.getOrDefault("Part", "")),
+                        zone.containsKey("Share") ? ((Number) zone.get("Share")).floatValue() : Float.NaN,
+                        zone.containsKey("Health") ? ((Number) zone.get("Health")).floatValue() : Float.NaN));
+            } catch (RuntimeException e) {
+                LOGGER.warn("Skipping damage zone {} in {}: {}", zone, info.name, e.getMessage());
             }
         }
     }
