@@ -2,6 +2,7 @@ package io.github.mcheliceport.weapon;
 
 import io.github.mcheliceport.content.weapon.WeaponInfo;
 import io.github.mcheliceport.entity.aircraft.AircraftEntity;
+import io.github.mcheliceport.entity.aircraft.CrewRoles;
 import java.util.Random;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
@@ -156,13 +157,16 @@ public class WeaponSet {
         return false;
     }
 
-    /** Starts the reload countdown; the server's is 20 ticks shorter, as upstream. */
+    /**
+     * Starts the reload countdown; the server's is 20 ticks shorter, as upstream. The vehicle's
+     * crew scales it (M10b {@link CrewRoles#reloadFactor}).
+     */
     public void reload() {
         WeaponBase current = this.getCurrentWeapon();
         boolean hasMag = this.getMagSize() > 0;
         boolean needsAmmo = this.getAmmo() < this.getMagSize();
         if (hasMag && needsAmmo && current.getReloadCount() > 0) {
-            this.reloadCooldown = current.getReloadCount();
+            this.reloadCooldown = CrewRoles.reloadTicks(current.aircraft, current.getReloadCount());
             if (current.isClientSide()) {
                 this.setAmmo(0);
             } else {
@@ -447,7 +451,8 @@ public class WeaponSet {
             this.cooldown = current.interval;
             this.reloadCooldown = 0;
             if (reload && this.getMagSize() > 0 && current.getReloadCount() > 0) {
-                this.reloadCooldown = Math.max(1, current.getReloadCount() - (current.isClientSide() ? 0 : 20));
+                this.reloadCooldown = Math.max(1, CrewRoles.reloadTicks(current.aircraft, current.getReloadCount())
+                        - (current.isClientSide() ? 0 : 20));
             }
         }
     }

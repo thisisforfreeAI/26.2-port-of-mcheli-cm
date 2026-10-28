@@ -96,6 +96,7 @@ public final class ModGameTests {
         LagCompensationGameTests.register();
         AntiCheatGameTests.register();
         ComponentDamageGameTests.register();
+        CrewGameTests.register();
         ComponentEffectsGameTests.register();
         VehicleBloodGameTests.register();
         if (System.getProperty("neoforge.enabledGameTestNamespaces") != null) {

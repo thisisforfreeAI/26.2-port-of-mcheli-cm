@@ -11,6 +11,12 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 ## [Unreleased]
 
 ### Added
+- Crew roles (M10b): seats are pilot, gunner, loader, commander or passenger. Stock seats keep who
+  may fire what. A manned loader seat makes guns reload in 0.6x the time and its reload key serves
+  the emptiest gun; loaders and passengers can't fire. A commander marks a target (new key `M`) that
+  every rider sees. Addons set roles with `Role:` per seat (`SeatRole` in TXT) and can make the
+  loader required. A crew panel shows on vehicles with a loader or commander seat. See
+  `docs/M10_CREW_ROLES.md`.
 - Addon damage zones (M10a): a vehicle file can place its own engine, rotor and fuel tank zones with
   a `DamageZones:` list under `AircraftFeatures` (or `AddDamageZone` lines in TXT), each with an
   optional damage share and health. They replace the derived M9 zones for that vehicle; vehicles

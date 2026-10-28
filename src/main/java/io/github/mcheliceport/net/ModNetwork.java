@@ -178,6 +178,7 @@ public final class ModNetwork {
         registrar.playToClient(MultiplayStatePayload.TYPE, MultiplayStatePayload.CODEC,
                 (p, context) -> io.github.mcheliceport.multiplay.MultiplayManager.setClientState(p.pvp(), p.chooseTeam()));
         registrar.playToServer(AirburstDistPayload.TYPE, AirburstDistPayload.CODEC, ModNetwork::handleAirburstDist);
+        registrar.playToServer(CrewMarkPayload.TYPE, CrewMarkPayload.CODEC, ModNetwork::handleCrewMark);
         registrar.playToClient(WeaponSyncPayload.TYPE, WeaponSyncPayload.CODEC, ModNetwork::handleWeaponSync);
         registrar.playToClient(NotifyAmmoPayload.TYPE, NotifyAmmoPayload.CODEC, (p, context) -> {
             if (context.player().level().getEntity(p.aircraftId()) instanceof AircraftEntity ac) {
@@ -737,7 +738,9 @@ public final class ModNetwork {
         if (p.reload()) {
             weapons.manualReloadForPlayer(player);
         }
-        if (p.useWeapon() && Double.isFinite(p.x()) && Double.isFinite(p.y()) && Double.isFinite(p.z())
+        var role = io.github.mcheliceport.entity.aircraft.CrewRoles.roleOf(aircraft, player);
+        // M10b: loaders and passengers fire nothing, whatever weapon their seat has.
+        if (p.useWeapon() && (role == null || role.canFire()) && Double.isFinite(p.x()) && Double.isFinite(p.y()) && Double.isFinite(p.z())
                 && Float.isFinite(p.userYaw()) && Float.isFinite(p.userPitch())) {
             WeaponParam prm = new WeaponParam();
             prm.entity = aircraft;
@@ -809,6 +812,16 @@ public final class ModNetwork {
             } else {
                 ac.weapons().sendAllAmmoNum(player);
             }
+        }
+    }
+
+    /** M10b: only a rider in a commander seat of that vehicle marks. */
+    static void handleCrewMark(CrewMarkPayload p, IPayloadContext context) {
+        Player player = context.player();
+        if (riddenAircraft(player) instanceof AircraftEntity ac && ac.getId() == p.aircraftId()
+                && io.github.mcheliceport.entity.aircraft.CrewRoles.roleOf(ac, player)
+                        == io.github.mcheliceport.content.aircraft.CrewRole.COMMANDER) {
+            ac.setCrewMark(io.github.mcheliceport.entity.aircraft.CrewRoles.markTarget(ac, player));
         }
     }
 

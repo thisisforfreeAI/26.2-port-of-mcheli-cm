@@ -13,12 +13,12 @@ import io.github.mcheliceport.content.aircraft.AircraftInfo.RideRack;
 import io.github.mcheliceport.content.aircraft.AircraftInfo.WeaponSet;
 import io.github.mcheliceport.content.aircraft.AircraftInfo.Wheel;
 import io.github.mcheliceport.content.aircraft.BoundingBoxInfo;
+import io.github.mcheliceport.content.aircraft.CrewRole;
 import io.github.mcheliceport.content.aircraft.HeliInfo;
 import io.github.mcheliceport.content.aircraft.PlaneInfo;
 import io.github.mcheliceport.content.aircraft.RadarType;
 import io.github.mcheliceport.content.aircraft.RwrType;
 import io.github.mcheliceport.content.aircraft.SeatInfo;
-import io.github.mcheliceport.damage.ComponentKind;
 import io.github.mcheliceport.content.aircraft.SeatRackInfo;
 import io.github.mcheliceport.content.aircraft.ShipInfo;
 import io.github.mcheliceport.content.aircraft.TankInfo;
@@ -42,6 +42,7 @@ import io.github.mcheliceport.content.weapon.hbm.MistContainer;
 import io.github.mcheliceport.content.weapon.hbm.MukeContainer;
 import io.github.mcheliceport.content.weapon.hbm.NTSettingContainer;
 import io.github.mcheliceport.content.weapon.hbm.VNTSettingContainer;
+import io.github.mcheliceport.damage.ComponentKind;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -902,6 +903,7 @@ public final class YamlParser implements ContentParser {
                 case "RWR" -> parseRWR(info, (Map<String, Object>) entry.getValue());
                 case "ECM" -> parseECM(info, (Map<String, Object>) entry.getValue());
                 case "ImpactAngles" -> parseImpactAngles(info, (Map<String, Object>) entry.getValue());
+                case "LoaderRequired" -> info.loaderRequired = (Boolean) entry.getValue();
                 case "DamageZones" -> parseDamageZones(info, (List<Map<String, Object>>) entry.getValue());
                 case "ArmorExplosionDamageMultiplier", "ArmorExplosionDamage" ->
                         info.armorExplosionDamageMultiplier = ((Number) entry.getValue()).floatValue();
@@ -1366,6 +1368,7 @@ public final class YamlParser implements ContentParser {
         boolean invertCameraPos = false;
         CameraPosition cameraPos = null;
         String hudName = "none";
+        CrewRole role = null;
         List<Integer> exclusionList = null; // 0-based
 
         for (Map.Entry<String, Object> entry : map.entrySet()) {
@@ -1382,6 +1385,7 @@ public final class YamlParser implements ContentParser {
                 case "RotSeat" -> rotatableSeat = ((Boolean) entry.getValue()).booleanValue();
                 case "InvCamPos" -> invertCameraPos = ((Boolean) entry.getValue()).booleanValue();
                 case "Hud" -> hudName = ((String) entry.getValue()).toLowerCase(Locale.ROOT).trim();
+                case "Role" -> role = CrewRole.valueOf(((String) entry.getValue()).toUpperCase(Locale.ROOT).trim());
                 case "Camera", "Cam" -> cameraPos = parseCameraPosition((Map<String, Object>) entry.getValue());
                 case "ExcludeWith" -> {
                     exclusionList = new ArrayList<>();
@@ -1413,8 +1417,10 @@ public final class YamlParser implements ContentParser {
             throw new IllegalArgumentException("Seat must have a position!");
         }
 
-        info.seatList.add(new SeatInfo(position, unmountPos, isGunner, cameraPos, invertCameraPos, canSwitchGunner,
-                hasFixedRotation, fixedYaw, fixedPitch, minPitch, maxPitch, rotatableSeat));
+        SeatInfo seat = new SeatInfo(position, unmountPos, isGunner, cameraPos, invertCameraPos, canSwitchGunner,
+                hasFixedRotation, fixedYaw, fixedPitch, minPitch, maxPitch, rotatableSeat);
+        seat.role = role;
+        info.seatList.add(seat);
 
         info.hudList.add(hudName);
         final int seatIndex0 = info.seatList.size() - 1;

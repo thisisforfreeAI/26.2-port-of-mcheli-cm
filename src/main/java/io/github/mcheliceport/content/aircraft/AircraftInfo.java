@@ -169,6 +169,8 @@ public abstract class AircraftInfo extends BaseInfo {
     public float particlesScale = 1.0F;
     /** Optional cosmetic engine outlets, in model coordinates; absent outlets are never guessed. */
     public final List<EngineOutlet> engineOutlets = new ArrayList<>();
+    /** M10b: guns reload slower (1.4x) while no loader seat is manned; only for vehicles with a loader seat. */
+    public boolean loaderRequired = false;
     /** Addon-placed component zones (M10a); when present they replace the derived M9 zones. */
     public final List<DamageZoneSpec> damageZones = new ArrayList<>();
     public boolean hideEntity = false;
