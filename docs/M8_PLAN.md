@@ -507,7 +507,8 @@ broken tracks, cover blowouts, wing/tail separation, ground-contact rotor strike
 delayed collapse and smoldering openings. [Native examples](M8_DESTRUCTION_SEQUENCES_GALLERY.md)
 cover tanks, planes and helicopters. These remain bounded client presentation with original
 craters and gameplay intact. The separate [blood investigation](M8_VEHICLE_BLOOD_INVESTIGATION.md)
-records vehicle-only attribution and NTM gore exclusions; blood is not enabled yet.
+records vehicle-only attribution and NTM gore exclusions; the implemented blood follow-up
+is described below.
 
 
 ### Vehicle-kill blood (follow-up)

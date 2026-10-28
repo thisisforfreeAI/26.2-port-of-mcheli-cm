@@ -50,6 +50,12 @@ continued nearby damage smoke. All scenes must drain after shutdown.
 
 [Native gallery](M8_CONTRAILS_GALLERY.md) · [Recorded results](performance/m8-realism/contrails.json)
 
+The combined-main version passed 448 local unit tests, all 11 Vulkan and eight OpenGL
+contrail scenes. GitHub's normal and NTM-enabled builds also passed their 287 and 295 required
+GameTests. The 32-aircraft scene peaked at 681 mod particles on each renderer; distant births
+remained at most two per tick in the 97-aircraft mixed scene. These are fixture results,
+not frame-rate measurements.
+
 The controlled previews use held trajectories rather than combat. Local optional-dependency
 exclusions are for validation only; no local JAR is distributed. Software Mesa does not establish
 60 FPS at 1080p on the target RTX 3060 8 GB / Ryzen 7 7800X3D.
