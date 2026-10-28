@@ -28,12 +28,14 @@ public final class VehicleAtmosphere {
     private static final LinkedHashMap<AircraftEntity, State> STATES = new LinkedHashMap<>();
     private static ClientLevel world;
     private static long lastTick = Long.MIN_VALUE;
-    private static int emitted;
+    private static int emitted,farContrails;
     private static long admissionTick=Long.MIN_VALUE;
     private static java.lang.ref.WeakReference<ClientLevel> admissionWorld=new java.lang.ref.WeakReference<>(null);
     private static final class State {
         final VehicleAtmosphereLook engine = new VehicleAtmosphereLook();
         final WreckCoolingLook cooling = new WreckCoolingLook();
+        final AircraftCondensationLook condensation=new AircraftCondensationLook();
+        int vaporMask,contrailMask;
         Whine whine;
         void stop() { if (whine != null) { whine.finish(); whine = null; } }
     }
@@ -48,9 +50,12 @@ public final class VehicleAtmosphere {
 
     public static void clear() {
         STATES.values().forEach(State::stop); STATES.clear(); world = null;
-        lastTick = Long.MIN_VALUE; CookoffEffects.clear(); WreckSequenceEffects.clear();
+        lastTick = Long.MIN_VALUE;farContrails=0; CookoffEffects.clear(); WreckSequenceEffects.clear();
     }
     public static int stateCount() { return STATES.size(); }
+    public static int wingVaporMask(AircraftEntity aircraft){var s=STATES.get(aircraft);return s==null?0:s.vaporMask;}
+    public static int contrailMask(AircraftEntity aircraft){var s=STATES.get(aircraft);return s==null?0:s.contrailMask;}
+    public static int farContrailBirths(){return farContrails;}
     public static int emitted() { return world!=null&&admissionWorld.get()==world&&admissionTick==world.getGameTime()?emitted:0; }
     public static int wreckAge(AircraftEntity ac) { var state=STATES.get(ac);return state==null?-1:state.cooling.age(); }
     public static long startupVoiceCount() {
@@ -59,7 +64,8 @@ public final class VehicleAtmosphere {
     }
     public static boolean handlesDamage(AircraftEntity aircraft) {
         return EffectQuality.enhanced() && ClientConfig.get(ClientConfig.VEHICLE_DAMAGE_DETAILS)
-                && STATES.containsKey(aircraft);
+                && STATES.containsKey(aircraft)
+                &&Minecraft.getInstance().gameRenderer.mainCamera().position().distanceToSqr(aircraft.position())<=80*80;
     }
 
     @SubscribeEvent public static void tick(ClientTickEvent.Post event) {
@@ -70,23 +76,36 @@ public final class VehicleAtmosphere {
         long now = level.getGameTime();
         if (now == lastTick) return;
         lastTick = now; prepareAdmission(level);
-        STATES.entrySet().removeIf(entry -> {
-            AircraftEntity aircraft = entry.getKey();
-            if (aircraft.isRemoved() || aircraft.level() != level
-                    || mc.gameRenderer.mainCamera().position().distanceToSqr(aircraft.position()) > 80 * 80) {
-                entry.getValue().stop(); return true;
-            }
-            return false;
-        });
+        int farRetained=0;
+        var iterator=STATES.entrySet().iterator();
+        while(iterator.hasNext()){
+            var entry=iterator.next();AircraftEntity aircraft=entry.getKey();
+            double distance=mc.gameRenderer.mainCamera().position().distanceToSqr(aircraft.position());
+            int range=ContrailEffects.scope(level,aircraft);boolean far=distance>80*80;
+            if(aircraft.isRemoved()||aircraft.level()!=level||distance>range*range
+                    ||far&&!AircraftCondensationLook.retainFarState(farRetained)){
+                entry.getValue().stop();iterator.remove();
+            }else if(far)farRetained++;
+        }
         for (var entity : level.entitiesForRendering()) {
-            if (!(entity instanceof AircraftEntity aircraft) || aircraft.getAcInfo() == null || aircraft.isRemoved()
-                    || mc.gameRenderer.mainCamera().position().distanceToSqr(aircraft.position()) > 80 * 80) continue;
+            if(!(entity instanceof AircraftEntity aircraft)||aircraft.getAcInfo()==null||aircraft.isRemoved())continue;
+            double distance=mc.gameRenderer.mainCamera().position().distanceToSqr(aircraft.position());int range=ContrailEffects.scope(level,aircraft);
+            if(distance>range*range)continue;
+            boolean far=distance>80*80;
             State state = STATES.get(aircraft);
             if (state == null) {
-                if (STATES.size() >= 128) continue;
+                if (!AircraftCondensationLook.stateAllowed(far,STATES.size())) continue;
                 state = new State(); STATES.put(aircraft, state);
             }
+            state.contrailMask=state.vaporMask=0;
+            if(aircraft instanceof PlaneEntity plane)ContrailEffects.update(level,plane,state.condensation,now);
+            if(far){
+                state.stop();state.engine.tick(aircraft.getCurrentThrottle(),!aircraft.isDestroyed()&&aircraft.canUseFuel());
+                if(aircraft instanceof PlaneEntity plane)state.contrailMask=ContrailEffects.emit(level,plane,state.condensation,now,true);
+                continue;
+            }
             state.cooling.tick(aircraft.isDestroyed());
+            if(aircraft instanceof PlaneEntity plane)WingVaporEffects.update(level,plane,state.condensation,now);
             WreckSequenceEffects.tick(level,aircraft,state.cooling.age());
             boolean powered = !aircraft.isDestroyed() && aircraft.canUseFuel()
                     && !(aircraft instanceof PlaneEntity p && io.github.mcheliceport.client.render.PlaneAirframeParts.tailMissing(p));
@@ -126,7 +145,12 @@ public final class VehicleAtmosphere {
             }
             if (ClientConfig.get(ClientConfig.VEHICLE_DAMAGE_DETAILS)) damage(level, aircraft, origins, now, state.cooling);
             if (ClientConfig.get(ClientConfig.VEHICLE_DAMAGE_DETAILS)&&aircraft instanceof PlaneEntity plane) {
-                FuelSprayEffects.emit(level,plane,origins,now);BreakawayEffects.stump(level,plane,now);
+                FuelSprayEffects.emit(level,plane,origins,now);
+                BreakawayEffects.stump(level,plane,now);
+            }
+            if(aircraft instanceof PlaneEntity plane){
+                state.vaporMask=WingVaporEffects.emit(level,plane,state.condensation,now);
+                state.contrailMask=ContrailEffects.emit(level,plane,state.condensation,now,false);
             }
         }
     }
@@ -206,31 +230,18 @@ public final class VehicleAtmosphere {
         int engineIndex=Math.floorMod((int) (now / 11 + aircraft.getId()), origins.size());
         Vec3 position = origins.get(engineIndex);
         AirflowFireEffects.damage(level,aircraft,position,engineIndex,severity,now);
-        int period = 3 * (1 + EffectPerformance.pressure());
-        if (Math.floorMod(now + aircraft.getId(), period) == 0
-                && VehicleAtmosphereLook.smokePulse(now, aircraft.getId(), severity)) {
-            boolean wisp=DamageTrailLook.wisp(now,aircraft.getId());
-            double speed=aircraft.getDeltaMovement().length();
-            float radius=DamageTrailLook.radius(severity,speed);
-            if (admit(level, position, radius)) {
-                float gray = DamageTrailLook.gray(severity,wisp);
-                Vec3 shed=aircraft.getDeltaMovement();
-                SmokeParticle smoke = new SmokeParticle(level, position.x, position.y, position.z,
-                        DamageTrailLook.inherited(shed.x)+Math.sin(now*.37+aircraft.getId())*.012,
-                        DamageTrailLook.inherited(shed.y)+.025+severity*.02,
-                        DamageTrailLook.inherited(shed.z)+Math.cos(now*.29+aircraft.getId())*.012);
-                smoke.enhanced = true;
-                smoke.coherentDrift = true;
-                smoke.disableCollision();
-                smoke.setColor(gray, gray, gray);
-                smoke.setAlphaF((0.4F + severity * 0.35F)*(wisp?.62F:1));
-                smoke.setParticleMaxAge(DamageTrailLook.lifetime(severity,wisp));
-                smoke.motionYUpAge=wisp?.45F:.7F;
-                smoke.diffusible = true;
-                smoke.particleScale = (3+severity*3)*(wisp?.7F:1);
-                smoke.particleMaxScale = radius*10*(wisp?.78F:1);
-                Minecraft.getInstance().particleEngine.add(smoke);
-            }
+        Vec3 shed=io.github.mcheliceport.damage.AirframeDamage.fragmentMotion(aircraft.getDeltaMovement(),
+                aircraft.position().subtract(aircraft.xo,aircraft.yo,aircraft.zo));
+        double distance=Minecraft.getInstance().gameRenderer.mainCamera().position().distanceToSqr(aircraft.position());
+        int period=DamageTrailLook.period(shed.length(),distance,EffectPerformance.pressure(),
+                ClientConfig.get(ClientConfig.EFFECT_BUDGET)==ClientConfig.EffectBudget.LOW);
+        if(DamageTrailLook.emit(now,aircraft.getId(),severity,period)) {
+            boolean surge=VehicleAtmosphereLook.smokePulse(now,aircraft.getId(),severity);
+            boolean wisp=severity<.4F&&!surge||DamageTrailLook.wisp(now,aircraft.getId());
+            float variation=.94F+.06F*(1+(float)Math.sin(now*.37+aircraft.getId()*.7));
+            float radius=DamageTrailLook.radius(severity,shed.length())*variation;
+            if(admit(level,position,radius*1.1F))Minecraft.getInstance().particleEngine.add(
+                    new DamageSmokeParticle(level,position,shed,severity,radius,wisp,surge?1:.72F,aircraft.getId()));
         }
         FluidLeaks.emit(level,aircraft,position,severity,now);
         if (severity > 0.4F && EffectPerformance.optionalGlows()
@@ -244,16 +255,24 @@ public final class VehicleAtmosphere {
 
     private static void prepareAdmission(ClientLevel level){
         if(admissionWorld.get()!=level||admissionTick!=level.getGameTime()){
-            admissionWorld=new java.lang.ref.WeakReference<>(level);admissionTick=level.getGameTime();emitted=0;
+            admissionWorld=new java.lang.ref.WeakReference<>(level);admissionTick=level.getGameTime();emitted=farContrails=0;
         }
     }
-    static boolean admit(ClientLevel level, Vec3 position, float radius) {
+    static boolean admit(ClientLevel level, Vec3 position, float radius) {return admit(level,position,radius,false);}
+    private static boolean admit(ClientLevel level,Vec3 position,float radius,boolean contrail) {
         prepareAdmission(level);
         if (emitted >= EngineExhaustLook.cap(ClientConfig.get(ClientConfig.EFFECT_BUDGET))) return false;
         BlockPos block = BlockPos.containing(position);
         if (!level.hasChunkAt(block) || !level.getFluidState(block).isEmpty()
-                || !EffectAdmission.admit(level, position.x, position.y, position.z, false, radius)) return false;
+                || !(contrail?EffectAdmission.admitContrail(level,position.x,position.y,position.z,radius)
+                        :EffectAdmission.admit(level,position.x,position.y,position.z,false,radius)))return false;
         emitted++; return true;
+    }
+
+    static boolean admitContrail(ClientLevel level,Vec3 position,float radius,boolean far){
+        prepareAdmission(level);
+        if(far&&(farContrails>=2||emitted>=EngineExhaustLook.cap(ClientConfig.get(ClientConfig.EFFECT_BUDGET))/2))return false;
+        if(!admit(level,position,radius,true))return false;if(far)farContrails++;return true;
     }
 
     private static void plume(ClientLevel level, Vec3 position, Vec3 motion, float radius, float opacity,

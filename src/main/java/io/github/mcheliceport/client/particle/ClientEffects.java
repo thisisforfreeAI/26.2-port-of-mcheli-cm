@@ -36,6 +36,9 @@ public final class ClientEffects implements McheliEffects.Sink {
 
     private ClientEffects() {
     }
+    @Override public boolean projectileTrail(io.github.mcheliceport.entity.weapon.BaseBulletEntity projectile,String name,int count,float size){
+        return ProjectileTrailEffects.emit(projectile,name,count,size);
+    }
 
     @Override public boolean damageSmoke(io.github.mcheliceport.entity.aircraft.AircraftEntity aircraft) {
         return VehicleAtmosphere.handlesDamage(aircraft);

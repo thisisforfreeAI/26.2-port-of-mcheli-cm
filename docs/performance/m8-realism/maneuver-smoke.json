@@ -1,0 +1,229 @@
+{
+  "kind": "maneuver-readable-aircraft-damage-smoke",
+  "base_commit": "77b5ebbbe2ab2806a7b58c88f7ad24e9f342f919",
+  "unit_results": {
+    "tests": 414,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "runs": [
+    {
+      "backend": "VULKAN",
+      "all_passed": true,
+      "scenes": [
+        {
+          "scene": "f-35a",
+          "drained": true,
+          "peak_mod_particles": 35,
+          "peak_damage_smoke": 25
+        },
+        {
+          "scene": "f-15e-remote",
+          "drained": true,
+          "peak_mod_particles": 30,
+          "peak_damage_smoke": 26
+        },
+        {
+          "scene": "a-10",
+          "drained": true,
+          "peak_mod_particles": 30,
+          "peak_damage_smoke": 25
+        },
+        {
+          "scene": "stopped",
+          "drained": true,
+          "peak_mod_particles": 22,
+          "peak_damage_smoke": 17
+        },
+        {
+          "scene": "night",
+          "drained": true,
+          "peak_mod_particles": 35,
+          "peak_damage_smoke": 25
+        },
+        {
+          "scene": "settings",
+          "drained": true,
+          "peak_mod_particles": 33,
+          "peak_damage_smoke": 24
+        },
+        {
+          "scene": "shared-load",
+          "drained": true,
+          "peak_mod_particles": 482,
+          "peak_damage_smoke": 334
+        }
+      ],
+      "older_smoke_tracking": [
+        {
+          "vehicle": "f-35a",
+          "tracked_survivors": 8,
+          "max_drift_over_30_ticks": 1.9689780451102978,
+          "max_separation_from_aircraft": 37.7906151023409
+        },
+        {
+          "vehicle": "f-15e-remote",
+          "tracked_survivors": 8,
+          "max_drift_over_30_ticks": 2.307190516302538,
+          "max_separation_from_aircraft": 31.54657892122041
+        },
+        {
+          "vehicle": "a-10",
+          "tracked_survivors": 8,
+          "max_drift_over_30_ticks": 2.0813375080043497,
+          "max_separation_from_aircraft": 31.104482964822328
+        }
+      ]
+    },
+    {
+      "backend": "OPENGL",
+      "all_passed": true,
+      "scenes": [
+        {
+          "scene": "stopped",
+          "drained": true,
+          "peak_mod_particles": 23,
+          "peak_damage_smoke": 17
+        },
+        {
+          "scene": "night",
+          "drained": true,
+          "peak_mod_particles": 34,
+          "peak_damage_smoke": 25
+        },
+        {
+          "scene": "settings",
+          "drained": true,
+          "peak_mod_particles": 35,
+          "peak_damage_smoke": 24
+        },
+        {
+          "scene": "shared-load",
+          "drained": true,
+          "peak_mod_particles": 481,
+          "peak_damage_smoke": 335
+        }
+      ],
+      "older_smoke_tracking": []
+    }
+  ],
+  "bounds": {
+    "core_life_ticks": [
+      33,
+      63
+    ],
+    "wisp_life_ticks": [
+      21,
+      51
+    ],
+    "atmosphere_states": 128,
+    "scope_blocks": 80,
+    "birth_intervals_ticks": {
+      "near_fast": 2,
+      "ordinary": 3,
+      "low_or_distant": 6
+    },
+    "balanced_shared_atmosphere_births_per_tick": 16,
+    "existing_shared_particle_limits_unchanged": true
+  },
+  "notes": [
+    "Unedited Vulkan PNGs of held HP/motion states, not combat recordings.",
+    "Initial native previews prompted denser severe-damage cores; only refined production runs are reported here.",
+    "OpenGL repeats stationary/night/settings/shared-load scenes; Vulkan also tracks older smoke through turns on three aircraft.",
+    "Local optional-dependency exclusions/throwing stubs; no local JAR distributed.",
+    "Software Mesa does not measure target-PC 60 FPS / 1080p."
+  ],
+  "screens": [
+    {
+      "file": "docs/screens/m8-maneuver-smoke/m8-maneuver-f-35a-early.png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "0b07384839af6dca72a36e1c1db621eaa5577ada6fce8c021d42cee2ef4d1968"
+    },
+    {
+      "file": "docs/screens/m8-maneuver-smoke/m8-maneuver-f-35a-turn.png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "9d97347ea2d95ff5eda2e528f3d68453b0ec33d312591c08f5d4b3406957f124"
+    },
+    {
+      "file": "docs/screens/m8-maneuver-smoke/m8-maneuver-f-35a-mature.png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "fafe269560158cdc389e37d0f68faba115bb8989c937273584c15d974a76af8c"
+    },
+    {
+      "file": "docs/screens/m8-maneuver-smoke/m8-maneuver-f-35a-repaired.png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "ed9a53207a39aa5877eb630270314fe0b614bbd77d069f4db0fdfddb15a927a5"
+    },
+    {
+      "file": "docs/screens/m8-maneuver-smoke/m8-maneuver-f-15e-remote-early.png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "b23b7bce44df59f16e3566ed74d667fd4dc5ef3cad5b813e8e657c24e7dd0272"
+    },
+    {
+      "file": "docs/screens/m8-maneuver-smoke/m8-maneuver-f-15e-remote-turn.png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "5fd00eaa75ac032016707b1d046295eb0ce1e5729d664229f40a0d462c4b067d"
+    },
+    {
+      "file": "docs/screens/m8-maneuver-smoke/m8-maneuver-f-15e-remote-mature.png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "09594115aee301b995a47846383c6b983585fb90314f61a1a70efdeef487d45e"
+    },
+    {
+      "file": "docs/screens/m8-maneuver-smoke/m8-maneuver-f-15e-remote-repaired.png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "8b56c8202ea801fca14218682b22bfcf5e8a14d8f6c7d6142e8264b6f8bc2504"
+    },
+    {
+      "file": "docs/screens/m8-maneuver-smoke/m8-maneuver-a-10-early.png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "473ffe6c5cc56e97dccfe6dc9ae981026650e1075fd91a1d4ff6c9eaa809f162"
+    },
+    {
+      "file": "docs/screens/m8-maneuver-smoke/m8-maneuver-a-10-turn.png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "59bfef33034317eb72d990d71d10fb2c3c842693773369b7b42f7657cdbcad5c"
+    },
+    {
+      "file": "docs/screens/m8-maneuver-smoke/m8-maneuver-a-10-mature.png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "90a501b7dcbce9955b2346b6595192288972ff30b504ba1b02173f7a0cc76b6a"
+    },
+    {
+      "file": "docs/screens/m8-maneuver-smoke/m8-maneuver-a-10-repaired.png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "8a414d05a0cbfff7ab86c0c6e243261ff0372b908f17d7a3cc049bb3707425f7"
+    },
+    {
+      "file": "docs/screens/m8-maneuver-smoke/m8-maneuver-stopped-mature.png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "97b63fb01761a48ef69abdd7c7ca83b24d7e8ddcfe58a7b80253e5f15835e661"
+    },
+    {
+      "file": "docs/screens/m8-maneuver-smoke/m8-maneuver-night-mature.png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "025cf1cf4333b07cc3dbb18856ebefbeffa57fc435e7ec9ef9283a1b83924f89"
+    },
+    {
+      "file": "docs/screens/m8-maneuver-smoke/m8-maneuver-shared-load-mature.png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "fd07759a033570553e2ef3a210358c3c385b80a383c655395835b29866e29fc2"
+    }
+  ]
+}

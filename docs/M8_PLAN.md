@@ -414,24 +414,36 @@ native examples on several suitable vehicles.
 - [x] **Richer broken edges:** exposed spars, inset closed-cut cavities and a few hanging
   cables at severed wings/tails. [Implementation and bounds](M8_FRACTURE_INTERIORS.md) ·
   [native comparisons](M8_FRACTURE_INTERIORS_GALLERY.md).
+Authored artwork for exposed/broken-out sections is owned by Claude. Keep the existing cut
+points, local part poses and repair cleanup as the attachment contract; Codex continues client
+effects, admission and rendering behavior without duplicating that art work.
+
 - [x] **Debris shedding:** small textured skin fragments after fresh breakup, with ambient,
   non-emissive highlights. [Implementation and limits](M8_SKIN_SHEDDING.md) ·
   [native examples](M8_SKIN_SHEDDING_GALLERY.md). Existing global mesh limits are unchanged.
-- [ ] **Maneuver-readable smoke trails:** preserve the path of turns before older trail segments
-  spread and drift with the shared wind; avoid chains of identical round puffs.
-- [ ] **Refreshed missile and rocket trails:** update missile, rocket and similar projectile
+- [x] **Maneuver-readable smoke trails:** approved 16-frame cores/wisps retain the path through
+  turns before dispersing with shared wind. [Implementation and limits](M8_MANEUVER_SMOKE.md) ·
+  [native comparisons](M8_MANEUVER_SMOKE_GALLERY.md). Remote observed motion and severe-damage
+  continuity are included; shared admission is unchanged.
+- [x] **Refreshed missile and rocket trails:** update missile, rocket and similar projectile
   trails with the new smoke style, weapon-specific motor effects, and clearer burnout/fading.
   Scale smoke thickness and persistence to the weapon, retain the path through turns, and use
   shared wind, distance reduction and existing particle admission. Keep bullet glow limited
   to tracers and leave NTM Next's own weapon effects under its integration owner's control.
-- [ ] **Wing vapor:** brief condensation during suitable sharp turns and humid conditions,
-  with bounded nearby detail and smooth fade-in/out.
-- [ ] **Altitude-dependent contrails:** thin cold-air trails behind suitable engines, widening
-  and dispersing with age; keep distinct from hot exhaust and engine-damage smoke.
+  [Implementation and bounds](M8_PROJECTILE_TRAILS.md) · [native examples](M8_PROJECTILE_TRAILS_GALLERY.md).
+  Authored smoke disabling/cutoff and Classic/NTM bypasses are retained.
+- [x] **Wing vapor:** brief pale condensation at supported wing tips during wet turns,
+  with smooth fade and existing shared admission. [Implementation/settings](M8_WING_VAPOR.md) ·
+  [native examples](M8_WING_VAPOR_GALLERY.md). Missing/folded wings and Classic are handled.
+- [x] **Altitude-dependent contrails:** thin cold-air trails behind authored jet outlets,
+  widening and dispersing with age. [Implementation and limits](M8_CONTRAILS.md) ·
+  [native examples](M8_CONTRAILS_GALLERY.md). Separate altitude/biome gating, cold lighting,
+  distance reduction and reserved nearby capacity keep them distinct from hot/damage smoke.
 
-Airflow-shaped fire, fuel spray, damaged controls, richer broken edges and skin shedding are
-implemented. Continue the remaining
-graphics items while keeping Minecraft's simple
+Airflow-shaped fire, fuel spray, damaged controls, richer broken edges, skin shedding and
+maneuver-readable damage smoke, conventional projectile trails, wet-turn wing vapor and
+altitude-dependent contrails are implemented. The current Codex graphics follow-up list is
+complete; target-PC profiling and player visual acceptance remain. Keep Minecraft's simple
 look, existing flight handling/collision/gameplay damage and original craters. Respect Claude's
 NTM Next ownership: no NTM explosion bridge, gun/gore hooks or copied NTM assets. Retain the
 60 FPS / 1080p goal on RTX 3060 8 GB and Ryzen 7 7800X3D, with distance limits, shared admission
@@ -495,7 +507,8 @@ broken tracks, cover blowouts, wing/tail separation, ground-contact rotor strike
 delayed collapse and smoldering openings. [Native examples](M8_DESTRUCTION_SEQUENCES_GALLERY.md)
 cover tanks, planes and helicopters. These remain bounded client presentation with original
 craters and gameplay intact. The separate [blood investigation](M8_VEHICLE_BLOOD_INVESTIGATION.md)
-records vehicle-only attribution and NTM gore exclusions; blood is not enabled yet.
+records vehicle-only attribution and NTM gore exclusions; the implemented blood follow-up
+is described below.
 
 
 ### Vehicle-kill blood (follow-up)

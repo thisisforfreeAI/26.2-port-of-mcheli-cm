@@ -45,6 +45,7 @@ public final class ClientConfig {
     public static final ModConfigSpec.BooleanValue ENGINE_HEAT_HAZE;
     public static final ModConfigSpec.BooleanValue ROTOR_WASH_DEBRIS;
     public static final ModConfigSpec.BooleanValue ENGINE_STARTUP_EFFECTS;
+    public static final ModConfigSpec.BooleanValue AIRCRAFT_CONDENSATION;
     public static final ModConfigSpec.BooleanValue VEHICLE_BLOOD;
     public static final ModConfigSpec.BooleanValue VEHICLE_DESTRUCTION_SEQUENCES;
     public static final ModConfigSpec.BooleanValue VEHICLE_DAMAGE_DETAILS;
@@ -178,6 +179,8 @@ public final class ClientConfig {
                 .define("rotorWashDebris", true);
         ENGINE_STARTUP_EFFECTS = builder.comment("Enhanced engine startup puffs, spooling turbine whine and gradual heat buildup.")
                 .define("engineStartupEffects", true);
+        AIRCRAFT_CONDENSATION = builder.comment("Wingtip vapor in suitable wet turns and high-altitude jet contrails. Disable to reduce optional aircraft detail.")
+                .define("aircraftCondensation",true);
         VEHICLE_WATER_DETAILS = builder.comment("Bounded V wakes, shallow-water spray and detached-panel splashes.").define("vehicleWaterDetails",true);
         VEHICLE_SMALL_MOTION = builder.comment("Flexible supported antennas, authored nozzle-cover vibration and hanging exposed cables.").define("vehicleSmallMotion",true);
         VEHICLE_SURFACE_BUILDUP = builder.comment("Mud and dust on lower panels, washed by water and rain; soot near exhausts.").define("vehicleSurfaceBuildup",true);

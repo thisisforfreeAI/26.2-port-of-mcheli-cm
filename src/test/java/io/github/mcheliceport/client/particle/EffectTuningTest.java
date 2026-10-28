@@ -100,4 +100,10 @@ class EffectTuningTest {
         assertEquals(1536, EffectTuning.smokeLimit(EffectBudget.BALANCED));
         assertEquals(256, EffectTuning.perTick(EffectBudget.BALANCED, false));
     }
+    @Test void onlyContrailsExtendTheBalancedRangeAndTheirEmitterAlreadyProvidesThinning(){
+        assertEquals(192,EffectTuning.distance(EffectBudget.BALANCED));assertEquals(256,EffectTuning.contrailDistance(EffectBudget.BALANCED));
+        assertEquals(EffectTuning.distance(EffectBudget.LOW),EffectTuning.contrailDistance(EffectBudget.LOW));
+        assertEquals(1,EffectTuning.contrailStride(0));assertEquals(4,EffectTuning.contrailStride(2));
+        var shared=new EffectTuning.Budget();assertTrue(shared.admit(1,1,1));assertFalse(shared.admit(1,1,EffectTuning.contrailStride(0)));
+    }
 }

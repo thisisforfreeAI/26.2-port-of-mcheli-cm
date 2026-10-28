@@ -602,12 +602,23 @@ These follow from how Minecraft 26.2 works or from decisions approved in PORTING
     outline and the emissive layers (exhaust flames) always take the per-frame path. M8's surface shading
     is baked into the GPU buffers too. If the GPU path fails once, it turns itself off for the
     session and logs why.
-109. Destroyed vehicles stay as burnt-out hulks for 10 minutes (server config `wrecks.persistentWrecks`
+109. AI pilots aim and fly with the port's fire control (`docs/M10_AI_FIRE_CONTROL.md`), not
+    upstream's checks. Upstream fired a gun whenever the target was within 20 degrees of the
+    heading, with no lead or drop, dropped bombs anywhere within 80 blocks, fired the first weapon
+    at any heading with none chosen, and turned its orbit point 2 degrees a tick; the port chooses
+    the weapon for the target, leads guns and rockets, releases bombs where they will land, launches
+    missiles within 45 degrees, flies passes and orbits planes can fly, and fires along its solution
+    rather than the nose. Orders use every weapon they list, not only the first non-gun one. Bomb runs
+    are flown from 100 blocks up (upstream 200). Wingmen top up a magazine that was never loaded,
+    which upstream's infinite ammunition did not. AI planes bank into every turn, lose their sideways
+    drift, are pushed towards their slot only forwards and circle a stopped leader instead of idling
+    in the air. Ground vehicles keep upstream's firing.
+110. Destroyed vehicles stay as burnt-out hulks for 10 minutes (server config `wrecks.persistentWrecks`
     and `wrecks.wreckLifetime`, 0 meaning until `/mcheli clearwrecks`), where upstream removed them
     after `DespawnCount` (25) seconds; turning `persistentWrecks` off restores that. Their blasts no
     longer set fire blocks unless `wrecks.fireBlocks` is on: clients draw a fuel fire under the wreck
     instead. A crashed plane's wreck also settles level onto its belly or back once it stops, where
-    upstream left it propped at the angle it landed (client-side visual attitude only).
+    upstream left it propped at the angle it landed (drawn that way on clients only).
 
 ## Upstream content issues kept as they are
 
