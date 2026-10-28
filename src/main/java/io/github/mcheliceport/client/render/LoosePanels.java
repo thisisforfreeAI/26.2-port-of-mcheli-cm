@@ -60,6 +60,8 @@ public final class LoosePanels {
     public static boolean scatter(AircraftEntity owner,Identifier texture,McheliModel.Group group,Matrix4f pose,Vector3f center,Vec3 impulse){
         var mc=Minecraft.getInstance();if(mc.level!=world){clear();world=mc.level;}
         long tick=world.getGameTime();if(birthTick!=tick){birthTick=tick;births=0;}
+        // Pieces kept around a hulk give way to fresh ones, oldest first.
+        if(PIECES.size()>=8)for(var p:PIECES)if(kept(p)){PIECES.remove(p);break;}
         int vertices=PIECES.stream().mapToInt(p->p.group.vertexCount()).sum();
         if(!enabled()||PIECES.size()>=8||births>=2||group.vertexCount()<3||group.vertexCount()>12000||vertices+group.vertexCount()>24000)return false;
         var at=pose.transformPosition(new Vector3f(center));var position=owner.position().add(at.x,at.y,at.z);
@@ -177,6 +179,8 @@ public final class LoosePanels {
                 || (io.github.mcheliceport.damage.AirframeDamage.missing(p.owner)&p.airframeBit)==0
                 : p.life>60&&!p.owner.isDestroyed()));
         for(var p:PIECES){
+            // Sections that came to rest by a hulk stay as long as it does.
+            if(kept(p))p.life=Math.max(p.life,p.age+40);
             p.motion.step();
             if(p.age%10==0){var block=BlockPos.containing(p.motion.position);if(world.hasChunkAt(block))p.light=LightCoordsUtil.getLightCoords(world,block);}
             if(p.motion.phase==DebrisMotion.Phase.SLIDE)
@@ -205,6 +209,7 @@ public final class LoosePanels {
             }
         }
     }
+    private static boolean kept(Piece p){return p.restAge>=0&&!p.skin&&p.owner.isDestroyed()&&!p.owner.isRemoved()&&p.motion.phase!=DebrisMotion.Phase.SUNK;}
     /** A section at rest leaves a scorch, smolders, and fades well after the fight has moved on. */
     private static void rest(Piece p){
         p.restAge=p.age;
@@ -223,10 +228,20 @@ public final class LoosePanels {
             boolean thermal=ThermalVision.drawsWhite(p.owner);
             Identifier texture=thermal?ThermalVision.WHITE:p.texture;
             int pieceLight=thermal?LightCoordsUtil.FULL_BRIGHT:p.light;
-            int color=((int)(255*Math.clamp((p.life-age)/15,0,1))<<24)|(thermal?0xFFFFFF:0xDADADA);
+            // Torn sections fell burning and wreck panels burnt with the hull: both are charred.
+            boolean burnt=!thermal&&WreckAppearance.enabled()&&(p.tear!=null||p.owner.isDestroyed());
+            int color=((int)(255*Math.clamp((p.life-age)/15,0,1))<<24)|(thermal?0xFFFFFF:burnt?0x8A857E:0xDADADA);
             event.getSubmitNodeCollector().submitCustomGeometry(event.getPoseStack(),RenderTypes.entityTranslucent(texture,false),(pose,buffer)->{
                 var local=pose.copy();local.mulPose(transform);ModelVertices.emit(buffer,local,List.of(p.group),color,pieceLight,false);
             });
+            if(burnt){
+                var soot=io.github.mcheliceport.client.model.WreckMesh.sootOf(p.group);
+                float charring=p.tear!=null&&!p.owner.isDestroyed()?Math.min(1,.3F+p.age/240F):1;
+                int sootColor=((int)(((color>>>24)&255)*(.5F+.4F*charring))<<24)|0xFFFFFF;
+                event.getSubmitNodeCollector().submitCustomGeometry(event.getPoseStack(),RenderTypes.entityTranslucent(WreckAppearance.CHAR,false),(pose,buffer)->{
+                    var local=pose.copy();local.mulPose(transform);ModelVertices.emit(buffer,local,List.of(soot),sootColor,pieceLight,false);
+                });
+            }
             var shell=p.tear==null?null:io.github.mcheliceport.client.model.BreakupMeshes.shell(p.group,p.tear.axis(),p.tear.cut(),p.tear.outward());
             if(shell==null)continue;
             int alpha=color&0xFF000000;

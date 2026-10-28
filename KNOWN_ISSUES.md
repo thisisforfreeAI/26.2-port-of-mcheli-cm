@@ -602,6 +602,12 @@ These follow from how Minecraft 26.2 works or from decisions approved in PORTING
     outline and the emissive layers (exhaust flames) always take the per-frame path. M8's surface shading
     is baked into the GPU buffers too. If the GPU path fails once, it turns itself off for the
     session and logs why.
+109. Destroyed vehicles stay as burnt-out hulks for 10 minutes (server config `wrecks.persistentWrecks`
+    and `wrecks.wreckLifetime`, 0 meaning until `/mcheli clearwrecks`), where upstream removed them
+    after `DespawnCount` (25) seconds; turning `persistentWrecks` off restores that. Their blasts no
+    longer set fire blocks unless `wrecks.fireBlocks` is on: clients draw a fuel fire under the wreck
+    instead. A crashed plane's wreck also settles level onto its belly or back once it stops, where
+    upstream left it propped at the angle it landed (client-side visual attitude only).
 
 ## Upstream content issues kept as they are
 

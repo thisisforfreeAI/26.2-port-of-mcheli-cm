@@ -10,6 +10,8 @@ final class WreckSmokeParticle extends SmokeParticle {
     private final double originY;
     private final boolean wisp;
     private final int column;
+    /** Gray multiplier: 1 for the hull's cooler smoke, lower for the black smoke of burning fuel. */
+    float soot=1;
     WreckSmokeParticle(ClientLevel level,double x,double y,double z,float radius,float fire,float opacity,
             boolean wisp,int column,float variation){
         super(level,x,y,z,0,0,0);
@@ -36,6 +38,7 @@ final class WreckSmokeParticle extends SmokeParticle {
         float at=age+partial,height=(float)(y-originY);
         float gray=SmokeBillowLook.gray(birthFire,at,lifetime,variation);
         float amber=SmokeBillowLook.amber(birthFire,at,height);
+        gray*=soot;
         setColor(gray+amber*.10F,gray+amber*.035F,gray*(1-amber*.10F));
         alpha=opacity;
         super.extract(state,camera,partial);
