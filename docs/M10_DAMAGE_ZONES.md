@@ -25,7 +25,7 @@ AircraftFeatures:
 
 | Key | Meaning | Default |
 | --- | --- | --- |
-| `Kind` | `ENGINE`, `MAIN_ROTOR`, `TAIL_ROTOR` or `FUEL_TANK` | required |
+| `Kind` | `ENGINE`, `MAIN_ROTOR`, `TAIL_ROTOR`, `FUEL_TANK`, or on planes `WING` and `AIRFRAME_TAIL` (M8 live airframe breakup) | required |
 | `Center`, `HalfSize` | The box, in body coordinates (the frame of the M8 impact payload). Half sizes in (0, 64] | required unless `Part` |
 | `Part` | A rotor's model group (`blade0`, `blade1`, ...). The zone is a 1-block box around that rotor's hub | none |
 | `Share` | Part of a hit's hull damage the component takes, 0 to 10 | 1.0 engine, 1.2 rotors, 0.8 fuel tank |
@@ -64,7 +64,7 @@ Nothing changes for listeners: `VehicleComponents.of(vehicle)` returns the place
 ## Tests
 
 - `AddonDamageZonesTest` (unit): TXT zones survive YAML conversion; placed zones replace derived
-  ones, count per kind and take a rotor's hub; a missing part, bad kinds, empty boxes and bad shares
+  ones, count per kind and take a rotor's hub (a plane's list replaces its derived wing and tail sections too: the first `WING` is the left wing, the second the right); a missing part, bad kinds, empty boxes and bad shares
   are skipped; the 8-slot cap; damage and repair use each zone's own share and health, and match M9
   for default zones.
 - `component_damage_addon_zones` (GameTest, stock AH-64 given a zone list): a round at the derived

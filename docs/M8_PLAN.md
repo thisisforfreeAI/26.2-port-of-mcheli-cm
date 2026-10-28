@@ -454,6 +454,15 @@ client work and shared geometry/particle admission. Original craters, handling a
 damage are unchanged; Claude's NTM integration remains separate. Target-PC 60 FPS acceptance
 remains open.
 
+## Live airborne airframe breakup
+
+[Localized wing/tail failures](M8_LIVE_AIRFRAME.md) now remove plane sections while hull HP
+remains. Independent structural component health saves/syncs and repairs through M9; appended
+slots preserve engine/rotor/fuel ordering. Cached disjoint masks keep left/right/tail loss
+consistent into wreck stages. Full-velocity mesh fragments retain the existing debris limits.
+Visual breakup leaves lift/handling, hitboxes, weapons and craters unchanged. NTM integration
+is untouched; 60 FPS on the target PC remains unmeasured.
+
 ## Wreck aftermath refinement
 
 [Wreck aftermath](M8_WRECK_AFTERMATH.md) adds selective part loss, damaged outer wings,

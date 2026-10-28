@@ -1,0 +1,148 @@
+{
+  "production_commit": "513d50fd61bf1bd70691d97b6184a9fa36948924",
+  "kind": "controlled-airborne-state-native-previews",
+  "backend": "Vulkan",
+  "driver": "llvmpipe Mesa 25.0.7-2+deb13u1 (LLVM 19.1.7)",
+  "unit_tests": 374,
+  "unit_failures": 0,
+  "local_required_gametests": 271,
+  "full_ci_required_normal": 271,
+  "full_ci_required_with_ntm": 279,
+  "first_production_ci_run": 40537858997,
+  "final_publication_checks": "Recorded on the PR for the final commit.",
+  "native_ntm_installed": false,
+  "local_optional_dependency_limit": "Local-only init excluded unavailable JEI/NTM dependencies and used throwing bridge stubs. CI builds full dependencies. No local JAR distributed.",
+  "flight_handling_changed": false,
+  "new_network_fields": 0,
+  "target_hardware_fps_measured": false,
+  "full_three_plane_run": {
+    "planes": [
+      "f-35a",
+      "f-15e",
+      "a-10"
+    ],
+    "live_mask_checks": 9,
+    "repair_checks": 6,
+    "toggle_cleanup_checks": 3,
+    "wreck_preservation_checks": 3,
+    "all_passed": true
+  },
+  "additional_a10_wider_camera_run": {
+    "all_passed": true,
+    "live_mask_checks": 3,
+    "repair_checks": 2,
+    "toggle_cleanup_checks": 1,
+    "wreck_preservation_checks": 1
+  },
+  "blood_pr_merge_tree_check": "Clean against PR107 at49fb252, without modifying the working tree or merging branches.",
+  "screenshots": [
+    {
+      "file": "docs/screens/m8-live-airframe/f-35a-intact.png",
+      "plane": "f-35a",
+      "stage": "intact",
+      "age": 40,
+      "width": 1280,
+      "height": 720,
+      "sha256": "3f2b467bbbcc06b6976ba608071a396a90d250f20b6221a9fa553291a9b02ee4"
+    },
+    {
+      "file": "docs/screens/m8-live-airframe/f-35a-left-wing.png",
+      "plane": "f-35a",
+      "stage": "left-wing",
+      "age": 80,
+      "width": 1280,
+      "height": 720,
+      "sha256": "042676569cf84f9a66271a8c3ff0215e2fd8b32a8111d530e397306c68757be1"
+    },
+    {
+      "file": "docs/screens/m8-live-airframe/f-35a-right-wing.png",
+      "plane": "f-35a",
+      "stage": "right-wing",
+      "age": 155,
+      "width": 1280,
+      "height": 720,
+      "sha256": "7384f0e3846ad0eef95ddc3cefeeaedac075cddc65bdf2a842888ac1021e6d40"
+    },
+    {
+      "file": "docs/screens/m8-live-airframe/f-35a-right-wing-tail.png",
+      "plane": "f-35a",
+      "stage": "right-wing-tail",
+      "age": 205,
+      "width": 1280,
+      "height": 720,
+      "sha256": "aedc3554a259c2593c12c561035096f0335e945178120b4b71e3314d6dc4dcc0"
+    },
+    {
+      "file": "docs/screens/m8-live-airframe/f-15e-intact.png",
+      "plane": "f-15e",
+      "stage": "intact",
+      "age": 40,
+      "width": 1280,
+      "height": 720,
+      "sha256": "1d3a263cca78f3f3efd12841731ccf2a9eb1f9e75006a91a1274a3658745f372"
+    },
+    {
+      "file": "docs/screens/m8-live-airframe/f-15e-left-wing.png",
+      "plane": "f-15e",
+      "stage": "left-wing",
+      "age": 80,
+      "width": 1280,
+      "height": 720,
+      "sha256": "05f895076485ee818d7ed5fba48ddd10a4df2ed03f438f8d0509a7c53897e89e"
+    },
+    {
+      "file": "docs/screens/m8-live-airframe/f-15e-right-wing.png",
+      "plane": "f-15e",
+      "stage": "right-wing",
+      "age": 155,
+      "width": 1280,
+      "height": 720,
+      "sha256": "f2f9e5e1af5f040726d839584df7fce66e37c10250557c8e655cb4361d85b4b9"
+    },
+    {
+      "file": "docs/screens/m8-live-airframe/f-15e-right-wing-tail.png",
+      "plane": "f-15e",
+      "stage": "right-wing-tail",
+      "age": 205,
+      "width": 1280,
+      "height": 720,
+      "sha256": "5407480eee83834ce03aa0b5a4bd54ae33c459a16984ea9e206e62f305ab3900"
+    },
+    {
+      "file": "docs/screens/m8-live-airframe/a-10-intact.png",
+      "plane": "a-10",
+      "stage": "intact",
+      "age": 40,
+      "width": 1280,
+      "height": 720,
+      "sha256": "822cb3c350cd3c42d6fd5d42bf3bd94861d26bbcbf1734068f44ade166a8e5b9"
+    },
+    {
+      "file": "docs/screens/m8-live-airframe/a-10-left-wing.png",
+      "plane": "a-10",
+      "stage": "left-wing",
+      "age": 80,
+      "width": 1280,
+      "height": 720,
+      "sha256": "e339232cbab7360714b931987e8f3ddb95b337a13610e72e9543570b3940e5cb"
+    },
+    {
+      "file": "docs/screens/m8-live-airframe/a-10-right-wing.png",
+      "plane": "a-10",
+      "stage": "right-wing",
+      "age": 155,
+      "width": 1280,
+      "height": 720,
+      "sha256": "da917f1571bc57c315249e9d4cd0b5f49c33dcfc73877a7f1818cc76f7079b6d"
+    },
+    {
+      "file": "docs/screens/m8-live-airframe/a-10-right-wing-tail.png",
+      "plane": "a-10",
+      "stage": "right-wing-tail",
+      "age": 205,
+      "width": 1280,
+      "height": 720,
+      "sha256": "a1e344aa674efbb2541f1f0c57365506e9cb71e170eb57557c71f03a86ac8be8"
+    }
+  ]
+}

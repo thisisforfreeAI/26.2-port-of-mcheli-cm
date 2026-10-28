@@ -17,6 +17,9 @@ public final class WreckSequenceEffects {
     public static final class State {
         public int age=-1,ammo,heavyAmmo,seed,parts,strikes,bursts;long tick=Long.MIN_VALUE;public boolean seenAlive;
         public boolean turret,cover,wing,tail,track;
+        public int liveMask=-1;
+        public final Map<Integer,Long> airframeLossAt=new HashMap<>();
+        public io.github.mcheliceport.client.model.BreakupMeshes.Airframe airframe;
         public Vec3 opening,ring;
         public final Set<String> scattered=new HashSet<>(),struck=new HashSet<>();
         public final Map<String,Strike> fragments=new HashMap<>();

@@ -27,4 +27,17 @@ class BreakupMeshesTest {
         assertEquals(0,parts.cover().vertexCount());assertArrayEquals(source.data(),parts.coverOpen().data());
     }
 
+    @Test void liveAirframeMasksConserveSurfaceAndNeverRemoveTheOtherWing() {
+        var box=new DetailBoxes();box.box(-7,0,-10,7,2,6);var source=box.group("$body");var original=source.data().clone();
+        for(int mask=0;mask<8;mask++){
+            var frame=BreakupMeshes.airframeBuild(source,mask);assertEquals(mask,frame.mask());
+            double total=area(frame.kept());
+            for(int i=0;i<3;i++)if((mask&(1<<i))!=0)total+=area(frame.sections().get(i));
+            assertEquals(area(source),total,.01,"mask "+mask);assertTrue(frame.kept().vertexCount()>0);
+        }
+        var left=BreakupMeshes.airframeBuild(source,1);assertEquals(7,BreakupMeshes.bounds(left.kept()).high().x,.001);
+        var right=BreakupMeshes.airframeBuild(source,2);assertEquals(-7,BreakupMeshes.bounds(right.kept()).low().x,.001);
+        assertArrayEquals(original,source.data());
+    }
+
 }

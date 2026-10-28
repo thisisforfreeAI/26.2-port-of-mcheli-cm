@@ -93,6 +93,7 @@ public final class ModGameTests {
         LongDistanceGameTests.register();
         BlockListGameTests.register();
         NtmGameTests.register();
+        LiveAirframeGameTests.register();
         LagCompensationGameTests.register();
         AntiCheatGameTests.register();
         ComponentDamageGameTests.register();

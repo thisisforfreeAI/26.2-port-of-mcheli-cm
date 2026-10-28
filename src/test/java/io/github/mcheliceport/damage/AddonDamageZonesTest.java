@@ -70,7 +70,7 @@ class AddonDamageZonesTest {
     @Test
     void badEntriesAreSkipped() throws Exception {
         HeliInfo heli = txt(
-                "AddDamageZone = WING, 0, 0, 0, 1, 1, 1",
+                "AddDamageZone = TURRET, 0, 0, 0, 1, 1, 1",
                 "AddDamageZone = ENGINE, blade0",
                 "AddDamageZone = ENGINE, 0, 0, 0, 0, 1, 1",
                 "AddDamageZone = ENGINE, 0, 0, 0, 1, 1, 1, 50",

@@ -128,4 +128,35 @@ class ComponentDamageTest {
         assertEquals(10.0F / 35.0F, ComponentDamage.fraction(10.0F, 1.0F, 100), 1e-6);
         assertEquals(12.0F / 35.0F, ComponentDamage.fraction(10.0F, 1.2F, 100), 1e-6);
     }
+    @Test void planeStructureAppendsToLegacySlotsAndDistinguishesBothSides() {
+        for(String name:List.of("f-35a","f-15e","a-10")){
+            var zones=DamageZones.of(stock.plane().get(name));
+            assertEquals(2,count(zones,ComponentKind.WING),name);assertEquals(1,count(zones,ComponentKind.AIRFRAME_TAIL),name);
+            int first=-1;for(int i=0;i<zones.size();i++)if(zones.get(i).kind()==ComponentKind.WING){first=i;break;}
+            assertTrue(first>0);
+            for(int i=first;i<zones.size();i++)assertTrue(AirframeDamage.bit(zones.get(i).kind(),zones.get(i).index())!=0);
+            for(int i=0;i<zones.size();i++){
+                int bit=AirframeDamage.bit(zones.get(i).kind(),zones.get(i).index());if(bit==0)continue;
+                long health=ComponentHealth.withLevel(ComponentHealth.FULL,i,0);
+                assertEquals(bit,AirframeDamage.missing(zones,health),name);
+                assertEquals(0,AirframeDamage.missing(zones,ComponentHealth.FULL));
+            }
+            for(int sign:new int[]{-1,1}){
+                int index=sign<0?0:1;
+                var wing=zones.stream().filter(z->z.kind()==ComponentKind.WING&&z.index()==index).findFirst().orElseThrow();
+                var from=wing.center().add(sign*(wing.halfSize().x+3),0,0);
+                int slot=ComponentDamage.pick(zones,from,new Vec3(-sign,0,0),30);
+                assertEquals(wing,zones.get(slot),name+" side "+sign);
+            }
+        }
+    }
+
+    @Test void debrisUsesObservedRemoteFlightWithoutInheritingTeleports() {
+        var travel=new Vec3(.1,0,.8);
+        assertEquals(travel,AirframeDamage.fragmentMotion(Vec3.ZERO,travel));
+        assertEquals(travel,AirframeDamage.fragmentMotion(travel,Vec3.ZERO));
+        assertEquals(Vec3.ZERO,AirframeDamage.fragmentMotion(Vec3.ZERO,new Vec3(100,0,0)));
+        assertEquals(Vec3.ZERO,AirframeDamage.fragmentMotion(Vec3.ZERO,new Vec3(Double.NaN,0,0)));
+    }
+
 }

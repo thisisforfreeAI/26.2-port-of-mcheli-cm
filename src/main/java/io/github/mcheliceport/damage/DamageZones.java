@@ -108,6 +108,10 @@ public final class DamageZones {
                     new Vec3(Math.min((hull.maxX - hull.minX) / 2, info.bodyWidth / 2.0), (hull.maxY - hull.minY) / 4,
                             len / 6), ""));
         }
+        // Append only: existing engine/rotor/fuel slot indices in saves and items stay valid.
+        if (info instanceof io.github.mcheliceport.content.aircraft.PlaneInfo && zones.size() <= ComponentHealth.SLOTS - 3) {
+            zones.addAll(AirframeDamage.zones(info, hull));
+        }
         if (zones.size() > ComponentHealth.SLOTS) {
             zones = zones.subList(0, ComponentHealth.SLOTS);
         }

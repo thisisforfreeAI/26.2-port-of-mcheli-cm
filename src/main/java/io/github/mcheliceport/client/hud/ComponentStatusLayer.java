@@ -38,6 +38,8 @@ public final class ComponentStatusLayer {
             case MAIN_ROTOR -> "R";
             case TAIL_ROTOR -> "T";
             case FUEL_TANK -> "F";
+            case WING -> view.index()==0?"WL":"WR";
+            case AIRFRAME_TAIL -> "T";
         };
     }
 

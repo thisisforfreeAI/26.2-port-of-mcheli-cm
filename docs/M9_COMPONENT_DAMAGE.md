@@ -16,6 +16,8 @@ positions, so `damage.DamageZones` derives them:
 | Main rotor | 1-block box around each rotor hub turning about a mostly vertical axis | Helicopters, VTOL rotors |
 | Tail rotor | 1-block box around each helicopter rotor turning about a horizontal axis | Helicopters |
 | Fuel tank | Middle third of the hull | Vehicles that burn fuel |
+| Left/right wing | Authored side boxes, else outer hull estimates | Planes with three spare component slots |
+| Rear airframe | Rearmost authored box, else rear hull estimate | Same planes |
 
 The AH-64, for example, gets two engines (from its two outlets), its main rotor (`blade0`), its tail
 rotor (`blade1`) and a fuel tank.
@@ -53,7 +55,7 @@ VehicleComponents.addListener((vehicle, before, after) -> { ... });
 
 `ComponentView` carries:
 
-- `kind`: ENGINE, MAIN_ROTOR, TAIL_ROTOR or FUEL_TANK.
+- `kind`: ENGINE, MAIN_ROTOR, TAIL_ROTOR, FUEL_TANK, WING or AIRFRAME_TAIL.
 - `index`: its number among components of that kind.
 - `state` and `health` (0 to 1).
 - `center` and `halfSize`, in body coordinates.
@@ -114,3 +116,15 @@ so the pilot's client, which flies the vehicle, and the server agree.
 - `component_effects_tail_rotor_and_leak` (GameTest, AH-64): a dead tail rotor keeps engine power,
   spins the helicopter at 2°/tick in a hover and not at all at speed; a holed tank leaks 1% a
   second without exploding.
+
+
+## M8 live structural presentation
+
+`WING` (0/1) and `AIRFRAME_TAIL` append after existing plane components only when all three
+fit the eight-slot budget. They share the existing save/item/sync/repair path, with 1.0 damage
+share; the original engine/rotor/fuel slot order remains valid. Projectile entry ties prefer the
+smaller zone, allowing precise wing/tail zones to win over equally early broad fallback engines.
+The M8 renderer removes disabled sections while the plane is alive, retains them through later
+wreck breakup and restores them on repair. The HUD labels these WL/WR/T. These new component
+kinds affect presentation; they do not alter lift, steering or thrust. See
+[M8 live airframes](M8_LIVE_AIRFRAME.md) for geometry, debris and resource limits.
