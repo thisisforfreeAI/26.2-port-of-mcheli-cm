@@ -3,16 +3,11 @@ package io.github.mcheliceport.entity.gunner;
 import io.github.mcheliceport.config.CommonConfig;
 import io.github.mcheliceport.content.aircraft.AircraftInfo;
 import io.github.mcheliceport.content.aircraft.SeatInfo;
-import io.github.mcheliceport.content.weapon.WeaponInfo;
 import io.github.mcheliceport.entity.NpcBattles;
 import io.github.mcheliceport.entity.aircraft.AircraftEntity;
+import io.github.mcheliceport.entity.aircraft.Countermeasures;
 import io.github.mcheliceport.entity.seat.SeatEntity;
 import io.github.mcheliceport.entity.vehicle.VehicleEntity;
-import io.github.mcheliceport.entity.weapon.AAMissileEntity;
-import io.github.mcheliceport.entity.weapon.ASMissileEntity;
-import io.github.mcheliceport.entity.weapon.ATMissileEntity;
-import io.github.mcheliceport.entity.weapon.BaseBulletEntity;
-import io.github.mcheliceport.entity.weapon.TvMissileEntity;
 import io.github.mcheliceport.registry.ModItems;
 import io.github.mcheliceport.util.McheliSounds;
 import io.github.mcheliceport.weapon.WeaponBase;
@@ -244,68 +239,12 @@ public class GunnerEntity extends LivingEntity {
      */
     private void autoUseCountermeasures(AircraftEntity ac) {
         if (ac.isDestroyed() || this.autoCountermeasureCooldown > 0 || this.tickCount % 5 != 0
-                || !this.hasIncomingGuidedThreat(ac)) {
+                || Countermeasures.incoming(ac) == null) {
             return;
         }
-        boolean used = false;
-        int flareType = this.getAutoCountermeasureFlareType(ac);
-        if (flareType > 0 && ac.canUseFlare() && ac.useFlare(flareType)) {
-            used = true;
-        }
-        if (ac.canUseChaff() && ac.useChaff()) {
-            used = true;
-        }
-        if (ac.haveECMJammer() && ac.useECMJammer()) {
-            used = true;
-        }
-        if (ac.canUseAPS() && ac.useAPS()) {
-            used = true;
-        }
-        if (used) {
+        if (Countermeasures.fire(ac)) {
             this.autoCountermeasureCooldown = 30;
         }
-    }
-
-    /** The decoy pattern 10 when the vehicle has it, else its selected or first pattern. */
-    private int getAutoCountermeasureFlareType(AircraftEntity ac) {
-        AircraftInfo info = ac.getAcInfo();
-        if (!ac.haveFlare() || info == null || info.flare == null || info.flare.types == null) {
-            return 0;
-        }
-        int[] types = info.flare.types;
-        for (int type : types) {
-            if (type == 10) {
-                return 10;
-            }
-        }
-        int current = ac.getCurrentFlareType();
-        if (current > 0) {
-            return current;
-        }
-        return types.length > 0 ? types[0] : 0;
-    }
-
-    /** A guided weapon within 220 blocks homes on the vehicle or one of its riders. */
-    private boolean hasIncomingGuidedThreat(AircraftEntity ac) {
-        List<BaseBulletEntity> list = this.level().getEntitiesOfClass(BaseBulletEntity.class,
-                ac.getBoundingBox().inflate(220.0));
-        for (BaseBulletEntity bullet : list) {
-            WeaponInfo info = bullet.getInfo();
-            Entity target = bullet.targetEntity;
-            if (!bullet.isAlive() || info == null || target == null) {
-                continue;
-            }
-            if (!ac.isMountedEntity(target) && target != ac) {
-                continue;
-            }
-            if (info.isHeatSeekerMissile || info.isRadarMissile || info.passiveRadar || info.activeRadar
-                    || info.laserGuidance || info.isGPSMissile || bullet instanceof AAMissileEntity
-                    || bullet instanceof ATMissileEntity || bullet instanceof ASMissileEntity
-                    || bullet instanceof TvMissileEntity) {
-                return true;
-            }
-        }
-        return false;
     }
 
     // ---- targeting ----

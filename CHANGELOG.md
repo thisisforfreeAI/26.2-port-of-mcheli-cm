@@ -11,6 +11,11 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 ## [Unreleased]
 
 ### Added
+- Smarter AI pilots (M10d): wingmen and aircraft on mission orders look ahead for terrain and climb
+  before hills, fire their decoys at a homing missile after a reaction time and turn away from it,
+  and break off (or fly home from an order) once an engine or rotor is disabled. New server config
+  `[ai]` with `difficulty` (`EASY`, `NORMAL`, `VETERAN`; Veteran flies attack runs low) and
+  `terrainAvoidance`. See `docs/M10_AI_PILOTS.md`.
 - Ground crew (M10c): a new Repair Pad block; a vehicle parked on a 3x3 pad with its engine off is
   repaired 10 HP a second and refuelled and rearmed from supply vehicles within 8 blocks. A new
   ammo cart carries 600 rounds, rearms the emptiest weapon of each vehicle within 8 blocks once a

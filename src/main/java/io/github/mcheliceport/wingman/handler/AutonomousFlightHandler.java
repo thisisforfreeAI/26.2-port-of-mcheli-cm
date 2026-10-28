@@ -1052,7 +1052,7 @@ public final class AutonomousFlightHandler {
     }
 
     /** Upstream {@code triggerRtb}: a reconnaissance reports its count to players within 500 blocks. */
-    private static void triggerRtb(ServerLevel level, AircraftEntity wingman, WingmanEntry entry, String reason) {
+    static void triggerRtb(ServerLevel level, AircraftEntity wingman, WingmanEntry entry, String reason) {
         entry.rtbReason = reason;
         entry.autoState = AutonomousState.RTB;
         entry.attackMode = WingmanEntry.ATK_NONE;
