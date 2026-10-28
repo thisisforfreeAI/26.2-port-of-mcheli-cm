@@ -47,6 +47,8 @@ public final class DebrisMotion {
         if(finite(inheritedSpin))spin.set(inheritedSpin);clampSpin();inherited.set(spin);
         phase=Phase.FREE;
     }
+    /** The aircraft's own rotation at the moment of release, kept on top of the tear fold. */
+    public void inherit(Vector3f rate){if(age>0||!finite(rate))return;spin.set(rate);clampSpin();inherited.set(spin);}
     /** Before release, the section folds about its torn root (an offset from the centre) for a few ticks. */
     public void tear(Vec3 hingeOffset) {
         if(phase!=Phase.FREE||age>0||hingeOffset==null||!finite(hingeOffset)||hingeOffset.lengthSqr()<=.01)return;
@@ -147,12 +149,12 @@ public final class DebrisMotion {
             velocity=velocity.subtract(normal.scale(1.4*Math.min(0,vn)));
             position=hit.add(normal.scale(height()+.02));return Event.NONE;
         }
-        if(vn>=0) {position=hit.add(normal.scale(.05));return Event.NONE;}
+        if(vn>=0) {position=hit.add(normal.scale(normal.y>.6?height()+.02:.05));return Event.NONE;}
         // Impulse at the lowest corner: restitution along the normal, Coulomb friction along the ground.
         Vec3 corner=corner(normal);
         double e=Math.clamp(.42-.25*plate-.06*bounces,.08,.42);
         Vec3 normalV=normal.scale(vn),tangent=velocity.subtract(normalV);
-        double j=(1+e)*-vn,friction=Math.min(.45*j,tangent.length());
+        double j=(1+e)*-vn,friction=Math.min(.3*j,tangent.length());
         Vec3 frictionV=tangent.lengthSqr()>1.0E-8?tangent.normalize().scale(-friction):Vec3.ZERO;
         velocity=tangent.add(frictionV).add(normal.scale(-vn*e));
         double inertia=Math.max(.15,(half.lengthSquared())/3);
