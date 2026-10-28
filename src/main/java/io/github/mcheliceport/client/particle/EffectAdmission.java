@@ -73,8 +73,17 @@ final class EffectAdmission {
         return admit(level, x, y, z, false, radius * 1.733F, false, 3);
     }
 
+    static boolean admitContrail(ClientLevel level,double x,double y,double z,float radius){
+        return admit(level,x,y,z,false,radius,false,1,true);
+    }
+
     private static boolean admit(ClientLevel level, double x, double y, double z, boolean isFlash,
             float radius, boolean blastLobe, int quads) {
+        return admit(level,x,y,z,isFlash,radius,blastLobe,quads,false);
+    }
+
+    private static boolean admit(ClientLevel level,double x,double y,double z,boolean isFlash,
+            float radius,boolean blastLobe,int quads,boolean contrail) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.level != level || mc.getCameraEntity() == null) {
             return false;
@@ -86,13 +95,13 @@ final class EffectAdmission {
         }
         EffectBudget quality = ClientConfig.get(ClientConfig.EFFECT_BUDGET);
         double distance = mc.gameRenderer.mainCamera().position().distanceToSqr(x, y, z);
-        int range = EffectTuning.distance(quality);
+        int range = contrail?EffectTuning.contrailDistance(quality):EffectTuning.distance(quality);
         if (!Double.isFinite(distance) || distance > range * range) {
             return false;
         }
         int pressure = isFlash ? 0 : EffectPerformance.pressure();
-        int stride = EffectTuning.admissionStride(distance, mc.options.particles().get().ordinal(), isFlash,
-                pressure, blastLobe);
+        int stride = contrail?EffectTuning.contrailStride(mc.options.particles().get().ordinal())
+                :EffectTuning.admissionStride(distance, mc.options.particles().get().ordinal(), isFlash, pressure, blastLobe);
         int cap = Math.max(16, EffectTuning.perTick(quality, isFlash) / (1 + pressure));
         int cost = isFlash ? 1 : EffectTuning.coverageCost(radius, distance) * quads;
         return (isFlash ? flash : smoke).admit(level.getGameTime(), cap, stride, cost);

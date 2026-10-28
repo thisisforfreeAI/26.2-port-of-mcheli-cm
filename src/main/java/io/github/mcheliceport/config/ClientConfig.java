@@ -179,7 +179,7 @@ public final class ClientConfig {
                 .define("rotorWashDebris", true);
         ENGINE_STARTUP_EFFECTS = builder.comment("Enhanced engine startup puffs, spooling turbine whine and gradual heat buildup.")
                 .define("engineStartupEffects", true);
-        AIRCRAFT_CONDENSATION = builder.comment("Short wingtip vapor during suitable wet turns. Disable to reduce optional aircraft detail.")
+        AIRCRAFT_CONDENSATION = builder.comment("Wingtip vapor in suitable wet turns and high-altitude jet contrails. Disable to reduce optional aircraft detail.")
                 .define("aircraftCondensation",true);
         VEHICLE_WATER_DETAILS = builder.comment("Bounded V wakes, shallow-water spray and detached-panel splashes.").define("vehicleWaterDetails",true);
         VEHICLE_SMALL_MOTION = builder.comment("Flexible supported antennas, authored nozzle-cover vibration and hanging exposed cables.").define("vehicleSmallMotion",true);

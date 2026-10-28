@@ -1,0 +1,259 @@
+{
+  "kind": "altitude-dependent-contrails",
+  "unit_results": {
+    "tests": 427,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "runs": [
+    {
+      "backend": "VULKAN",
+      "all_passed": true,
+      "scenes": [
+        {
+          "scene": "f-35a",
+          "drained": true,
+          "peak_mod_particles": 66,
+          "peak_contrail": 66,
+          "peak_far_births": 0
+        },
+        {
+          "scene": "f22a-remote",
+          "drained": true,
+          "peak_mod_particles": 128,
+          "peak_contrail": 128,
+          "peak_far_births": 0
+        },
+        {
+          "scene": "b-2a",
+          "drained": true,
+          "peak_mod_particles": 128,
+          "peak_contrail": 128,
+          "peak_far_births": 0
+        },
+        {
+          "scene": "low-altitude",
+          "drained": true,
+          "peak_mod_particles": 0,
+          "peak_contrail": 0,
+          "peak_far_births": 0
+        },
+        {
+          "scene": "engine-off",
+          "drained": true,
+          "peak_mod_particles": 0,
+          "peak_contrail": 0,
+          "peak_far_births": 0
+        },
+        {
+          "scene": "far-observer",
+          "drained": true,
+          "peak_mod_particles": 12,
+          "peak_contrail": 12,
+          "peak_far_births": 1
+        },
+        {
+          "scene": "settings",
+          "drained": true,
+          "peak_mod_particles": 40,
+          "peak_contrail": 40,
+          "peak_far_births": 0
+        },
+        {
+          "scene": "classic",
+          "drained": true,
+          "peak_mod_particles": 0,
+          "peak_contrail": 0,
+          "peak_far_births": 0
+        },
+        {
+          "scene": "shared-load",
+          "drained": true,
+          "peak_mod_particles": 684,
+          "peak_contrail": 684,
+          "peak_far_births": 0
+        },
+        {
+          "scene": "mixed-load",
+          "drained": true,
+          "peak_mod_particles": 221,
+          "peak_contrail": 192,
+          "peak_far_births": 2
+        },
+        {
+          "scene": "unsupported-f-15e",
+          "drained": true,
+          "peak_mod_particles": 0,
+          "peak_contrail": 0,
+          "peak_far_births": 0
+        }
+      ]
+    },
+    {
+      "backend": "OPENGL",
+      "all_passed": true,
+      "scenes": [
+        {
+          "scene": "low-altitude",
+          "drained": true,
+          "peak_mod_particles": 0,
+          "peak_contrail": 0,
+          "peak_far_births": 0
+        },
+        {
+          "scene": "engine-off",
+          "drained": true,
+          "peak_mod_particles": 0,
+          "peak_contrail": 0,
+          "peak_far_births": 0
+        },
+        {
+          "scene": "far-observer",
+          "drained": true,
+          "peak_mod_particles": 11,
+          "peak_contrail": 11,
+          "peak_far_births": 1
+        },
+        {
+          "scene": "settings",
+          "drained": true,
+          "peak_mod_particles": 40,
+          "peak_contrail": 40,
+          "peak_far_births": 0
+        },
+        {
+          "scene": "classic",
+          "drained": true,
+          "peak_mod_particles": 0,
+          "peak_contrail": 0,
+          "peak_far_births": 0
+        },
+        {
+          "scene": "shared-load",
+          "drained": true,
+          "peak_mod_particles": 678,
+          "peak_contrail": 678,
+          "peak_far_births": 0
+        },
+        {
+          "scene": "mixed-load",
+          "drained": true,
+          "peak_mod_particles": 224,
+          "peak_contrail": 192,
+          "peak_far_births": 2
+        },
+        {
+          "scene": "unsupported-f-15e",
+          "drained": true,
+          "peak_mod_particles": 0,
+          "peak_contrail": 0,
+          "peak_far_births": 0
+        }
+      ]
+    }
+  ],
+  "bounds": {
+    "life_ticks": 96,
+    "range_blocks": {
+      "LOW": 96,
+      "BALANCED": 256,
+      "HIGH": 256
+    },
+    "maximum_geometry_half_extent_blocks": 8.8,
+    "atmosphere_states": 128,
+    "retained_far_states": 64,
+    "shared_atmosphere_births_per_tick": {
+      "LOW": 8,
+      "BALANCED": 16,
+      "HIGH": 24
+    },
+    "far_births_per_tick": 2,
+    "authored_outlets": 4,
+    "maximum_samples_per_outlet": 2,
+    "biome_sample_period_ticks": 20,
+    "one_quad_per_particle": true,
+    "new_textures": 0,
+    "new_shaders": 0,
+    "new_scene_or_light_passes": 0
+  },
+  "notes": [
+    "Controlled held trajectories; unedited native Vulkan PNGs, clouds disabled. Not combat recordings.",
+    "Far observer: 200 blocks below, 35-degree FOV, 16-chunk view distance. Other scenes 70-degree FOV.",
+    "Minecraft-scaled altitude/biome coldness proxy, not real atmospheric simulation.",
+    "97-aircraft mixed load first admits nearby states, then moves 96 far; checks retained-state pruning and nearby damage smoke.",
+    "Only authored jet outlets; stock F-15E intentionally unsupported.",
+    "Classic/configuration/shutdown drain; missing tails stop new contrails.",
+    "Existing smoke count and coverage admission and atmosphere pool remain shared. General smoke/explosion ranges unchanged.",
+    "Local optional-dependency exclusions/throwing stubs; no local JAR distributed.",
+    "Software Mesa does not establish target-PC 60 FPS / 1080p."
+  ],
+  "screens": [
+    {
+      "file": "docs/screens/m8-contrails/m8-contrail-b-2a-engine-close.png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "b8af8cbf994b5f9363c7e5b27ae6d5e514c9acde7dabf3f0e52544122af97602"
+    },
+    {
+      "file": "docs/screens/m8-contrails/m8-contrail-b-2a-flight.png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "0bc2bf19e68f14b7b5733e96f7db1e7b1645c62c3d9075d7e5d8346c819fd6d5"
+    },
+    {
+      "file": "docs/screens/m8-contrails/m8-contrail-engine-off-flight.png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "a21956690d91b17d44d14cb8e3535e4fb7773541edce6b2de1bc83287d9df7ee"
+    },
+    {
+      "file": "docs/screens/m8-contrails/m8-contrail-f-35a-engine-close.png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "01870bd4ae7f550393edae11541352bfdbf87404a4d50b79cf36d62cb565e769"
+    },
+    {
+      "file": "docs/screens/m8-contrails/m8-contrail-f-35a-flight.png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "66bd74977e59538a7f95e988ac8a141dda6addc8e608a9aa52b842d31c9fb31c"
+    },
+    {
+      "file": "docs/screens/m8-contrails/m8-contrail-f22a-remote-engine-close.png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "2379b4205273ddcbf7af7a1fd3ade62aefb265948c90352dcf4f12d65d0a5054"
+    },
+    {
+      "file": "docs/screens/m8-contrails/m8-contrail-f22a-remote-flight.png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "9dc4fb7ab21e59feec231fafdc8bbda7af16b7c107ebc5323d586755bc235573"
+    },
+    {
+      "file": "docs/screens/m8-contrails/m8-contrail-far-observer-flight.png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "7b9227e51873efedfbe13f411e20936059fe0c57f69ce69655a7e623e8199461"
+    },
+    {
+      "file": "docs/screens/m8-contrails/m8-contrail-low-altitude-flight.png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "3f71d7c68ea65c9a33f3142f92082e7ab0710ba60c59b776299d658d7b85e134"
+    },
+    {
+      "file": "docs/screens/m8-contrails/m8-contrail-shared-load-flight.png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "3c05680ebb9ea4ebf0ec5e00d90318e92ffdbcf5496ce0d5daef9590103efeb9"
+    },
+    {
+      "file": "docs/screens/m8-contrails/m8-contrail-unsupported-f-15e-flight.png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "c25ddcde95dea076cd71d7ac16f88f133f2a25670e165f7bc9eca1a324efc0cb"
+    }
+  ]
+}
