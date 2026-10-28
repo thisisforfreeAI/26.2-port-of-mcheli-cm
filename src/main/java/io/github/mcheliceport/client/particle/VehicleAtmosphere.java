@@ -34,6 +34,8 @@ public final class VehicleAtmosphere {
     private static final class State {
         final VehicleAtmosphereLook engine = new VehicleAtmosphereLook();
         final WreckCoolingLook cooling = new WreckCoolingLook();
+        final AircraftCondensationLook condensation=new AircraftCondensationLook();
+        int vaporMask;
         Whine whine;
         void stop() { if (whine != null) { whine.finish(); whine = null; } }
     }
@@ -51,6 +53,7 @@ public final class VehicleAtmosphere {
         lastTick = Long.MIN_VALUE; CookoffEffects.clear(); WreckSequenceEffects.clear();
     }
     public static int stateCount() { return STATES.size(); }
+    public static int wingVaporMask(AircraftEntity aircraft){var s=STATES.get(aircraft);return s==null?0:s.vaporMask;}
     public static int emitted() { return world!=null&&admissionWorld.get()==world&&admissionTick==world.getGameTime()?emitted:0; }
     public static int wreckAge(AircraftEntity ac) { var state=STATES.get(ac);return state==null?-1:state.cooling.age(); }
     public static long startupVoiceCount() {
@@ -87,6 +90,8 @@ public final class VehicleAtmosphere {
                 state = new State(); STATES.put(aircraft, state);
             }
             state.cooling.tick(aircraft.isDestroyed());
+            state.vaporMask=0;
+            if(aircraft instanceof PlaneEntity plane)WingVaporEffects.update(level,plane,state.condensation,now);
             WreckSequenceEffects.tick(level,aircraft,state.cooling.age());
             boolean powered = !aircraft.isDestroyed() && aircraft.canUseFuel()
                     && !(aircraft instanceof PlaneEntity p && io.github.mcheliceport.client.render.PlaneAirframeParts.tailMissing(p));
@@ -127,6 +132,7 @@ public final class VehicleAtmosphere {
             if (ClientConfig.get(ClientConfig.VEHICLE_DAMAGE_DETAILS)) damage(level, aircraft, origins, now, state.cooling);
             if (ClientConfig.get(ClientConfig.VEHICLE_DAMAGE_DETAILS)&&aircraft instanceof PlaneEntity plane)
                 FuelSprayEffects.emit(level,plane,origins,now);
+            if(aircraft instanceof PlaneEntity plane)state.vaporMask=WingVaporEffects.emit(level,plane,state.condensation,now);
         }
     }
 

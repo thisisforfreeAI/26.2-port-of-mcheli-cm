@@ -1,0 +1,198 @@
+{
+  "kind": "wet-turn-wingtip-vapor",
+  "base_commit": "6b73f309ef7dec0bfde69c9df3bb774c9d0c7ce6",
+  "unit_results": {
+    "tests": 421,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "runs": [
+    {
+      "backend": "VULKAN",
+      "all_passed": true,
+      "scenes": [
+        {
+          "scene": "f-35a",
+          "drained": true,
+          "peak_mod_particles": 24,
+          "peak_vapor_particles": 24,
+          "observed_surviving_wing_mask": 0
+        },
+        {
+          "scene": "f-15e-remote",
+          "drained": true,
+          "peak_mod_particles": 24,
+          "peak_vapor_particles": 24,
+          "observed_surviving_wing_mask": 0
+        },
+        {
+          "scene": "a-10",
+          "drained": true,
+          "peak_mod_particles": 24,
+          "peak_vapor_particles": 24,
+          "observed_surviving_wing_mask": 0
+        },
+        {
+          "scene": "dry-turn",
+          "drained": true,
+          "peak_mod_particles": 24,
+          "peak_vapor_particles": 24,
+          "observed_surviving_wing_mask": 0
+        },
+        {
+          "scene": "straight-rain",
+          "drained": true,
+          "peak_mod_particles": 0,
+          "peak_vapor_particles": 0,
+          "observed_surviving_wing_mask": 0
+        },
+        {
+          "scene": "lost-wing",
+          "drained": true,
+          "peak_mod_particles": 24,
+          "peak_vapor_particles": 24,
+          "observed_surviving_wing_mask": 2
+        },
+        {
+          "scene": "settings",
+          "drained": true,
+          "peak_mod_particles": 24,
+          "peak_vapor_particles": 24,
+          "observed_surviving_wing_mask": 0
+        },
+        {
+          "scene": "shared-load",
+          "drained": true,
+          "peak_mod_particles": 234,
+          "peak_vapor_particles": 234,
+          "observed_surviving_wing_mask": 0
+        }
+      ]
+    },
+    {
+      "backend": "OPENGL",
+      "all_passed": true,
+      "scenes": [
+        {
+          "scene": "dry-turn",
+          "drained": true,
+          "peak_mod_particles": 0,
+          "peak_vapor_particles": 0,
+          "observed_surviving_wing_mask": 0
+        },
+        {
+          "scene": "straight-rain",
+          "drained": true,
+          "peak_mod_particles": 0,
+          "peak_vapor_particles": 0,
+          "observed_surviving_wing_mask": 0
+        },
+        {
+          "scene": "lost-wing",
+          "drained": true,
+          "peak_mod_particles": 24,
+          "peak_vapor_particles": 24,
+          "observed_surviving_wing_mask": 2
+        },
+        {
+          "scene": "settings",
+          "drained": true,
+          "peak_mod_particles": 24,
+          "peak_vapor_particles": 24,
+          "observed_surviving_wing_mask": 0
+        },
+        {
+          "scene": "shared-load",
+          "drained": true,
+          "peak_mod_particles": 236,
+          "peak_vapor_particles": 236,
+          "observed_surviving_wing_mask": 0
+        }
+      ]
+    }
+  ],
+  "bounds": {
+    "life_ticks": 24,
+    "range_blocks": 48,
+    "low_range_blocks": 24,
+    "maximum_geometry_half_extent_blocks": 2.31,
+    "atmosphere_states": 128,
+    "shared_atmosphere_births_per_tick": {
+      "LOW": 8,
+      "BALANCED": 16,
+      "HIGH": 24
+    },
+    "mesh_cache_entries": 32,
+    "pending_builds": 4,
+    "workers": 1,
+    "one_quad_per_particle": true,
+    "new_textures": 0,
+    "new_scene_or_light_passes": 0
+  },
+  "notes": [
+    "Unedited Vulkan PNGs of held motion/weather states; not combat recordings.",
+    "Initial native review prompted a pale water-vapor material using the existing wisp alpha and normal ambient vertex lighting.",
+    "One atlas read per fragment, no new texture; all particle/coverage limits remain shared.",
+    "Rain intensity is a humidity proxy.",
+    "OpenGL repeats dry/straight/missing-wing/settings/load scenes.",
+    "Local optional-dependency exclusions/throwing stubs; no local JAR distributed.",
+    "Software Mesa does not establish target-PC 60 FPS / 1080p."
+  ],
+  "screens": [
+    {
+      "file": "docs/screens/m8-wing-vapor/m8-vapor-f-35a-turn.png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "182dc8777be0f01bb09e16333d3fc4e33434d99034f0e0574e45ba4811a88bbf"
+    },
+    {
+      "file": "docs/screens/m8-wing-vapor/m8-vapor-f-35a-close.png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "7a508abe2857c546eb3e26d44d2cb83dd3b7aae676a6a913791aaecac8cc9101"
+    },
+    {
+      "file": "docs/screens/m8-wing-vapor/m8-vapor-f-15e-remote-turn.png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "d844f8fd907ff3f412dbd6f5cdf40bee9d776d21cf0ba955282ae0f9a792096c"
+    },
+    {
+      "file": "docs/screens/m8-wing-vapor/m8-vapor-f-15e-remote-close.png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "9547dd56d4c94f8056cc32f35115f7b516f5eaa0ee963d531d07a5a0d277ba56"
+    },
+    {
+      "file": "docs/screens/m8-wing-vapor/m8-vapor-a-10-turn.png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "60e6f3287d1de5c13384ea2d45fa7007e11f683128a886cade626c5da49d80c6"
+    },
+    {
+      "file": "docs/screens/m8-wing-vapor/m8-vapor-a-10-close.png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "86857f0568dbf01cfb650e0286461bb71b33a8e603af67ad92ea891bb565321c"
+    },
+    {
+      "file": "docs/screens/m8-wing-vapor/m8-vapor-dry-turn-later.png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "88e2cdd657a0a0c5dddbce93d24b1dfd42df8b3f524556139711683312ef4696"
+    },
+    {
+      "file": "docs/screens/m8-wing-vapor/m8-vapor-lost-wing-close.png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "76f5eaea72c9a0938ec6582ce1b28a6c6d453f491cd769f9e9869dfdd5841a32"
+    },
+    {
+      "file": "docs/screens/m8-wing-vapor/m8-vapor-shared-load-turn.png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "1efddf2c31adace99e43a32ee0a55e68a57e7abd28878fb07182079e7a0dfffa"
+    }
+  ]
+}
