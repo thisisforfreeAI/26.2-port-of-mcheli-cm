@@ -315,9 +315,20 @@ public final class AircraftWeapons {
         this.getCurrentWeapon(entity).switchMode();
     }
 
-    /** Upstream {@code manualReloadForPlayer}: the R key; the server confirms it to the client. */
+    /**
+     * Upstream {@code manualReloadForPlayer}: the R key; the server confirms it to the client. A
+     * loader's key (M10b) reloads the vehicle's emptiest gun instead of a selected weapon.
+     */
     public void manualReloadForPlayer(Player player) {
-        boolean didReload = this.getCurrentWeapon(player).manualReload();
+        WeaponSet target = this.getCurrentWeapon(player);
+        if (CrewRoles.roleOf(this.ac, player) == io.github.mcheliceport.content.aircraft.CrewRole.LOADER) {
+            int id = CrewRoles.loaderTarget(this);
+            if (id < 0) {
+                return;
+            }
+            target = this.getWeapon(id);
+        }
+        boolean didReload = target.manualReload();
         if (didReload && player instanceof ServerPlayer serverPlayer) {
             ModNetwork.sendToPlayer(serverPlayer, new SyncReloadPayload(this.ac.getId()));
         }

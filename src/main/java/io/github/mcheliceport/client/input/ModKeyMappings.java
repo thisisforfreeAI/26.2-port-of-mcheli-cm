@@ -105,6 +105,9 @@ public final class ModKeyMappings {
     /** Upstream {@code KeyAirburstDistReset} (-99, the right mouse button). */
     public static final KeyMapping AIRBURST_RESET = mouse("airburst_reset", GLFW.GLFW_MOUSE_BUTTON_RIGHT);
 
+    /** M10b: a commander marks what they look at for the crew. */
+    public static final KeyMapping MARK_TARGET = key("mark_target", GLFW.GLFW_KEY_M);
+
     /** Upstream's wingman category, with its one key. */
     public static final KeyMapping.Category WINGMAN_CATEGORY =
             new KeyMapping.Category(Identifier.fromNamespaceAndPath(McheliCePort.MOD_ID, "wingman"));
@@ -115,7 +118,7 @@ public final class ModKeyMappings {
     public static final List<KeyMapping> ALL = List.of(UP, DOWN, RIGHT, LEFT, SWITCH_GUNNER, SWITCH_HOVERING, ZOOM,
             UNMOUNT, EXTRA, FREE_LOOK, GUI, GEAR_UP_DOWN, CAMERA_MODE, CAMERA_DISTANCE_UP, CAMERA_DISTANCE_DOWN,
             USE_WEAPON, SWITCH_WEAPON_1, SWITCH_WEAPON_2, SWITCH_WEAPON_MODE, RELOAD_WEAPON, FLARE, CHAFF, APS, ECM_JAMMER,
-            AIRBURST_RESET, PUT_TO_RACK, DOWN_FROM_RACK, ROPES, SEARCH_LIGHT, RADAR_SWITCH, OPEN_GPS_PANEL, SCOREBOARD,
+            AIRBURST_RESET, MARK_TARGET, PUT_TO_RACK, DOWN_FROM_RACK, ROPES, SEARCH_LIGHT, RADAR_SWITCH, OPEN_GPS_PANEL, SCOREBOARD,
             MULTIPLAY_MANAGER, WINGMAN_PANEL);
 
     private ModKeyMappings() {

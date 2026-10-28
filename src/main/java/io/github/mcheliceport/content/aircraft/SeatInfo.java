@@ -20,6 +20,8 @@ public class SeatInfo {
     public final boolean rotSeat;
     private final AircraftInfo.@Nullable CameraPosition camPos;
     public final boolean invCamPos;
+    /** M10b: the seat's crew role from its file, or null to derive it. */
+    public @Nullable CrewRole role;
 
     public SeatInfo(Vec3 p, @Nullable Vec3 up, boolean g, AircraftInfo.@Nullable CameraPosition cp, boolean icp,
             boolean sg, boolean fr, float yaw, float pitch, float pmin, float pmax, boolean rotSeat) {
@@ -64,6 +66,6 @@ public class SeatInfo {
         return "SeatInfo{pos=" + this.pos + ", gunner=" + this.gunner + ", switchgunner=" + this.switchgunner
                 + ", fixRot=" + this.fixRot + ", fixYaw=" + this.fixYaw + ", fixPitch=" + this.fixPitch
                 + ", minPitch=" + this.minPitch + ", maxPitch=" + this.maxPitch + ", rotSeat=" + this.rotSeat
-                + ", camPos=" + this.camPos + ", invCamPos=" + this.invCamPos + '}';
+                + ", camPos=" + this.camPos + ", invCamPos=" + this.invCamPos + ", role=" + this.role + '}';
     }
 }

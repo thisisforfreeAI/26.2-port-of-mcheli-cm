@@ -171,6 +171,10 @@ public abstract class AircraftEntity extends Entity
     private static final EntityDataAccessor<Integer> DATA_IRON_CURTAIN =
             SynchedEntityData.defineId(AircraftEntity.class, EntityDataSerializers.INT);
 
+    /** M10b: the entity the commander marked for the crew, or -1. */
+    private static final EntityDataAccessor<Integer> DATA_CREW_MARK =
+            SynchedEntityData.defineId(AircraftEntity.class, EntityDataSerializers.INT);
+
     private static final AircraftHitBox[] NO_HIT_BOXES = new AircraftHitBox[0];
     private static final SeatEntity[] NO_SEATS = new SeatEntity[0];
 
@@ -221,6 +225,7 @@ public abstract class AircraftEntity extends Entity
     private int countOnUpdate;
     private int modeSwitchCooldown;
     public int timeSinceHit;
+    private long crewMarkUntil;
     private int repairCount;
     private int beforeDamageTaken;
     public int damageSinceDestroyed;
@@ -440,6 +445,7 @@ public abstract class AircraftEntity extends Entity
         builder.define(DATA_LIGHT_YAW, 0F); builder.define(DATA_LIGHT_PITCH, 0F);
         builder.define(DATA_UAV_STATION, 0);
         builder.define(DATA_IRON_CURTAIN, 0);
+        builder.define(DATA_CREW_MARK, -1);
     }
 
     @Override
@@ -774,6 +780,34 @@ public abstract class AircraftEntity extends Entity
 
     public void setComponentHealth(long packed) {
         this.entityData.set(DATA_COMPONENTS, packed);
+    }
+
+    /** M10b: the id of the entity the commander marked, or -1. */
+    public int getCrewMarkId() {
+        return this.entityData.get(DATA_CREW_MARK);
+    }
+
+    /** M10b: the marked entity on this side, or null. */
+    public @Nullable Entity getCrewMark() {
+        int id = this.getCrewMarkId();
+        return id < 0 ? null : this.level().getEntity(id);
+    }
+
+    /** M10b, server: marks {@code target} for {@link CrewRoles#MARK_TICKS}, or clears the mark. */
+    public void setCrewMark(@Nullable Entity target) {
+        this.entityData.set(DATA_CREW_MARK, target == null ? -1 : target.getId());
+        this.crewMarkUntil = target == null ? 0L : this.level().getGameTime() + CrewRoles.MARK_TICKS;
+    }
+
+    /** M10b, server: a mark ends when it times out or its target is gone. */
+    private void tickCrewMark() {
+        if (this.getCrewMarkId() < 0) {
+            return;
+        }
+        Entity mark = this.getCrewMark();
+        if (mark == null || !mark.isAlive() || this.level().getGameTime() >= this.crewMarkUntil) {
+            this.setCrewMark(null);
+        }
     }
 
     /** The level game time a component slot last changed on this side, or -1. */
@@ -1883,6 +1917,7 @@ public abstract class AircraftEntity extends Entity
         this.ropes.tick();
         if (!this.level().isClientSide()) {
             this.tickUnmountCrew();
+            this.tickCrewMark();
         }
         this.updateControl();
 

@@ -1,8 +1,11 @@
 package io.github.mcheliceport.client.input;
 
 import io.github.mcheliceport.config.ClientConfig;
+import io.github.mcheliceport.content.aircraft.CrewRole;
 import io.github.mcheliceport.entity.aircraft.AircraftEntity;
+import io.github.mcheliceport.entity.aircraft.CrewRoles;
 import io.github.mcheliceport.net.AirburstDistPayload;
+import io.github.mcheliceport.net.CrewMarkPayload;
 import io.github.mcheliceport.net.ModNetwork;
 import io.github.mcheliceport.net.WeaponControlPayload;
 import io.github.mcheliceport.util.McheliSounds;
@@ -52,6 +55,14 @@ public final class WeaponClientControl {
             return pc;
         }
         int sid = ac.getSeatIdByEntity(player);
+        CrewRole role = CrewRoles.roleOf(ac, player);
+        if (ModKeyMappings.MARK_TARGET.consumeClick()) {
+            if (role == CrewRole.COMMANDER) {
+                ClientPacketDistributor.sendToServer(new CrewMarkPayload(ac.getId()));
+            } else {
+                playSoundNg();
+            }
+        }
         boolean flareKey = ModKeyMappings.FLARE.consumeClick();
         boolean chaffKey = ModKeyMappings.CHAFF.consumeClick();
         boolean apsKey = ModKeyMappings.APS.consumeClick();
@@ -107,7 +118,8 @@ public final class WeaponClientControl {
             if (wheel == 0 && !switch1 && !switch2) {
                 if (modeKey) {
                     ac.weapons().switchCurrentWeaponMode(player);
-                } else if (ModKeyMappings.USE_WEAPON.isDown() && ac.weapons().prepareCurrentWeapon(player)) {
+                } else if (ModKeyMappings.USE_WEAPON.isDown() && (role == null || role.canFire())
+                        && ac.weapons().prepareCurrentWeapon(player)) {
                     WeaponSet weapon = ac.getCurrentWeapon(player);
                     pc = pc.withUseWeapon(weapon.getOptionParm1(), weapon.getOptionParm2(), ac.xo, ac.yo, ac.zo,
                             ac.weapons().getWeaponUserYaw(player), ac.weapons().getWeaponUserPitch(player));

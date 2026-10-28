@@ -1560,6 +1560,7 @@ public final class YamlEmitter {
                 if (seatInfo.maxPitch != 70.0f) sm.put("MaxPitch", seatInfo.maxPitch);
                 if (seatInfo.rotSeat) sm.put("RotSeat", true);
                 if (seatInfo.invCamPos) sm.put("InvCamPos", true);
+                if (seatInfo.role != null) sm.put("Role", seatInfo.role.name());
                 if (seatInfo.getCamPos() != null) {
                     Map<String, Object> cm = new LinkedHashMap<>();
                     cm.put("Pos", vecMinusYOffset(seatInfo.getCamPos().pos()));
@@ -1817,6 +1818,8 @@ public final class YamlEmitter {
             impactAngles.put("Entries", entries);
         }
         if (!impactAngles.isEmpty()) feats.put("ImpactAngles", impactAngles);
+
+        if (info.loaderRequired) feats.put("LoaderRequired", true);
 
         if (!info.damageZones.isEmpty()) {
             List<Map<String, Object>> zones = new ArrayList<>();

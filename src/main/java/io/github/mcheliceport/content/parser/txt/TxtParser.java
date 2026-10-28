@@ -21,6 +21,7 @@ import io.github.mcheliceport.content.aircraft.AircraftInfo.WeaponBay;
 import io.github.mcheliceport.content.aircraft.AircraftInfo.WeaponSet;
 import io.github.mcheliceport.content.aircraft.AircraftInfo.Wheel;
 import io.github.mcheliceport.content.aircraft.BoundingBoxInfo;
+import io.github.mcheliceport.content.aircraft.CrewRole;
 import io.github.mcheliceport.content.aircraft.HeliInfo;
 import io.github.mcheliceport.content.aircraft.PlaneInfo;
 import io.github.mcheliceport.content.aircraft.SeatInfo;
@@ -248,6 +249,20 @@ public final class TxtParser implements ContentParser {
                         info.toVec3(s[3], s[4], s[5]), s.length > 6 ? info.toFloat(s[6]) : 1,
                         s.length > 7 && info.toBool(s[7])));
             }
+            case "seatrole" -> {
+                // M10b: seat number (1 = the pilot), role
+                String[] s = info.splitParam(data);
+                try {
+                    int index = info.toInt(s[0]) - 1;
+                    if (index < 0 || index >= info.seatList.size()) {
+                        throw new IllegalArgumentException("no seat " + s[0] + " yet; put SeatRole after the seats");
+                    }
+                    info.seatList.get(index).role = CrewRole.valueOf(s[1].trim().toUpperCase(Locale.ROOT));
+                } catch (RuntimeException e) {
+                    LOGGER.warn("Skipping SeatRole '{}' in {}: {}", data, info.name, e.getMessage());
+                }
+            }
+            case "loaderrequired" -> info.loaderRequired = info.toBool(data);
             case "adddamagezone" -> {
                 // kind,x,y,z,hx,hy,hz[,share[,health]] or a rotor by part: kind,part[,share[,health]]
                 String[] s = info.splitParam(data);
