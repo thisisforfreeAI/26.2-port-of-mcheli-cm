@@ -24,6 +24,15 @@ class PayloadCodecTest {
         assertFalse(new VehicleImpactPayload(52,id,0,0,0,0,0,-1,100,false,0).valid());
     }
 
+    @Test void vehicleBloodRoundTripsAndRejectsUnboundedCosmetics() {
+        var p=new VehicleBloodPayload(java.util.UUID.randomUUID(),-32.5,-60,120,.7F,1.9F,1,0,0,(byte)1,42);
+        assertEquals(p,roundTrip(VehicleBloodPayload.CODEC,p));assertTrue(p.valid());
+        assertFalse(new VehicleBloodPayload(p.victim(),Double.NaN,0,0,1,1,0,0,0,(byte)0,0).valid());
+        assertFalse(new VehicleBloodPayload(p.victim(),0,0,0,100,1,0,0,0,(byte)0,0).valid());
+        assertFalse(new VehicleBloodPayload(p.victim(),0,0,0,1,1,Float.POSITIVE_INFINITY,0,0,(byte)0,0).valid());
+        assertFalse(new VehicleBloodPayload(p.victim(),0,0,0,1,1,0,0,0,(byte)3,0).valid());
+    }
+
     @Test void groundBrakeAndCommonControlsRoundTrip() {
         for (boolean brake : new boolean[] {false, true}) {
             var packet = new GroundControlPayload(HeliControlPayload.switchesOnly(318,

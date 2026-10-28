@@ -1,0 +1,101 @@
+{
+  "kind": "native-controlled-kill-validation",
+  "production_commit": "8b3f5b3e64795808137d59dbdea51322e3db9557",
+  "preview_fixture": "scripts/visual-probe/io/github/mcheliceport/client/render/VehicleBloodPreviewProbe.java",
+  "unit_tests": 374,
+  "unit_failures": 0,
+  "required_local_gametests": 274,
+  "native_backend": "Vulkan",
+  "native_driver": "llvmpipe Mesa 25.0.7-2+deb13u1 (LLVM 19.1.7)",
+  "local_optional_dependency_limit": "Unavailable JEI/NTM dependencies excluded via local-only init; optional bridge stubs throw if invoked. No locally built JAR distributed. Full dependency and NTM builds run in GitHub CI.",
+  "native_ntm_installed": false,
+  "ntm_gore_visual_audit": false,
+  "target_hardware_fps_measured": false,
+  "scenes": [
+    {
+      "vehicle": "ah-64",
+      "droplets": 10,
+      "marks": 1,
+      "server_kill_confirmed": true,
+      "toggle_cleanup": true
+    },
+    {
+      "vehicle": "m1a2",
+      "droplets": 14,
+      "marks": 1,
+      "server_kill_confirmed": true,
+      "toggle_cleanup": true
+    },
+    {
+      "vehicle": "t-90",
+      "droplets": 10,
+      "marks": 1,
+      "server_kill_confirmed": true,
+      "toggle_cleanup": true
+    }
+  ],
+  "changed_block_cleanup": true,
+  "max_terrain_rays_per_tick": 4,
+  "screenshots": [
+    {
+      "file": "docs/screens/m8-blood/ah-64-impact.png",
+      "vehicle": "ah-64",
+      "cause": "conventional vehicle round",
+      "victim": "husk",
+      "stage": "impact",
+      "sha256": "76746a7203c2d4f38f6aa65bde2d5592fdfe6303558ab6e1f7efb3a435110131",
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "file": "docs/screens/m8-blood/ah-64-ground.png",
+      "vehicle": "ah-64",
+      "cause": "conventional vehicle round",
+      "victim": "husk",
+      "stage": "ground",
+      "sha256": "6dba6cafdda79a12cb51a356fb5b845fe170549ec0b8eb0be153c145d59cdc83",
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "file": "docs/screens/m8-blood/m1a2-impact.png",
+      "vehicle": "m1a2",
+      "cause": "conventional projectile blast",
+      "victim": "cow",
+      "stage": "impact",
+      "sha256": "1c00c58f01eb6f1baf4e2a67cfcd3755b96caf7e4bc85c8dba4002e4e8b8b100",
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "file": "docs/screens/m8-blood/m1a2-ground.png",
+      "vehicle": "m1a2",
+      "cause": "conventional projectile blast",
+      "victim": "cow",
+      "stage": "ground",
+      "sha256": "b17b0759fc08f04121dd3298bed48a5a5c207e49971f15ce4cb4667406c8a937",
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "file": "docs/screens/m8-blood/t-90-impact.png",
+      "vehicle": "t-90",
+      "cause": "tank ramming",
+      "victim": "husk",
+      "stage": "impact",
+      "sha256": "4550c79bc74c20c41929b2c34b3a0fa8199aedc6d212a57e35de95549f12c76f",
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "file": "docs/screens/m8-blood/t-90-ground.png",
+      "vehicle": "t-90",
+      "cause": "tank ramming",
+      "victim": "husk",
+      "stage": "ground",
+      "sha256": "8539d385ac474fc7213dd5b84b94ddbdaa637cb59e4555ed0f456754246a418d",
+      "width": 1280,
+      "height": 720
+    }
+  ]
+}

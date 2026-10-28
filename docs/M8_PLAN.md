@@ -470,3 +470,14 @@ delayed collapse and smoldering openings. [Native examples](M8_DESTRUCTION_SEQUE
 cover tanks, planes and helicopters. These remain bounded client presentation with original
 craters and gameplay intact. The separate [blood investigation](M8_VEHICLE_BLOOD_INVESTIGATION.md)
 records vehicle-only attribution and NTM gore exclusions; blood is not enabled yet.
+
+
+### Vehicle-kill blood (follow-up)
+
+Implemented [restrained vehicle-kill blood](M8_VEHICLE_BLOOD.md) after the destruction sequences:
+short lit droplets and temporary surface-fitted splashes, with an ESC-menu toggle. Explicit
+before/after damage scopes cover conventional vehicle projectiles, blasts and tank ramming.
+NTM weapons/payloads, portable weapons, NTM mobs, players and untagged non-flesh mobs are excluded.
+No NTM gore hooks/assets, body replacement, damage, loot or crater changes. Server/client burst
+limits, shared particle admission and bounded temporary marks preserve the existing 60 FPS goal;
+target-PC frame-rate verification remains outstanding.

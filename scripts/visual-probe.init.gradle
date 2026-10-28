@@ -1,6 +1,8 @@
 // Opt-in, development-only scene. Never included by a normal build or run.
 gradle.projectsEvaluated {
     def project = gradle.rootProject
+    if(Boolean.getBoolean('mcheli.probeBlood'))project.sourceSets.main.java.exclude('io/github/mcheliceport/probe/EffectsProbe.java')
+    project.neoForge.runs.client.systemProperty('mcheli.probeBlood',System.getProperty('mcheli.probeBlood','false'))
     if(Integer.getInteger('mcheli.livingPreview',0)>0)project.sourceSets.main.java.exclude('io/github/mcheliceport/probe/EffectsProbe.java')
     project.neoForge.runs.client.systemProperty('mcheli.livingCpuPreview',System.getProperty('mcheli.livingCpuPreview','false'))
     project.neoForge.runs.client.systemProperty('mcheli.livingPreview',System.getProperty('mcheli.livingPreview','0'))

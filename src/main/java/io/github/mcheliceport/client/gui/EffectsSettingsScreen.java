@@ -17,7 +17,7 @@ public final class EffectsSettingsScreen extends Screen {
     private final Screen parent;
     public EffectsSettingsScreen(Screen parent) {super(Component.translatable("mcheli.effects.menu"));this.parent=parent;}
     @Override protected void init() {
-        int x=width/2-110,y=Math.max(44,height/2-68);
+        int x=width/2-110,y=Math.max(44,height/2-80);
         boolean available=EffectQuality.enhanced() && !ClientConfig.get(ClientConfig.DEFAULT_EXPLOSION_PARTICLE);
         var modern=addRenderableWidget(Button.builder(modernLabel(),b->{
             ClientConfig.MODERN_EXPLOSIONS.set(!ClientConfig.get(ClientConfig.MODERN_EXPLOSIONS));
@@ -36,12 +36,17 @@ public final class EffectsSettingsScreen extends Screen {
             int current=ClientConfig.get(ClientConfig.EFFECT_TARGET_FPS);int next=current<60?60:current<80?80:current<120?120:current<144?144:current<240?240:30;
             ClientConfig.EFFECT_TARGET_FPS.set(next);save();b.setMessage(fpsLabel());
         }).bounds(x,y+72,220,20).build());
+        var blood = addRenderableWidget(Button.builder(bloodLabel(), b -> {
+            ClientConfig.VEHICLE_BLOOD.set(!ClientConfig.get(ClientConfig.VEHICLE_BLOOD)); save(); b.setMessage(bloodLabel());
+        }).bounds(x,y+96,220,20).build());
+        blood.setTooltip(Tooltip.create(Component.translatable("mcheli.effects.blood.tip")));
         addRenderableWidget(Button.builder(Component.translatable("mcheli.effects.full"),b->{
             ModList.get().getModContainerById(McheliCePort.MOD_ID).ifPresent(container->
                     minecraft.gui.setScreen(new ConfigurationScreen(container,this)));
-        }).bounds(x,y+102,220,20).build());
-        addRenderableWidget(Button.builder(Component.translatable("gui.done"),b->onClose()).bounds(x,y+126,220,20).build());
+        }).bounds(x,y+122,220,20).build());
+        addRenderableWidget(Button.builder(Component.translatable("gui.done"),b->onClose()).bounds(x,y+146,220,20).build());
     }
+    private static Component bloodLabel() { return Component.translatable("mcheli.effects.blood", onOff(ClientConfig.get(ClientConfig.VEHICLE_BLOOD))); }
     private static Component modernLabel() {
         return Component.translatable("mcheli.effects.modern",onOff(ClientConfig.get(ClientConfig.MODERN_EXPLOSIONS)));
     }

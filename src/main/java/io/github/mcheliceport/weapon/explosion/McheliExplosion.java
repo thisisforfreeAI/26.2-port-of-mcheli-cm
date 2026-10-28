@@ -309,7 +309,10 @@ public class McheliExplosion extends ServerExplosion {
             damage = DamageScaling.applyDamageVsEntity(entity, damage);
             damage *= this.damageFactor != null ? this.damageFactor.getDamageFactor(WeaponTargets.targetName(entity))
                     : 1.0F;
-            entity.hurtServer(this.world, ds, damage);
+            var blood = io.github.mcheliceport.effect.VehicleBlood.projectile(entity, this.exploder, ds,
+                    io.github.mcheliceport.effect.VehicleBloodRules.BLAST, entity.position().subtract(center));
+            boolean applied = entity.hurtServer(this.world, ds, damage);
+            io.github.mcheliceport.effect.VehicleBlood.finish(blood, applied);
             double d11 = d10;
             if (entity instanceof LivingEntity living) {
                 d11 = d10 * (1.0 - living.getAttributeValue(Attributes.EXPLOSION_KNOCKBACK_RESISTANCE));

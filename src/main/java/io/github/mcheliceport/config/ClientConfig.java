@@ -45,6 +45,7 @@ public final class ClientConfig {
     public static final ModConfigSpec.BooleanValue ENGINE_HEAT_HAZE;
     public static final ModConfigSpec.BooleanValue ROTOR_WASH_DEBRIS;
     public static final ModConfigSpec.BooleanValue ENGINE_STARTUP_EFFECTS;
+    public static final ModConfigSpec.BooleanValue VEHICLE_BLOOD;
     public static final ModConfigSpec.BooleanValue VEHICLE_DESTRUCTION_SEQUENCES;
     public static final ModConfigSpec.BooleanValue VEHICLE_DAMAGE_DETAILS;
     public static final ModConfigSpec.BooleanValue WEAPON_HEAT;
@@ -182,6 +183,8 @@ public final class ClientConfig {
         VEHICLE_SURFACE_BUILDUP = builder.comment("Mud and dust on lower panels, washed by water and rain; soot near exhausts.").define("vehicleSurfaceBuildup",true);
         VEHICLE_WEATHER = builder.comment("Rain darkens paint; cold precipitation collects on parked vehicles and sheds with movement.").define("vehicleWeather",true);
         WEAPON_HEAT = builder.comment("Cosmetic barrel discoloration, shared heat haze and cooling smoke after sustained gunfire.").define("weaponHeat",true);
+        VEHICLE_BLOOD = builder.comment("Restrained blood on confirmed MC Heli vehicle kills of tagged mobs. Excludes NTM weapons/payloads and NTM mobs.")
+                .define("vehicleBlood", true);
         VEHICLE_DESTRUCTION_SEQUENCES = builder.comment("Cosmetic staged turret/track/cover/airframe breakup, rotor strikes and smoldering interiors. Supported models only.").define("vehicleDestructionSequences",true);
         VEHICLE_DAMAGE_DETAILS = builder.comment("Cosmetic impact/blast scars, progressive glass cracks, fluid leaks, damaged lamps, loose panels and cooling wrecks.")
                 .define("vehicleDamageDetails", true);

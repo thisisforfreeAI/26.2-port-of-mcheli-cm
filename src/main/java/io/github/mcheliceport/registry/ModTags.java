@@ -14,6 +14,10 @@ public final class ModTags {
     /** Blocks of 1.12's "logic" materials (circuits, plants, vines, snow layers, carpets): 5.5. */
     public static final TagKey<Block> WRENCH_LOGIC = block("wrench_logic");
 
+    /** Flesh-bearing mobs eligible for MC Heli vehicle-kill blood. NTM namespaces stay excluded. */
+    public static final TagKey<net.minecraft.world.entity.EntityType<?>> VEHICLE_BLOOD_MOBS = TagKey.create(
+            Registries.ENTITY_TYPE, Identifier.fromNamespaceAndPath(McheliCePort.MOD_ID, "vehicle_blood_mobs"));
+
     private ModTags() {
     }
 

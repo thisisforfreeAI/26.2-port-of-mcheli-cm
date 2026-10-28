@@ -18,6 +18,7 @@ public final class WeaponClientHooks {
 
     /** The client's side of the weapon code. Only called on the client thread. */
     public interface Hooks {
+        default void vehicleBlood(io.github.mcheliceport.net.VehicleBloodPayload payload) {}
         default void weaponHeat(net.minecraft.world.entity.Entity shooter,int mount,io.github.mcheliceport.content.weapon.WeaponInfo info,Vec3 position,float yaw,float pitch){}
         default void vehicleImpact(io.github.mcheliceport.net.VehicleImpactPayload payload) {}
         /** Cosmetic shot details; the existing client shot state supplies authority and timing. */

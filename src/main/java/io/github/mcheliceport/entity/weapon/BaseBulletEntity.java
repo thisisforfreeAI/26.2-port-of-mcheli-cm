@@ -766,7 +766,10 @@ public abstract class BaseBulletEntity extends Entity implements WeaponTargets.P
                     DamageSource ds = server.damageSources().thrown(this, this.shootingEntity);
                     float damage = DamageScaling.applyDamageVsEntity(entity, info.proximityFuseDamage);
                     damage *= info.getDamageFactor(WeaponTargets.targetName(entity));
-                    entity.hurtServer(server, ds, damage);
+                    var blood = io.github.mcheliceport.effect.VehicleBlood.projectile(entity, this, ds,
+                            io.github.mcheliceport.effect.VehicleBloodRules.DIRECT, this.getDeltaMovement());
+                    boolean applied = entity.hurtServer(server, ds, damage);
+                    io.github.mcheliceport.effect.VehicleBlood.finish(blood, applied);
                     if (isLockedTarget) {
                         entity.discard();
                     }
@@ -1251,8 +1254,10 @@ public abstract class BaseBulletEntity extends Entity implements WeaponTargets.P
             DamageSource ds = server.damageSources().thrown(this, this.shootingEntity);
             float damage = DamageScaling.applyDamageVsEntity(entity, this.getPower() * damageFactor);
             damage *= this.getInfo() != null ? this.getInfo().getDamageFactor(WeaponTargets.targetName(entity)) : 1.0F;
-            if (hitBox != null) { hitBox.hurtServer(server, ds, damage); }
-            else { entity.hurtServer(server, ds, damage); }
+            var blood = io.github.mcheliceport.effect.VehicleBlood.projectile(entity, this, ds,
+                    io.github.mcheliceport.effect.VehicleBloodRules.DIRECT, this.getDeltaMovement());
+            boolean applied = hitBox != null ? hitBox.hurtServer(server, ds, damage) : entity.hurtServer(server, ds, damage);
+            io.github.mcheliceport.effect.VehicleBlood.finish(blood, applied);
             if (this instanceof BulletEntity && entity instanceof net.minecraft.world.entity.npc.villager.Villager
                     && this.shootingEntity != null
                     && this.shootingEntity.getVehicle() instanceof io.github.mcheliceport.entity.seat.SeatEntity) {
