@@ -4,6 +4,7 @@
 # review the diff. The port restores stock recipes and explicitly listed M8 engine outlets:
 # M8 adds two cosmetic outlets to AH-64, MH-60G and MH-60L DAP stock YAML definitions.
 # They are deliberately absent from the pinned legacy TXT fixtures.
+# Supported jets additionally declare cosmetic MachOneSpeed mappings for M8; flight speed is unchanged.
 # Three stock YAML recipes repair legacy mistakes: Robinson R44 binds its boat key to F,
 # PZL M-18 binds its water-bucket key to P, and US-2 accepts any potion rather than legacy metadata 8193.
 #
@@ -776,3 +777,18 @@ throwable/m18_green.itemID: 28903 vs -257
 throwable/m18_red.itemID: 28902 vs -257
 throwable/m18_violet.itemID: 28905 vs -257
 throwable/m18_yellow.itemID: 28904 vs -257
+planes/f-35a.machOneSpeed: 0.0 vs 0.75
+planes/f-15e.machOneSpeed: 0.0 vs 0.44
+planes/f22a.machOneSpeed: 0.0 vs 0.53
+planes/f-35b.machOneSpeed: 0.0 vs 0.75
+planes/f-35c.machOneSpeed: 0.0 vs 0.75
+planes/f-15s_mtd.machOneSpeed: 0.0 vs 0.55
+planes/f14d.machOneSpeed: 0.0 vs 0.51
+planes/f4a.machOneSpeed: 0.0 vs 0.48
+planes/fa18f.machOneSpeed: 0.0 vs 0.61
+planes/mig29.machOneSpeed: 0.0 vs 0.51
+planes/su-33.machOneSpeed: 0.0 vs 0.55
+planes/su-47.machOneSpeed: 0.0 vs 0.73
+planes/su37.machOneSpeed: 0.0 vs 0.51
+planes/tornado-gr4.machOneSpeed: 0.0 vs 0.55
+planes/tornado-ids.machOneSpeed: 0.0 vs 0.55

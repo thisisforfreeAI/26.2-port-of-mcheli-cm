@@ -243,6 +243,11 @@ public final class TxtParser implements ContentParser {
             case "itemid" -> info.itemID = info.toInt(data, 0, 65535);
             case "addtexture" -> info.addTextureName(data.toLowerCase(Locale.ROOT));
             case "particlesscale" -> info.particlesScale = info.toFloat(data, 0.0F, 50.0F);
+            case "machonespeed" -> {
+                float speed=Float.parseFloat(data.trim());
+                if(!Float.isFinite(speed)||speed<0||speed>100)throw new IllegalArgumentException("MachOneSpeed must be finite and between 0 and 100");
+                info.machOneSpeed=speed;
+            }
             case "addengineoutlet" -> {
                 String[] s = info.splitParam(data);
                 if (s.length < 6) throw new IllegalArgumentException("AddEngineOutlet requires x,y,z,dx,dy,dz[,size,jet]");

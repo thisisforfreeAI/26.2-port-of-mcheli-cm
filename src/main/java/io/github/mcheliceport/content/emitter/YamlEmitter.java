@@ -1433,6 +1433,7 @@ public final class YamlEmitter {
         if (info.entityRoll != dummyInfo.entityRoll) render.put("ModelRoll", info.entityRoll);
 
         if (info.particlesScale != dummyInfo.particlesScale) render.put("ParticleScale", info.particlesScale);
+        if (info.machOneSpeed != dummyInfo.machOneSpeed) render.put("MachOneSpeed", info.machOneSpeed);
         if (!info.engineOutlets.isEmpty()) {
             List<Map<String, Object>> outlets = new ArrayList<>();
             for (AircraftInfo.EngineOutlet outlet : info.engineOutlets) {

@@ -47,6 +47,7 @@ public final class ClientConfig {
     public static final ModConfigSpec.BooleanValue ENGINE_STARTUP_EFFECTS;
     public static final ModConfigSpec.BooleanValue AIRCRAFT_CONDENSATION;
     public static final ModConfigSpec.BooleanValue COCKPIT_FEEDBACK;
+    public static final ModConfigSpec.BooleanValue SUPERSONIC_EFFECTS;
     public static final ModConfigSpec.BooleanValue VEHICLE_BLOOD;
     public static final ModConfigSpec.BooleanValue VEHICLE_DESTRUCTION_SEQUENCES;
     public static final ModConfigSpec.BooleanValue VEHICLE_DAMAGE_DETAILS;
@@ -184,6 +185,8 @@ public final class ClientConfig {
                 .define("aircraftCondensation",true);
         COCKPIT_FEEDBACK = builder.comment("Pilot-only cockpit annunciators, restrained instrument vibration and closed-canopy rain. No camera or aiming shake.")
                 .define("cockpitFeedback",true);
+        SUPERSONIC_EFFECTS = builder.comment("Brief wet-air condensation and delayed flypast booms on explicitly supported aircraft. Cosmetic game-speed mapping; no flight changes.")
+                .define("supersonicEffects",true);
         VEHICLE_WATER_DETAILS = builder.comment("Bounded V wakes, shallow-water spray and detached-panel splashes.").define("vehicleWaterDetails",true);
         VEHICLE_SMALL_MOTION = builder.comment("Flexible supported antennas, authored nozzle-cover vibration and hanging exposed cables.").define("vehicleSmallMotion",true);
         VEHICLE_SURFACE_BUILDUP = builder.comment("Mud and dust on lower panels, washed by water and rain; soot near exhausts.").define("vehicleSurfaceBuildup",true);

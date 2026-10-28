@@ -85,12 +85,15 @@ public final class AircraftEngineSound {
         ClientLevel level = mc.level;
         LocalPlayer player = mc.player;
         if (level == null || player == null) {
+            io.github.mcheliceport.client.particle.SupersonicEffects.clear();
             UPDATERS.values().forEach(u -> u.stop(mc));
             UPDATERS.clear();
             return;
         }
+        io.github.mcheliceport.client.particle.SupersonicEffects.begin(mc);
         for (Entity entity : level.entitiesForRendering()) {
             if (entity instanceof AircraftEntity aircraft) {
+                io.github.mcheliceport.client.particle.SupersonicEffects.observe(aircraft);
                 AircraftEngineSound updater = UPDATERS.get(aircraft);
                 if (updater == null) {
                     String name = soundName(aircraft);
