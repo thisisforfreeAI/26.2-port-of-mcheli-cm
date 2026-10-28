@@ -19,12 +19,16 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.SubmitCustomGeometryEvent;
 import org.joml.Matrix4f;
+import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 /** Cosmetic panel movement and short-lived mesh debris. No hitboxes, items or gameplay entities. */
 @EventBusSubscriber(modid="mcheli_ce_port",value=Dist.CLIENT)
 public final class LoosePanels {
     private static final Map<McheliModel.Group,LoosePanelLook.Spec> SPECS=new WeakHashMap<>();
+    private static final Identifier METAL=Identifier.withDefaultNamespace("textures/block/iron_block.png");
+    /** A structural section's cut plane in model space, and a point on it where the tear burns. */
+    public record Tear(int axis,float cut,int outward,Vector3f edge){}
     private static final Map<AircraftEntity,State> STATES=new LinkedHashMap<>();
     private static final List<Piece> PIECES=new ArrayList<>();
     private static ClientLevel world;private static long birthTick=Long.MIN_VALUE;private static int births,collisionCursor;
@@ -34,12 +38,20 @@ public final class LoosePanels {
     }
     private static final class Piece {
         final AircraftEntity owner;final McheliModel.Group group;final Identifier texture;final Matrix4f local;
-        Vec3 position,previous,velocity,sampled;float phase;final int light;
-        int age,restAge,life=60,airframeBit,controlSlot=-1;boolean scar,skin;boolean bounced,settled;
+        final DebrisMotion motion;final float span;final int seed;int light;
+        int age,restAge=-1,life=60,airframeBit,controlSlot=-1;boolean scar,skin;
+        Tear tear;Vector3f edge;
         Piece(AircraftEntity owner,McheliModel.Group group,Identifier texture,Matrix4f local,Vec3 position,int light){
-            this.owner=owner;this.group=group;this.texture=texture;this.local=local;this.position=this.previous=this.sampled=position;
-            this.velocity=owner.getDeltaMovement().scale(.3).add(position.subtract(owner.position()).multiply(1,0,1).normalize().scale(.12)).add(0,.22,0);this.light=light;phase=(owner.getId()%17)*.2F;
+            this.owner=owner;this.group=group;this.texture=texture;this.local=local;this.light=light;seed=owner.getId()*31+PIECES.size();
+            Vec3 velocity=owner.getDeltaMovement().scale(.3).add(position.subtract(owner.position()).multiply(1,0,1).normalize().scale(.12)).add(0,.22,0);
+            var part=io.github.mcheliceport.client.model.BreakupMeshes.part(group);
+            var size=part==null?new Vector3f(.6F):new Vector3f(part.bounds().high()).sub(part.bounds().low()).mul(local.getScale(new Vector3f()));
+            span=Math.max(size.x,Math.max(size.y,size.z));
+            motion=new DebrisMotion(position,velocity,new Vector3f(),local.getNormalizedRotation(new Quaternionf()),size,seed);
         }
+        Vec3 velocity(){return motion.velocity;}
+        void velocity(Vec3 v){motion.velocity=v;}
+        boolean settled(){return motion.phase==DebrisMotion.Phase.REST||motion.phase==DebrisMotion.Phase.SUNK;}
     }
     private LoosePanels(){}
     public static void wreckPiece(AircraftEntity owner,Identifier texture,McheliModel.Group group,Matrix4f pose,Vector3f center){
@@ -52,17 +64,37 @@ public final class LoosePanels {
         if(!enabled()||PIECES.size()>=8||births>=2||group.vertexCount()<3||group.vertexCount()>12000||vertices+group.vertexCount()>24000)return false;
         var at=pose.transformPosition(new Vector3f(center));var position=owner.position().add(at.x,at.y,at.z);
         int light=world.hasChunkAt(BlockPos.containing(position))?LightCoordsUtil.getLightCoords(world,BlockPos.containing(position)):0;
-        var local=new Matrix4f().translation(-at.x,-at.y,-at.z).mul(pose);var piece=new Piece(owner,group,texture,local,position,light);piece.life=900;piece.velocity=piece.velocity.add(impulse).add(0,-.22,0);PIECES.add(piece);births++;return true;
+        var local=new Matrix4f().translation(-at.x,-at.y,-at.z).mul(pose);var piece=new Piece(owner,group,texture,local,position,light);piece.life=900;piece.velocity(piece.velocity().add(impulse).add(0,-.22,0));inherit(piece);PIECES.add(piece);births++;return true;
     }
     /** A live airframe fragment keeps full flight velocity and disappears if that component is repaired. */
     public static boolean airframePiece(AircraftEntity owner,Identifier texture,McheliModel.Group group,
             Matrix4f pose,Vector3f center,Vec3 impulse,int bit){
         if(!scatter(owner,texture,group,pose,center,Vec3.ZERO))return false;
-        var piece=PIECES.getLast();piece.airframeBit=bit;piece.life=200;piece.phase=0;
+        // Long enough to fall from altitude; a resting section fades after a while (see tick()).
+        var piece=PIECES.getLast();piece.airframeBit=bit;piece.life=600;
         var v=io.github.mcheliceport.effect.VehicleImpactLook.body(owner.getYaw(),owner.getPitch(),owner.getRoll())
                 .transformDirection(new Vector3f((float)impulse.x,(float)impulse.y,(float)impulse.z));
-        piece.velocity=io.github.mcheliceport.damage.AirframeDamage.fragmentMotion(owner.getDeltaMovement(),
-                owner.position().subtract(new Vec3(owner.xo,owner.yo,owner.zo))).add(v.x,v.y,v.z);return true;
+        piece.velocity(io.github.mcheliceport.damage.AirframeDamage.fragmentMotion(owner.getDeltaMovement(),
+                owner.position().subtract(new Vec3(owner.xo,owner.yo,owner.zo))).add(v.x,v.y,v.z));inherit(piece);return true;
+    }
+    /**
+     * Marks the piece just admitted as a torn structural section: it is drawn closed (lining and cap)
+     * and its torn edge sparks, burns and trails smoke while it falls.
+     */
+    public static void tear(Tear tear){
+        if(PIECES.isEmpty()||tear==null)return;var p=PIECES.getLast();if(p.skin||p.tear!=null)return;
+        p.tear=tear;p.edge=p.local.transformPosition(new Vector3f(tear.edge()));
+        // Structural sections fold about the torn root for a few ticks before they let go.
+        if(!p.skin&&p.controlSlot<0)p.motion.tear(new Vec3(p.edge.x,p.edge.y,p.edge.z));
+        io.github.mcheliceport.client.particle.BreakawayEffects.tear(world,edge(p),p.velocity(),p.owner.getId());
+    }
+    private static Vec3 edge(Piece p){return p.motion.position.add(p.motion.rotated(new Vec3(p.edge.x,p.edge.y,p.edge.z)));}
+    /** The aircraft's turn rate becomes the fragment's spin, plus the tangential speed of its offset. */
+    private static void inherit(Piece piece){
+        var owner=piece.owner;var m=piece.motion;
+        var rate=DebrisMotion.angularVelocity(DebrisMotion.attitude(owner.yRotO,owner.xRotO,owner.prevRoll),
+                DebrisMotion.attitude(owner.getYaw(),owner.getPitch(),owner.getRoll()));
+        m.velocity=m.velocity.add(new Vec3(rate.x,rate.y,rate.z).cross(m.position.subtract(owner.position())));m.inherit(rate);
     }
     public static int airframePieces(AircraftEntity owner){return (int)PIECES.stream().filter(p->p.owner==owner&&p.airframeBit!=0).count();}
     public static boolean skinPiece(AircraftEntity owner,Identifier texture,McheliModel.Group group,
@@ -75,9 +107,9 @@ public final class LoosePanels {
     public static int skinPieces(AircraftEntity owner){return (int)PIECES.stream().filter(p->p.owner==owner&&p.skin).count();}
     public static boolean controlPiece(AircraftEntity owner,Identifier texture,McheliModel.Group group,Matrix4f pose,Vector3f center,int slot){
         if(!scatter(owner,texture,group,pose,center,Vec3.ZERO))return false;
-        var piece=PIECES.getLast();piece.controlSlot=slot;piece.life=120;piece.phase=0;
-        piece.velocity=io.github.mcheliceport.damage.AirframeDamage.fragmentMotion(owner.getDeltaMovement(),
-                owner.position().subtract(owner.xo,owner.yo,owner.zo)).add(0,-.035,0);return true;
+        var piece=PIECES.getLast();piece.controlSlot=slot;piece.life=240;
+        piece.velocity(io.github.mcheliceport.damage.AirframeDamage.fragmentMotion(owner.getDeltaMovement(),
+                owner.position().subtract(owner.xo,owner.yo,owner.zo)).add(0,-.035,0));inherit(piece);return true;
     }
     public static int controlPieces(AircraftEntity owner){return (int)PIECES.stream().filter(p->p.owner==owner&&p.controlSlot>=0).count();}
     private static boolean enabled(){return EffectQuality.enhanced()&&ClientConfig.get(ClientConfig.VEHICLE_DAMAGE_DETAILS);}
@@ -144,34 +176,50 @@ public final class LoosePanels {
                 : p.airframeBit!=0 ? !io.github.mcheliceport.client.particle.WreckSequenceEffects.enabled()
                 || (io.github.mcheliceport.damage.AirframeDamage.missing(p.owner)&p.airframeBit)==0
                 : p.life>60&&!p.owner.isDestroyed()));
-        for(var p:PIECES){p.previous=p.position;if(!p.settled){p.position=p.position.add(p.velocity);p.velocity=p.velocity.multiply(.98,1,.98).add(0,-.025,0);}}
-        // Round-robin swept segments: at most two world rays per tick, even with eight pieces.
-        for(int i=0;i<2&&!PIECES.isEmpty();i++){
-            var p=PIECES.get(Math.floorMod(collisionCursor++,PIECES.size()));if(p.settled)continue;
-            if(!world.hasChunkAt(BlockPos.containing(p.position))||!world.hasChunkAt(BlockPos.containing(p.sampled)))continue;
-            var hit=world.clip(new ClipContext(p.sampled,p.position,ClipContext.Block.COLLIDER,ClipContext.Fluid.ANY,CollisionContext.empty()));
-            if(hit.getType()==HitResult.Type.BLOCK){
-                if(world.getFluidState(hit.getBlockPos()).is(net.minecraft.tags.FluidTags.WATER)){
-                    io.github.mcheliceport.client.particle.VehicleWaterEffects.splash(world,hit.getLocation(),p.velocity.length());
-                    p.position=hit.getLocation().add(0,-.15,0);p.settled=true;p.restAge=p.age;p.age=Math.max(p.age,p.life-5);p.velocity=Vec3.ZERO;p.sampled=p.position;continue;
-                }
-                var n=new Vec3(hit.getDirection().getStepX(),hit.getDirection().getStepY(),hit.getDirection().getStepZ());
-                p.position=hit.getLocation().add(n.scale(.1));p.previous=p.position;
-                if(p.bounced){p.settled=true;p.restAge=p.age;p.velocity=Vec3.ZERO;if(!p.scar&&!p.skin){io.github.mcheliceport.client.effect.FluidStains.add(world,p.position.add(0,.2,0),false);p.scar=true;}p.age=Math.max(p.age,Math.min(42,p.life-18));}
-                else{p.bounced=true;p.velocity=p.velocity.subtract(n.scale(1.25*p.velocity.dot(n))).scale(.3);}
-            }
-            p.sampled=p.position;
+        for(var p:PIECES){
+            p.motion.step();
+            if(p.age%10==0){var block=BlockPos.containing(p.motion.position);if(world.hasChunkAt(block))p.light=LightCoordsUtil.getLightCoords(world,block);}
+            if(p.motion.phase==DebrisMotion.Phase.SLIDE)
+                io.github.mcheliceport.client.particle.DebrisImpactEffects.scrape(world,p.motion.position.add(0,-p.motion.height(),0),p.velocity(),tick,p.seed);
+            if(p.restAge<0&&(p.settled()||p.motion.phase==DebrisMotion.Phase.SLIDE))rest(p);
         }
+        for(var p:PIECES)if(p.edge!=null&&p.age<p.life-10)
+            io.github.mcheliceport.client.particle.BreakawayEffects.trail(world,edge(p),p.velocity(),p.age,p.restAge>=0?p.age-p.restAge:-1,p.owner.getId());
+        // Round-robin swept segments: at most two world rays per tick, even with eight pieces.
+        int moving=(int)PIECES.stream().filter(p->p.motion.moving()).count();
+        for(int i=0,tries=0;i<2&&moving>0&&tries<PIECES.size();tries++){
+            var p=PIECES.get(Math.floorMod(collisionCursor++,PIECES.size()));var m=p.motion;if(!m.moving())continue;i++;
+            Vec3 from=m.sweepFrom(),to=m.sweepTo();
+            if(!world.hasChunkAt(BlockPos.containing(from))||!world.hasChunkAt(BlockPos.containing(to)))continue;
+            var hit=world.clip(new ClipContext(from,to,ClipContext.Block.COLLIDER,
+                    m.phase==DebrisMotion.Phase.SUNK?ClipContext.Fluid.NONE:ClipContext.Fluid.ANY,CollisionContext.empty()));
+            // A sweep that starts inside terrain (spawned in a hillside) cannot resolve a contact face.
+            if(hit.getType()!=HitResult.Type.BLOCK||hit.isInside()){m.clear();continue;}
+            boolean water=world.getFluidState(hit.getBlockPos()).is(net.minecraft.tags.FluidTags.WATER);
+            var n=new Vec3(hit.getDirection().getStepX(),hit.getDirection().getStepY(),hit.getDirection().getStepZ());
+            Vec3 before=m.velocity;var contact=m.contact(hit.getLocation(),n,water);
+            switch(contact){
+                case SPLASH -> {io.github.mcheliceport.client.particle.VehicleWaterEffects.splash(world,hit.getLocation(),m.impact);p.life=Math.min(p.life,p.age+60);}
+                case BOUNCE,LAND -> io.github.mcheliceport.client.particle.DebrisImpactEffects.strike(world,hit.getLocation(),before,m.impact,p.span,p.seed+m.bounces());
+                default -> {}
+            }
+        }
+    }
+    /** A section at rest leaves a scorch, smolders, and fades well after the fight has moved on. */
+    private static void rest(Piece p){
+        p.restAge=p.age;
+        if(p.motion.phase==DebrisMotion.Phase.SUNK)return;
+        if(!p.scar&&!p.skin){io.github.mcheliceport.client.effect.FluidStains.add(world,p.motion.position.add(0,.2,0),false);p.scar=true;}
+        p.life=Math.min(p.life,p.age+(p.skin?20:p.airframeBit!=0||p.tear!=null?300:200));
     }
     @SubscribeEvent public static void submit(SubmitCustomGeometryEvent event){
         if(!enabled()||PIECES.isEmpty()||world!=Minecraft.getInstance().level)return;
         var camera=event.getLevelRenderState().cameraRenderState.pos;
         float partial=Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaPartialTick(false);
         for(var p:PIECES){
-            if(camera.distanceToSqr(p.position)>40*40)continue;
-            Vec3 at=p.previous.lerp(p.position,partial).subtract(camera);float age=p.age+partial;
-            var transform=new Matrix4f().translation((float)at.x,(float)at.y,(float)at.z)
-                    .rotateXYZ((p.settled?p.restAge:age)*.09F+p.phase,(p.settled?p.restAge:age)*.05F,(p.settled?p.restAge:age)*.025F).mul(p.local);
+            if(camera.distanceToSqr(p.motion.position)>40*40)continue;
+            Vec3 at=p.motion.at(partial).subtract(camera);float age=p.age+partial;
+            var transform=new Matrix4f().translation((float)at.x,(float)at.y,(float)at.z).rotate(p.motion.rotation(partial)).mul(p.local);
             boolean thermal=ThermalVision.drawsWhite(p.owner);
             Identifier texture=thermal?ThermalVision.WHITE:p.texture;
             int pieceLight=thermal?LightCoordsUtil.FULL_BRIGHT:p.light;
@@ -179,8 +227,26 @@ public final class LoosePanels {
             event.getSubmitNodeCollector().submitCustomGeometry(event.getPoseStack(),RenderTypes.entityTranslucent(texture,false),(pose,buffer)->{
                 var local=pose.copy();local.mulPose(transform);ModelVertices.emit(buffer,local,List.of(p.group),color,pieceLight,false);
             });
+            var shell=p.tear==null?null:io.github.mcheliceport.client.model.BreakupMeshes.shell(p.group,p.tear.axis(),p.tear.cut(),p.tear.outward());
+            if(shell==null)continue;
+            int alpha=color&0xFF000000;
+            event.getSubmitNodeCollector().submitCustomGeometry(event.getPoseStack(),RenderTypes.entityTranslucent(texture,false),(pose,buffer)->{
+                var local=pose.copy();local.mulPose(transform);
+                ModelVertices.emit(buffer,local,List.of(shell.lining()),alpha|(thermal?0xFFFFFF:PlaneAirframeParts.LINING&0xFFFFFF),pieceLight,false);
+            });
+            event.getSubmitNodeCollector().submitCustomGeometry(event.getPoseStack(),RenderTypes.entityTranslucent(thermal?texture:METAL,false),(pose,buffer)->{
+                var local=pose.copy();local.mulPose(transform);
+                ModelVertices.emit(buffer,local,List.of(shell.cap()),alpha|(thermal?0xFFFFFF:PlaneAirframeParts.CAP&0xFFFFFF),pieceLight,false);
+            });
         }
     }
     public static int pieces(){return PIECES.size();}
+    /** Centre and phase of an aircraft's live structural fragments, for probes. */
+    public static List<String> airframeMotion(AircraftEntity owner){
+        return PIECES.stream().filter(p->p.owner==owner&&p.airframeBit!=0&&!p.skin).map(p->p.airframeBit+":"+p.motion.phase+"@"+p.motion.position).toList();
+    }
+    public static Vec3 airframePosition(AircraftEntity owner,int bit){
+        for(var p:PIECES)if(p.owner==owner&&p.airframeBit==bit&&!p.skin)return p.motion.position;return null;
+    }
     public static boolean detached(AircraftEntity e){var s=STATES.get(e);return s!=null&&s.detached!=null;}
 }

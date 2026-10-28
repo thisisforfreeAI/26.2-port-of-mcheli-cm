@@ -9,6 +9,9 @@ import io.github.mcheliceport.entity.heli.HeliEntity;
 import io.github.mcheliceport.entity.plane.PlaneEntity;
 import io.github.mcheliceport.weapon.WeaponParam;
 import io.github.mcheliceport.weapon.WeaponSet;
+import io.github.mcheliceport.weather.FlightWeather;
+import io.github.mcheliceport.wingman.ai.PilotAi;
+import io.github.mcheliceport.wingman.ai.TerrainAvoidance;
 import io.github.mcheliceport.wingman.config.WingmanConfig;
 import io.github.mcheliceport.wingman.mission.AutonomousState;
 import io.github.mcheliceport.wingman.wingman.WingmanEntry;
@@ -112,6 +115,10 @@ public final class WingmanTickHandler {
                 continue;
             }
             WingmanEntry entry = e.getValue();
+            PilotAi.tick(wingman, level.getGameTime());
+            if (PilotAi.isCrippled(wingman)) {
+                breakOff(level, wingman, entry);
+            }
             if (wingman instanceof PlaneEntity plane && plane.partNozzle != null) {
                 controlVtol(plane, entry);
             }
@@ -128,13 +135,37 @@ public final class WingmanTickHandler {
                     holdStop(wingman, entry.leader);
                 } else {
                     if (wingman instanceof HeliEntity) {
-                        applyThrottle(wingman, heliAltitudeThrottle(wingman, fp.y));
+                        Vec3 mt = computeMoveTarget(level, wingman, entry);
+                        applyThrottle(wingman, heliAltitudeThrottle(wingman, mt != null ? mt.y : fp.y));
                     } else {
                         maintainEngineAdaptive(wingman, entry.leader, distToSlot);
                     }
                     steerToTarget(level, wingman, entry);
                 }
             }
+            if (PilotAi.isPullingUp(wingman) && !(wingman instanceof HeliEntity)) {
+                applyThrottle(wingman, 1.0);
+            }
+        }
+        if (level.getGameTime() % 200 == 0) {
+            PilotAi.retain(WingmanRegistry.snapshot().keySet());
+        }
+    }
+
+    /**
+     * M10d: a wingman with an engine or a rotor disabled stops attacking and goes back to its
+     * leader; on an order, it flies home.
+     */
+    private static void breakOff(ServerLevel level, AircraftEntity wingman, WingmanEntry entry) {
+        if (entry.attackMode != WingmanEntry.ATK_NONE) {
+            entry.attackMode = WingmanEntry.ATK_NONE;
+            entry.manualTargetId = null;
+            entry.currentAutoTarget = null;
+            McheliCePort.LOGGER.info("[Wingman] {} breaks off - damaged", AutonomousFlightHandler.shortId(wingman));
+        }
+        if (entry.order != null && (entry.autoState == AutonomousState.TRANSIT_TO
+                || entry.autoState == AutonomousState.ON_STATION || entry.autoState == AutonomousState.STRIKE_PASS)) {
+            AutonomousFlightHandler.triggerRtb(level, wingman, entry, "damaged");
         }
     }
 
@@ -202,7 +233,8 @@ public final class WingmanTickHandler {
             wingman.setDeltaMovement(Vec3.ZERO);
         } else {
             if (wingman instanceof HeliEntity) {
-                applyThrottle(wingman, heliAltitudeThrottle(wingman, entry.autoTargetY));
+                Vec3 mt = computeMoveTarget(level, wingman, entry);
+                applyThrottle(wingman, heliAltitudeThrottle(wingman, mt != null ? mt.y : entry.autoTargetY));
             } else {
                 double dist = Math.sqrt(Math.pow(entry.autoTargetX - wingman.getX(), 2)
                         + Math.pow(entry.autoTargetY - wingman.getY(), 2) + Math.pow(entry.autoTargetZ - wingman.getZ(), 2));
@@ -225,7 +257,7 @@ public final class WingmanTickHandler {
             return;
         }
         Vec3 movTarget = computeMoveTarget(level, wingman, entry);
-        Vec3 aimTarget = computeAimTarget(level, wingman, entry);
+        Vec3 aimTarget = PilotAi.isBreaking(wingman) ? null : computeAimTarget(level, wingman, entry);
         Vec3 aimRef = aimTarget != null ? aimTarget : movTarget;
 
         boolean heli = wingman instanceof HeliEntity;
@@ -290,6 +322,13 @@ public final class WingmanTickHandler {
                     Vec3 vel = wingman.getDeltaMovement();
                     double closing = moveDist > 0.01 ? (vel.x * tx + vel.z * tz) / moveDist : 0.0;
                     targetPitch = Mth.clamp((float) (moveDist * 0.5 - closing * 25.0), -15.0F, 20.0F);
+                    // Climbing away from terrain, it stops pushing its nose down into it.
+                    if (PilotAi.isPullingUp(wingman)) {
+                        targetPitch = Math.min(targetPitch, 0.0F);
+                    }
+                } else if (PilotAi.isPullingUp(wingman)) {
+                    // A plane below its clearance over the ground ahead climbs as steeply as it may.
+                    targetPitch = MAX_PITCH_DOWN;
                 } else {
                     targetPitch = Mth.clamp((float) -Math.toDegrees(Math.atan2(movDy, Math.max(hDist, 1.0))),
                             MAX_PITCH_DOWN, MAX_PITCH_UP);
@@ -373,7 +412,7 @@ public final class WingmanTickHandler {
                 continue;
             }
             entry.diagTick++;
-            if (entry.attackMode != WingmanEntry.ATK_NONE) {
+            if (entry.attackMode != WingmanEntry.ATK_NONE && !PilotAi.isBreaking(wingman)) {
                 fireAtTarget(level, wingman, entry);
             }
             if (entry.attackMode == WingmanEntry.ATK_NONE && !entry.isAutonomous() && entry.leader != null
@@ -433,8 +472,46 @@ public final class WingmanTickHandler {
 
     // ---- targets ----
 
-    /** Upstream {@code computeMoveTarget}: the attack path while attacking, else the formation slot. */
+    /**
+     * Where the wingman flies: upstream's move target, or while it breaks from a missile the break
+     * point, kept clear of the terrain ahead (M10d) once it flies.
+     */
     private static @Nullable Vec3 computeMoveTarget(ServerLevel level, AircraftEntity wingman, WingmanEntry entry) {
+        if (!flies(wingman, entry)) {
+            return upstreamMoveTarget(level, wingman, entry);
+        }
+        Vec3 brk = PilotAi.breakTarget(wingman);
+        Vec3 raw = brk != null ? brk : upstreamMoveTarget(level, wingman, entry);
+        if (raw == null) {
+            return null;
+        }
+        boolean attacking = entry.attackMode != WingmanEntry.ATK_NONE;
+        double formation = Double.NaN;
+        if (!attacking && !entry.isAutonomous() && entry.leader != null) {
+            formation = entry.leader.getY() - TerrainAvoidance.of(level).top(entry.leader.getBlockX(), entry.leader.getBlockZ());
+        }
+        return PilotAi.adjust(level, wingman, raw, attacking && !isBombWeapon(entry.weaponType), formation);
+    }
+
+    /**
+     * Whether the wingman is in the air for its pilot: not a ground vehicle, and on a mission not
+     * on the ground or flying its take-off or landing, whose heights the mission sets.
+     */
+    private static boolean flies(AircraftEntity wingman, WingmanEntry entry) {
+        if (wingman instanceof GroundVehicleEntity) {
+            return false;
+        }
+        if (!entry.isAutonomous()) {
+            return true;
+        }
+        return switch (entry.autoState) {
+            case ENROUTE, ATTACK, LOITER, TRANSIT_TO, ON_STATION, STRIKE_PASS, RTB -> !entry.vtolHoverMode;
+            default -> false;
+        };
+    }
+
+    /** Upstream {@code computeMoveTarget}: the attack path while attacking, else the formation slot. */
+    private static @Nullable Vec3 upstreamMoveTarget(ServerLevel level, AircraftEntity wingman, WingmanEntry entry) {
         if (entry.attackMode != WingmanEntry.ATK_NONE) {
             Entity target = resolveTarget(level, wingman, entry);
             if (target != null && !target.isRemoved()) {
@@ -669,10 +746,19 @@ public final class WingmanTickHandler {
                 : WingmanConfig.formationRearDist;
         double bestSq = range * range;
         Entity best = null;
+        // M10e: the pilot looks by eye, so rain and night cut its range unless the target is lit.
+        FlightWeather.Conditions weather = FlightWeather.at(wingman.level(), wingman.position());
+        double inDark = FlightWeather.sensorFactor(weather, FlightWeather.Sensor.VISUAL,
+                FlightWeather.seesInDark(wingman, null));
+        double inLight = FlightWeather.sensorFactor(weather, FlightWeather.Sensor.VISUAL, true);
         outer:
         for (Entity e : wingman.level().getEntities(wingman, wingman.getBoundingBox().inflate(range),
                 c -> isEnemy(leader, team, c))) {
             if (exclude.contains(e.getUUID())) {
+                continue;
+            }
+            double sees = range * (inDark == inLight || !FlightWeather.lit(e) ? inDark : inLight);
+            if (wingman.distanceToSqr(e) > sees * sees) {
                 continue;
             }
             if (minSep > 0) {

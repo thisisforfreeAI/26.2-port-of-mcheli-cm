@@ -22,6 +22,7 @@ import io.github.mcheliceport.weapon.WeaponTargets;
 import io.github.mcheliceport.weapon.WeaponWorld;
 import io.github.mcheliceport.weapon.explosion.McheliExplosion;
 import io.github.mcheliceport.weapon.guidance.WeaponGuidanceSystem;
+import io.github.mcheliceport.weather.FlightWeather;
 import io.github.mcheliceport.wingman.handler.ProjectileChunkLoader;
 import java.util.List;
 import java.util.Locale;
@@ -1389,7 +1390,9 @@ public abstract class BaseBulletEntity extends Entity implements WeaponTargets.P
             this.setTargetEntity(null);
             return;
         }
-        double range = info.maxLockOnRange;
+        // M10e: rain and storms shorten the seeker's reach.
+        double range = info.maxLockOnRange * FlightWeather.sensorFactor(this.level(),
+                this.position(), FlightWeather.Sensor.RADAR, true);
         double maxAngleRad = Math.toRadians(info.maxLockOnAngle);
         Vec3 missileDir = this.getDeltaMovement();
         List<Entity> entities = this.level().getEntities((Entity) null, this.getBoundingBox().inflate(range),

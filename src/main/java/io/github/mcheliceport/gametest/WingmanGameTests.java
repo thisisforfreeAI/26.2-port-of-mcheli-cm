@@ -2,6 +2,7 @@ package io.github.mcheliceport.gametest;
 
 import static io.github.mcheliceport.gametest.GameTestSupport.check;
 
+import io.github.mcheliceport.config.ServerConfig;
 import io.github.mcheliceport.content.ContentType;
 import io.github.mcheliceport.entity.ground.GroundVehicleEntity;
 import io.github.mcheliceport.entity.heli.HeliEntity;
@@ -151,6 +152,11 @@ final class WingmanGameTests {
      * an enemy, and the wingman released when its leader goes.
      */
     private static void formation(GameTestHelper h) {
+        // Upstream's flight: on the flat test floor the M10d terrain clearance would lift the slot.
+        GameTestSupport.withConfig(ServerConfig.AI_TERRAIN, false, () -> formationUpstream(h));
+    }
+
+    private static void formationUpstream(GameTestHelper h) {
         WingmanConfig.reset();
         HeliEntity leader = GameTestSupport.spawn(h, GameTestSupport.AH64, new Vec3(2, 2, 2), 0.0F);
         HeliEntity wingman = GameTestSupport.spawn(h, GameTestSupport.AH64, new Vec3(2, 2, 2), 0.0F);
