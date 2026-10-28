@@ -15,10 +15,12 @@ import io.github.mcheliceport.client.weapon.WeaponEffects;
 import io.github.mcheliceport.config.ServerSettings;
 import io.github.mcheliceport.entity.aircraft.AircraftEntity;
 import io.github.mcheliceport.entity.seat.SeatEntity;
+import io.github.mcheliceport.weather.FlightWeather;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.RenderFrameEvent;
@@ -146,6 +148,12 @@ public final class AircraftClientEvents {
         if (aircraft.getTVMissile() != null && aircraft.getTVMissile().shootingEntity == player
                 && aircraft.isGunnerMode(player)) {
             roll = 0.0F;
+        }
+        // M10e: a thunderstorm shakes the view of a vehicle in flight.
+        if (FlightWeather.gust(aircraft) != Vec3.ZERO) {
+            roll += FlightWeather.turbulenceRoll(
+                    FlightWeather.at(aircraft.level(), aircraft.position()),
+                    aircraft.level().getGameTime() + partial, aircraft.getUUID().hashCode());
         }
         event.setRoll(event.getRoll() + roll);
     }

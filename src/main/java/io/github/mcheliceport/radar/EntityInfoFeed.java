@@ -8,6 +8,7 @@ import io.github.mcheliceport.entity.plane.PlaneEntity;
 import io.github.mcheliceport.entity.weapon.AAMissileEntity;
 import io.github.mcheliceport.net.EntityInfoSyncPayload;
 import io.github.mcheliceport.net.ModNetwork;
+import io.github.mcheliceport.weather.FlightWeather;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.server.level.ServerLevel;
@@ -22,7 +23,8 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
  * Upstream's {@code EntityInfoManagerAsync}: every ten ticks each player is sent the players,
  * vehicles, flares, chaff and air-to-air missiles within 2000 blocks of them, for the BVR and
  * mortar radar HUDs. Planes, helicopters and chaff count only 30 blocks or more above the ground
- * and moving at half a block a tick or more.
+ * and moving at half a block a tick or more. Since M10e the range shrinks in rain and storms, and a
+ * vehicle whose radar lightning blanked gets nothing.
  */
 public final class EntityInfoFeed {
 
@@ -55,11 +57,16 @@ public final class EntityInfoFeed {
                 }
             }
             for (ServerPlayer player : level.players()) {
+                AircraftEntity ridden = ModNetwork.riddenAircraft(player);
+                if (ridden != null && ridden.getRadarBlankTicks() > 0) {
+                    continue;
+                }
+                double range = rangeAt(player);
                 List<EntityInfo> visible = new ArrayList<>();
                 for (EntityInfo info : tracked) {
                     double dx = player.getX() - info.x();
                     double dz = player.getZ() - info.z();
-                    if (dx * dx + dz * dz <= RANGE * RANGE) {
+                    if (dx * dx + dz * dz <= range * range) {
                         visible.add(info);
                     }
                 }
@@ -68,6 +75,11 @@ public final class EntityInfoFeed {
                 }
             }
         }
+    }
+
+    /** M10e: the feed's range for someone at {@code viewer}'s place, shorter in rain and storms. */
+    public static double rangeAt(Entity viewer) {
+        return RANGE * FlightWeather.sensorFactor(viewer.level(), viewer.position(), FlightWeather.Sensor.RADAR, true);
     }
 
     /** Upstream {@code shouldTrack}. */

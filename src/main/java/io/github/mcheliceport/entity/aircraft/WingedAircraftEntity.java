@@ -98,7 +98,8 @@ public abstract class WingedAircraftEntity extends AircraftEntity implements Pla
     }
 
     private PlaneFlightModel.Params params() {
-        return PlaneFlightModel.Params.of(this.wingedInfo, this.speedMultiplier());
+        return PlaneFlightModel.Params.of(this.wingedInfo, this.speedMultiplier()
+                * io.github.mcheliceport.weather.FlightWeather.iceSpeedFactor(this.getIce()));
     }
 
     private PlaneFlightModel.Input input() {
@@ -428,7 +429,7 @@ public abstract class WingedAircraftEntity extends AircraftEntity implements Pla
     @Override
     public double waterDepth() { return this.getWaterDepth(); }
     @Override
-    public void move(double x, double y, double z) { this.move(MoverType.SELF, new Vec3(x, y, z)); }
+    public void move(double x, double y, double z) { this.move(MoverType.SELF, this.withGust(new Vec3(x, y, z))); }
     @Override
     public boolean groundIsSolid() {
         boolean[] solid = {false};

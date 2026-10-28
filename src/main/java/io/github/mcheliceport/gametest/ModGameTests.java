@@ -100,6 +100,7 @@ public final class ModGameTests {
         CrewGameTests.register();
         GroundCrewGameTests.register();
         AiPilotGameTests.register();
+        WeatherGameTests.register();
         ComponentEffectsGameTests.register();
         VehicleBloodGameTests.register();
         if (System.getProperty("neoforge.enabledGameTestNamespaces") != null) {

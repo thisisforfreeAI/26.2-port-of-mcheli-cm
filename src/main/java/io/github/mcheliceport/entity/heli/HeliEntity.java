@@ -243,7 +243,8 @@ public class HeliEntity extends AircraftEntity implements HeliFlightModel.Body {
     // ---- tick ----
 
     private HeliFlightModel.Params params() {
-        return HeliFlightModel.Params.of(this.heliInfo, CommonConfig.ALL_HELI_SPEED.get());
+        return HeliFlightModel.Params.of(this.heliInfo, CommonConfig.ALL_HELI_SPEED.get()
+                * io.github.mcheliceport.weather.FlightWeather.iceSpeedFactor(this.getIce()));
     }
 
     private HeliFlightModel.Input input() {
@@ -527,7 +528,7 @@ public class HeliEntity extends AircraftEntity implements HeliFlightModel.Body {
 
     @Override
     public void move(double x, double y, double z) {
-        this.move(MoverType.SELF, new Vec3(x, y, z));
+        this.move(MoverType.SELF, this.withGust(new Vec3(x, y, z)));
     }
 
     @Override

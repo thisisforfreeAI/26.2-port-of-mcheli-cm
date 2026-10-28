@@ -181,6 +181,12 @@ public abstract class AircraftEntity extends Entity
     /** M10c: rounds left in a stocked supply vehicle, or -1 before it is first filled. */
     private static final EntityDataAccessor<Integer> DATA_AMMO_STOCK =
             SynchedEntityData.defineId(AircraftEntity.class, EntityDataSerializers.INT);
+    /** M10e: ice on the airframe, 0 to 1 ({@code weather.FlightWeather}). */
+    private static final EntityDataAccessor<Float> DATA_ICE =
+            SynchedEntityData.defineId(AircraftEntity.class, EntityDataSerializers.FLOAT);
+    /** M10e: ticks the radar stays blank after a lightning strike nearby. */
+    private static final EntityDataAccessor<Integer> DATA_RADAR_BLANK =
+            SynchedEntityData.defineId(AircraftEntity.class, EntityDataSerializers.INT);
 
     private static final AircraftHitBox[] NO_HIT_BOXES = new AircraftHitBox[0];
     private static final SeatEntity[] NO_SEATS = new SeatEntity[0];
@@ -455,6 +461,8 @@ public abstract class AircraftEntity extends Entity
         builder.define(DATA_CREW_MARK, -1);
         builder.define(DATA_SERVICE, 0);
         builder.define(DATA_AMMO_STOCK, -1);
+        builder.define(DATA_ICE, 0.0F);
+        builder.define(DATA_RADAR_BLANK, 0);
     }
 
     @Override
@@ -811,6 +819,47 @@ public abstract class AircraftEntity extends Entity
     public void setAmmoStock(int stock) {
         int max = this.info != null ? this.info.ammoSupplyStock : stock;
         this.entityData.set(DATA_AMMO_STOCK, Math.clamp(stock, 0, Math.max(max, 0)));
+    }
+
+    /** M10e: ice on the airframe, 0 (none) to 1, which lowers the top speed. */
+    public float getIce() {
+        return this.entityData.get(DATA_ICE);
+    }
+
+    public void setIce(float ice) {
+        float clamped = Math.clamp(ice, 0.0F, 1.0F);
+        if (clamped != this.getIce()) {
+            this.entityData.set(DATA_ICE, clamped);
+        }
+    }
+
+    /** M10e: ticks left of a radar blanked by lightning, 0 when it works. */
+    public int getRadarBlankTicks() {
+        return this.entityData.get(DATA_RADAR_BLANK);
+    }
+
+    public void setRadarBlankTicks(int ticks) {
+        if (ticks != this.getRadarBlankTicks()) {
+            this.entityData.set(DATA_RADAR_BLANK, Math.max(ticks, 0));
+        }
+    }
+
+    /** M10e, server: ice builds or thaws once a second; a blanked radar counts down. */
+    private void tickWeather() {
+        if (this.getRadarBlankTicks() > 0) {
+            this.setRadarBlankTicks(this.getRadarBlankTicks() - 1);
+        }
+        if (this.getCountOnUpdate() % 20 == 0) {
+            var c = io.github.mcheliceport.weather.FlightWeather.at(this.level(), this.position());
+            this.setIce(io.github.mcheliceport.weather.FlightWeather.nextIce(this.getIce(),
+                    io.github.mcheliceport.weather.FlightWeather.icing(c, this.getY()), 20));
+        }
+    }
+
+    /** M10e: the drift a gust adds to this tick's move. */
+    protected Vec3 withGust(Vec3 move) {
+        Vec3 gust = io.github.mcheliceport.weather.FlightWeather.gust(this);
+        return gust == Vec3.ZERO ? move : move.add(gust);
     }
 
     /** M10b: the id of the entity the commander marked, or -1. */
@@ -1949,6 +1998,7 @@ public abstract class AircraftEntity extends Entity
         if (!this.level().isClientSide()) {
             this.tickUnmountCrew();
             this.tickCrewMark();
+            this.tickWeather();
         }
         this.updateControl();
 

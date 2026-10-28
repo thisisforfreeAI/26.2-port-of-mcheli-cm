@@ -9,6 +9,7 @@ import io.github.mcheliceport.entity.heli.HeliEntity;
 import io.github.mcheliceport.entity.plane.PlaneEntity;
 import io.github.mcheliceport.weapon.WeaponParam;
 import io.github.mcheliceport.weapon.WeaponSet;
+import io.github.mcheliceport.weather.FlightWeather;
 import io.github.mcheliceport.wingman.ai.PilotAi;
 import io.github.mcheliceport.wingman.ai.TerrainAvoidance;
 import io.github.mcheliceport.wingman.config.WingmanConfig;
@@ -745,10 +746,19 @@ public final class WingmanTickHandler {
                 : WingmanConfig.formationRearDist;
         double bestSq = range * range;
         Entity best = null;
+        // M10e: the pilot looks by eye, so rain and night cut its range unless the target is lit.
+        FlightWeather.Conditions weather = FlightWeather.at(wingman.level(), wingman.position());
+        double inDark = FlightWeather.sensorFactor(weather, FlightWeather.Sensor.VISUAL,
+                FlightWeather.seesInDark(wingman, null));
+        double inLight = FlightWeather.sensorFactor(weather, FlightWeather.Sensor.VISUAL, true);
         outer:
         for (Entity e : wingman.level().getEntities(wingman, wingman.getBoundingBox().inflate(range),
                 c -> isEnemy(leader, team, c))) {
             if (exclude.contains(e.getUUID())) {
+                continue;
+            }
+            double sees = range * (inDark == inLight || !FlightWeather.lit(e) ? inDark : inLight);
+            if (wingman.distanceToSqr(e) > sees * sees) {
                 continue;
             }
             if (minSep > 0) {

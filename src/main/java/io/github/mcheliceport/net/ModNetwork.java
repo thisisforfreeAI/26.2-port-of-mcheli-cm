@@ -426,7 +426,7 @@ public final class ModNetwork {
 
     /**
      * M9: a BVR lock must name a live target within the radar feed's range that is not the shooter,
-     * its vehicle or anyone aboard it.
+     * its vehicle or anyone aboard it; M10e: the range in that weather, with the radar working.
      */
     public static boolean bvrTargetValid(AircraftEntity ac, Player player, Entity target) {
         if (!target.isAlive() || target == player || target == ac || ac.isMountedEntity(target)
@@ -435,8 +435,8 @@ public final class ModNetwork {
         }
         double dx = target.getX() - ac.getX();
         double dz = target.getZ() - ac.getZ();
-        double range = io.github.mcheliceport.radar.EntityInfoFeed.RANGE;
-        return dx * dx + dz * dz <= range * range;
+        double range = io.github.mcheliceport.radar.EntityInfoFeed.rangeAt(ac);
+        return ac.getRadarBlankTicks() <= 0 && dx * dx + dz * dz <= range * range;
     }
 
     public static @Nullable AircraftEntity riddenAircraft(Player player) {
