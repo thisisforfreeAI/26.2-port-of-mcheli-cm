@@ -79,6 +79,9 @@ gradle.projectsEvaluated {
     if(Boolean.getBoolean('mcheli.probeSkinShedding'))project.sourceSets.main.java.exclude('io/github/mcheliceport/probe/EffectsProbe.java')
     project.neoForge.runs.client.systemProperty('mcheli.probeSkinShedding',System.getProperty('mcheli.probeSkinShedding','false'))
     project.neoForge.runs.client.systemProperty('mcheli.probeSkinStart',System.getProperty('mcheli.probeSkinStart','0'))
+    if(Boolean.getBoolean('mcheli.probeManeuverSmoke'))project.sourceSets.main.java.exclude('io/github/mcheliceport/probe/EffectsProbe.java')
+    project.neoForge.runs.client.systemProperty('mcheli.probeManeuverSmoke',System.getProperty('mcheli.probeManeuverSmoke','false'))
+    project.neoForge.runs.client.systemProperty('mcheli.probeManeuverStart',System.getProperty('mcheli.probeManeuverStart','0'))
     project.neoForge.runs.client.gameDirectory = project.file('.run/m8-preview')
     project.neoForge.runs.client.programArguments.addAll('--quickPlaySingleplayer', 'M6Smoke',
             '--graphicsBackend', System.getProperty('mcheli.probeBackend', 'VULKAN'), '--width', System.getProperty('mcheli.probeWidth', '1920'),
