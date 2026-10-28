@@ -33,6 +33,7 @@ public final class WreckScene {
         public Vec3 position;public float span,length;
         Scene(int seed){this.seed=seed;}
         public boolean fresh(){return impact!=null&&!late;}
+        public float size(){return Math.max(span,length);}
         public float fade(long now){return goneTick<0?1:Math.clamp(1-(now-goneTick)/(float)FADE,0,1);}
     }
     private static final Map<AircraftEntity,Scene> STATES=new LinkedHashMap<>();

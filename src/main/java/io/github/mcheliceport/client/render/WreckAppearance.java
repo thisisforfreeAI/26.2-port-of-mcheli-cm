@@ -14,7 +14,7 @@ import org.joml.Matrix4f;
  * canopy shatters and its landing gear is torn off into the debris field. No entity pose or collision edits.
  */
 public final class WreckAppearance {
- private static final class State {boolean seen,dead,glass;int removed;final Set<McheliModel.Group> scattered=Collections.newSetFromMap(new IdentityHashMap<>());}
+ private static final class State {boolean seen,dead,glass;int removed;long restStart=-1;float drop=-1;Matrix4f rest=new Matrix4f();final Set<McheliModel.Group> scattered=Collections.newSetFromMap(new IdentityHashMap<>());}
  private static final Map<AircraftEntity,State> STATES=Collections.synchronizedMap(new WeakHashMap<>());
  private static final Identifier SOOT=Identifier.fromNamespaceAndPath("mcheli_ce_port","textures/effect/m8_fluid_stains.png");
  static final Identifier CHAR=Identifier.fromNamespaceAndPath("mcheli_ce_port","textures/effect/m8_wreck_char.png");
@@ -25,7 +25,26 @@ public final class WreckAppearance {
  private static java.lang.ref.WeakReference<Object> world=new java.lang.ref.WeakReference<>(null);
  public static boolean enabled(){return EffectQuality.enhanced()&&ClientConfig.get(ClientConfig.VEHICLE_DAMAGE_DETAILS);}
  public static float settling(AircraftEntity ac){int age=VehicleAtmosphere.wreckAge(ac);return io.github.mcheliceport.client.particle.WreckSequenceEffects.enabled()?io.github.mcheliceport.client.particle.DestructionTimeline.collapse(age):Math.clamp((age+1)/60F,0,1);}
- public static Matrix4f root(AircraftEntity ac){float s=settling(ac);return new Matrix4f().translate(0,-.10F*s,0).rotateZ(.025F*s).rotateX(-.018F*s);}
+ public static Matrix4f root(AircraftEntity ac){float s=settling(ac);var state=STATES.get(ac);
+  var sag=new Matrix4f().translate(0,-.10F*s,0).rotateZ(.025F*s).rotateX(-.018F*s);return state==null||!state.dead?sag:new Matrix4f(state.rest).mul(sag);}
+ /** Seconds-and-a-half to settle once a crashed plane has stopped sliding. */
+ static final int SETTLE=30;
+ /** The attitude a stopped wreck settles to: level, on its belly or its back, whichever is nearer. */
+ public static float[] restAttitude(float pitch,float roll,float s){
+  float r=net.minecraft.util.Mth.wrapDegrees(roll),target=Math.abs(r)>90?Math.copySign(180,r):0;s=Math.clamp(s,0,1);
+  return new float[]{pitch*(1-s),r+(target-r)*s};
+ }
+ /**
+  * Render-only correction from the attitude the wreck hit at (kept by the server) to its rest attitude,
+  * lowered by its lost landing gear when upright; applied to the hull and everything posed with it.
+  */
+ static Matrix4f restCorrection(float yaw,float pitch,float roll,float s,float drop){
+  var rest=restAttitude(pitch,roll,s);float y=io.github.mcheliceport.content.aircraft.AircraftInfo.GLOBAL_Y_OFFSET;
+  var now=new Matrix4f().translate(0,y,0).rotateY((float)Math.toRadians(-yaw)).rotateX((float)Math.toRadians(pitch)).rotateZ((float)Math.toRadians(roll));
+  var target=new Matrix4f().translate(0,y,0).rotateY((float)Math.toRadians(-yaw)).rotateX((float)Math.toRadians(rest[0])).rotateZ((float)Math.toRadians(rest[1]));
+  boolean upright=Math.abs(rest[1])<90;
+  return new Matrix4f().translate(0,upright?-drop*Math.clamp(s,0,1):0,0).mul(target).mul(now.invert());
+ }
  /** How far the paint has burnt, 0.25 at the moment of destruction to 1 when the first fire is out. */
  public static float burn(int age){return age<0?1:Math.clamp(.25F+age/360F,0,1);}
  /** Ember glow: full while the wreck burns, then fading over the next 90 seconds. */
@@ -35,6 +54,15 @@ public final class WreckAppearance {
  static int lerp(float t,int a,int b){int out=0;for(int shift=0;shift<32;shift+=8){int x=a>>>shift&255,y=b>>>shift&255;out|=Math.round(x+(y-x)*Math.clamp(t,0,1))<<shift;}return out;}
  /** Charred skin opacity for a burn level: thin soot at first, nearly solid once burnt. */
  public static int charColor(float burn){return ((int)(255*(.42F+.53F*Math.clamp(burn,0,1)))<<24)|0xFFFFFF;}
+ /** How far the hull drops once its gear is gone: from the gear's lowest point to the hull's, in blocks (0 to 2). */
+ static float gearDrop(McheliModel.Group hull,List<AircraftPartPoses.Draw> gear){
+  float body=Float.POSITIVE_INFINITY,wheels=Float.POSITIVE_INFINITY;var d=hull.data();
+  for(int i=1;i<d.length;i+=8)body=Math.min(body,d[i]);
+  // Both in model space: the gear's authored (lowered) position against the hull's belly.
+  for(var draw:gear)for(var g:draw.groups()){var e=g.data();for(int i=1;i<e.length;i+=8)wheels=Math.min(wheels,e[i]);}
+  if(!Float.isFinite(body)||!Float.isFinite(wheels))return 0;
+  return Math.clamp(body-wheels,0,2);
+ }
  public static boolean removable(String n){return n.matches("\\$(canopy|hatch|panel|enginecover|cover)[0-9]*")||n.equals("$track_roller0");}
  public static int removed(AircraftEntity ac){var s=STATES.get(ac);return s==null?0:s.removed;}
  public static void clear(){STATES.clear();world.clear();WreckMesh.clear();}
@@ -48,7 +76,13 @@ public final class WreckAppearance {
   var scene=WreckScene.get(ac);boolean down=scene!=null&&scene.impact!=null;
   int age=VehicleAtmosphere.wreckAge(ac);float burn=burn(age),glow=embers(age);
   float settle=settling(ac);
-  var root=new Matrix4f().translate(0,-.10F*settle,0).rotateZ(.025F*settle).rotateX(-.018F*settle);
+  // A crashed plane that has stopped sliding settles level instead of staying propped at its impact angle.
+  long now=ac.level().getGameTime();
+  boolean still=plane&&down&&ac.position().subtract(ac.xo,ac.yo,ac.zo).horizontalDistanceSqr()<.0025;
+  if(!still)s.restStart=-1;else if(s.restStart<0)s.restStart=now;
+  float rest=s.restStart<0?0:(now-s.restStart)/(float)SETTLE;rest=rest*rest*(3-2*Math.min(1,rest));
+  s.rest=plane&&down&&s.drop>=0?restCorrection(render.yaw,render.pitch,render.roll,Math.min(1,rest),s.drop):new Matrix4f();
+  var root=new Matrix4f(s.rest).translate(0,-.10F*settle,0).rotateZ(.025F*settle).rotateX(-.018F*settle);
   var draws=new ArrayList<AircraftPartPoses.Draw>();int removed=0;
   var gear=new ArrayList<AircraftPartPoses.Draw>();WreckMesh.Parts hull=null;Matrix4f hullPose=null;
   for(var draw:render.draws)for(var group:draw.groups()){
@@ -95,6 +129,7 @@ public final class WreckAppearance {
    }
   }
   if(plane&&down&&hull!=null)WreckDebrisField.offer(ac,render.texture,hullPose,hull.chunks(),gear);
+  if(plane&&down&&hull!=null&&s.drop<0)s.drop=gearDrop(hull.shape(),gear);
   s.removed=removed;render.draws.clear();render.draws.addAll(draws);
  }
 }

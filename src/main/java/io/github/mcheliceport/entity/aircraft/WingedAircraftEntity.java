@@ -354,11 +354,6 @@ public abstract class WingedAircraftEntity extends AircraftEntity implements Pla
         if (this.level().isClientSide()) {
             if (this.isDestroyed()) {
                 PlaneVisualMotion.destroyed(this, this.blockWithin(3, -3), this.rotDestroyedPitch, this.rotDestroyedRoll);
-                if (this.blockWithin(3, -1)
-                        && io.github.mcheliceport.config.EffectQuality.enhanced()
-                        && ClientConfig.get(ClientConfig.VEHICLE_DAMAGE_DETAILS)) {
-                    PlaneVisualMotion.settle(this);
-                }
             }
             float target = (float) this.getCurrentThrottle();
             if (this.getPilot() != null && (this.partCanopy == null || this.partCanopy.rotation < 1.0F)) { target += 0.1F; }

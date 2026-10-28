@@ -23,7 +23,9 @@ and follows the existing Enhanced quality and vehicle damage details settings.
    droops up to 4 degrees, the nose is shortened and flattened, and its skin wrinkles, with faceted
    normals on the crushed part. The rear (where the breakaway caps sit) is untouched, so cut sections
    still line up. The canopy bursts into glass shards instead of flying off in one piece. Once the
-   wreck stops it settles level onto its belly or back instead of staying propped at its landing angle.
+   wreck stops it is drawn settling level onto its belly or back over a second and a half, lowered by
+   the height of its lost landing gear, instead of staying propped at its landing angle. The entity's own
+   pose is unchanged; this is only how the hulk is drawn.
 4. **Ground scar.** A burn scar (sized to the airframe, 1.6 to 4.5 blocks) at the impact point and a
    darker fuel stain where it rests. They are cut to the top faces of the block columns underneath and
    skip water and ledges, on top of the explosion's own crater and scorch.
@@ -68,5 +70,5 @@ over the desert test world, crashes at about 15 m/s and is followed from the imp
 `WreckCrumpleTest` (only the front moves, shared corners stay together, crushed faces keep facing out,
 the charred layer covers every triangle just off the hull, ember tiers and debris chunks are bounded),
 `WreckGroundTest` (a rotated groove cut into columns adds up to its area), `WreckFuelFireTest` (the
-pool outlasts the hull's flames, the wisp ends), `WreckAppearanceTest` and `PlaneEffectsTest` (a wreck
-at rest settles onto its belly or back).
+pool outlasts the hull's flames, the wisp ends), and `WreckAppearanceTest` (the hull chars and darkens, a wreck at rest
+settles onto its belly or back and drops by the gear height).

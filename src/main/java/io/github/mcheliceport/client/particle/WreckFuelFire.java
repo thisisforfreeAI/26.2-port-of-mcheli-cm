@@ -25,7 +25,7 @@ public final class WreckFuelFire {
         float fire=strength(cooling.age());if(fire<=0)return;
         var camera=Minecraft.getInstance().gameRenderer.mainCamera().position();
         if(camera.distanceToSqr(scene.position)>64*64)return;
-        float radius=io.github.mcheliceport.client.effect.WreckGround.poolRadius(scene.span)
+        float radius=io.github.mcheliceport.client.effect.WreckGround.poolRadius(scene.size())
                 *io.github.mcheliceport.client.effect.WreckGround.poolGrowth(tick-scene.impactTick);
         var engine=Minecraft.getInstance().particleEngine;int id=aircraft.getId();int pressure=1+EffectPerformance.pressure();
         double ground=scene.position.y;

@@ -95,7 +95,7 @@ public final class WreckRealismProbe {
         if(t==10)shot("1-impact",heading.scale(-6).add(side.scale(-16)).add(0,7,0),at);
         if(t==60)shot("2-burning",heading.scale(10).add(side.scale(-11)).add(0,5,0),at);
         if(t==120)shot("3-close",heading.scale(3).add(side.scale(-5.5)).add(0,2.6,0),at);
-        if(t==200)shot("4-trail",heading.scale(-14).add(side.scale(-6)).add(0,9,0),at.add(heading.scale(-4)));
+        if(t==200){var mid=impact.add(at).scale(.5);shot("4-trail",heading.scale(-6).add(side.scale(-13)).add(0,10,0),mid);}
         if(t==330)shot("5-from-above",side.scale(-3).add(0,18,0).add(heading.scale(-2)),at);
         if(t==440)shot("6-smolder",heading.scale(9).add(side.scale(-10)).add(0,4.5,0),at);
         if(t==1300)shot("7-cold-hulk",heading.scale(10).add(side.scale(-11)).add(0,5,0),at);

@@ -180,17 +180,6 @@ class PlaneEffectsTest {
     }
 
     @Test
-    void aWreckAtRestSettlesOntoItsBellyOrItsBack() {
-        PlaneFlightModelTest.State body = new PlaneFlightModelTest.State();
-        body.pitch = -25; body.roll = 60;
-        for (int i = 0; i < 200; i++) PlaneVisualMotion.settle(body);
-        assertEquals(0, body.pitch, 2.0); assertEquals(0, body.roll, 1.0);
-        body.pitch = 18; body.roll = -130;
-        for (int i = 0; i < 200; i++) PlaneVisualMotion.settle(body);
-        assertEquals(0, body.pitch, 2.0); assertEquals(180, Math.abs(body.roll), 1.0);
-    }
-
-    @Test
     void exhaustCountersAndSteeringMatchUpstream() {
         PlaneExhaustAnimation animation = new PlaneExhaustAnimation();
         int[] expected = {0, 1, 1, 2, 2, 0, 0, 1};

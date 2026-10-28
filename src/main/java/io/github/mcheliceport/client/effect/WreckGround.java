@@ -41,9 +41,9 @@ public final class WreckGround {
     private WreckGround(){}
     public static void clear(){MARKS.clear();world=null;}
     public static int pieces(){return MARKS.values().stream().mapToInt(m->m.pieces.values().stream().mapToInt(List::size).sum()).sum();}
-    /** Scar radius for a hull of this span, and the pool's final radius. */
-    public static float scarRadius(float span){return Math.clamp(span*.32F,1.6F,4.5F);}
-    public static float poolRadius(float span){return Math.clamp(span*.26F,1.3F,3.6F);}
+    /** Scar radius for an airframe of this size (the larger of span and length), and the pool's final radius. */
+    public static float scarRadius(float size){return Math.clamp(size*.25F,1.6F,4.5F);}
+    public static float poolRadius(float size){return Math.clamp(size*.2F,1.3F,3.6F);}
     /** The pool spreads over its first second and a half. */
     public static float poolGrowth(long age){return age<0?0:Math.clamp(.35F+age/30F,0,1);}
     @SubscribeEvent public static void tick(ClientTickEvent.Post event){
@@ -57,18 +57,18 @@ public final class WreckGround {
             if(scene.impact==null)continue;
             var m=MARKS.computeIfAbsent(scene,k->new Marks());
             if(!m.scar){m.scar=true;var h=scene.heading;
-                m.pending.add(new Mark(Kind.SCAR,scene.impact.x,scene.impact.z,scene.impact.y,h.x,h.z,scarRadius(scene.span),scarRadius(scene.span),now));}
+                m.pending.add(new Mark(Kind.SCAR,scene.impact.x,scene.impact.z,scene.impact.y,h.x,h.z,scarRadius(scene.size()),scarRadius(scene.size()),now));}
             // Groove segments between successive trail points, gouged as wide as the fuselage sits.
             while(m.trail+1<scene.trail.size()){
                 Vec3 a=scene.trail.get(m.trail),b=scene.trail.get(m.trail+1);m.trail++;
                 double dx=b.x-a.x,dz=b.z-a.z,len=Math.hypot(dx,dz);if(len<.05)continue;
-                m.pending.add(new Mark(Kind.GROOVE,(a.x+b.x)/2,(a.z+b.z)/2,Math.min(a.y,b.y),dx/len,dz/len,len/2+.04,Math.clamp(scene.span*.09,.55,1.4),now));
+                m.pending.add(new Mark(Kind.GROOVE,(a.x+b.x)/2,(a.z+b.z)/2,Math.min(a.y,b.y),dx/len,dz/len,len/2+.04,Math.clamp(scene.size()*.07,.8,1.6),now));
             }
             // The pool collects where the wreck comes to rest, once it has stopped sliding.
             if(!m.pool&&scene.fresh()&&scene.position!=null&&now-scene.impactTick>8&&scene.goneTick<0){
                 var last=scene.trail.isEmpty()?scene.impact:scene.trail.getLast();
                 if(scene.position.distanceToSqr(last)<.2||now-scene.impactTick>80){m.pool=true;var h=scene.heading;
-                    m.pending.add(new Mark(Kind.POOL,scene.position.x,scene.position.z,scene.position.y,h.x,h.z,poolRadius(scene.span),poolRadius(scene.span),now));}
+                    m.pending.add(new Mark(Kind.POOL,scene.position.x,scene.position.z,scene.position.y,h.x,h.z,poolRadius(scene.size()),poolRadius(scene.size()),now));}
             }
             // Fitting is spread over ticks: at most 48 column reads a tick across every wreck.
             while(!m.pending.isEmpty()&&columns<48){var mark=m.pending.removeFirst();m.marks.add(mark);m.pieces.put(mark,fit(world,mark));}
