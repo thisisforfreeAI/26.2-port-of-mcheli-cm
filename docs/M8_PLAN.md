@@ -428,13 +428,15 @@ native examples on several suitable vehicles.
   to tracers and leave NTM Next's own weapon effects under its integration owner's control.
   [Implementation and bounds](M8_PROJECTILE_TRAILS.md) · [native examples](M8_PROJECTILE_TRAILS_GALLERY.md).
   Authored smoke disabling/cutoff and Classic/NTM bypasses are retained.
-- [ ] **Wing vapor:** brief condensation during suitable sharp turns and humid conditions,
-  with bounded nearby detail and smooth fade-in/out.
+- [x] **Wing vapor:** brief pale condensation at supported wing tips during wet turns,
+  with smooth fade and existing shared admission. [Implementation/settings](M8_WING_VAPOR.md) ·
+  [native examples](M8_WING_VAPOR_GALLERY.md). Missing/folded wings and Classic are handled.
 - [ ] **Altitude-dependent contrails:** thin cold-air trails behind suitable engines, widening
   and dispersing with age; keep distinct from hot exhaust and engine-damage smoke.
 
 Airflow-shaped fire, fuel spray, damaged controls, richer broken edges, skin shedding and
-maneuver-readable damage smoke and conventional projectile trails are implemented. Continue the remaining
+maneuver-readable damage smoke, conventional projectile trails and wet-turn wing vapor are
+implemented. Continue the remaining
 graphics items while keeping Minecraft's simple
 look, existing flight handling/collision/gameplay damage and original craters. Respect Claude's
 NTM Next ownership: no NTM explosion bridge, gun/gore hooks or copied NTM assets. Retain the

@@ -37,11 +37,20 @@ public final class ParticleLayers {
     static final SingleQuadParticle.Layer ERODING_SMOKE = new SingleQuadParticle.Layer(true,
             TextureAtlas.LOCATION_PARTICLES, ERODING_SMOKE_PIPELINE);
 
+    // Water vapor keeps the existing wisp alpha while receiving normal ambient particle lighting.
+    private static final RenderPipeline CONDENSATION_PIPELINE=RenderPipeline.builder(RenderPipelines.PARTICLE_SNIPPET)
+            .withLocation(Identifier.fromNamespaceAndPath(McheliCePort.MOD_ID,"pipeline/condensation"))
+            .withFragmentShader(Identifier.fromNamespaceAndPath(McheliCePort.MOD_ID,"core/condensation"))
+            .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
+            .withDepthStencilState(new DepthStencilState(CompareOp.GREATER_THAN_OR_EQUAL,false)).build();
+    static final SingleQuadParticle.Layer CONDENSATION=new SingleQuadParticle.Layer(true,TextureAtlas.LOCATION_PARTICLES,CONDENSATION_PIPELINE);
+
     private ParticleLayers() {
     }
 
     public static void registerPipelines(RegisterRenderPipelinesEvent event) {
         event.registerPipeline(ADDITIVE_PIPELINE);
         event.registerPipeline(ERODING_SMOKE_PIPELINE);
+        event.registerPipeline(CONDENSATION_PIPELINE);
     }
 }
