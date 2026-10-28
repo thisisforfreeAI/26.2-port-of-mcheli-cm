@@ -80,6 +80,7 @@ public final class PlaneAirframeParts {
     }
     private static void detach(PlaneEntity ac,AircraftRenderState render,WreckSequenceEffects.State state,
             McheliModel.Group group,Matrix4f pose,int index,long now,int missing){
+        group=DamagedControlSurfaces.fragment(state,group,index);if(group==null||group.vertexCount()==0)return;
         int bit=1<<index;String key="liveAirframe"+bit;
         Long born=state.airframeLossAt.get(bit);
         if(born!=null&&now>=born&&now-born<=60&&!state.scattered.contains(key)){

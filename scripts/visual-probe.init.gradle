@@ -70,6 +70,9 @@ gradle.projectsEvaluated {
     project.neoForge.runs.client.systemProperty('mcheli.probeWingFuel',System.getProperty('mcheli.probeWingFuel','false'))
     project.neoForge.runs.client.systemProperty('mcheli.probeWingFuelStart',System.getProperty('mcheli.probeWingFuelStart','0'))
     project.neoForge.runs.client.systemProperty('mcheli.probeWingFuelEnd',System.getProperty('mcheli.probeWingFuelEnd','10'))
+    if(Boolean.getBoolean('mcheli.probeDamagedControls'))project.sourceSets.main.java.exclude('io/github/mcheliceport/probe/EffectsProbe.java')
+    project.neoForge.runs.client.systemProperty('mcheli.probeDamagedControls',System.getProperty('mcheli.probeDamagedControls','false'))
+    project.neoForge.runs.client.systemProperty('mcheli.probeControlStart',System.getProperty('mcheli.probeControlStart','0'))
     project.neoForge.runs.client.gameDirectory = project.file('.run/m8-preview')
     project.neoForge.runs.client.programArguments.addAll('--quickPlaySingleplayer', 'M6Smoke',
             '--graphicsBackend', System.getProperty('mcheli.probeBackend', 'VULKAN'), '--width', System.getProperty('mcheli.probeWidth', '1920'),

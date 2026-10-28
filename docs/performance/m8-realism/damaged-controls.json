@@ -1,0 +1,324 @@
+{
+  "kind": "cosmetic-damaged-control-surfaces",
+  "base_commit": "94e26a0",
+  "unit_results": {
+    "tests": 407,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "runs": [
+    {
+      "backend": "VULKAN",
+      "scenes": [
+        {
+          "scene": "f-35a",
+          "peak_mesh_pieces": 6,
+          "repair_clear_passed": true
+        },
+        {
+          "scene": "f22a",
+          "peak_mesh_pieces": 5,
+          "repair_clear_passed": true
+        },
+        {
+          "scene": "a-10",
+          "peak_mesh_pieces": 5,
+          "repair_clear_passed": true
+        },
+        {
+          "scene": "loaded-critical",
+          "peak_mesh_pieces": 0,
+          "repair_clear_passed": true
+        },
+        {
+          "scene": "classic-transition",
+          "peak_mesh_pieces": 0,
+          "repair_clear_passed": true
+        },
+        {
+          "scene": "settings-transition",
+          "peak_mesh_pieces": 5,
+          "repair_clear_passed": true
+        },
+        {
+          "scene": "shared-load",
+          "peak_mesh_pieces": 8,
+          "repair_clear_passed": true
+        }
+      ],
+      "profiles": [
+        {
+          "vehicle": "f-35a",
+          "slots": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "total_prepared_vertices": 5787
+        },
+        {
+          "vehicle": "f22a",
+          "slots": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "total_prepared_vertices": 5061
+        },
+        {
+          "vehicle": "a-10",
+          "slots": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "total_prepared_vertices": 5820
+        }
+      ],
+      "log_sha256": "1ba231006558f199c6272b17203cf7bf56254433aef96a1b466d3498ef384d4a",
+      "all_passed": true
+    },
+    {
+      "backend": "OPENGL",
+      "scenes": [
+        {
+          "scene": "loaded-critical",
+          "peak_mesh_pieces": 0,
+          "repair_clear_passed": true
+        },
+        {
+          "scene": "classic-transition",
+          "peak_mesh_pieces": 0,
+          "repair_clear_passed": true
+        },
+        {
+          "scene": "settings-transition",
+          "peak_mesh_pieces": 5,
+          "repair_clear_passed": true
+        },
+        {
+          "scene": "shared-load",
+          "peak_mesh_pieces": 8,
+          "repair_clear_passed": true
+        }
+      ],
+      "profiles": [],
+      "log_sha256": "53215520fc417b80ce7411362eee406660c096930891233cabf532094d5b4644",
+      "all_passed": true
+    }
+  ],
+  "captures": [
+    {
+      "file": "docs/screens/m8-damaged-controls/f-35a-healthy.png",
+      "backend": "VULKAN",
+      "sha256": "d387e659708f6818fb3984175ff80ba87ef2caef9ca869f36fd307f4e3cbc7f0",
+      "width": 1280,
+      "height": 720,
+      "unedited_native": true
+    },
+    {
+      "file": "docs/screens/m8-damaged-controls/f-35a-flutter-a.png",
+      "backend": "VULKAN",
+      "sha256": "de2873d39fcfa163898dea923fe5be4b0023bb4f1c05d1db9351cc9a3a75bd79",
+      "width": 1280,
+      "height": 720,
+      "unedited_native": true
+    },
+    {
+      "file": "docs/screens/m8-damaged-controls/f-35a-separated.png",
+      "backend": "VULKAN",
+      "sha256": "1c303ab52fb6cb2d43ce47fad04102c28e7d0445d054072f0cc68f6a5b5b10e3",
+      "width": 1280,
+      "height": 720,
+      "unedited_native": true
+    },
+    {
+      "file": "docs/screens/m8-damaged-controls/f-35a-repaired.png",
+      "backend": "VULKAN",
+      "sha256": "3b6442787472c348755e55215bd398edaac50a442f350a131bf9882ed57b2989",
+      "width": 1280,
+      "height": 720,
+      "unedited_native": true
+    },
+    {
+      "file": "docs/screens/m8-damaged-controls/f22a-healthy.png",
+      "backend": "VULKAN",
+      "sha256": "14fd73ca4af5171d271a76aa2a52ad94d8599115b561194ec8e115342b520860",
+      "width": 1280,
+      "height": 720,
+      "unedited_native": true
+    },
+    {
+      "file": "docs/screens/m8-damaged-controls/f22a-flutter-a.png",
+      "backend": "VULKAN",
+      "sha256": "b86ac464176f396b804358f491b97fa1d8c5c6929da823c059409e615838495b",
+      "width": 1280,
+      "height": 720,
+      "unedited_native": true
+    },
+    {
+      "file": "docs/screens/m8-damaged-controls/f22a-separated.png",
+      "backend": "VULKAN",
+      "sha256": "894a6be999c57ad37f813fb39f8710d44bfda62609ec381b066799b7dc9c2fb7",
+      "width": 1280,
+      "height": 720,
+      "unedited_native": true
+    },
+    {
+      "file": "docs/screens/m8-damaged-controls/f22a-repaired.png",
+      "backend": "VULKAN",
+      "sha256": "c9fee8c04d66a6adb3c2475cdcfc73343f983b173d040175eb991c6a7d209b14",
+      "width": 1280,
+      "height": 720,
+      "unedited_native": true
+    },
+    {
+      "file": "docs/screens/m8-damaged-controls/a-10-healthy.png",
+      "backend": "VULKAN",
+      "sha256": "33d73a911eb73791114231bfb851db57709965c24796b9f169251df802f6aedd",
+      "width": 1280,
+      "height": 720,
+      "unedited_native": true
+    },
+    {
+      "file": "docs/screens/m8-damaged-controls/a-10-flutter-a.png",
+      "backend": "VULKAN",
+      "sha256": "8c895f733a0e492b93d792139dc4db4bd351c41cbca330ea26627741ea909b31",
+      "width": 1280,
+      "height": 720,
+      "unedited_native": true
+    },
+    {
+      "file": "docs/screens/m8-damaged-controls/a-10-separated.png",
+      "backend": "VULKAN",
+      "sha256": "a36d71a4fdc18038ef959c1094594eff1f93d3e4aebbc2b788e228bbb5efa022",
+      "width": 1280,
+      "height": 720,
+      "unedited_native": true
+    },
+    {
+      "file": "docs/screens/m8-damaged-controls/a-10-repaired.png",
+      "backend": "VULKAN",
+      "sha256": "c0ed45892e685d589e0fd9a6db637caca8153dc3ba333f469a073e6b0de9c541",
+      "width": 1280,
+      "height": 720,
+      "unedited_native": true
+    },
+    {
+      "file": "docs/screens/m8-damaged-controls/f-35a-flutter-b.png",
+      "backend": "VULKAN",
+      "sha256": "3deb3b47b7174142e05c4567298b8a311c795219a2d7b916fe67f4f4a5fefe93",
+      "width": 1280,
+      "height": 720,
+      "unedited_native": true
+    },
+    {
+      "file": "docs/screens/m8-damaged-controls/f-35a-wing-loss.png",
+      "backend": "VULKAN",
+      "sha256": "b26a972591c8c69213962348d03a73e06457117f158d8e9251e071e065c53120",
+      "width": 1280,
+      "height": 720,
+      "unedited_native": true
+    },
+    {
+      "file": "docs/screens/m8-damaged-controls/loaded-critical.png",
+      "backend": "OPENGL",
+      "sha256": "70d3be5d13436ea3ed1e5188b8159fdd0ab083e38abe2cf1069096e23dde4c17",
+      "width": 1280,
+      "height": 720,
+      "unedited_native": true
+    },
+    {
+      "file": "docs/screens/m8-damaged-controls/style-reenabled.png",
+      "backend": "OPENGL",
+      "sha256": "66850de6499af0dd6a611bb7d58c17107b1126e4f5df8d1eaab82f10b16bda40",
+      "width": 1280,
+      "height": 720,
+      "unedited_native": true
+    },
+    {
+      "file": "docs/screens/m8-damaged-controls/shared-load.png",
+      "backend": "OPENGL",
+      "sha256": "6826290832550fb0d7e6648a6a7afbccc32e745221f3f36b6c22f1c922395399",
+      "width": 1280,
+      "height": 720,
+      "unedited_native": true
+    }
+  ],
+  "shipping_sources": [
+    {
+      "file": "src/main/java/io/github/mcheliceport/client/model/BreakupMeshes.java",
+      "sha256": "9ec867124a5f1563d5f036b512c543b960f335e7b4fe2012f8cf0158c987d1ad"
+    },
+    {
+      "file": "src/main/java/io/github/mcheliceport/client/model/ControlSurfaceMeshes.java",
+      "sha256": "c33589dd1cf404056f173207e3c91da834c19e8e651c13aa4b59eea9d289d0ae"
+    },
+    {
+      "file": "src/main/java/io/github/mcheliceport/client/render/DamagedControlLook.java",
+      "sha256": "7549616f3ebbfaa8cd95d216ed32178aa7e74d1271db3fa207d9ff7ce521fe89"
+    },
+    {
+      "file": "src/main/java/io/github/mcheliceport/client/render/DamagedControlSurfaces.java",
+      "sha256": "1e0455b2b6efae0ab99bdde9dd4126e46d839b486b84c76be01d8b242c3651fd"
+    },
+    {
+      "file": "src/main/java/io/github/mcheliceport/client/render/DestructionParts.java",
+      "sha256": "056432d66a83a63d27708ab887694e31906ea4fc4309960609049fb843803b9c"
+    },
+    {
+      "file": "src/main/java/io/github/mcheliceport/client/render/LoosePanels.java",
+      "sha256": "c60590ab5ccffd3c3af6a591825616ab6abb03a7ab8d2299c6ca4e9fc7a34096"
+    },
+    {
+      "file": "src/main/java/io/github/mcheliceport/client/render/PlaneAirframeParts.java",
+      "sha256": "b32dc7f0794903151424a5afe5f45539baca5604d8450147b535ae7f98577a8b"
+    },
+    {
+      "file": "src/main/java/io/github/mcheliceport/client/particle/WreckSequenceEffects.java",
+      "sha256": "861f496b036ad10b10df7f9bcc53f5dd021c442ae56764e0e479a2c7f4c5b90d"
+    }
+  ],
+  "configured_limits": {
+    "live_mesh_pieces": 8,
+    "mesh_births_per_tick": 2,
+    "piece_vertices_global": 24000,
+    "collision_rays_per_tick": 2,
+    "panel_vertices": 1200,
+    "panel_area_share": 0.09,
+    "total_panel_area_share": 0.22,
+    "prepared_vertices_hard_cap": 72000,
+    "prepared_vertex_growth": "source + max(4096, source / 3), bounded by hard cap",
+    "mesh_worker_pending": 4,
+    "mesh_cache_entries": 32,
+    "control_piece_lifetime_ticks": 120
+  },
+  "settings": {
+    "quality": "ENHANCED",
+    "style": "POLISHED (Classic in transition fixture)",
+    "budget": "BALANCED",
+    "adaptive": false,
+    "damage_details": true,
+    "destruction_sequences": true,
+    "startup_effects": false
+  },
+  "native_optional_mods_installed": false,
+  "local_limit": "Local-only init excludes unavailable optional JEI/NTM sources and uses throwing bridge stubs. No locally built JAR distributed.",
+  "target_hardware_fps_measured": false,
+  "limits": [
+    "Controlled component health and held moving aircraft, not player-driven flight or combat.",
+    "Stock fused meshes use conservative cosmetic control-strip approximations. Unsupported cuts are skipped.",
+    "Existing fitted decals on replaced group identities retain their existing discard rule; new marks follow cached panel poses.",
+    "Software Mesa Vulkan/OpenGL is not target hardware."
+  ]
+}

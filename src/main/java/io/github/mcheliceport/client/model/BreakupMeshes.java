@@ -18,6 +18,14 @@ public final class BreakupMeshes {
         if(source.vertexCount()<3||source.vertexCount()>60000)return null;
         return (Airframe)get(new Key(source,"airframe-"+(mask&7),Vec3.ZERO),()->airframeBuild(source,mask&7));
     }
+    public static ControlSurfaceMeshes.Model controls(McheliModel.Group source,Airframe layout) {
+        if(source.vertexCount()<3||source.vertexCount()>60000)return null;
+        return (ControlSurfaceMeshes.Model)get(new Key(source,"controls",new Vec3(layout.leftCut,layout.rightCut,layout.tailCut)),
+                ()->ControlSurfaceMeshes.build(source,layout));
+    }
+    public static McheliModel.Group controlFragment(McheliModel.Group source,ControlSurfaceMeshes.Model profile,int missing) {
+        return (McheliModel.Group)get(new Key(source,"control_fragment_"+missing,Vec3.ZERO),()->ControlSurfaceMeshes.strip(source,profile,missing));
+    }
     /** Disjoint left/right/tail sections: combinations cannot duplicate or regrow removed surfaces. */
     public static Airframe airframeBuild(McheliModel.Group source,int requested) {
         var b=bounds(source);float left=b.low.x*.55F,right=b.high.x*.55F,tail=b.low.z+(b.high.z-b.low.z)*.27F;
@@ -129,7 +137,7 @@ public final class BreakupMeshes {
         var frames=List.of(remaining,wing[0],tail[1]);for(var frame:frames)prepare(frame);
         return new Body(remaining,wing[0],tail[1],cover,wing[1],tail[0],machinery.group("$exposed_spars"),b,opening,wingCut,tailCut);
     }
-    private static double area(McheliModel.Group group){
+    static double area(McheliModel.Group group){
         double sum=0;var d=group.data();for(int t=0;t+23<d.length;t+=24){
             double ax=d[t+8]-d[t],ay=d[t+9]-d[t+1],az=d[t+10]-d[t+2],bx=d[t+16]-d[t],by=d[t+17]-d[t+1],bz=d[t+18]-d[t+2];
             double x=ay*bz-az*by,y=az*bx-ax*bz,z=ax*by-ay*bx;sum+=Math.sqrt(x*x+y*y+z*z)*.5;
@@ -147,7 +155,7 @@ public final class BreakupMeshes {
         for(int t=0;t+23<d.length;t+=24){var tri=triangle(d,t);append(clip(tri,axis,at,false),low);append(clip(tri,axis,at,true),high);}
         return new McheliModel.Group[]{group(source.name(),low),group(source.name(),high)};
     }
-    private static McheliModel.Group[] boxSplit(McheliModel.Group source,float[] lo,float[] hi){
+    static McheliModel.Group[] boxSplit(McheliModel.Group source,float[] lo,float[] hi){
         var outside=new ArrayList<Float>();var inside=new ArrayList<Float>();var d=source.data();
         for(int t=0;t+23<d.length;t+=24){var polygon=triangle(d,t);
             for(int axis=0;axis<3&&!polygon.isEmpty();axis++){
@@ -174,6 +182,6 @@ public final class BreakupMeshes {
     }
     private static McheliModel.Group group(String name,List<Float> v){float[] d=new float[v.size()];for(int i=0;i<d.length;i++)d[i]=v.get(i);return new McheliModel.Group(name,d);}
     private static McheliModel.Group empty(String name){return new McheliModel.Group(name,new float[0]);}
-    private static void prepare(McheliModel.Group g){var m=new McheliModel("breakup",List.of(g),0,0,0,0,0,0);VehicleSurfaceShade.prepare(m);VehicleImpactSurface.prepare(m);}
+    static void prepare(McheliModel.Group g){var m=new McheliModel("breakup",List.of(g),0,0,0,0,0,0);VehicleSurfaceShade.prepare(m);VehicleImpactSurface.prepare(m);}
     public static void clear(){synchronized(CACHE){CACHE.clear();}}
 }

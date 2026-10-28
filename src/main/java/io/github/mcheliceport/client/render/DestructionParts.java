@@ -34,7 +34,7 @@ public final class DestructionParts {
         var models=AircraftModels.peek(ac.getAcInfo());if(models==null)return;
         var outlets=EngineExhaustLook.outlets(ac.getAcInfo(),0);Vec3 anchor=outlets.isEmpty()?new Vec3(0,1.8,-2):outlets.getFirst().position();
         BreakupMeshes.Body body=null;if(distance<=40*40)for(var draw:render.draws)for(var group:draw.groups())if(group.name().equals("$body")){body=BreakupMeshes.body(group,plane,anchor);break;}
-        if(plane){PlaneAirframeParts.apply((PlaneEntity)ac,render,s,body);return;}
+        if(plane){PlaneAirframeParts.apply((PlaneEntity)ac,render,s,body);DamagedControlSurfaces.apply((PlaneEntity)ac,render,s,partial);return;}
         boolean eject=tank&&DestructionTimeline.turret(ac.getAcInfo().name,s.seed,s.heavyAmmo);
         var turretGroups=models.body().groups.stream().filter(g->g.name().startsWith("$weapon")).toList();
         var turret=eject?BreakupMeshes.merge(turretGroups):null;

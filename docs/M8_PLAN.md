@@ -391,7 +391,7 @@ ideas below remain queued independently.
 
 ## Planned aircraft and destruction graphics additions
 
-The following eight ideas are approved for the roadmap; checkboxes track implementation.
+These aircraft, destruction and projectile additions are approved; checkboxes track implementation.
 Build on the existing engine fire, damaged trails, exposed interiors and mesh debris instead
 of treating those systems as absent. Implement and review additions separately with labeled
 native examples on several suitable vehicles.
@@ -406,20 +406,29 @@ native examples on several suitable vehicles.
   drips; no new gameplay damage or fuel-consumption rules in this graphics work.
   [Implementation and limits](M8_WING_FUEL_SPRAY.md) ·
   [native vehicle comparisons](M8_WING_FUEL_SPRAY_GALLERY.md).
-- [ ] **Fluttering damaged controls:** uneven motion on supported flaps, ailerons and rudders,
+- [x] **Fluttering damaged controls:** uneven motion on supported flaps, ailerons and rudders,
   with cosmetic separation as damage progresses; retain correct attachment poses.
+  [Implementation and bounds](M8_DAMAGED_CONTROLS.md) ·
+  [native comparisons](M8_DAMAGED_CONTROLS_GALLERY.md). Original UVs/hinges and existing global
+  fragment caps are retained; gameplay handling is unchanged.
 - [ ] **Richer broken edges:** refine existing exposed sections with more readable ribs, dark
   cavities and a few hanging cables at severed wings/tails.
 - [ ] **Debris shedding:** small skin fragments after the main breakup, with restrained,
   non-emissive sunlight highlights. Reuse existing global mesh/particle limits.
 - [ ] **Maneuver-readable smoke trails:** preserve the path of turns before older trail segments
   spread and drift with the shared wind; avoid chains of identical round puffs.
+- [ ] **Refreshed missile and rocket trails:** update missile, rocket and similar projectile
+  trails with the new smoke style, weapon-specific motor effects, and clearer burnout/fading.
+  Scale smoke thickness and persistence to the weapon, retain the path through turns, and use
+  shared wind, distance reduction and existing particle admission. Keep bullet glow limited
+  to tracers and leave NTM Next's own weapon effects under its integration owner's control.
 - [ ] **Wing vapor:** brief condensation during suitable sharp turns and humid conditions,
   with bounded nearby detail and smooth fade-in/out.
 - [ ] **Altitude-dependent contrails:** thin cold-air trails behind suitable engines, widening
   and dispersing with age; keep distinct from hot exhaust and engine-damage smoke.
 
-Airflow-shaped fire and fuel spray are implemented; fluttering controls are next. Keep Minecraft's simple
+Airflow-shaped fire, fuel spray and damaged controls are implemented. Continue the remaining
+graphics items while keeping Minecraft's simple
 look, existing flight handling/collision/gameplay damage and original craters. Respect Claude's
 NTM Next ownership: no NTM explosion bridge, gun/gore hooks or copied NTM assets. Retain the
 60 FPS / 1080p goal on RTX 3060 8 GB and Ryzen 7 7800X3D, with distance limits, shared admission
