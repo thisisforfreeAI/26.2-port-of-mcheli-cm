@@ -44,12 +44,14 @@ Claude's vehicle art/AI, and NTM integration are unchanged.
 
 [Native impact gallery](M8_EFFECTS_TEST_RANGE_GALLERY.md) and
 [machine-readable checks](performance/m8-realism/effects-test-range.json) accompany this feature.
-525 local unit tests pass, including reset-footprint bounds, payloads, independent clock data
+528 local unit tests pass after integration with the latest main, including reset-footprint bounds, payloads, independent clock data
 and regressions for a fast client clock and notifications during pad preparation. Four native
 Vulkan and three OpenGL scenarios pass, covering all four weapons, all surfaces, day/dusk/night,
 Classic/Modern, the real UI at 320×240 and original position/mode restoration. Both runs reach
 the 2,048 reset-operation bound and keep the fixture's frozen original-world clock unchanged.
 Native testing uses one concurrent session; the global four-session limit remains enforced
-in the server scheduler. A GameTest checks the operator/non-operator boundary.
+in the server scheduler. An additional Vulkan entry/impact/return check passes on that combined source.
+A GameTest checks the operator/non-operator boundary with a connected player, including the
+server's rejection messages.
 
 Software Mesa preview results do not establish 60 FPS on the target RTX 3060 / 7800X3D at 1080p.

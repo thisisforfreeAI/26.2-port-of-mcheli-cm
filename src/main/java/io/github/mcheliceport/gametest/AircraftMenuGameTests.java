@@ -28,10 +28,11 @@ final class AircraftMenuGameTests {
 
 
     private static void rangePermission(GameTestHelper h) {
-        var player=(ServerPlayer)h.makeMockServerPlayer(GameType.SURVIVAL);var original=player.level().dimension();
+        // The connected helper reports CREATIVE; permission is independent of that game mode.
+        var player=h.makeMockServerPlayerInLevel();var original=player.level().dimension();var originalMode=player.gameMode();
         check(h,!io.github.mcheliceport.effectrange.EffectsRange.allowed(player),"ordinary players cannot enter range");
         check(h,!io.github.mcheliceport.effectrange.EffectsRange.act(player,0,0,0,0),"unprivileged request rejected");
-        check(h,player.level().dimension().equals(original)&&player.gameMode()==GameType.SURVIVAL,"denial preserves world and mode");
+        check(h,player.level().dimension().equals(original)&&player.gameMode()==originalMode,"denial preserves world and mode");
         var players=h.getLevel().getServer().getPlayerList();var id=new NameAndId(player.getGameProfile());
         try {players.op(id,Optional.of(LevelBasedPermissionSet.GAMEMASTER),Optional.of(false));
             check(h,io.github.mcheliceport.effectrange.EffectsRange.allowed(player),"game master can use range");

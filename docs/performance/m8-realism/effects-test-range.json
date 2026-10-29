@@ -1,7 +1,7 @@
 {
   "kind": "player-facing-isolated-real-weapon-effects-range",
   "unit_results": {
-    "tests": 525,
+    "tests": 528,
     "failures": 0,
     "errors": 0,
     "skipped": 0
@@ -132,5 +132,16 @@
   "target_fps": 60,
   "target_hardware": "RTX 3060 8 GB, Ryzen 7 7800X3D, 1080p",
   "target_hardware_measured": false,
-  "native_fixture": "Actual UI entry, production weapon/projectile impacts, isolated lighting, reset and real return-state verification. No synthetic replacement explosions. Temporary terrain loot is suppressed in reserved spectator pads."
+  "native_fixture": "Actual UI entry, production weapon/projectile impacts, isolated lighting, reset and real return-state verification. No synthetic replacement explosions. Temporary terrain loot is suppressed in reserved spectator pads.",
+  "feature_unit_results": {
+    "tests": 525,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "integration_validation": {
+    "base_main": "f338528aeef0a67c019e169130119c1238c44665",
+    "combined_unit_tests": 528,
+    "additional_vulkan_ui_real_impact_and_return_passed": true
+  }
 }
