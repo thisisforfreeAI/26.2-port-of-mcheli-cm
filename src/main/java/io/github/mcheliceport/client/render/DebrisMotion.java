@@ -130,15 +130,32 @@ public final class DebrisMotion {
     }
 
     public boolean moving(){return phase==Phase.FREE||phase==Phase.SLIDE||phase==Phase.SUNK;}
-    /** The ray reaches the lowest corner, so landings do not sink into terrain. */
-    public Vec3 sweepFrom(){return phase==Phase.SLIDE?sampled.add(0,.35,0):sampled;}
-    public Vec3 sweepTo(){return position.add(0,-height()-(phase==Phase.SLIDE?.45:0),0);}
-    /** No block under a sliding fragment: it falls again. */
-    public void clear(){if(phase==Phase.SLIDE)phase=Phase.FREE;sampled=position;}
+    /** A resting fragment checks the ground under it now and then, in case it was blown away. */
+    public boolean checkSupport(){return phase==Phase.REST&&age%10==0;}
+    /**
+     * The ray reaches the lowest corner, so landings do not sink into terrain. On the ground it is a
+     * straight drop through the fragment: a ray from where it last touched down ran diagonally across
+     * steps and crater rims and caught their side faces, bumping the fragment up and down.
+     */
+    public Vec3 sweepFrom(){return grounded()?position.add(0,.35,0):sampled;}
+    public Vec3 sweepTo(){return position.add(0,-height()-(grounded()?.45:0),0);}
+    private boolean grounded(){return phase==Phase.SLIDE||phase==Phase.REST;}
+    /** No block under a sliding or resting fragment (it went over an edge, or the ground was blown away): it falls again. */
+    public void clear(){if(grounded()){phase=Phase.FREE;velocity=new Vec3(velocity.x,0,velocity.z);}sampled=position;}
+    /** The sweep started inside a block: a slide ran into a step and stops where it was; a resting fragment stays. */
+    public void blocked(){
+        if(phase==Phase.SLIDE){position=new Vec3(previous.x,position.y,previous.z);velocity=Vec3.ZERO;sampled=position;}
+        else if(phase!=Phase.REST)clear();
+    }
 
     public Event contact(Vec3 hit,Vec3 normal,boolean water) {
         sampled=position;
-        if(phase==Phase.REST||phase==Phase.SUNK||phase==Phase.RIP)return Event.NONE;
+        if(phase==Phase.REST) {
+            // The ground under a resting fragment moved (a block was placed or dug): it sits on the new top.
+            if(!water&&normal.y>.6&&Math.abs(hit.y-groundY)>.01){groundY=hit.y;position=previous=new Vec3(position.x,groundY+height(),position.z);sampled=position;}
+            return Event.NONE;
+        }
+        if(phase==Phase.SUNK||phase==Phase.RIP)return Event.NONE;
         double vn=velocity.dot(normal);impact=velocity.length();
         if(water) {
             position=hit.add(0,-.1,0);previous=position;sampled=position;

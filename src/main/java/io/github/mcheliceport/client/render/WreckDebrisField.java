@@ -105,6 +105,8 @@ public final class WreckDebrisField {
         FIELDS.entrySet().removeIf(e->{var s=e.getValue().scene;return !WreckScene.scenes().contains(s)||s.goneTick>=0&&s.fade(tick)<=0||!e.getKey().isDestroyed()&&!e.getKey().isRemoved();});
         var moving=new ArrayList<Piece>();
         for(var f:FIELDS.values())for(var p:f.pieces){
+            // Resting pieces tick too (it costs nothing), so they check the ground under them now and then.
+            if(p.motion.phase==DebrisMotion.Phase.REST){p.motion.step();continue;}
             if(!p.motion.moving()&&p.motion.phase!=DebrisMotion.Phase.RIP)continue;
             p.motion.step();moving.add(p);
             if(p.motion.age()%10==0){var block=BlockPos.containing(p.motion.position);if(world.hasChunkAt(block))p.light=LightCoordsUtil.getLightCoords(world,block);}
@@ -114,6 +116,7 @@ public final class WreckDebrisField {
         // Pieces at the ground are swept every tick (up to GROUND_RAYS); the rest share RAYS round-robin.
         var swept=Collections.newSetFromMap(new IdentityHashMap<Piece,Boolean>());
         for(var p:moving)if(swept.size()<GROUND_RAYS&&p.motion.moving()&&LoosePanels.nearGround(world,p.motion)){swept.add(p);sweep(p.motion);}
+        for(var f:FIELDS.values())for(var p:f.pieces)if(swept.size()<GROUND_RAYS&&p.motion.checkSupport()){swept.add(p);sweep(p.motion);}
         for(int i=0,tries=0;i<RAYS&&!moving.isEmpty()&&tries<moving.size();tries++){
             var p=moving.get(Math.floorMod(cursor++,moving.size()));if(!p.motion.moving()||swept.contains(p))continue;i++;sweep(p.motion);
         }
@@ -123,7 +126,8 @@ public final class WreckDebrisField {
         if(!world.hasChunkAt(BlockPos.containing(from))||!world.hasChunkAt(BlockPos.containing(to)))return;
         var hit=world.clip(new ClipContext(from,to,ClipContext.Block.COLLIDER,
                 m.phase==DebrisMotion.Phase.SUNK?ClipContext.Fluid.NONE:ClipContext.Fluid.ANY,CollisionContext.empty()));
-        if(hit.getType()!=HitResult.Type.BLOCK||hit.isInside()){m.clear();return;}
+        if(hit.getType()!=HitResult.Type.BLOCK){m.clear();return;}
+        if(hit.isInside()){m.blocked();return;}
         boolean water=world.getFluidState(hit.getBlockPos()).is(net.minecraft.tags.FluidTags.WATER);
         var n=new Vec3(hit.getDirection().getStepX(),hit.getDirection().getStepY(),hit.getDirection().getStepZ());
         Vec3 before=m.velocity;var contact=m.contact(hit.getLocation(),n,water);
