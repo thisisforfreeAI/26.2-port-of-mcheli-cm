@@ -58,6 +58,10 @@ public final class McheliEffects {
                 List<BlockPos> affectedBlocks, BlastStyle style, BlastDirection direction) {
             explosionEffects(level, x, y, z, size, inWater, affectedBlocks, style);
         }
+        default void explosionEffects(Level level, double x, double y, double z, float size, boolean inWater,
+                List<BlockPos> affectedBlocks, BlastStyle style, BlastDirection direction, List<BlockPos> terrainBlocks) {
+            explosionEffects(level,x,y,z,size,inWater,affectedBlocks,style,direction);
+        }
     }
 
     private static volatile @Nullable Sink sink;
@@ -147,4 +151,10 @@ public final class McheliEffects {
         Sink s = sink(level);
         if (s != null) s.explosionEffects(level, x, y, z, size, inWater, affectedBlocks, style);
     }
+    public static void explosionEffects(Level level, double x, double y, double z, float size, boolean inWater,
+            List<BlockPos> affectedBlocks, BlastStyle style, BlastDirection direction, List<BlockPos> terrainBlocks) {
+        Sink s=sink(level);
+        if(s!=null)s.explosionEffects(level,x,y,z,size,inWater,affectedBlocks,style,direction,terrainBlocks);
+    }
+
 }

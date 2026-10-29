@@ -62,6 +62,12 @@ public final class ExplosionEffects {
 
     static void play(ClientLevel level, double x, double y, double z, float size, boolean inWater,
             List<BlockPos> affected, BlastStyle style, io.github.mcheliceport.effect.BlastDirection direction) {
+        play(level,x,y,z,size,inWater,affected,style,direction,affected);
+    }
+
+    static void play(ClientLevel level,double x,double y,double z,float size,boolean inWater,
+            List<BlockPos> affected,BlastStyle style,io.github.mcheliceport.effect.BlastDirection direction,
+            List<BlockPos> terrain) {
         if (!EffectAdmission.inRange(level, x, y, z, size * 2)) return;
         if (inWater) {
             effectExplosionInWater(level, x, y, z, size);
@@ -71,7 +77,7 @@ public final class ExplosionEffects {
         boolean vanilla = ClientConfig.get(ClientConfig.DEFAULT_EXPLOSION_PARTICLE);
         if (!vanilla && EffectQuality.enhanced()) {
             ExplosionCloudEmitter.emit(level, x, y, z, size, style, direction,
-                    ExplosionCraterScale.footprint(x, z, affected));
+                    ExplosionCraterScale.footprint(x, z, terrain), BlastSurfaceFootprint.sample(x, z, terrain));
             return;
         }
         List<BlockPos> blocks = new ArrayList<>(affected);

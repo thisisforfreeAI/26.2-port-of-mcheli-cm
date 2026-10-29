@@ -129,6 +129,7 @@ class ExplosionSequenceTest {
         assertTrue(ExplosionSequence.cloudGrowth(6, 0, true, false) > ExplosionSequence.cloudGrowth(6, 0, false, false));
         assertTrue(ExplosionSequence.cloudGrowth(12, 0, false, true) > ExplosionSequence.cloudGrowth(12, 0, false, false));
         assertEquals(0.25F, ExplosionSequence.flashGrowth(0, 6));
+        assertEquals(0.65F, ExplosionSequence.flashGrowth(0, 2, true));
         assertEquals(1, ExplosionSequence.flashGrowth(6, 6));
     }
 

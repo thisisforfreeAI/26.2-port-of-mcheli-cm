@@ -2,6 +2,17 @@ package io.github.mcheliceport.client.model;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 class VehicleSurfaceFinishTest {
+    @Test void normalsSeparateGlassFromMatteRubberWithoutUnboundedHighlights() {
+        var glass=VehicleSurfaceFinish.Material.GLASS;
+        var rubber=VehicleSurfaceFinish.Material.RUBBER;
+        assertTrue(VehicleSurfaceFinish.shade(glass,1,0,1,0)>VehicleSurfaceFinish.shade(glass,1,0,-1,0));
+        assertTrue(VehicleSurfaceFinish.shade(glass,1,0,1,0)>VehicleSurfaceFinish.shade(rubber,1,0,1,0));
+        for(var material:VehicleSurfaceFinish.Material.values())for(float crease:new float[]{.88F,1,1.03F})
+            for(float normal:new float[]{-100,-1,0,1,100,Float.NaN}) {
+                float shade=VehicleSurfaceFinish.shade(material,crease,0,normal,0);
+                assertTrue(Float.isFinite(shade)&&shade>=.82F&&shade<=1.04F);
+            }
+    }
     @Test void explicitlyNamedMaterialsStayRestrainedAndPaintStaysNeutral() {
         assertEquals(VehicleSurfaceFinish.Material.RUBBER,VehicleSurfaceFinish.material("$wheelL"));
         assertEquals(VehicleSurfaceFinish.Material.VENT,VehicleSurfaceFinish.material("$exhaust2"));

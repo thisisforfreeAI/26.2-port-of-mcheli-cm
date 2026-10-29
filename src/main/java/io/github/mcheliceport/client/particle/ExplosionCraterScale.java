@@ -25,7 +25,9 @@ public final class ExplosionCraterScale {
 
     public static float cloudRadius(float nominal, float footprint, BlastStyle style, EffectBudget quality) {
         if (style == BlastStyle.CANNON || !Float.isFinite(footprint) || footprint <= 0) return nominal;
-        float multiplier = quality == EffectBudget.LOW ? 1.25F : 2.5F;
+        // Large reported footprints can outgrow a penetrator's deliberately narrow nominal core.
+        // Scale smoke to that real footprint, retaining the same quality and coverage caps.
+        float multiplier = quality == EffectBudget.LOW ? 1.25F : footprint >= 8 ? 4 : 2.5F;
         float cap = quality == EffectBudget.LOW ? 10 : quality == EffectBudget.HIGH ? 22 : 16;
         return Math.max(nominal, Math.min(Math.min(cap, nominal * multiplier), footprint * 0.85F));
     }

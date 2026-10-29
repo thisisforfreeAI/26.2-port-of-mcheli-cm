@@ -6,12 +6,17 @@ import net.minecraft.util.LightCoordsUtil;
 /** One short hot core on the existing additive sheet; shares smoke limits, not the weapon reserve. */
 final class ImpactCoreParticle extends McheliParticle {
     private final float radius;
+    private final boolean sharp;
     private int frame;
 
     ImpactCoreParticle(ClientLevel level, double x, double y, double z, float radius, int life) {
+        this(level, x, y, z, radius, life, false);
+    }
+    ImpactCoreParticle(ClientLevel level, double x, double y, double z, float radius, int life, boolean sharp) {
         super(level, x, y, z, 0, 0, 0,
                 net.minecraft.resources.Identifier.fromNamespaceAndPath("mcheli_ce_port", "m8_blast_flash"));
         this.radius = radius;
+        this.sharp = sharp;
         this.lifetime = life;
         this.hasPhysics = false;
         this.setColor(1, 0.95F, 0.8F);
@@ -29,12 +34,12 @@ final class ImpactCoreParticle extends McheliParticle {
         float progress = Math.clamp((this.age + partialTick) / this.lifetime, 0, 1);
         this.frame = Math.min(7, (int) (progress * 8));
         this.setColor(1, 0.96F - progress * 0.30F, 0.86F - progress * 0.65F);
-        this.alpha = Math.min(1, EffectLook.glowAlpha(this.age + partialTick, this.lifetime) * 2);
+        this.alpha = Math.min(1, EffectLook.glowAlpha(this.age + partialTick, this.lifetime) * (sharp ? 1 : 2));
         super.extract(state, camera, partialTick);
     }
 
     @Override public float getQuadSize(float partialTick) {
-        return this.radius * ExplosionSequence.flashGrowth(this.age + partialTick, this.lifetime);
+        return this.radius * ExplosionSequence.flashGrowth(this.age + partialTick, this.lifetime, this.sharp);
     }
     @Override protected float getU0() { return this.frameU(this.frame % 4, 4, false); }
     @Override protected float getU1() { return this.frameU(this.frame % 4, 4, true); }

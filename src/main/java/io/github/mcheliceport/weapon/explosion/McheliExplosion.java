@@ -65,6 +65,7 @@ import org.jspecify.annotations.Nullable;
  * server's velocity update instead. The explosion events let protection mods cancel or filter it.
  */
 public class McheliExplosion extends ServerExplosion {
+    private final io.github.mcheliceport.effect.BlastTerrainSample terrainSample = new io.github.mcheliceport.effect.BlastTerrainSample();
 
     public final @Nullable Entity exploder;
     public final double x;
@@ -194,7 +195,8 @@ public class McheliExplosion extends ServerExplosion {
         WeaponInfo visualWeapon = p.exploder() instanceof WeaponTargets.InfoHolder holder ? holder.getWeaponInfo() : null;
         BlastStyle style = BlastStyle.forWeapon(visualWeapon, p.isFlaming());
         ModNetwork.sendToPlayersNear(serverLevel, null, p.x(), p.y(), p.z(), ExplosionEffectPayload.RANGE,
-                new ExplosionEffectPayload(p.x(), p.y(), p.z(), p.size(), inWater, exp.affectedBlocks, style, direction));
+                new ExplosionEffectPayload(p.x(), p.y(), p.z(), p.size(), inWater, exp.affectedBlocks, style, direction,
+                        exp.terrainSample.snapshot(pos -> !serverLevel.getBlockState(pos).isSolidRender())));
         return exp.result;
     }
 
@@ -389,6 +391,8 @@ public class McheliExplosion extends ServerExplosion {
             for (BlockPos pos : this.affectedBlocks) {
                 BlockState state = this.world.getBlockState(pos);
                 if (!state.isAir()) {
+                    // Reuse this existing read; only surviving ground removal affects cosmetic sizing.
+                    if (state.isSolidRender()) this.terrainSample.offer(pos);
                     // Vanilla drops with a survival chance of 1 / radius, which is sizeBlock here, as upstream.
                     state.onExplosionHit(this.world, pos, this, (stack, at) -> StackCollector.add(stacks, stack, at));
                 }

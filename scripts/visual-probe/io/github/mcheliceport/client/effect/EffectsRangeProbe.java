@@ -27,6 +27,7 @@ public final class EffectsRangeProbe {
     private static final int START=Integer.getInteger("mcheli.probeRangeStart",0),END=Integer.getInteger("mcheli.probeRangeEnd",7);
     private static final String[] NAMES={"hydra-sand","agm158-soil","mk82-stone","gbu57-soil-night","hydra-water","classic-hydra","modern-mk82"};
     private static int ticks,phase=-1,age,stage,shotAge,impactAge=-1;private static boolean seen,returning;private static String capture;
+    private static volatile boolean armed,serverSeen,serverImpact;private static int fallbackImpact=-1;
     private static volatile int peakBlocks;private static volatile boolean returned;private static Vec3 original;private static GameType originalMode;private static long originalClock;
     private EffectsRangeProbe(){}
     private static void send(int action){var o=EffectsRangeClient.options;ClientPacketDistributor.sendToServer(new EffectsRangePayload(action,o.weapon(),o.surface(),o.lighting()));}
@@ -37,6 +38,10 @@ public final class EffectsRangeProbe {
     @SubscribeEvent public static void server(ServerTickEvent.Post e){
         if(!ENABLED)return;peakBlocks=Math.max(peakBlocks,EffectsRange.blocksLastTick());
         if(EffectsRange.blocksLastTick()>2048||EffectsRange.sessions()>4)throw new IllegalStateException("Range work cap exceeded");
+        if(armed){var range=e.getServer().getLevel(EffectsRange.LEVEL);int count=0;
+            if(range!=null)for(var entity:range.getAllEntities())if(entity instanceof BaseBulletEntity)count++;
+            if(count>0)serverSeen=true;
+            if(serverSeen&&count==0){serverImpact=true;armed=false;}}
         if(original!=null&&!returned&&EffectsRange.sessions()>0){var level=e.getServer().overworld();var clock=level.dimensionType().defaultClock().orElseThrow();
             if(level.clockManager().getTotalTicks(clock)!=originalClock)throw new IllegalStateException("Range changed the frozen original-world clock");}
     }
@@ -76,18 +81,21 @@ public final class EffectsRangeProbe {
             // The ready notification has arrived after a bounded terrain reset and particle cleanup.
             if(age<8||EffectsRangeClient.cooling())return;
             if(phase==0){mc.gui.setScreen(new EffectsRangeScreen(new EffectsSettingsScreen(null)));capture="ready-menu";stage=2;return;}
-            mc.getWindow().setWindowed(1280,720);mc.options.guiScale().set(2);mc.resizeGui();send(EffectsRange.FIRE);shotAge=age;stage=3;
+            mc.getWindow().setWindowed(1280,720);mc.options.guiScale().set(2);mc.resizeGui();arm();send(EffectsRange.FIRE);shotAge=age;stage=3;
         }else if(stage==2&&age>=18){
-            press(mc,"Fire demo");mc.getWindow().setWindowed(1280,720);mc.options.guiScale().set(2);mc.resizeGui();shotAge=age;stage=3;
+            arm();press(mc,"Fire demo");mc.getWindow().setWindowed(1280,720);mc.options.guiScale().set(2);mc.resizeGui();shotAge=age;stage=3;
         }
         if(stage==3){
             int projectiles=0;for(var entity:mc.level.entitiesForRendering())if(entity instanceof BaseBulletEntity)projectiles++;
             if(projectiles>0)seen=true;
-            if(seen&&projectiles==0&&impactAge<0){impactAge=age;capture=NAMES[phase]+"-impact";System.out.println("M8_RANGE real_impact=true scene="+NAMES[phase]+" flight_ticks="+(age-shotAge));}
+            if(serverImpact&&fallbackImpact<0)fallbackImpact=age;
+            if(serverImpact&&(seen||age>=fallbackImpact+2)&&projectiles==0&&impactAge<0){impactAge=age;capture=NAMES[phase]+"-impact";System.out.println("M8_RANGE real_impact=true scene="+NAMES[phase]+" flight_ticks="+(age-shotAge));}
+            if(Boolean.getBoolean("mcheli.probeRangeDetailed")&&impactAge>=0&&java.util.Set.of(1,3,6,12,60).contains(age-impactAge))capture=NAMES[phase]+"-age"+(age-impactAge);
             if(impactAge>=0&&age==impactAge+24)capture=NAMES[phase]+"-smoke";
-            if(impactAge>=0&&age>=impactAge+90){System.out.println("M8_RANGE passed=true scene="+NAMES[phase]+" actual_projectile=true impact_observed=true");phase++;stage=0;}
+            if(impactAge>=0&&age>=impactAge+90){System.out.println("M8_RANGE passed=true scene="+NAMES[phase]+" actual_projectile=true impact_observed=true server_transit="+serverSeen+" client_transit="+seen);phase++;stage=0;}
             if(age-shotAge>900&&impactAge<0)throw new IllegalStateException("No real impact for "+NAMES[phase]+" seen="+seen);
         }
     }
+    private static void arm(){serverSeen=false;serverImpact=false;fallbackImpact=-1;armed=true;}
     @SubscribeEvent public static void frame(RenderFrameEvent.Post e){if(capture!=null){var mc=Minecraft.getInstance();String name=capture;capture=null;Screenshot.grab(mc.gameDirectory,"m8-range-"+name+".png",mc.gameRenderer.mainRenderTarget(),1,m->System.out.println("M8_RANGE "+m.getString()));}}
 }

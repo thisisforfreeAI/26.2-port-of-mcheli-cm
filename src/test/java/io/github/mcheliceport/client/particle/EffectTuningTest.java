@@ -10,7 +10,9 @@ class EffectTuningTest {
         for (int pressure = 0; pressure <= 3; pressure++) {
             assertEquals(1, EffectTuning.admissionStride(100, 0, false, pressure, true));
             assertEquals(1 + pressure, EffectTuning.admissionStride(100, 0, false, pressure, false));
-            assertEquals(16, EffectTuning.admissionStride(200 * 200, 2, false, pressure, true));
+            assertEquals(4, EffectTuning.admissionStride(200 * 200, 2, false, pressure, true));
+            for (double d : new double[]{63.99,64,64.01,127.99,128,128.01})
+                assertEquals(1, EffectTuning.admissionStride(d*d,0,false,pressure,true));
             EffectTuning.Budget budget = new EffectTuning.Budget();
             int cap = Math.max(16, EffectTuning.perTick(EffectBudget.BALANCED, false) / (1 + pressure));
             int requested = ExplosionSequence.lobes(12, io.github.mcheliceport.effect.BlastStyle.HEAVY,

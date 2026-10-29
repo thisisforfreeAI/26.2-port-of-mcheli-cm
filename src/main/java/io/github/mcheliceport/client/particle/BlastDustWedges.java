@@ -33,10 +33,17 @@ public final class BlastDustWedges {
         }
     }
     static final class State extends QuadParticleRenderState {
+        boolean billboard;
+        @Override public void add(SingleQuadParticle.Layer layer,float x,float y,float z,float qx,float qy,float qz,float qw,
+                float size,float u0,float u1,float v0,float v1,int color,int light) {
+            // A signed internal size distinguishes the charged fallback card in this same batch.
+            super.add(layer,x,y,z,qx,qy,qz,qw,billboard?-size:size,u0,u1,v0,v1,color,light);
+        }
         private final Quaternionf rotation = new Quaternionf();
         private final Vector3f vertex = new Vector3f();
         @Override protected void renderRotatedQuad(VertexConsumer buffer, float x,float y,float z,
                 float qx,float qy,float qz,float qw,float size,float u0,float u1,float v0,float v1,int color,int light) {
+            if(size<0){super.renderRotatedQuad(buffer,x,y,z,qx,qy,qz,qw,-size,u0,u1,v0,v1,color,light);return;}
             rotation.set(qx,qy,qz,qw);
             for(int face=0;face<3;face++)for(int corner=0;corner<4;corner++) {
                 vertex.set(coordinate(face,corner,0),coordinate(face,corner,1),coordinate(face,corner,2));

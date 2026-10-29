@@ -22,4 +22,20 @@ public final class VehicleSurfaceFinish {
             case GLASS -> Math.clamp(1+(crease-1)*.35F, .96F,1.025F);
         };
     }
+    /** Local orientation cues baked once. No view-dependent glare, colored tint or new pass. */
+    public static float shade(Material material, float crease, float nx, float ny, float nz) {
+        float base = shade(material, crease);
+        double length = Math.sqrt((double)nx*nx + (double)ny*ny + (double)nz*nz);
+        if (!Double.isFinite(length) || length < 1e-6) return base;
+        float up = (float)(ny / length);
+        // Rubber stays matte; glass gets a restrained upper edge, painted undersides lose a little light.
+        float cue = switch (material) {
+            case GLASS -> .022F * up;
+            case PAINT -> .014F * Math.min(0, up);
+            case RUBBER -> -.012F * Math.abs(up);
+            case VENT -> .012F * Math.min(0, up);
+        };
+        return Math.clamp(base + cue, .82F, 1.04F);
+    }
+
 }

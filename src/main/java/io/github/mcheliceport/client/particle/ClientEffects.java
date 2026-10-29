@@ -240,8 +240,14 @@ public final class ClientEffects implements McheliEffects.Sink {
 
     @Override public void explosionEffects(Level level, double x, double y, double z, float size, boolean inWater,
             List<BlockPos> affectedBlocks, BlastStyle style, io.github.mcheliceport.effect.BlastDirection direction) {
+        explosionEffects(level,x,y,z,size,inWater,affectedBlocks,style,direction,affectedBlocks);
+    }
+
+    @Override public void explosionEffects(Level level,double x,double y,double z,float size,boolean inWater,
+            List<BlockPos> affectedBlocks,BlastStyle style,io.github.mcheliceport.effect.BlastDirection direction,
+            List<BlockPos> terrainBlocks) {
         if (level instanceof ClientLevel clientLevel) {
-            ExplosionEffects.play(clientLevel, x, y, z, size, inWater, affectedBlocks, style, direction);
+            ExplosionEffects.play(clientLevel, x, y, z, size, inWater, affectedBlocks, style, direction,terrainBlocks);
             if (!inWater) BlastMarks.add(clientLevel, x, y, z, size, style);
         }
     }
