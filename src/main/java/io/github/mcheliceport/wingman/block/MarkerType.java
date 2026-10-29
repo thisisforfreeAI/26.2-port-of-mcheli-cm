@@ -59,6 +59,45 @@ public enum MarkerType implements StringRepresentable {
         };
     }
 
+    /** One line on what the marker is for, under the marker screen's type buttons. */
+    public String description() {
+        return switch (this) {
+            case BASE -> "The airfield's anchor. Name it, then set it as the parent base of its other markers.";
+            case PARKING -> "Where an aircraft waits, and where it starts and ends its taxi routes.";
+            case RUNWAY_A -> "The runway end where take-off starts and landing ends.";
+            case RUNWAY_B -> "The far runway end: where take-off ends and landing starts.";
+            case WAYPOINT -> "A point a taxi route passes through. Only its X and Z are used.";
+            case HELIPAD -> "A vertical take-off and landing spot for helicopters and VTOL aircraft.";
+            case HELIPAD_B -> "Place it beside a helipad, in the direction aircraft should face there.";
+        };
+    }
+
+    /** The start of the type's automatic IDs, as {@code p} in {@code p_1}. */
+    public String idPrefix() {
+        return switch (this) {
+            case BASE -> "base";
+            case PARKING -> "p";
+            case RUNWAY_A -> "ra";
+            case RUNWAY_B -> "rb";
+            case WAYPOINT -> "wp";
+            case HELIPAD -> "hp";
+            case HELIPAD_B -> "hpb";
+        };
+    }
+
+    /** A short tag for the type in lists that mix types. */
+    public String tag() {
+        return switch (this) {
+            case BASE -> "\u00a76BASE";
+            case PARKING -> "\u00a7eP";
+            case RUNWAY_A -> "\u00a7aRA";
+            case RUNWAY_B -> "\u00a7bRB";
+            case WAYPOINT -> "\u00a7dWP";
+            case HELIPAD -> "\u00a79HP";
+            case HELIPAD_B -> "\u00a73HPB";
+        };
+    }
+
     /** A landing spot: {@code HELIPAD_B} only gives the heading. */
     public boolean isHelipad() {
         return this == HELIPAD;

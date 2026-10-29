@@ -3,14 +3,17 @@ package io.github.mcheliceport.client.gui;
 import io.github.mcheliceport.net.DispatchOrderPayload;
 import io.github.mcheliceport.net.OpenBaseScreenPayload;
 import io.github.mcheliceport.net.TaxiRouteActionPayload;
+import io.github.mcheliceport.wingman.block.MarkerType;
 import io.github.mcheliceport.wingman.mission.TaxiRoute;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import net.minecraft.ChatFormatting;
+import java.util.function.BooleanSupplier;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
@@ -18,40 +21,59 @@ import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.FormattedCharSequence;
 import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 
 /**
  * Upstream's {@code GuiBaseConfig}, opened by right-clicking a base marker. Its Taxi Routes tab
- * lists the base's routes on the left (New, Save, Delete), and on the right the route ID and
- * buttons picking its parking spot, runway ends or helipad, then its departure or arrival
- * waypoints in order. Its Mission tab orders one of the aircraft near the base on a mission: the
- * mission types and weapons, the target, orbit, cruise height, strike passes and time limit, and
- * the taxi routes to leave and return by; an arrival route ending at a helipad lands vertically.
- * Each tab scrolls with the mouse wheel. Upstream's labels, including its Japanese ones, are kept.
+ * lists the base's routes on the left (New, Save, Delete), and on the right the route's name and
+ * numbered steps: its parking spot, its runway ends or helipad, its departure and arrival
+ * waypoints in order, then a summary of both legs and what still stops it saving. Its Mission tab
+ * orders one of the aircraft near the base on a mission: the mission types and weapons, the
+ * target, orbit, cruise height, strike passes and time limit, and the taxi routes to leave and
+ * return by; an arrival route ending at a helipad lands vertically. Each tab scrolls with the
+ * mouse wheel.
+ *
+ * <p>Upstream placed the Taxi Routes tab with fixed offsets that overlapped once a base had
+ * helipads, and its labels were partly Japanese. The port lays the tab out from the top down,
+ * draws each label where its widgets went, and uses English throughout.
  */
 public class BaseConfigScreen extends Screen {
 
-    private static final int MAX_ROUTE_LIST = 8;
     private static final int MAX_PICKER = 99;
-    private static final int MAX_ARR_RUNWAY_SEL = 8;
-    /** Upstream's height of the Taxi Routes content, for scrolling. */
-    private static final int ROUTES_CONTENT_H = 480;
     /** Upstream's height of the Mission content, for scrolling. */
     private static final int MISSION_CONTENT_H = 460;
     private static final int MAX_AIRCRAFT = 8;
     private static final int MAX_ROUTE_PICK = 8;
     private static final int HIGHLIGHT = 0xAAFFAA00;
     private static final int TOGGLED = 0xFFFFAA00;
+    private static final int GREY = 0xAAAAAA;
+    /** The Taxi Routes tab's route list and step columns. */
+    private static final int LEFT_W = 104;
+    private static final int RIGHT_W = 292;
+    private static final int COLUMN_GAP = 10;
     private static final String[] MISSION_TYPES = {"CAP", "CAS", "STRIKE", "ESCORT", "RECON", "FERRY"};
     private static final String[] WEAPON_LABELS = {"GUN", "AA Msl", "AS Msl", "CAS", "Rocket", "Bomb"};
     private static final String[] WEAPONS = {"gun", "aamissile", "asmissile", "cas", "rocket", "bomb"};
     private static final String[] MISSION_FIELD_LABELS = {"Target X:", "Z:", "Orbit R:", "Cruise Y:", "Passes:",
             "Limit(s):"};
 
+    /** A line of text on the Taxi Routes tab, placed with its widgets. */
+    private record Label(FormattedCharSequence text, int x, int y, int rgb) {
+    }
+
+    /** A button outlined while its choice is selected. */
+    private record Highlight(Button button, BooleanSupplier on) {
+    }
+
     private final OpenBaseScreenPayload base;
     private final List<TaxiRoute> routes;
+    /** Each marker of the base and its type, by ID; the first of a repeated ID. */
+    private final Map<String, MarkerType> markerTypes = new LinkedHashMap<>();
+    /** The IDs more than one of the base's markers have. */
+    private final List<String> duplicateIds = new ArrayList<>();
 
     private int selectedRouteIdx = -1;
     private @Nullable EditBox routeIdField;
@@ -64,6 +86,13 @@ public class BaseConfigScreen extends Screen {
     private final List<String> routeArrivalWaypoints = new ArrayList<>();
     private boolean editingArrivalWps;
     private int scrollRoutes;
+    private int routesContentH;
+    /** Where the route's problems are drawn, under the route list. */
+    private int problemsY;
+    /** The last Save's result, under the route list. */
+    private String status = "";
+    private final List<Label> labels = new ArrayList<>();
+    private final List<Highlight> highlights = new ArrayList<>();
 
     /** 0 for Taxi Routes, 1 for Mission. */
     private int currentTab;
@@ -88,48 +117,52 @@ public class BaseConfigScreen extends Screen {
 
     private Button routesTab;
     private Button missionTab;
-    private final List<Button> routeButtons = new ArrayList<>();
-    private final List<Button> parkingButtons = new ArrayList<>();
-    private final List<Button> runwayAButtons = new ArrayList<>();
-    private final List<Button> runwayBButtons = new ArrayList<>();
-    private final List<Button> helipadButtons = new ArrayList<>();
-    private final List<Button> endpointButtons = new ArrayList<>();
-    private @Nullable Button toggleButton;
 
     public BaseConfigScreen(OpenBaseScreenPayload base) {
         super(Component.literal("Base: " + base.baseId()));
         this.base = base;
         this.routes = new ArrayList<>(base.routes());
         this.selectedWeapons.add("gun");
+        Map<String, Integer> counts = new LinkedHashMap<>();
+        this.collect(counts, base.parking(), MarkerType.PARKING);
+        this.collect(counts, base.runwayA(), MarkerType.RUNWAY_A);
+        this.collect(counts, base.runwayB(), MarkerType.RUNWAY_B);
+        this.collect(counts, base.helipads(), MarkerType.HELIPAD);
+        this.collect(counts, base.helipadB(), MarkerType.HELIPAD_B);
+        // Waypoints near the base that name no base are listed too, maybe again; count each once.
+        Set<OpenBaseScreenPayload.Marker> waypoints = new LinkedHashSet<>(base.waypoints());
+        this.collect(counts, List.copyOf(waypoints), MarkerType.WAYPOINT);
+        counts.forEach((id, n) -> {
+            if (n > 1) {
+                this.duplicateIds.add(id);
+            }
+        });
     }
 
-    // Layout, as upstream's initRoutesTab.
+    private void collect(Map<String, Integer> counts, List<OpenBaseScreenPayload.Marker> markers, MarkerType type) {
+        for (OpenBaseScreenPayload.Marker m : markers) {
+            counts.merge(m.id(), 1, Integer::sum);
+            this.markerTypes.putIfAbsent(m.id(), type);
+        }
+    }
+
+    // Layout.
 
     private int clipTop() {
-        return this.height / 4 + 12;
+        return 44;
     }
 
     private int clipBottom() {
         return this.height - 30;
     }
 
-    private int helipadRows() {
-        return this.base.helipads().isEmpty() ? 0 : (this.base.helipads().size() > 4 ? 2 : 1);
-    }
-
-    /** The Y of the first runway end A button. */
-    private int runwayAY(int sty) {
-        int rows = this.base.runwayA().isEmpty() ? 0 : (this.base.parking().size() > 4 ? 2 : 1);
-        return sty + 56 + rows * 20;
-    }
-
     @Override
     protected void init() {
         int cx = this.width / 2;
         this.routesTab = this.addRenderableWidget(Button.builder(Component.literal("Taxi Routes"), b -> this.selectTab(0))
-                .bounds(cx - 82, this.height / 4 - 12, 80, 18).build());
+                .bounds(cx - 82, 20, 80, 18).build());
         this.missionTab = this.addRenderableWidget(Button.builder(Component.literal("Mission"), b -> this.selectTab(1))
-                .bounds(cx + 2, this.height / 4 - 12, 80, 18).build());
+                .bounds(cx + 2, 20, 80, 18).build());
         if (this.currentTab == 0) {
             this.initRoutesTab();
         } else {
@@ -149,154 +182,261 @@ public class BaseConfigScreen extends Screen {
         }
     }
 
+    // The Taxi Routes tab.
+
+    private int leftX() {
+        return this.width / 2 - (LEFT_W + COLUMN_GAP + RIGHT_W) / 2;
+    }
+
+    private int rightX() {
+        return this.leftX() + LEFT_W + COLUMN_GAP;
+    }
+
     private void initRoutesTab() {
-        int cx = this.width / 2;
-        int lx = cx - 195;
-        int rx = cx - 65;
+        int lx = this.leftX();
+        int rx = this.rightX();
         int sty = this.clipTop() - this.scrollRoutes;
         List<AbstractWidget> clipped = new ArrayList<>();
-        this.routeButtons.clear();
-        this.parkingButtons.clear();
-        this.runwayAButtons.clear();
-        this.runwayBButtons.clear();
-        this.helipadButtons.clear();
-        this.endpointButtons.clear();
+        this.labels.clear();
+        this.highlights.clear();
 
-        for (int i = 0; i < this.routes.size() && i < MAX_ROUTE_LIST; i++) {
+        // The route list.
+        int ly = sty;
+        this.label("Routes", lx, ly, GREY);
+        ly += 12;
+        for (int i = 0; i < this.routes.size(); i++) {
             int index = i;
-            this.routeButtons.add(this.button(clipped, this.routes.get(i).routeId(), lx, sty + i * 22, 110, 18,
-                    () -> {
-                        this.selectedRouteIdx = index;
-                        this.loadRoute(this.routes.get(index));
-                    }));
+            Button b = this.button(clipped, shorten(this.routes.get(i).routeId()), lx, ly, LEFT_W, 16, () -> {
+                this.selectedRouteIdx = index;
+                this.status = "";
+                this.loadRoute(this.routes.get(index));
+            });
+            this.highlights.add(new Highlight(b, () -> this.selectedRouteIdx == index));
+            ly += 18;
         }
-        int listBottom = sty + MAX_ROUTE_LIST * 22;
-        this.button(clipped, "New", lx, listBottom + 4, 52, 16, () -> {
+        if (this.routes.isEmpty()) {
+            this.label("§7(none yet)", lx, ly + 3, GREY);
+            ly += 16;
+        }
+        ly += 4;
+        int half = (LEFT_W - 4) / 2;
+        this.button(clipped, "New", lx, ly, half, 16, () -> {
             this.selectedRouteIdx = -1;
+            this.status = "";
             this.clearRouteForm();
             this.rebuildWidgets();
         });
-        this.button(clipped, "Save", lx + 58, listBottom + 4, 52, 16, this::saveRoute);
-        this.button(clipped, "Delete", lx + 58, listBottom + 24, 52, 16, this::deleteRoute);
+        this.button(clipped, "Save", lx + half + 4, ly, half, 16, this::saveRoute);
+        ly += 20;
+        if (this.selectedRouteIdx >= 0) {
+            this.button(clipped, "Delete", lx + half + 4, ly, half, 16, this::deleteRoute);
+            ly += 20;
+        }
+        ly = this.wrapped(this.status, lx, ly + 2, LEFT_W, 0xFFFFFF);
+        this.problemsY = ly + 2;
 
-        // Upstream kept what was typed into a new route's ID across layouts.
-        if (this.routeIdField != null && this.selectedRouteIdx < 0) {
+        // The route's name.
+        int y = sty;
+        this.label("Route name", rx, y + 4, GREY);
+        if (this.routeIdField != null) {
             this.editingRouteId = this.routeIdField.getValue();
         }
-        EditBox field = new EditBox(this.font, rx, sty, 200, 16, Component.literal("Route ID"));
+        EditBox field = new EditBox(this.font, rx + 62, y, 170, 16, Component.literal("Route name"));
         field.setMaxLength(64);
-        field.setValue(this.selectedRouteIdx >= 0 && this.selectedRouteIdx < this.routes.size()
-                ? this.routes.get(this.selectedRouteIdx).routeId() : this.editingRouteId);
+        field.setValue(this.editingRouteId);
+        field.setResponder(value -> this.editingRouteId = value);
         this.routeIdField = this.addRenderableWidget(field);
         clipped.add(field);
+        y += 24;
 
-        int btnW = 58;
-        int gap = 4;
-        int py = sty + 28;
+        // 1. Parking spot.
+        y = this.step("1. Parking spot", "where the aircraft starts and ends", rx, y);
         List<OpenBaseScreenPayload.Marker> parking = this.base.parking();
-        for (int i = 0; i < parking.size() && i < MAX_PICKER; i++) {
-            String id = parking.get(i).id();
-            this.parkingButtons.add(this.button(clipped, id, rx + (i % 4) * (btnW + gap), py + (i / 4) * 20, btnW, 16,
-                    () -> this.selectedParkingId = id));
+        if (parking.isEmpty()) {
+            y = this.wrapped("§cNo parking spots. Set a marker's type to Parking and its parent base to §f"
+                    + this.base.baseId() + "§c.", rx, y, RIGHT_W, 0xFFFFFF);
         }
+        y = this.pickers(clipped, parking, rx, y, 4, RIGHT_W, id -> this.selectedParkingId = id,
+                id -> id.equals(this.selectedParkingId));
+        y += 6;
 
-        int ry = this.runwayAY(sty);
-        List<OpenBaseScreenPayload.Marker> runwayA = this.base.runwayA();
-        for (int i = 0; i < runwayA.size() && i < 4; i++) {
-            String id = runwayA.get(i).id();
-            this.runwayAButtons.add(this.button(clipped, id, rx + i * (btnW + gap), ry, btnW, 16,
-                    () -> this.selectedRunwayId = id));
+        // 2. Take-off and landing.
+        y = this.step("2. Take-off and landing", "runway or helipad", rx, y);
+        int px = rx + 62;
+        int pw = RIGHT_W - 62;
+        boolean noRunwayA = this.base.runwayA().isEmpty();
+        this.label("Runway A", rx, y + 4, GREY);
+        if (noRunwayA) {
+            this.label("§7none in this base", px, y + 4, GREY);
+            y += 16;
         }
-
-        // Upstream: without an end A, end B is the route's end (a return-only route after a
-        // landing that ends at B); with one, it is where take-off ends.
-        int rbyY = ry + 24;
-        List<OpenBaseScreenPayload.Marker> runwayB = this.base.runwayB();
-        for (int i = 0; i < runwayB.size() && i < 4; i++) {
-            String id = runwayB.get(i).id();
-            this.runwayBButtons.add(this.button(clipped, id, rx + i * (btnW + gap), rbyY, btnW, 16, () -> {
-                if (this.selectedRunwayId.isEmpty()) {
-                    this.selectedRunwayId = id;
-                } else {
-                    this.selectedRunwayBId = id;
-                }
-            }));
+        y = this.pickers(clipped, this.base.runwayA(), px, y, 3, pw, id -> {
+            this.selectedRunwayId = id;
+        }, id -> id.equals(this.selectedRunwayId));
+        // Upstream: without an end A, end B is the route's end (a return-only route).
+        this.label("Runway B", rx, y + 4, GREY);
+        if (this.base.runwayB().isEmpty()) {
+            this.label("§7none in this base", px, y + 4, GREY);
+            y += 16;
         }
-
-        // Upstream: a helipad ends the route, and is its parking spot too when none is chosen.
-        int hpy = rbyY + 24;
-        List<OpenBaseScreenPayload.Marker> helipads = this.base.helipads();
-        for (int i = 0; i < helipads.size() && i < MAX_PICKER; i++) {
-            String id = helipads.get(i).id();
-            this.helipadButtons.add(this.button(clipped, id, rx + (i % 4) * (btnW + gap), hpy + (i / 4) * 20, btnW, 16,
-                    () -> {
-                        this.selectedRunwayId = id;
-                        if (this.selectedParkingId.isEmpty()) {
-                            this.selectedParkingId = id;
-                        }
-                    }));
-        }
-
-        int wy = this.waypointY(sty);
-        int colW = 100;
-        this.toggleButton = this.button(clipped, this.editingArrivalWps ? "▼ 着陸 WP" : "▶ 出発 WP",
-                rx, wy - 16, 90, 13, () -> {
-                    this.editingArrivalWps = !this.editingArrivalWps;
-                    this.rebuildWidgets();
-                });
-        if (this.editingArrivalWps) {
-            List<OpenBaseScreenPayload.Marker> endpoints = this.arrivalEndpoints();
-            for (int i = 0; i < endpoints.size() && i < MAX_ARR_RUNWAY_SEL; i++) {
-                String id = endpoints.get(i).id();
-                this.endpointButtons.add(this.button(clipped, id, rx + colW + 8 + i * 54, wy, 52, 14,
-                        () -> this.selectedArrivalRunwayId = this.selectedArrivalRunwayId.equals(id) ? "" : id));
+        y = this.pickers(clipped, this.base.runwayB(), px, y, 3, pw, id -> {
+            if (noRunwayA) {
+                this.selectedRunwayId = id;
+            } else {
+                this.selectedRunwayBId = this.selectedRunwayBId.equals(id) ? "" : id;
             }
+        }, id -> id.equals(noRunwayA ? this.selectedRunwayId : this.selectedRunwayBId));
+        // Upstream: a helipad ends the route, and is its parking spot too when none is chosen.
+        this.label("Helipad", rx, y + 4, GREY);
+        if (this.base.helipads().isEmpty()) {
+            this.label("§7none in this base", px, y + 4, GREY);
+            y += 16;
         }
+        y = this.pickers(clipped, this.base.helipads(), px, y, 3, pw, id -> {
+            this.selectedRunwayId = id;
+            this.selectedRunwayBId = "";
+            if (this.selectedParkingId.isEmpty()) {
+                this.selectedParkingId = id;
+            }
+        }, id -> id.equals(this.selectedRunwayId) || id.equals(this.selectedParkingId));
+        if (!this.base.helipads().isEmpty()) {
+            String facing = this.base.helipadB().isEmpty()
+                    ? "§7No Helipad-B: aircraft on a helipad face their target."
+                    : "§7Helipads face towards Helipad-B §3" + this.base.helipadB().get(0).id() + "§7.";
+            y = this.wrapped(facing, px, y, pw, 0xFFFFFF);
+        }
+        y += 6;
 
-        int arrOffset = this.editingArrivalWps ? 18 : 0;
+        // 3. Waypoints, departure or arrival.
+        y = this.step("3. Waypoints", "the way the aircraft taxis", rx, y);
+        Button dep = this.button(clipped, "Departure", rx, y, 80, 16, () -> this.showArrival(false));
+        Button arr = this.button(clipped, "Arrival", rx + 84, y, 80, 16, () -> this.showArrival(true));
+        this.highlights.add(new Highlight(dep, () -> !this.editingArrivalWps));
+        this.highlights.add(new Highlight(arr, () -> this.editingArrivalWps));
+        y += 22;
+        if (this.editingArrivalWps) {
+            this.label("Landing end §7(empty: the take-off end)", rx, y, GREY);
+            y += 12;
+            y = this.pickers(clipped, this.arrivalEndpoints(), rx, y, 4, RIGHT_W,
+                    id -> this.selectedArrivalRunwayId = this.selectedArrivalRunwayId.equals(id) ? "" : id,
+                    id -> id.equals(this.selectedArrivalRunwayId));
+            y += 2;
+        }
+        int colW = (RIGHT_W - 10) / 2;
+        int ax = rx + colW + 10;
+        this.label("Flown in order", rx, y, GREY);
+        this.label("Add §8(click)", ax, y, GREY);
+        y += 12;
         List<String> active = this.activeWaypoints();
+        int listY = y;
         for (int i = 0; i < active.size() && i < MAX_PICKER; i++) {
             int index = i;
-            int bx = rx + colW - 52;
-            int y = wy + arrOffset + i * 18;
+            int bx = rx + colW - 46;
+            this.label("§f" + (i + 1) + ". " + this.tagged(active.get(i)), rx, listY + 3, 0xFFFFFF);
             if (i > 0) {
-                this.button(clipped, "^", bx, y, 14, 14, () -> this.editWaypoints(
+                this.button(clipped, "^", bx, listY, 14, 14, () -> this.editWaypoints(
                         () -> Collections.swap(active, index, index - 1)));
             }
             if (i < active.size() - 1) {
-                this.button(clipped, "v", bx + 16, y, 14, 14, () -> this.editWaypoints(
+                this.button(clipped, "v", bx + 16, listY, 14, 14, () -> this.editWaypoints(
                         () -> Collections.swap(active, index, index + 1)));
             }
-            this.button(clipped, "x", bx + 34, y, 14, 14, () -> this.editWaypoints(() -> active.remove(index)));
+            this.button(clipped, "x", bx + 32, listY, 14, 14, () -> this.editWaypoints(() -> active.remove(index)));
+            listY += 18;
         }
+        if (active.isEmpty()) {
+            listY = this.wrapped(this.editingArrivalWps ? "§7None: the departure waypoints, in reverse."
+                    : "§7None: straight from the parking spot.", rx, listY + 3, colW, 0xFFFFFF);
+        }
+        int addY = y;
         List<String> available = this.availableWaypoints(active);
         for (int i = 0; i < available.size() && i < MAX_PICKER; i++) {
             String id = available.get(i);
-            this.button(clipped, id, rx + colW + 8, wy + arrOffset + i * 18, colW - 10, 14,
-                    () -> this.editWaypoints(() -> active.add(id)));
+            this.button(clipped, this.tagged(id), ax, addY, colW, 14, () -> this.editWaypoints(() -> active.add(id)));
+            addY += 16;
         }
+        if (available.isEmpty()) {
+            addY = this.wrapped("§7No more markers. Waypoints within 500 blocks show here.", ax, addY + 3, colW,
+                    0xFFFFFF);
+        }
+        y = Math.max(listY, addY) + 8;
 
+        // The summary; what still stops a save is drawn under the route list, as it changes with typing.
+        y = this.step("Summary", "", rx, y);
+        y = this.wrapped(this.departureSequence(), rx, y, RIGHT_W, 0xFFFFFF);
+        y = this.wrapped(this.arrivalSequence(), rx, y, RIGHT_W, 0xFFFFFF);
+
+        // Room for the problems at their longest, with every save check failing.
+        int problemsH = 3 * 23;
+        for (String id : this.duplicateIds) {
+            problemsH += this.font.split(Component.literal(duplicateNote(id)), LEFT_W).size() * 10 + 3;
+        }
+        this.routesContentH = Math.max(this.problemsY + problemsH, y) - sty + 8;
         this.clip(clipped);
         if (!this.routeIdField.visible) {
             this.routeIdField.setFocused(false);
         }
     }
 
+    /** A step's heading and its note, returning the Y below it. */
+    private int step(String title, String note, int x, int y) {
+        this.label("§e" + title + (note.isEmpty() ? "" : " §7- " + note), x, y, 0xFFFFFF);
+        return y + 12;
+    }
+
+    private void label(String text, int x, int y, int rgb) {
+        this.labels.add(new Label(Component.literal(text).getVisualOrderText(), x, y, rgb));
+    }
+
+    /** Text wrapped to the width, returning the Y below it. */
+    private int wrapped(String text, int x, int y, int width, int rgb) {
+        if (text.isEmpty()) {
+            return y;
+        }
+        for (FormattedCharSequence line : this.font.split(Component.literal(text), width)) {
+            this.labels.add(new Label(line, x, y, rgb));
+            y += 10;
+        }
+        return y + 2;
+    }
+
+    /**
+     * A grid of buttons for the markers, outlined while selected, returning the Y below it. A
+     * pick lays the tab out again, so the summary follows it.
+     */
+    private int pickers(List<AbstractWidget> clipped, List<OpenBaseScreenPayload.Marker> markers, int x, int y,
+            int perRow, int width, java.util.function.Consumer<String> pick, java.util.function.Predicate<String> on) {
+        int gap = 4;
+        int bw = (width - gap * (perRow - 1)) / perRow;
+        Set<String> seen = new LinkedHashSet<>();
+        int n = 0;
+        for (OpenBaseScreenPayload.Marker m : markers) {
+            if (!seen.add(m.id()) || n >= MAX_PICKER) {
+                continue;
+            }
+            String id = m.id();
+            Button b = this.button(clipped, shorten(id), x + (n % perRow) * (bw + gap), y + (n / perRow) * 18, bw, 16,
+                    () -> {
+                        pick.accept(id);
+                        this.rebuildWidgets();
+                    });
+            this.highlights.add(new Highlight(b, () -> on.test(id)));
+            n++;
+        }
+        return n == 0 ? y : y + ((n + perRow - 1) / perRow) * 18 + 2;
+    }
+
     /**
      * Upstream hid the tab's widgets outside the scrolling area, but showed one partly scrolled off
-     * its top over the tab buttons, where a click on a tab pressed it; the port hides that one too.
+     * its top over the tab buttons, where a click on a tab pressed it; the port hides any widget
+     * not wholly inside the area.
      */
     private void clip(List<AbstractWidget> clipped) {
         int clipTop = this.clipTop();
         int clipBot = this.clipBottom();
         for (AbstractWidget w : clipped) {
-            w.visible = w.getY() >= clipTop && w.getY() < clipBot;
+            w.visible = w.getY() >= clipTop && w.getY() + w.getHeight() <= clipBot;
         }
-    }
-
-    /** The Y of the waypoint lists: below the helipads and upstream's 72-pixel Helipad-B and sequence section. */
-    private int waypointY(int sty) {
-        return this.runwayAY(sty) + 48 + this.helipadRows() * 20 + 6 + 72;
     }
 
     private Button button(List<AbstractWidget> clipped, String label, int x, int y, int w, int h, Runnable action) {
@@ -304,6 +444,11 @@ public class BaseConfigScreen extends Screen {
                 .bounds(x, y, w, h).build());
         clipped.add(button);
         return button;
+    }
+
+    private void showArrival(boolean arrival) {
+        this.editingArrivalWps = arrival;
+        this.rebuildWidgets();
     }
 
     private void editWaypoints(Runnable edit) {
@@ -315,6 +460,12 @@ public class BaseConfigScreen extends Screen {
         return this.editingArrivalWps ? this.routeArrivalWaypoints : this.routeWaypoints;
     }
 
+    /** The marker's ID after its type's tag, as {@code WP wp_1}. */
+    private String tagged(String id) {
+        MarkerType type = this.markerTypes.get(id);
+        return (type == null ? "§c?" : type.tag()) + " §f" + id;
+    }
+
     /** Upstream's landing ends: runway ends A, then B, then helipads. */
     private List<OpenBaseScreenPayload.Marker> arrivalEndpoints() {
         List<OpenBaseScreenPayload.Marker> endpoints = new ArrayList<>(this.base.runwayA());
@@ -323,9 +474,12 @@ public class BaseConfigScreen extends Screen {
         return endpoints;
     }
 
-    /** Upstream: any waypoint, runway end, helipad or parking spot not yet in the list can be passed through. */
+    /**
+     * Upstream: any waypoint, runway end, helipad or parking spot not yet in the list can be passed
+     * through. The port lists each ID once.
+     */
     private List<String> availableWaypoints(List<String> active) {
-        List<String> result = new ArrayList<>();
+        Set<String> result = new LinkedHashSet<>();
         for (List<OpenBaseScreenPayload.Marker> markers : List.of(this.base.waypoints(), this.base.runwayA(),
                 this.base.runwayB(), this.base.helipads(), this.base.parking())) {
             for (OpenBaseScreenPayload.Marker m : markers) {
@@ -334,7 +488,7 @@ public class BaseConfigScreen extends Screen {
                 }
             }
         }
-        return result;
+        return new ArrayList<>(result);
     }
 
     // The Mission tab, as upstream's initMissionTab.
@@ -378,7 +532,7 @@ public class BaseConfigScreen extends Screen {
         this.departureButtons.clear();
         this.arrivalButtons.clear();
         int cx = this.width / 2;
-        int sty = this.clipTop() - this.scrollMission;
+        int sty = this.clipTop() + 2 - this.scrollMission;
         int btnW = 58;
         int gap = 4;
         int gridW = missionGridW();
@@ -523,6 +677,9 @@ public class BaseConfigScreen extends Screen {
 
     private void loadRoute(TaxiRoute r) {
         this.editingRouteId = r.routeId();
+        if (this.routeIdField != null) {
+            this.routeIdField.setValue(r.routeId());
+        }
         this.selectedParkingId = r.parkingId();
         this.selectedRunwayId = r.runwayId();
         this.selectedRunwayBId = r.runwayBId();
@@ -548,29 +705,41 @@ public class BaseConfigScreen extends Screen {
         this.editingArrivalWps = false;
     }
 
-    private void chat(String message) {
-        this.minecraft.gui.chatListener().handleSystemMessage(Component.literal(message), false);
-    }
-
     private boolean isHelipad(String id) {
         return this.base.helipads().stream().anyMatch(m -> m.id().equals(id));
     }
 
-    private void saveRoute() {
-        String rid = this.routeIdField != null ? this.routeIdField.getValue().trim() : "";
-        if (rid.isEmpty()) {
-            this.chat("§cRoute ID が空です");
-            return;
+    /** What still stops the route saving, then warnings about the base's markers. */
+    private List<String> problems() {
+        List<String> problems = new ArrayList<>();
+        if (this.editingRouteId.trim().isEmpty()) {
+            problems.add("§cTo save: name the route.");
         }
         if (this.selectedParkingId.isEmpty()) {
-            this.chat("§cParking を選択してください");
-            return;
+            problems.add("§cTo save: pick a parking spot (1).");
         }
-        if (this.selectedRunwayId.isEmpty()) {
-            if (this.isHelipad(this.selectedParkingId)) {
-                this.selectedRunwayId = this.selectedParkingId;
-            } else {
-                this.chat("§cEndpoint (Runway A または Helipad) を選択してください");
+        if (this.selectedRunwayId.isEmpty() && !this.isHelipad(this.selectedParkingId)) {
+            problems.add("§cTo save: pick a runway or helipad (2).");
+        }
+        for (String id : this.duplicateIds) {
+            problems.add(duplicateNote(id));
+        }
+        return problems;
+    }
+
+    private static String duplicateNote(String id) {
+        return "§eTwo markers share the ID §f" + id + "§e. Rename one on its marker screen.";
+    }
+
+    private void saveRoute() {
+        String rid = this.routeIdField != null ? this.routeIdField.getValue().trim() : "";
+        if (this.selectedRunwayId.isEmpty() && this.isHelipad(this.selectedParkingId)) {
+            this.selectedRunwayId = this.selectedParkingId;
+        }
+        for (String problem : this.problems()) {
+            if (problem.startsWith("§cTo save")) {
+                this.status = "§cNot saved:";
+                this.rebuildWidgets();
                 return;
             }
         }
@@ -582,6 +751,7 @@ public class BaseConfigScreen extends Screen {
         for (int i = 0; i < this.routes.size(); i++) {
             if (this.routes.get(i).routeId().equals(rid)) {
                 this.routes.set(i, route);
+                this.selectedRouteIdx = i;
                 found = true;
                 break;
             }
@@ -590,6 +760,7 @@ public class BaseConfigScreen extends Screen {
             this.routes.add(route);
             this.selectedRouteIdx = this.routes.size() - 1;
         }
+        this.status = "§aSaved " + rid + ".";
         this.rebuildWidgets();
     }
 
@@ -600,6 +771,7 @@ public class BaseConfigScreen extends Screen {
         TaxiRoute route = this.routes.remove(this.selectedRouteIdx);
         ClientPacketDistributor.sendToServer(new TaxiRouteActionPayload(this.base.pos(), true, route));
         this.selectedRouteIdx = -1;
+        this.status = "§aDeleted " + route.routeId() + ".";
         this.clearRouteForm();
         this.rebuildWidgets();
     }
@@ -612,9 +784,9 @@ public class BaseConfigScreen extends Screen {
             return false;
         }
         int visH = this.clipBottom() - this.clipTop();
-        int step = scrollY > 0.0 ? -14 : 14;
+        int step = scrollY > 0.0 ? -20 : 20;
         if (this.currentTab == 0) {
-            this.scrollRoutes = Math.clamp(this.scrollRoutes + step, 0, Math.max(0, ROUTES_CONTENT_H - visH));
+            this.scrollRoutes = Math.clamp(this.scrollRoutes + step, 0, Math.max(0, this.routesContentH - visH));
         } else {
             this.scrollMission = Math.clamp(this.scrollMission + step, 0, Math.max(0, MISSION_CONTENT_H - visH));
         }
@@ -648,18 +820,17 @@ public class BaseConfigScreen extends Screen {
         return false;
     }
 
-    // Drawing, as upstream's drawScreen and drawRoutesTab.
+    // Drawing, as upstream's drawScreen.
 
     @Override
     public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
         int cx = this.width / 2;
-        int ty = this.height / 4;
-        graphics.centeredText(this.font, "§eBase: §f" + this.base.baseId(), cx, ty - 26, 0xFFFFFFFF);
+        graphics.centeredText(this.font, "§eBase: §f" + this.base.baseId(), cx, 7, 0xFFFFFFFF);
         Button tab = this.currentTab == 0 ? this.routesTab : this.missionTab;
         graphics.fill(tab.getX(), tab.getY() + tab.getHeight(), tab.getX() + tab.getWidth(),
                 tab.getY() + tab.getHeight() + 2, 0xFFFFAA00);
         if (this.currentTab == 0) {
-            this.drawRoutesTab(graphics, cx);
+            this.drawRoutesTab(graphics);
         } else {
             this.drawMissionTab(graphics);
         }
@@ -672,117 +843,32 @@ public class BaseConfigScreen extends Screen {
         }
     }
 
-    private void highlightIf(GuiGraphicsExtractor graphics, List<Button> buttons, List<OpenBaseScreenPayload.Marker> markers,
-            String... selected) {
-        for (int i = 0; i < buttons.size(); i++) {
-            String id = markers.get(i).id();
-            for (String s : selected) {
-                if (id.equals(s)) {
-                    this.highlight(graphics, buttons.get(i), HIGHLIGHT);
-                    break;
-                }
-            }
-        }
-    }
-
     private void label(GuiGraphicsExtractor graphics, String text, int x, int y, int rgb) {
         graphics.text(this.font, text, x, y, 0xFF000000 | rgb);
     }
 
-    private void drawRoutesTab(GuiGraphicsExtractor graphics, int cx) {
+    private void drawRoutesTab(GuiGraphicsExtractor graphics) {
         int clipTop = this.clipTop();
         int clipBot = this.clipBottom();
+        for (Highlight h : this.highlights) {
+            if (h.on().getAsBoolean()) {
+                this.highlight(graphics, h.button(), HIGHLIGHT);
+            }
+        }
         graphics.enableScissor(0, clipTop, this.width, clipBot);
-        int sty = clipTop - this.scrollRoutes;
-        int lx = cx - 195;
-        int rx = cx - 65;
-
-        this.label(graphics, "§7─ Routes ─", lx, sty + 2, 0x888888);
-        if (this.selectedRouteIdx >= 0 && this.selectedRouteIdx < this.routeButtons.size()) {
-            this.highlight(graphics, this.routeButtons.get(this.selectedRouteIdx), 0x44FFAA00);
+        for (Label l : this.labels) {
+            graphics.text(this.font, l.text(), l.x(), l.y(), 0xFF000000 | l.rgb(), true);
         }
-        this.label(graphics, "Route ID:", rx, sty + 2, 0xAAAAAA);
-
-        int py = sty + 28;
-        this.label(graphics, "§7Parking:", rx, py - 10, 0xAAAAAA);
-        this.highlightIf(graphics, this.parkingButtons, this.base.parking(), this.selectedParkingId);
-
-        int ry = this.runwayAY(sty);
-        this.label(graphics, "§7Runway A:", rx, ry - 10, 0xAAAAAA);
-        if (this.base.runwayA().isEmpty()) {
-            this.label(graphics, "§c(no RUNWAY_A markers in this base)", rx, ry + 2, 0xFF4444);
-        } else {
-            this.highlightIf(graphics, this.runwayAButtons, this.base.runwayA(), this.selectedRunwayId);
-        }
-
-        int rbyY = ry + 24;
-        this.label(graphics, "§7Runway B:", rx, rbyY - 10, 0xAAAAAA);
-        if (this.base.runwayB().isEmpty()) {
-            this.label(graphics, "§7(no RUNWAY_B markers)", rx, rbyY + 2, 0x666666);
-        } else {
-            this.highlightIf(graphics, this.runwayBButtons, this.base.runwayB(), this.selectedRunwayBId);
-        }
-
-        int hpy = rbyY + 24;
-        this.label(graphics, "§9Helipad §7(Runway End / P+R):", rx, hpy - 10, 0xAAAAAA);
-        if (this.base.helipads().isEmpty()) {
-            this.label(graphics, "§7(no HELIPAD markers)", rx, hpy + 2, 0x666666);
-        } else {
-            this.highlightIf(graphics, this.helipadButtons, this.base.helipads(), this.selectedParkingId,
-                    this.selectedRunwayId);
-        }
-
-        int hbpy = hpy + this.helipadRows() * 20 + 6;
-        this.label(graphics, "§bHelipad-B §7(facing dir):", rx, hbpy, 0xAAAAAA);
-        if (this.base.helipadB().isEmpty()) {
-            this.label(graphics, "§c(none — HELIPAD_B マーカーを設置して baseId を HELIPAD に合わせる)",
-                    rx, hbpy + 12, 0xFF6666);
-        } else {
-            List<OpenBaseScreenPayload.Marker> facing = this.base.helipadB();
-            for (int i = 0; i < facing.size() && i < 3; i++) {
-                OpenBaseScreenPayload.Marker m = facing.get(i);
-                this.label(graphics, "§b" + m.id() + " §7(" + m.pos().getX() + "," + m.pos().getZ() + ")",
-                        rx + i * 100, hbpy + 12, 0x55FFFF);
+        int y = this.problemsY;
+        for (String problem : this.problems()) {
+            for (FormattedCharSequence line : this.font.split(Component.literal(problem), LEFT_W)) {
+                graphics.text(this.font, line, this.leftX(), y, 0xFFFFFFFF, true);
+                y += 10;
             }
-        }
-
-        int colW = 118;
-        int wy = this.waypointY(sty);
-        this.label(graphics, this.departureSequence(rx), rx, wy - 52, 0xFFFFFF);
-        this.label(graphics, this.arrivalSequence(), rx, wy - 38, 0x666666);
-        if (this.editingArrivalWps && this.toggleButton != null) {
-            this.highlight(graphics, this.toggleButton, HIGHLIGHT);
-        }
-
-        List<String> active = this.activeWaypoints();
-        this.label(graphics, this.editingArrivalWps ? "§b着陸 WP:" : "§f出発 WP:", rx + 94, wy - 6,
-                0xAAAAAA);
-        if (this.editingArrivalWps) {
-            this.label(graphics, "§bエントリー端点:", rx + colW + 8, wy - 6, 0x55FFFF);
-            List<OpenBaseScreenPayload.Marker> endpoints = this.arrivalEndpoints();
-            for (int i = 0; i < this.endpointButtons.size(); i++) {
-                if (endpoints.get(i).id().equals(this.selectedArrivalRunwayId)) {
-                    this.highlight(graphics, this.endpointButtons.get(i), HIGHLIGHT);
-                    break;
-                }
-            }
-            this.label(graphics, "§7Available:", rx + colW + 8, wy + 18 - 6, 0xAAAAAA);
-        } else {
-            this.label(graphics, "§7Available:", rx + colW + 8, wy - 6, 0xAAAAAA);
-        }
-        int arrOffset = this.editingArrivalWps ? 18 : 0;
-        for (int i = 0; i < active.size() && i < MAX_PICKER; i++) {
-            this.label(graphics, "§f" + (i + 1) + ". " + active.get(i), rx, wy + arrOffset + i * 18 + 3, 0xFFFFFF);
-        }
-        if (active.isEmpty()) {
-            if (this.editingArrivalWps) {
-                this.label(graphics, "§7(空=出発の逆順)", rx, wy + arrOffset + 3, 0x555555);
-            } else {
-                this.label(graphics, "§7(none)", rx, wy + 3, 0x666666);
-            }
+            y += 3;
         }
         graphics.disableScissor();
-        this.drawScrollbar(graphics, clipTop, clipBot, ROUTES_CONTENT_H, this.scrollRoutes);
+        this.drawScrollbar(graphics, clipTop, clipBot, this.routesContentH, this.scrollRoutes);
     }
 
     /** Upstream's drawMissionTab. */
@@ -790,21 +876,20 @@ public class BaseConfigScreen extends Screen {
         int clipTop = this.clipTop();
         int clipBot = this.clipBottom();
         graphics.enableScissor(0, clipTop, this.width, clipBot);
-        int sty = clipTop - this.scrollMission;
+        int sty = clipTop + 2 - this.scrollMission;
         int gx = this.missionGridX();
         int gridW = missionGridW();
 
-        this.label(graphics, "Mission Types:", gx, sty, 0xAAAAAA);
-        this.label(graphics, "Weapons:", gx, sty + 48, 0xAAAAAA);
+        this.label(graphics, "Mission Types:", gx, sty, GREY);
+        this.label(graphics, "Weapons:", gx, sty + 48, GREY);
         int fy = sty + 112;
         int fw = (gridW - 8) / 2;
         for (int i = 0; i < MISSION_FIELD_LABELS.length; i++) {
-            this.label(graphics, MISSION_FIELD_LABELS[i], i % 2 == 0 ? gx : gx + fw + 8, fy - 12 + (i / 2) * 30,
-                    0xAAAAAA);
+            this.label(graphics, MISSION_FIELD_LABELS[i], i % 2 == 0 ? gx : gx + fw + 8, fy - 12 + (i / 2) * 30, GREY);
         }
 
         int ay = this.missionAircraftY(sty);
-        this.label(graphics, "Select Aircraft:", gx, ay - 12, 0xAAAAAA);
+        this.label(graphics, "Select Aircraft:", gx, ay - 12, GREY);
         List<OpenBaseScreenPayload.Aircraft> aircraft = this.base.aircraft();
         if (aircraft.isEmpty()) {
             this.label(graphics, "§7(no aircraft nearby)", gx, ay + 3, 0x666666);
@@ -816,14 +901,14 @@ public class BaseConfigScreen extends Screen {
         }
 
         int pky = this.missionDepartureY(sty);
-        this.label(graphics, "§f出発ルート §7(Departure, optional):", gx, pky - 12, 0xAAAAAA);
+        this.label(graphics, "§fDeparture route §7(optional):", gx, pky - 12, GREY);
         if (this.routes.isEmpty()) {
-            this.label(graphics, "§7(none — Routes tab で作成)", gx, pky + 3, 0x666666);
+            this.label(graphics, "§7(none: make one on the Taxi Routes tab)", gx, pky + 3, 0x666666);
         }
         this.highlightRoute(graphics, this.departureButtons, this.selectedRouteForDispatch);
 
         int ary = this.missionArrivalY(sty);
-        this.label(graphics, "§f帰着ルート §7(Arrival, optional):", gx, ary - 12, 0xAAAAAA);
+        this.label(graphics, "§fArrival route §7(optional):", gx, ary - 12, GREY);
         if (this.routes.isEmpty()) {
             this.label(graphics, "§7(none)", gx, ary + 3, 0x666666);
         }
@@ -848,7 +933,8 @@ public class BaseConfigScreen extends Screen {
         graphics.disableScissor();
         // Upstream drew this note just below the scrolling area, where its clipping hid it.
         if (this.isVtolArrivalRoute(this.selectedArrivalRouteId)) {
-            this.label(graphics, "§b⬆ VTOL着陸 §7(帰着ルートから自動)", 6, this.height - 22, 0x55FFFF);
+            this.label(graphics, "§b⬆ VTOL landing §7(the arrival route ends at a helipad)", 6, this.height - 22,
+                    0x55FFFF);
         }
         this.drawScrollbar(graphics, clipTop, clipBot, MISSION_CONTENT_H, this.scrollMission);
     }
@@ -861,37 +947,38 @@ public class BaseConfigScreen extends Screen {
         }
     }
 
-    /** Upstream's departure line, shortened to its first and last waypoints when too wide. */
-    private String departureSequence(int rx) {
-        String start = "§7出発: " + (this.selectedParkingId.isEmpty() ? "§c?" : "§a" + this.selectedParkingId);
-        String end = "§7→" + (this.selectedRunwayId.isEmpty() ? "§c?" : "§b" + this.selectedRunwayId);
-        StringBuilder seq = new StringBuilder(start);
+    /** Upstream's departure line: parking spot, waypoints, take-off end. */
+    private String departureSequence() {
+        StringBuilder seq = new StringBuilder("§fDeparture: ")
+                .append(this.selectedParkingId.isEmpty() ? "§c?" : "§a" + this.selectedParkingId);
         for (String wp : this.routeWaypoints) {
-            seq.append("§7→§f").append(wp);
+            seq.append(" §7→ §f").append(wp);
         }
-        seq.append(end);
-        String full = seq.toString();
-        int size = this.routeWaypoints.size();
-        if (this.font.width(ChatFormatting.stripFormatting(full)) > this.width - rx - 12 && size > 2) {
-            return start + "§7→§f" + this.routeWaypoints.get(0) + "§7→§8…(" + (size - 2)
-                    + ")…§7→§f" + this.routeWaypoints.get(size - 1) + end;
+        seq.append(" §7→ ").append(this.selectedRunwayId.isEmpty() ? "§c?" : "§b" + this.selectedRunwayId);
+        if (!this.selectedRunwayBId.isEmpty()) {
+            seq.append(" §7(take-off towards §b").append(this.selectedRunwayBId).append("§7)");
         }
-        return full;
+        return seq.toString();
     }
 
     /** Upstream's arrival note: the arrival waypoints, or that the departure ones are flown in reverse. */
     private String arrivalSequence() {
         String entry = this.selectedArrivalRunwayId.isEmpty() ? this.selectedRunwayId : this.selectedArrivalRunwayId;
-        if (!this.routeArrivalWaypoints.isEmpty()) {
-            StringBuilder arr = new StringBuilder("§7着陸: §b").append(entry.isEmpty() ? "?" : entry);
-            for (String wp : this.routeArrivalWaypoints) {
-                arr.append("§7→§f").append(wp);
+        String start = "§fArrival: " + (entry.isEmpty() ? "§c?" : "§b" + entry);
+        String end = " §7→ " + (this.selectedParkingId.isEmpty() ? "§c?" : "§a" + this.selectedParkingId);
+        StringBuilder arr = new StringBuilder(start);
+        if (this.routeArrivalWaypoints.isEmpty() && !this.routeWaypoints.isEmpty()) {
+            List<String> reversed = new ArrayList<>(this.routeWaypoints);
+            Collections.reverse(reversed);
+            for (String wp : reversed) {
+                arr.append(" §7→ §f").append(wp);
             }
-            return arr.append("§7→§a").append(this.selectedParkingId.isEmpty() ? "?" : this.selectedParkingId)
-                    .toString();
+            return arr.append(end).append(" §8(departure reversed)").toString();
         }
-        return "§7着陸: 逆順 (" + (entry.isEmpty() ? "?" : "§b" + entry + "§7") + "→…→"
-                + (this.selectedParkingId.isEmpty() ? "?" : "§a" + this.selectedParkingId + "§7") + ")";
+        for (String wp : this.routeArrivalWaypoints) {
+            arr.append(" §7→ §f").append(wp);
+        }
+        return arr.append(end).toString();
     }
 
     private void drawScrollbar(GuiGraphicsExtractor graphics, int top, int bot, int contentH, int scroll) {

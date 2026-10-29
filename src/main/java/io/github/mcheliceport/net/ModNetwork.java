@@ -46,8 +46,8 @@ public final class ModNetwork {
 
     private static final Logger LOGGER = LogUtils.getLogger();
     /** Bump when payload encoding, menu layout or synchronized entity data changes. */
-    // M8: independent, optional explosion audio with distance-delayed client playback.
-    public static final String VERSION = "31";
+    // The marker screen's payload carries the nearby bases and the other markers' IDs.
+    public static final String VERSION = "32";
 
     private ModNetwork() {
     }
@@ -342,11 +342,22 @@ public final class ModNetwork {
     /**
      * Upstream {@code PacketMarkerUpdate}. Upstream accepted it from anyone for any marker; the
      * port requires the player to be able to reach and edit the block, as vanilla's sign editing does.
+     * An empty ID, or another type's automatic one, takes a free automatic ID of the type, and the
+     * player is warned when another marker already has the ID.
      */
     public static void applyMarkerUpdate(Player player, MarkerUpdatePayload p) {
         var marker = editableMarker(player, p.pos());
-        if (marker != null) {
-            marker.apply(p.markerType(), p.id().trim(), p.baseId().trim(), Mth.clamp(p.parkingHeading(), -1, 3));
+        if (marker == null || !(player.level() instanceof ServerLevel level)) {
+            return;
+        }
+        String id = io.github.mcheliceport.wingman.block.WingmanMarkerBlock.idForType(level, p.pos(), p.id().trim(),
+                p.markerType());
+        marker.apply(p.markerType(), id, p.baseId().trim(), Mth.clamp(p.parkingHeading(), -1, 3));
+        if (!id.isEmpty() && io.github.mcheliceport.wingman.block.WingmanMarkerBlock.otherIds(level, p.pos())
+                .contains(id)) {
+            player.sendSystemMessage(net.minecraft.network.chat.Component.literal(
+                    "\u00a7eAnother marker already has the ID \u00a7f" + id
+                            + "\u00a7e. Routes may use the wrong one; give each marker its own ID."));
         }
     }
 

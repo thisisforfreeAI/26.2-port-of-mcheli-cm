@@ -69,6 +69,41 @@ waypoints showed them all; a route from `p_a1` through `wp_1` and `wp_2` to `ra_
 ![Base screen](screens/m6b-base-routes.png)
 ![Waypoint editor](screens/m6b-base-waypoints.png)
 
+## Marker screen redesign
+
+Upstream's marker screens were hard to read once a base had several markers: the Taxi Routes tab
+was placed with fixed offsets, so its Helipad-B line, departure summary, waypoint toggle and lists
+overlapped, its labels were partly Japanese, and automatic IDs repeated (a parking spot turned
+helipad kept `p_1`, and the next parking spot took `p_1` again). Taxiing looks markers up by ID
+alone, so a repeated ID could send an aircraft to the wrong block.
+
+- Automatic IDs take the lowest number no marker uses (`WingmanMarkerBlock.autoId`). Changing a
+  marker's type renames an automatic ID of another type (`p_1` becomes `hp_1`), on the screen, on
+  save and through `/wingman marker type`; IDs typed by hand are kept. Saving an ID another marker
+  has warns in chat.
+- `MarkerConfigScreen` is in English, explains the selected type under the type buttons, offers the
+  bases within 500 blocks as buttons beside the parent base field, and notes beside each field when
+  the ID is already used or the parent base is not nearby. `OpenMarkerScreenPayload` carries the
+  nearby bases and the other markers' IDs; network protocol 32.
+- The Taxi Routes tab is laid out from the top down, with each label placed where its widgets are:
+  route name, then 1. parking spot, 2. take-off and landing (Runway A, Runway B, Helipad rows, and
+  which Helipad-B the helipads face), 3. waypoints with Departure and Arrival tabs, an ordered list
+  and a list of markers to add (each tagged with its type and listed once), then a summary of both
+  legs. What still stops a save, and IDs shared by two of the base's markers, show under the route
+  list in English, instead of Japanese chat messages. The Mission tab's labels are in English.
+- Differences: KNOWN_ISSUES 111.
+
+Validation: a new GameTest covers unique and renamed automatic IDs, typed IDs being kept, the
+nearby bases, the other IDs and the payload codec; all 293 required GameTests pass. The screens were
+captured in the client at 1280x720 (GUI scale 3) with a base holding a parking spot and a helipad
+that share `p_3`:
+
+![Marker screen](screens/m6b-ui-marker-parking.png)
+![Marker warnings](screens/m6b-ui-marker-helipad-b.png)
+![New route](screens/m6b-ui-base-routes-new.png)
+![Waypoints](screens/m6b-ui-base-routes-scrolled.png)
+![Summary](screens/m6b-ui-base-routes-bottom.png)
+
 ## Wingmen and wingman panel increment
 
 - `WingmanEntry` and `WingmanRegistry` keep upstream's per-wingman state (leader, formation slot,

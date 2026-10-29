@@ -85,6 +85,15 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
   anything is hurt, a strip at the right of the HUD shows each part (`E1 E2 R T F`) in green, amber
   or red. A repair now also heals components when the hull is already whole.
 
+### Changed
+- Wingman marker screens are easier to use. The marker screen explains each type, offers the bases
+  nearby as the parent base, warns of an ID another marker already has, and is in English. A new
+  marker's automatic ID is now unique and follows its type, so a parking spot turned helipad becomes
+  `hp_1` instead of keeping `p_1`. The base screen's Taxi Routes tab is laid out as numbered steps
+  (parking spot, take-off and landing, waypoints with separate Departure and Arrival lists), shows
+  both legs and what still stops a save, and no longer overlaps its labels. Network protocol 32.
+  See `docs/M6B_PLAN.md`.
+
 ## [0.6.0] - 2026-10-25 (M6 preview: gameplay and multiplayer)
 
 ### Added
