@@ -167,6 +167,10 @@ public final class ModNetwork {
                 (p, context) -> io.github.mcheliceport.wingman.WingmanPanel.apply(context.player(), p));
         registrar.playToServer(WeaponControlPayload.TYPE, WeaponControlPayload.CODEC, ModNetwork::handleWeaponControl);
         registrar.playToServer(AmmoRequestPayload.TYPE, AmmoRequestPayload.CODEC, ModNetwork::handleAmmoRequest);
+        registrar.playToServer(EffectsRangePayload.TYPE,EffectsRangePayload.CODEC,(p,c)->{
+            if(c.player() instanceof ServerPlayer player)io.github.mcheliceport.effectrange.EffectsRange.act(player,p.action(),p.weapon(),p.surface(),p.lighting());
+        });
+        registrar.playToClient(EffectsRangeNoticePayload.TYPE,EffectsRangeNoticePayload.CODEC,(p,c)->io.github.mcheliceport.effectrange.EffectsRangeClientHooks.notice(p));
         registrar.playToServer(AircraftAppearancePayload.TYPE, AircraftAppearancePayload.CODEC, (p,c) ->
                 io.github.mcheliceport.appearance.AircraftAppearance.apply(c.player(),p.aircraftId(),p.texture(),p.appearance()));
         registrar.playToServer(ResupplyPayload.TYPE, ResupplyPayload.CODEC, ModNetwork::handleResupply);

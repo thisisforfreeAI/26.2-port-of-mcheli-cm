@@ -1,0 +1,147 @@
+{
+  "kind": "player-facing-isolated-real-weapon-effects-range",
+  "unit_results": {
+    "tests": 528,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "runs": [
+    {
+      "backend": "VULKAN",
+      "all_passed": true,
+      "scenes": [
+        {
+          "passed": true,
+          "scene": "hydra-sand",
+          "actual_projectile": true,
+          "impact_observed": true
+        },
+        {
+          "passed": true,
+          "scene": "agm158-soil",
+          "actual_projectile": true,
+          "impact_observed": true
+        },
+        {
+          "passed": true,
+          "scene": "mk82-stone",
+          "actual_projectile": true,
+          "impact_observed": true
+        },
+        {
+          "passed": true,
+          "scene": "gbu57-soil-night",
+          "actual_projectile": true,
+          "impact_observed": true
+        }
+      ],
+      "peak_reset_block_operations": 2048,
+      "original_mode_restored": true,
+      "original_position_restored": true,
+      "original_frozen_clock_unchanged": true
+    },
+    {
+      "backend": "OPENGL",
+      "all_passed": true,
+      "scenes": [
+        {
+          "passed": true,
+          "scene": "hydra-water",
+          "actual_projectile": true,
+          "impact_observed": true
+        },
+        {
+          "passed": true,
+          "scene": "classic-hydra",
+          "actual_projectile": true,
+          "impact_observed": true
+        },
+        {
+          "passed": true,
+          "scene": "modern-mk82",
+          "actual_projectile": true,
+          "impact_observed": true
+        }
+      ],
+      "peak_reset_block_operations": 2048,
+      "original_mode_restored": true,
+      "original_position_restored": true,
+      "original_frozen_clock_unchanged": true
+    }
+  ],
+  "screenshots": [
+    {
+      "path": "docs/screens/m8-effects-range/m8-range-agm158-soil-smoke.png",
+      "sha256": "68bb460e1788af6ee8aa66f60e5ee77b97b78b1283b9595c731c187f876f9ad0",
+      "native_unedited": true
+    },
+    {
+      "path": "docs/screens/m8-effects-range/m8-range-classic-hydra-smoke.png",
+      "sha256": "197771f13bd2cba5b75c6e5f2ec10c6c0a43e94cd6d44d865cdec800ff59c0c0",
+      "native_unedited": true
+    },
+    {
+      "path": "docs/screens/m8-effects-range/m8-range-entry-menu.png",
+      "sha256": "3dacc77ad0935e4bf9e57403263532f3bd25542cfbbc36373fe887964475e2d7",
+      "native_unedited": true
+    },
+    {
+      "path": "docs/screens/m8-effects-range/m8-range-gbu57-soil-night-smoke.png",
+      "sha256": "4d55640026ee1e29b6556718b0618ef6de5c10a6dbdc996162928f99e37d0dab",
+      "native_unedited": true
+    },
+    {
+      "path": "docs/screens/m8-effects-range/m8-range-hydra-sand-smoke.png",
+      "sha256": "d780697396eb44ba872341cd88207d20071334b016bc1a28e146acaa0a7e47ad",
+      "native_unedited": true
+    },
+    {
+      "path": "docs/screens/m8-effects-range/m8-range-hydra-water-smoke.png",
+      "sha256": "930fce970265af6b7a0dc84eddd5d7c02e67b78ca5fba9815ba8463b13ee59ce",
+      "native_unedited": true
+    },
+    {
+      "path": "docs/screens/m8-effects-range/m8-range-mk82-stone-smoke.png",
+      "sha256": "27082acc2e2dd1e050f4c92b8c2867634404f14d362479e90803a379ce6b5a56",
+      "native_unedited": true
+    },
+    {
+      "path": "docs/screens/m8-effects-range/m8-range-modern-mk82-smoke.png",
+      "sha256": "feb584500af0094462150b9732f6179a432db6a864a22cb26614fae824b6792a",
+      "native_unedited": true
+    },
+    {
+      "path": "docs/screens/m8-effects-range/m8-range-ready-menu.png",
+      "sha256": "debd6cd5a730fbba6eb19e0951ce91104f547f5342bf70a9cbc9ed5a3ae18e33",
+      "native_unedited": true
+    }
+  ],
+  "limits": {
+    "sessions": 4,
+    "reset_block_operations_per_server_tick": 2048,
+    "pad_width": 49,
+    "pad_depth": 12,
+    "clear_air_height": 32
+  },
+  "native_concurrent_sessions_tested": 1,
+  "gui_minimum_tested": [
+    320,
+    240
+  ],
+  "target_fps": 60,
+  "target_hardware": "RTX 3060 8 GB, Ryzen 7 7800X3D, 1080p",
+  "target_hardware_measured": false,
+  "native_fixture": "Actual UI entry, production weapon/projectile impacts, isolated lighting, reset and real return-state verification. No synthetic replacement explosions. Temporary terrain loot is suppressed in reserved spectator pads.",
+  "feature_unit_results": {
+    "tests": 525,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "integration_validation": {
+    "base_main": "f338528aeef0a67c019e169130119c1238c44665",
+    "combined_unit_tests": 528,
+    "additional_vulkan_ui_real_impact_and_return_passed": true
+  }
+}

@@ -483,9 +483,10 @@ change original weapon craters. Existing upstream features count as foundations 
   markings/identifiers and restrained wear choices. Persist and sync selections with validation;
   avoid replacing Claude's broken-section/wreck artwork.
   [Controls and profile coverage](M8_AIRCRAFT_CUSTOMIZATION.md) · [native examples](M8_AIRCRAFT_CUSTOMIZATION_GALLERY.md).
-- [ ] **Effects test range:** a player-facing controlled comparison of weapons, lighting and
+- [x] **Effects test range:** a player-facing controlled comparison of weapons, lighting and
   quality presets, with reset/cleanup and a clear singleplayer/operator boundary. Use actual
   production effects and distinguish frame-rate measurements from particle counts.
+  [Controls, isolation and limits](M8_EFFECTS_TEST_RANGE.md) · [real impact examples](M8_EFFECTS_TEST_RANGE_GALLERY.md).
 
 The earlier graphics follow-up batch is complete. This new approved batch is separate from
 hardware and player acceptance, which remain outstanding throughout implementation.

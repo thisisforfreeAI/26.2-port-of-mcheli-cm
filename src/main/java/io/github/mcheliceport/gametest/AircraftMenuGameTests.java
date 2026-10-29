@@ -21,10 +21,25 @@ final class AircraftMenuGameTests {
     }
 
     static void register() {
+        ModGameTests.test("effects_range_permission_boundary", 20, AircraftMenuGameTests::rangePermission);
         ModGameTests.test("aircraft_appearance_menu_and_save", 30, AircraftMenuGameTests::appearance);
         ModGameTests.test("aircraft_command_needs_operator", 20, AircraftMenuGameTests::command);
     }
 
+
+    private static void rangePermission(GameTestHelper h) {
+        // The connected helper reports CREATIVE; permission is independent of that game mode.
+        var player=h.makeMockServerPlayerInLevel();var original=player.level().dimension();var originalMode=player.gameMode();
+        check(h,!io.github.mcheliceport.effectrange.EffectsRange.allowed(player),"ordinary players cannot enter range");
+        check(h,!io.github.mcheliceport.effectrange.EffectsRange.act(player,0,0,0,0),"unprivileged request rejected");
+        check(h,player.level().dimension().equals(original)&&player.gameMode()==originalMode,"denial preserves world and mode");
+        var players=h.getLevel().getServer().getPlayerList();var id=new NameAndId(player.getGameProfile());
+        try {players.op(id,Optional.of(LevelBasedPermissionSet.GAMEMASTER),Optional.of(false));
+            check(h,io.github.mcheliceport.effectrange.EffectsRange.allowed(player),"game master can use range");
+            check(h,!io.github.mcheliceport.effectrange.EffectsRange.act(player,0,99,0,0),"malformed options rejected");
+        } finally {players.deop(id);}
+        check(h,player.level().dimension().equals(original),"invalid options never teleport");h.succeed();
+    }
 
     private static void appearance(GameTestHelper h) {
         var heli=GameTestSupport.spawn(h,GameTestSupport.AH64,new Vec3(6.5,1,6.5),0);
