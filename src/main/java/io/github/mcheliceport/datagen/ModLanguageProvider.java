@@ -32,6 +32,11 @@ public class ModLanguageProvider extends LanguageProvider {
     }
 
     private void english() {
+        add("mcheli_ce_port.cockpit.engine", "ENG");
+        add("mcheli_ce_port.cockpit.fuel", "FUEL");
+        add("mcheli_ce_port.cockpit.hull", "HULL");
+        add("mcheli_ce_port.cockpit.radar", "RDR");
+        add("mcheli_ce_port.configuration.cockpitFeedback", "Cockpit feedback");
         add("mcheli.effects.blood", "Vehicle-kill blood: %s");
         add("mcheli.effects.blood.tip", "Blood from conventional MC Heli vehicle kills of supported mobs. NTM guns and payloads keep their own gore. Requires Enhanced effects.");
         add("mcheli.effects.menu", "MC Heli Effects…");
