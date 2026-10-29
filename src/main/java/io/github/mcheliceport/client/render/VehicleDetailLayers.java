@@ -30,5 +30,10 @@ public final class VehicleDetailLayers {
         int count=groups.stream().mapToInt(McheliModel.Group::vertexCount).sum();if(count==0)return false;vertices+=count;
         render.detailDraws.add(new AircraftRenderState.DetailDraw(texture,new Matrix4f(pose),List.copyOf(groups),color));return true;
     }
+    /** A layer whose opacity varies per vertex ({@code weights}, 0 to 1); never dropped for budget, like {@link #require}. */
+    public static boolean require(AircraftRenderState render,Matrix4f pose,Identifier texture,McheliModel.Group group,int color,float[] weights){
+        if(render.far||render.thermal||group.vertexCount()==0||weights.length!=group.vertexCount())return false;vertices+=group.vertexCount();
+        render.detailDraws.add(new AircraftRenderState.DetailDraw(texture,new Matrix4f(pose),List.of(group),color,weights));return true;
+    }
     public static int vertices(){return vertices;}
 }

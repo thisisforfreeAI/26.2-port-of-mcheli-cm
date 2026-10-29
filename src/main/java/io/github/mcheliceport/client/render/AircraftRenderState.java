@@ -22,7 +22,10 @@ public class AircraftRenderState extends EntityRenderState {
     public boolean surfaceShade;
     public float contactShadowRadius = 2;
     public final List<AircraftPartPoses.Draw> draws = new ArrayList<>();
-    public record DetailDraw(Identifier texture,Matrix4f pose,List<McheliModel.Group> groups,int color){}
+    /** {@code weights}, when set, scales the alpha of each vertex of the single group in {@code groups}. */
+    public record DetailDraw(Identifier texture,Matrix4f pose,List<McheliModel.Group> groups,int color,float[] weights){
+        public DetailDraw(Identifier texture,Matrix4f pose,List<McheliModel.Group> groups,int color){this(texture,pose,groups,color,null);}
+    }
     public final List<DetailDraw> detailDraws=new ArrayList<>();
     public final List<AircraftMarkings.Draw> markingDraws=new ArrayList<>();
     public final List<VehicleImpactMarks.Draw> impactDraws = new ArrayList<>();
