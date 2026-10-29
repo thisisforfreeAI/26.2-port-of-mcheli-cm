@@ -24,7 +24,11 @@ public final class LoosePanelLook {
             initialized=true;previous=damage;return crossed;
         }
     }
-    public static float rattle(float damage,long tick,int seed) {
-        return (float)Math.sin(tick*2.7+seed)*Math.clamp((damage-.65F)/.35F,0,1)*.035F;
+    /**
+     * Flutter angle of a loose panel, from game time in ticks including the partial tick. Slow enough to
+     * follow smoothly between frames: a step per tick at 2.7 radians read as the panel vibrating.
+     */
+    public static float rattle(float damage,float time,int seed) {
+        return (float)(Math.sin(time*.9+seed)*.7+Math.sin(time*1.7+seed*3)*.3)*Math.clamp((damage-.65F)/.35F,0,1)*.035F;
     }
 }
