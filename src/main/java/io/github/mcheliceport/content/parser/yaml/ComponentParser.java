@@ -458,6 +458,7 @@ public final class ComponentParser {
 
         boolean fixedDirection = false;
         boolean steering = false;
+        boolean m8Only = false;
 
         for (Map.Entry<String, Object> entry : map.entrySet()) {
             switch (entry.getKey()) {
@@ -466,6 +467,7 @@ public final class ComponentParser {
                 }
                 case "FixedDirection" -> fixedDirection = ((Boolean) entry.getValue()).booleanValue();
                 case "Steering" -> steering = ((Boolean) entry.getValue()).booleanValue();
+                case "M8Only" -> m8Only = (Boolean) entry.getValue();
                 case "Pos", "Position" -> pos = parseVector(entry.getValue());
                 case "ColorStart" -> colorStart = parseHexColor((String) entry.getValue());
                 case "ColorEnd" -> colorEnd = parseHexColor((String) entry.getValue());
@@ -483,8 +485,9 @@ public final class ComponentParser {
             throw new IllegalArgumentException("SearchLight must have a position!");
         }
 
-        return new AircraftInfo.SearchLight(pos, colorStart, colorEnd, height, width, fixedDirection, yaw, pitch,
+        var light=new AircraftInfo.SearchLight(pos, colorStart, colorEnd, height, width, fixedDirection, yaw, pitch,
                 steering, stRot);
+        light.m8Only=m8Only;return light;
     }
 
     // Yeah yeah its code duplication... Whatever. Ragex made it and now I need to deal with it

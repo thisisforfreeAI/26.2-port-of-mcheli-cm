@@ -284,6 +284,12 @@ public final class TxtParser implements ContentParser {
                     LOGGER.warn("Skipping AddDamageZone '{}' in {}: {}", data, info.name, e.getMessage());
                 }
             }
+            case "addflightlamp" -> {
+                String[] s=info.splitParam(data);
+                if(s.length<6||info.flightLamps.size()>=16)throw new IllegalArgumentException("AddFlightLamp needs type,x,y,z,RGB,radius[,part]; at most 16 lamps");
+                info.flightLamps.add(new AircraftInfo.FlightLamp(info.toVec3(s[1],s[2],s[3]),s.length>6?s[6]:"body",
+                        AircraftInfo.FlightLampKind.valueOf(s[0].toUpperCase(java.util.Locale.ROOT)),info.hex2dec(s[4]),info.toFloat(s[5])));
+            }
             case "enableseasurfaceparticle" -> info.enableSeaSurfaceParticle = info.toBool(data);
             case "addparticlesplash" -> {
                 String[] s = info.splitParam(data);
@@ -311,7 +317,8 @@ public final class TxtParser implements ContentParser {
                     float stRot = s.length >= 10 ? info.toFloat(s[9]) : 0.0F;
                     boolean fixDir = !item.equalsIgnoreCase("AddSearchLight");
                     boolean steering = item.equalsIgnoreCase("AddSteeringSearchLight");
-                    info.searchLights.add(new SearchLight(v, cs, ce, h, w, fixDir, yaw, pitch, steering, stRot));
+                    var light=new SearchLight(v, cs, ce, h, w, fixDir, yaw, pitch, steering, stRot);
+                    light.m8Only=s.length>=11&&info.toBool(s[10]);info.searchLights.add(light);
                 }
             }
             case "addpartlighthatch" -> {

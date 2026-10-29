@@ -25,8 +25,11 @@ public class AircraftRenderState extends EntityRenderState {
     public record DetailDraw(Identifier texture,Matrix4f pose,List<McheliModel.Group> groups,int color){}
     public final List<DetailDraw> detailDraws=new ArrayList<>();
     public final List<VehicleImpactMarks.Draw> impactDraws = new ArrayList<>();
-    public record EmissiveDraw(Identifier texture, Matrix4f pose, List<McheliModel.Group> groups) { }
+    public record EmissiveDraw(Identifier texture, Matrix4f pose, List<McheliModel.Group> groups,int color) {
+        public EmissiveDraw(Identifier texture,Matrix4f pose,List<McheliModel.Group> groups){this(texture,pose,groups,0xFFFFFFFF);}
+    }
     public final List<EmissiveDraw> emissiveDraws = new ArrayList<>();
+    public final List<GlowGeometry.Lamp> flightLamps=new ArrayList<>();
 
     public boolean testMode;
     public float yaw;

@@ -32,6 +32,7 @@ public class ModLanguageProvider extends LanguageProvider {
     }
 
     private void english() {
+        add("mcheli_ce_port.configuration.nightFlightLighting", "Night-flight lighting");
         add("mcheli_ce_port.configuration.landingFeedback", "Landing feedback");
         add("mcheli_ce_port.sound.rocket_flyby", "Rocket rushes past");
         add("mcheli_ce_port.sound.shell_flyby", "Cannon shell whizzes past");

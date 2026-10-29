@@ -1434,6 +1434,12 @@ public final class YamlEmitter {
 
         if (info.particlesScale != dummyInfo.particlesScale) render.put("ParticleScale", info.particlesScale);
         if (info.machOneSpeed != dummyInfo.machOneSpeed) render.put("MachOneSpeed", info.machOneSpeed);
+        if(!info.flightLamps.isEmpty()){
+            var lamps=new ArrayList<Map<String,Object>>();
+            for(var lamp:info.flightLamps){var m=new LinkedHashMap<String,Object>();m.put("Position",vec(lamp.position()));m.put("PartName",lamp.part());
+                m.put("Type",lamp.kind().name());m.put("Color",String.format(java.util.Locale.ROOT,"0x%06X",lamp.color()));m.put("Radius",lamp.radius());lamps.add(m);}
+            render.put("FlightLamps",lamps);
+        }
         if (!info.engineOutlets.isEmpty()) {
             List<Map<String, Object>> outlets = new ArrayList<>();
             for (AircraftInfo.EngineOutlet outlet : info.engineOutlets) {
@@ -2085,6 +2091,7 @@ public final class YamlEmitter {
                 if (sl.stRot != 0) m.put("StRot", sl.stRot);
                 if (sl.fixDir) m.put("FixedDirection", true);
                 if (sl.steering) m.put("Steering", true);
+                if (sl.m8Only) m.put("M8Only", true);
                 list.add(m);
             }
             components.put("SearchLight", list);

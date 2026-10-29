@@ -17,6 +17,27 @@ PhysicalProperties:
   Speed: 1.1
   RotationSnapValue: 0.0
 Render:
+  FlightLamps:
+  - Type: NAVIGATION
+    Position: [7.3, 2.49, -10.93]
+    Color: "FF4040"
+    Radius: 0.09
+  - Type: NAVIGATION
+    Position: [-7.3, 2.49, -10.93]
+    Color: "40FF80"
+    Radius: 0.09
+  - Type: STROBE
+    Position: [7.3, 2.53, -10.93]
+    Color: "FFFFFF"
+    Radius: 0.08
+  - Type: STROBE
+    Position: [-7.3, 2.53, -10.93]
+    Color: "FFFFFF"
+    Radius: 0.08
+  - Type: COCKPIT
+    Position: [0, 3, 1.6]
+    Color: "93BFAD"
+    Radius: 0.7
   MachOneSpeed: 0.44
   ParticleScale: 0.7
   EnableSeaSurfaceParticle: true
@@ -115,6 +136,15 @@ PlaneFeatures:
   EnableVtol: false
   EnableAutoPilot: false
 Components:
+  SearchLight:
+  - Position: [0, 0.75, -1.895]
+    FixedDirection: true
+    Height: 48.0
+    Width: 9.0
+    Pitch: 12.0
+    ColorStart: "0x60FFF2DA"
+    ColorEnd: "0x00FFF2DA"
+    M8Only: true
   Canopy:
   - Position: [0.0, 3.57, -2.87]
     Rotation: [-1.0, 0.0, 0.0]

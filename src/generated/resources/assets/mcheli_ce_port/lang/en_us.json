@@ -172,6 +172,7 @@
   "mcheli_ce_port.configuration.mouseControlFlightSimMode": "Flight Sim Mode",
   "mcheli_ce_port.configuration.mouseControlStickModeHeli": "Stick Mode (Helicopters)",
   "mcheli_ce_port.configuration.mouseSensitivity": "Mouse Sensitivity",
+  "mcheli_ce_port.configuration.nightFlightLighting": "Night-flight lighting",
   "mcheli_ce_port.configuration.onDemandModelLifetimeSeconds": "On-Demand Model Lifetime",
   "mcheli_ce_port.configuration.onDemandModels": "Load Models on Demand",
   "mcheli_ce_port.configuration.persistentWrecks": "Persistent Wrecks",

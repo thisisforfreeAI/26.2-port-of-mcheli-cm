@@ -5,6 +5,7 @@
 # M8 adds two cosmetic outlets to AH-64, MH-60G and MH-60L DAP stock YAML definitions.
 # They are deliberately absent from the pinned legacy TXT fixtures.
 # Supported jets additionally declare cosmetic MachOneSpeed mappings for M8; flight speed is unchanged.
+# F-35A, F-15E and A-10 YAML declare M8 flight lamps and optional landing lights; legacy fixtures stay pinned.
 # Three stock YAML recipes repair legacy mistakes: Robinson R44 binds its boat key to F,
 # PZL M-18 binds its water-bucket key to P, and US-2 accepts any potion rather than legacy metadata 8193.
 #
@@ -792,3 +793,9 @@ planes/su-47.machOneSpeed: 0.0 vs 0.73
 planes/su37.machOneSpeed: 0.0 vs 0.51
 planes/tornado-gr4.machOneSpeed: 0.0 vs 0.55
 planes/tornado-ids.machOneSpeed: 0.0 vs 0.55
+planes/f-35a.flightLamps: size 0 vs 5
+planes/f-35a.searchLights: size 0 vs 1
+planes/f-15e.flightLamps: size 0 vs 5
+planes/f-15e.searchLights: size 0 vs 1
+planes/a-10.flightLamps: size 0 vs 5
+planes/a-10.searchLights: size 0 vs 1

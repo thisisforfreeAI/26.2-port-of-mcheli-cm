@@ -1,6 +1,10 @@
 // Opt-in, development-only scene. Never included by a normal build or run.
 gradle.projectsEvaluated {
     def project = gradle.rootProject
+    if(Boolean.getBoolean('mcheli.probeNightLighting'))project.sourceSets.main.java.exclude('io/github/mcheliceport/probe/EffectsProbe.java')
+    project.neoForge.runs.client.systemProperty('mcheli.probeNightLighting',System.getProperty('mcheli.probeNightLighting','false'))
+    project.neoForge.runs.client.systemProperty('mcheli.probeNightStart',System.getProperty('mcheli.probeNightStart','0'))
+    project.neoForge.runs.client.systemProperty('mcheli.probeNightEnd',System.getProperty('mcheli.probeNightEnd','16'))
     if(Boolean.getBoolean('mcheli.probeLanding'))project.sourceSets.main.java.exclude('io/github/mcheliceport/probe/EffectsProbe.java')
     project.neoForge.runs.client.systemProperty('mcheli.probeLanding',System.getProperty('mcheli.probeLanding','false'))
     project.neoForge.runs.client.systemProperty('mcheli.probeLandingStart',System.getProperty('mcheli.probeLandingStart','0'))

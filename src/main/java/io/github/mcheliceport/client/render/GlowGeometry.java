@@ -48,20 +48,39 @@ public final class GlowGeometry {
 
     /** Cached terrain top face, relative to its explosion; corner strengths include distance falloff. */
     public record Surface(float x0, float x1, float y, float z0, float z1, float a, float b, float c, float d) {}
+    public record Lamp(Vec3 position,float radius,int color,float alpha){}
 
     public static void surfaces(PoseStack pose, SubmitNodeCollector collector, List<Surface> surfaces,
             float alpha, int count) {
+        surfaces(pose,collector,surfaces,alpha,count,0xFFAC50);
+    }
+    public static void surfaces(PoseStack pose, SubmitNodeCollector collector, List<Surface> surfaces,
+            float alpha, int count,int color) {
         collector.submitCustomGeometry(pose, TYPE, (matrix, buffer) -> {
             for (int i = 0; i < count; i++) {
                 Surface s = surfaces.get(i);
-                int a = argb(0xFFAC50, alpha * s.a), b = argb(0xFFAC50, alpha * s.b);
-                int c = argb(0xFFAC50, alpha * s.c), d = argb(0xFFAC50, alpha * s.d);
+                int a = argb(color, alpha * s.a), b = argb(color, alpha * s.b);
+                int c = argb(color, alpha * s.c), d = argb(color, alpha * s.d);
                 vertex(buffer, matrix, s.x0, s.y, s.z0, a);
                 vertex(buffer, matrix, s.x0, s.y, s.z1, b);
                 vertex(buffer, matrix, s.x1, s.y, s.z1, c);
                 vertex(buffer, matrix, s.x0, s.y, s.z0, a);
                 vertex(buffer, matrix, s.x1, s.y, s.z1, c);
                 vertex(buffer, matrix, s.x1, s.y, s.z0, d);
+            }
+        });
+    }
+    /** All small lamps on one vehicle share one geometry submission and the existing glow material. */
+    public static void lamps(PoseStack stack,SubmitNodeCollector collector,CameraRenderState camera,List<Lamp> lamps){
+        if(lamps.isEmpty())return;var snapshot=List.copyOf(lamps);
+        var right=new org.joml.Vector3f(1,0,0).rotate(camera.orientation);var up=new org.joml.Vector3f(0,1,0).rotate(camera.orientation);
+        collector.submitCustomGeometry(stack,TYPE,(pose,buffer)->{
+            for(var lamp:snapshot){var p=lamp.position;int center=argb(lamp.color,lamp.alpha),rim=argb(lamp.color,0);
+                for(int i=0;i<SEGMENTS;i++){
+                    vertex(buffer,pose,(float)p.x,(float)p.y,(float)p.z,center);
+                    for(int j=i;j<=i+1;j++)vertex(buffer,pose,(float)p.x+(right.x*RIM_X[j]+up.x*RIM_Y[j])*lamp.radius,
+                            (float)p.y+(right.y*RIM_X[j]+up.y*RIM_Y[j])*lamp.radius,(float)p.z+(right.z*RIM_X[j]+up.z*RIM_Y[j])*lamp.radius,rim);
+                }
             }
         });
     }
