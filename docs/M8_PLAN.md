@@ -479,9 +479,10 @@ change original weapon craters. Existing upstream features count as foundations 
   launcher-door sequencing. Respect existing animations, authored mounts and real shot events;
   do not alter weapon fire rates or Claude's weapon-selection logic.
   [Implementation and limits](M8_WEAPON_MECHANISMS.md) · [native examples](M8_WEAPON_MECHANISMS_GALLERY.md).
-- [ ] **Aircraft customization:** expose existing selectable liveries and add supported
+- [x] **Aircraft customization:** expose existing selectable liveries and add supported
   markings/identifiers and restrained wear choices. Persist and sync selections with validation;
   avoid replacing Claude's broken-section/wreck artwork.
+  [Controls and profile coverage](M8_AIRCRAFT_CUSTOMIZATION.md) · [native examples](M8_AIRCRAFT_CUSTOMIZATION_GALLERY.md).
 - [ ] **Effects test range:** a player-facing controlled comparison of weapons, lighting and
   quality presets, with reset/cleanup and a clear singleplayer/operator boundary. Use actual
   production effects and distinguish frame-rate measurements from particle counts.
