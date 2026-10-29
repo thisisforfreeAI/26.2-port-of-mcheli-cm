@@ -41,5 +41,11 @@ controlled aircraft trajectories over real client terrain; they validate effects
 not piloted landing physics. The machine-readable record is
 [landing-feedback.json](performance/m8-realism/landing-feedback.json).
 
+All 501 combined-main local unit tests pass, including Claude's subsequent wreck fixes.
+Three Vulkan landings and nine OpenGL cases pass. The latter cover hard stone contacts,
+initially parked / retracted / disabled / Classic aircraft, teleports, 64-aircraft admission,
+uneven load and water. Load reaches the 32-state / 24-ray / 12-birth bounds with 48 puffs
+alive; normal single-aircraft landings peak at six puffs. Initial parked aircraft emit none.
+
 [Native examples](M8_LANDING_GALLERY.md). Local software Mesa does not establish target-PC
 60 FPS / 1080p on the RTX 3060 / Ryzen 7800X3D.

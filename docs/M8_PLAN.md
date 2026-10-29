@@ -468,8 +468,9 @@ change original weapon craters. Existing upstream features count as foundations 
 - [x] **Flyby audio:** refine existing directional engine audio with bounded Doppler, plus
   conventional rocket/shell approach cues. Avoid duplicate loops, rider Doppler and NTM audio.
   [Implementation and limits](M8_FLYBY_AUDIO.md) · [native examples and cues](M8_FLYBY_GALLERY.md).
-- [ ] **Landing feedback:** supported tire compression and suspension response, touchdown
+- [x] **Landing feedback:** supported tire compression and suspension response, touchdown
   smoke and hard-contact sparks from real contact/motion transitions; no handling changes.
+  [Implementation and limits](M8_LANDING_FEEDBACK.md) · [native examples](M8_LANDING_GALLERY.md).
 - [ ] **Night-flight lighting:** authored navigation strobes, restrained cockpit illumination
   and terrain-connected landing lights. Reuse existing light/ground-patch rendering and
   distance/detail reduction rather than adding an unrestricted world-light simulation.
