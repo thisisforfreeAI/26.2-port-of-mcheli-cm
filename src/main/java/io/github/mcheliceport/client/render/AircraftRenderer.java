@@ -74,7 +74,7 @@ public abstract class AircraftRenderer<T extends AircraftEntity> extends EntityR
         super.extractRenderState(entity, state, partialTicks);
         state.draws.clear();
         state.impactDraws.clear();
-        state.emissiveDraws.clear();state.detailDraws.clear();
+        state.emissiveDraws.clear();state.detailDraws.clear();state.markingDraws.clear();
         state.searchLights.clear();
         state.flightLamps.clear();
         state.boxes.clear();
@@ -155,6 +155,7 @@ public abstract class AircraftRenderer<T extends AircraftEntity> extends EntityR
         VehicleImpactMarks.extract(entity,state);
         io.github.mcheliceport.client.particle.VehicleWeaponHeat.extract(entity,state);
         FlightLighting.extract(entity,state,partialTicks);
+        AircraftMarkings.extract(entity,state);
     }
 
     protected abstract String directory();
@@ -302,6 +303,7 @@ public abstract class AircraftRenderer<T extends AircraftEntity> extends EntityR
                 });
             }
         }
+        AircraftMarkings.submit(state,poseStack,collector);
         if(!state.impactDraws.isEmpty()) {
             var marks=List.copyOf(state.impactDraws);
             int impactLight=state.lightCoords;

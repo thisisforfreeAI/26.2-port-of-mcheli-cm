@@ -221,5 +221,6 @@
   "message.mcheli_ce_port.chain.disconnected": "Tow chain disconnected.",
   "message.mcheli_ce_port.chain.range": "Chain endpoints must be 2 to 16 blocks apart.",
   "message.mcheli_ce_port.chain.selected": "Cargo selected. Right-click the towing vehicle.",
-  "pack.source.mcheli_ce_port.addon": "McHeli addon"
+  "pack.source.mcheli_ce_port.addon": "McHeli addon",
+  "mcheli_ce_port.configuration.aircraftCustomization": "Aircraft markings and wear"
 }

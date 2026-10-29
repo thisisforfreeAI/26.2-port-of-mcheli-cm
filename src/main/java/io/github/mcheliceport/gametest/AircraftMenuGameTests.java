@@ -21,7 +21,33 @@ final class AircraftMenuGameTests {
     }
 
     static void register() {
+        ModGameTests.test("aircraft_appearance_menu_and_save", 30, AircraftMenuGameTests::appearance);
         ModGameTests.test("aircraft_command_needs_operator", 20, AircraftMenuGameTests::command);
+    }
+
+
+    private static void appearance(GameTestHelper h) {
+        var heli=GameTestSupport.spawn(h,GameTestSupport.AH64,new Vec3(6.5,1,6.5),0);
+        var other=GameTestSupport.spawn(h,GameTestSupport.AH64,new Vec3(20.5,1,6.5),0);
+        var player=(ServerPlayer)h.makeMockServerPlayer(GameType.SURVIVAL);
+        player.setPos(heli.position());
+        var look=new io.github.mcheliceport.appearance.AircraftAppearance(127,2,1,1);
+        String texture=heli.getAcInfo().getTextureNames().getLast();
+        check(h,!io.github.mcheliceport.appearance.AircraftAppearance.apply(player,heli.getId(),texture,look.packed()),"closed menu cannot repaint");
+        player.containerMenu=new io.github.mcheliceport.menu.AircraftMenu(3,player.getInventory(),heli);
+        check(h,!io.github.mcheliceport.appearance.AircraftAppearance.apply(player,other.getId(),texture,look.packed()),"wrong menu vehicle rejected");
+        check(h,!io.github.mcheliceport.appearance.AircraftAppearance.apply(player,heli.getId(),"../unknown",look.packed()),"arbitrary texture rejected");
+        check(h,!io.github.mcheliceport.appearance.AircraftAppearance.apply(player,heli.getId(),texture,-1),"malformed packed appearance rejected");
+        check(h,io.github.mcheliceport.appearance.AircraftAppearance.apply(player,heli.getId(),texture,look.packed()),"nearby menu applies valid paint");
+        check(h,heli.getAppearance().equals(look)&&heli.getTextureName().equals(texture),"synced selection matches");
+        player.setPos(other.position());
+        check(h,!io.github.mcheliceport.appearance.AircraftAppearance.apply(player,heli.getId(),texture,0),"stale distant menu rejected");
+        var saved=net.minecraft.world.level.storage.TagValueOutput.createWithContext(net.minecraft.util.ProblemReporter.DISCARDING,h.getLevel().registryAccess());heli.save(saved);
+        var loaded=GameTestSupport.spawn(h,GameTestSupport.AH64,new Vec3(6.5,1,20.5),0);
+        loaded.load(net.minecraft.world.level.storage.TagValueInput.create(net.minecraft.util.ProblemReporter.DISCARDING,h.getLevel().registryAccess(),saved.buildResult()));
+        check(h,loaded.getAppearance().equals(look)&&loaded.getTextureName().equals(texture),"livery and cosmetic selections persist");
+        player.containerMenu=player.inventoryMenu;
+        GameTestSupport.cleanUp(heli);GameTestSupport.cleanUp(other);GameTestSupport.cleanUp(loaded);h.succeed();
     }
 
     /**

@@ -156,6 +156,7 @@ public final class AircraftModels {
         var loaded=new VehicleModels(body, Map.copyOf(parts));
         if(info instanceof io.github.mcheliceport.content.aircraft.PlaneInfo plane)LandingGearMesh.prepare(plane,loaded);
         CockpitLightMesh.prepare(info,loaded);
+        AircraftMarkingMesh.prepare(info.name,body);
         return loaded;
     }
 
@@ -287,6 +288,7 @@ public final class AircraftModels {
             VehicleImpactSurface.clear();
             LandingGearMesh.clear();
             CockpitLightMesh.clear();
+            AircraftMarkingMesh.clear();
             VehicleSkinMeshes.clear();
             BreakupMeshes.clear();
             io.github.mcheliceport.client.render.WreckAppearance.clear();

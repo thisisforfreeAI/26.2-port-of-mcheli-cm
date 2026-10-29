@@ -1,6 +1,10 @@
 // Opt-in, development-only scene. Never included by a normal build or run.
 gradle.projectsEvaluated {
     def project = gradle.rootProject
+    if(Boolean.getBoolean('mcheli.probeAppearance'))project.sourceSets.main.java.exclude('io/github/mcheliceport/probe/EffectsProbe.java')
+    project.neoForge.runs.client.systemProperty('mcheli.probeAppearance',System.getProperty('mcheli.probeAppearance','false'))
+    project.neoForge.runs.client.systemProperty('mcheli.probeAppearanceStart',System.getProperty('mcheli.probeAppearanceStart','0'))
+    project.neoForge.runs.client.systemProperty('mcheli.probeAppearanceEnd',System.getProperty('mcheli.probeAppearanceEnd','7'))
     if(Boolean.getBoolean('mcheli.probeMechanisms'))project.sourceSets.main.java.exclude('io/github/mcheliceport/probe/EffectsProbe.java')
     project.neoForge.runs.client.systemProperty('mcheli.probeMechanisms',System.getProperty('mcheli.probeMechanisms','false'))
     project.neoForge.runs.client.systemProperty('mcheli.probeMechanismStart',System.getProperty('mcheli.probeMechanismStart','0'))
