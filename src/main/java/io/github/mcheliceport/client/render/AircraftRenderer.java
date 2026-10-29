@@ -119,7 +119,7 @@ public abstract class AircraftRenderer<T extends AircraftEntity> extends EntityR
         state.texture = Identifier.fromNamespaceAndPath("mcheli",
                 "textures/" + this.directory() + "/" + entity.getTextureName() + ".png");
         if (entity.isDestroyed()) {
-            state.color = WreckAppearance.enabled()?WreckAppearance.tint():DESTROYED_COLOR;
+            state.color = WreckAppearance.enabled()?WreckAppearance.tint(entity):DESTROYED_COLOR;
         } else if (entity.isIronCurtainActive()) {
             // Upstream's iron curtain tint, pulsing red.
             float f = entity.getIronCurtainFactor(partialTicks);

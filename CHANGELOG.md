@@ -18,6 +18,12 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
   round again. Planes flown by the AI bank into their turns, no longer drift sideways, and circle a
   landed or hovering leader instead of hanging in the air. `ai.difficulty` now also sets how well
   they aim. See `docs/M10_AI_FIRE_CONTROL.md`.
+- Realistic crash wrecks (M8): a destroyed plane's paint chars black over its fire, with embers glowing
+  in the seams; its nose crumples, its canopy shatters and its gear is torn off; it burns in a pool of
+  fuel with black smoke instead of fire blocks; it leaves a burn scar, a skid groove and a debris field
+  of charred skin along its path; and it settles level once it stops. Hulks now stay 10 minutes (new
+  server config `[wrecks]`: `fireBlocks`, `persistentWrecks`, `wreckLifetime`), and
+  `/mcheli clearwrecks [radius]` removes them. See `docs/M8_WRECK_REALISM.md`.
 - Weather and night (M10e): rain gusts flying helicopters and planes (more up high, doubled in a
   storm, with a camera shake), snow above the clouds ices them up and costs up to 10% of top
   speed. Rain and storms shorten radar and heat seeker ranges, night shortens other locks and AI

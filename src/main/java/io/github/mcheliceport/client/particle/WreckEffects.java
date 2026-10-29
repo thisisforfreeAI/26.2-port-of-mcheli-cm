@@ -15,7 +15,9 @@ final class WreckEffects {
         var sequence=WreckSequenceEffects.get(aircraft);
         if(sequence!=null&&sequence.opening!=null&&(sequence.cover||sequence.tail))origins=List.of(sequence.opening);
         int id=aircraft.getId();
+        WreckFuelFire.emit(level,aircraft,cooling,tick);
         float fire=cooling.fire(), density=cooling.smoke();
+        if (density<=0) density=cooling.lingering();
         if (density<=0) return;
         var engine=Minecraft.getInstance().particleEngine;
         Vec3 origin=origins.get(Math.floorMod((int)(tick/45+id),origins.size()));

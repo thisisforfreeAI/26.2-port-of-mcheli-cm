@@ -174,6 +174,7 @@ public final class DebrisMotion {
     /** World offset of a fragment-local point given relative to the centre at spawn. */
     public Vec3 rotated(Vec3 offset){var v=orientation.transform(new Vector3f((float)offset.x,(float)offset.y,(float)offset.z));return new Vec3(v.x,v.y,v.z);}
     public int bounces(){return bounces;}
+    public int age(){return age;}
     public double spinRate(){return spin.length();}
 
     private void rotate() {
