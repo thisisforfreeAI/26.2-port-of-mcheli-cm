@@ -1,0 +1,185 @@
+{
+  "kind": "directional-engine-flybys-and-conventional-incoming-cues",
+  "unit_results": {
+    "tests": 492,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "runs": [
+    {
+      "backend": "VULKAN",
+      "all_passed": true,
+      "master_volume": 1,
+      "output_device": "OpenAL No Output",
+      "scenes": [
+        {
+          "passed": true,
+          "scene": "f-35a",
+          "approach": 1.0670918,
+          "recede": 0.92211616,
+          "peak_engine_voices": 1,
+          "peak_incoming_voices": 0,
+          "cues": 0
+        },
+        {
+          "passed": true,
+          "scene": "f-15e",
+          "approach": 1.0670918,
+          "recede": 0.92211616,
+          "peak_engine_voices": 1,
+          "peak_incoming_voices": 0,
+          "cues": 0
+        },
+        {
+          "passed": true,
+          "scene": "ah-64",
+          "approach": 1.0670918,
+          "recede": 0.92211616,
+          "peak_engine_voices": 1,
+          "peak_incoming_voices": 0,
+          "cues": 0
+        }
+      ]
+    },
+    {
+      "backend": "OPENGL",
+      "all_passed": true,
+      "master_volume": 1,
+      "output_device": "OpenAL No Output",
+      "scenes": [
+        {
+          "passed": true,
+          "scene": "vertical-pass",
+          "approach": 1.0940588,
+          "recede": 0.9199024,
+          "peak_engine_voices": 1,
+          "peak_incoming_voices": 0,
+          "cues": 0
+        },
+        {
+          "passed": true,
+          "scene": "own-pilot",
+          "approach": 1.0,
+          "recede": 1.0,
+          "peak_engine_voices": 1,
+          "peak_incoming_voices": 0,
+          "cues": 0
+        },
+        {
+          "passed": true,
+          "scene": "disabled",
+          "approach": 1.0,
+          "recede": 1.0,
+          "peak_engine_voices": 1,
+          "peak_incoming_voices": 0,
+          "cues": 0
+        },
+        {
+          "passed": true,
+          "scene": "hydra70",
+          "approach": 1.0,
+          "recede": 1.0,
+          "peak_engine_voices": 0,
+          "peak_incoming_voices": 1,
+          "cues": 1
+        },
+        {
+          "passed": true,
+          "scene": "cannon",
+          "approach": 1.0,
+          "recede": 1.0,
+          "peak_engine_voices": 0,
+          "peak_incoming_voices": 1,
+          "cues": 1
+        },
+        {
+          "passed": true,
+          "scene": "agm158-smokeless",
+          "approach": 1.0,
+          "recede": 1.0,
+          "peak_engine_voices": 0,
+          "peak_incoming_voices": 1,
+          "cues": 1
+        },
+        {
+          "passed": true,
+          "scene": "ntm-bypass",
+          "approach": 1.0,
+          "recede": 1.0,
+          "peak_engine_voices": 0,
+          "peak_incoming_voices": 0,
+          "cues": 0
+        },
+        {
+          "passed": true,
+          "scene": "projectile-load",
+          "approach": 1.0,
+          "recede": 1.0,
+          "peak_engine_voices": 0,
+          "peak_incoming_voices": 4,
+          "cues": 4
+        },
+        {
+          "passed": true,
+          "scene": "engine-load-low",
+          "approach": 1.0,
+          "recede": 1.0,
+          "peak_engine_voices": 12,
+          "peak_incoming_voices": 0,
+          "cues": 0
+        },
+        {
+          "passed": true,
+          "scene": "engine-load-balanced",
+          "approach": 1.0,
+          "recede": 1.0,
+          "peak_engine_voices": 24,
+          "peak_incoming_voices": 0,
+          "cues": 0
+        },
+        {
+          "passed": true,
+          "scene": "classic",
+          "approach": 1.0,
+          "recede": 1.0,
+          "peak_engine_voices": 1,
+          "peak_incoming_voices": 0,
+          "cues": 0
+        }
+      ]
+    }
+  ],
+  "screenshots": [
+    {
+      "path": "docs/screens/m8-flyby-audio/ah-64.png",
+      "sha256": "2a7bc00513311032d9747455f4862ff9061da3e9906a3170713c67ca678c45ce",
+      "native_unedited": true
+    },
+    {
+      "path": "docs/screens/m8-flyby-audio/f-15e.png",
+      "sha256": "04577377d51b29543764563bee7c80623e3b8a055d4409d350e73af31646acdc",
+      "native_unedited": true
+    },
+    {
+      "path": "docs/screens/m8-flyby-audio/f-35a.png",
+      "sha256": "3637f1c41fa5087a9340cd37dc09b82d2333248a95ff1fdc40f5f4ed9138fb85",
+      "native_unedited": true
+    }
+  ],
+  "limits": {
+    "engine_voices_low_balanced_high": [
+      12,
+      24,
+      32
+    ],
+    "projectile_tracks": 128,
+    "considered_projectiles_per_tick": 256,
+    "incoming_voices": 4,
+    "incoming_start_spacing_ticks": 5
+  },
+  "target_fps": 60,
+  "target_hardware": "RTX 3060 8 GB, Ryzen 7 7800X3D, 1080p",
+  "target_hardware_measured": false,
+  "audible_mix_reviewed": false
+}

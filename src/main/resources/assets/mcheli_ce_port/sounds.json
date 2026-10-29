@@ -1,4 +1,12 @@
 {
+  "m8_rocket_flyby": {
+    "subtitle": "mcheli_ce_port.sound.rocket_flyby",
+    "sounds": ["mcheli_ce_port:m8_rocket_flyby"]
+  },
+  "m8_shell_flyby": {
+    "subtitle": "mcheli_ce_port.sound.shell_flyby",
+    "sounds": ["mcheli_ce_port:m8_shell_flyby"]
+  },
   "m8_sonic_boom": {
     "subtitle": "mcheli_ce_port.sound.sonic_boom",
     "sounds": [

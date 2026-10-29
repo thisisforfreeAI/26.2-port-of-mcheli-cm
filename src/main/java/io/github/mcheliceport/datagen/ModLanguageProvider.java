@@ -32,6 +32,9 @@ public class ModLanguageProvider extends LanguageProvider {
     }
 
     private void english() {
+        add("mcheli_ce_port.sound.rocket_flyby", "Rocket rushes past");
+        add("mcheli_ce_port.sound.shell_flyby", "Cannon shell whizzes past");
+        add("mcheli_ce_port.configuration.flybyAudio", "Flyby audio");
         add("mcheli_ce_port.sound.sonic_boom", "Sonic boom");
         add("mcheli_ce_port.configuration.supersonicEffects", "Supersonic effects");
         add("mcheli_ce_port.cockpit.engine", "ENG");
