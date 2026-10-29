@@ -36,6 +36,9 @@ public final class WeaponClientHooks {
         /** Upstream {@code MCH_EntityCartridge#spawnCartridge}. */
         void spawnCartridge(Level level, CartridgeInfo cartridge, double x, double y, double z, double mx,
                 double my, double mz, float yaw, float pitch);
+        /** Owner-aware presentation; existing hook implementations retain the original callback. */
+        default void spawnCartridge(Level level,CartridgeInfo cartridge,double x,double y,double z,double mx,double my,double mz,float yaw,float pitch,
+                io.github.mcheliceport.content.weapon.WeaponInfo owner){spawnCartridge(level,cartridge,x,y,z,mx,my,mz,yaw,pitch);}
 
         /** The render view position (upstream {@code RenderManager.viewerPos}), for laser designation. */
         Vec3 viewPosition();
@@ -102,6 +105,10 @@ public final class WeaponClientHooks {
         if (h != null && cartridge != null && level.isClientSide()) {
             h.spawnCartridge(level, cartridge, x, y, z, mx, my, mz, yaw, pitch);
         }
+    }
+    public static void spawnCartridge(Level level,@Nullable CartridgeInfo cartridge,double x,double y,double z,double mx,double my,double mz,float yaw,float pitch,
+            io.github.mcheliceport.content.weapon.WeaponInfo owner){
+        Hooks h=hooks;if(h!=null&&cartridge!=null&&level.isClientSide())h.spawnCartridge(level,cartridge,x,y,z,mx,my,mz,yaw,pitch,owner);
     }
 
     public static void weaponHeat(net.minecraft.world.entity.Entity shooter,int mount,io.github.mcheliceport.content.weapon.WeaponInfo info,Vec3 position,float yaw,float pitch){

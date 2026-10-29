@@ -86,7 +86,8 @@ public final class WeaponPartPoses {
                     ws != null ? ws.getTurretYaw() : 0.0F, prevYaw + (yaw - prevYaw) * t,
                     prevPitch + (pitch - prevPitch) * t, ws != null ? ws.getDefYaw() : 0.0F,
                     recoil(weapons, ws, part.name, t),
-                    ws != null ? ws.getPrevRotBarrel() + (ws.getRotBarrel() - ws.getPrevRotBarrel()) * t : 0.0F,
+                    ws != null ? part.rotBarrel&&WeaponMechanisms.refine(ws)?WeaponMechanisms.barrel(ws,t)
+                            :ws.getPrevRotBarrel() + (ws.getRotBarrel() - ws.getPrevRotBarrel()) * t : 0.0F,
                     childRecoil);
             weaponIndex++;
         }
@@ -99,15 +100,18 @@ public final class WeaponPartPoses {
             return 0.0F;
         }
         WeaponSet.Recoil r = ws.recoilBuffer[0];
+        WeaponSet selected=ws;
         if (names.length > 1) {
             for (String name : names) {
                 WeaponSet linked = weapons.getWeaponByName(name);
                 if (linked != null && linked.recoilBuffer.length > 0 && linked.recoilBuffer[0].recoilBuf > r.recoilBuf) {
                     r = linked.recoilBuffer[0];
+                    selected=linked;
                 }
             }
         }
-        return r.prevRecoilBuf + (r.recoilBuf - r.prevRecoilBuf) * t;
+        float value=r.prevRecoilBuf + (r.recoilBuf - r.prevRecoilBuf) * t;
+        return WeaponMechanisms.refine(selected)?WeaponMechanismLook.recoil(value):value;
     }
 
     public static float[] weaponBays(AircraftEntity ac, float t) {
@@ -115,6 +119,7 @@ public final class WeaponPartPoses {
         float[] rot = new float[bays.length];
         for (int i = 0; i < bays.length; i++) {
             rot[i] = bays[i].prevRot + (bays[i].rot - bays[i].prevRot) * t;
+            rot[i]=WeaponMechanisms.bay(ac,i,rot[i]);
         }
         return rot;
     }

@@ -128,15 +128,29 @@ public final class WeaponClient implements WeaponClientHooks.Hooks {
             double my, double mz, float yaw, float pitch) {
         WeaponEffects.spawnCartridge(level, cartridge, x, y, z, mx, my, mz, yaw, pitch);
     }
+    @Override public void spawnCartridge(Level level,CartridgeInfo cartridge,double x,double y,double z,double mx,double my,double mz,float yaw,float pitch,
+            io.github.mcheliceport.content.weapon.WeaponInfo owner){
+        boolean refined=io.github.mcheliceport.client.render.WeaponMechanisms.enabled()
+                &&io.github.mcheliceport.client.render.WeaponMechanisms.conventional(owner)&&"cartridge".equalsIgnoreCase(cartridge.name);
+        if(refined){
+            float scale=io.github.mcheliceport.client.render.WeaponMechanismLook.authoredCaseScale(owner.name,cartridge.scale);
+            cartridge=new CartridgeInfo(cartridge.name,cartridge.acceleration,cartridge.yaw,cartridge.pitch,cartridge.bound,cartridge.gravity,scale);
+        }
+        WeaponEffects.spawnCartridge(level,cartridge,x,y,z,mx,my,mz,yaw,pitch,refined);
+    }
 
     @Override
     public void weaponShot(Level level, Vec3 position, Vec3 motion, io.github.mcheliceport.content.weapon.WeaponInfo info,
             float yaw, float pitch) {
         io.github.mcheliceport.client.particle.WeaponGroundEffects.shot(level, position, info, yaw, pitch);
         if (io.github.mcheliceport.config.EffectQuality.enhanced() && info.cartridge == null
+                && io.github.mcheliceport.client.render.WeaponMechanisms.conventional(info)
                 && ("machinegun1".equals(info.type) || "machinegun2".equals(info.type))) {
-            WeaponEffects.spawnCartridge(level, new CartridgeInfo("cartridge", 0.18F, 90, -15, 0.35F, -0.04F, 0.35F),
-                    position.x, position.y, position.z, motion.x, motion.y + 0.04, motion.z, yaw, pitch);
+            boolean refined=io.github.mcheliceport.client.render.WeaponMechanisms.enabled();
+            if(refined&&io.github.mcheliceport.client.render.WeaponMechanismLook.retainsCases(info.name))return;
+            float scale=refined?io.github.mcheliceport.client.render.WeaponMechanismLook.caseScale(info.name):.35F;
+            WeaponEffects.spawnCartridge(level, new CartridgeInfo("cartridge", 0.18F, 90, -15, 0.35F, -0.04F, scale),
+                    position.x, position.y, position.z, motion.x, motion.y + 0.04, motion.z, yaw, pitch,refined);
         }
     }
 

@@ -210,6 +210,7 @@
   "mcheli_ce_port.configuration.title": "McHeli CE (26.2 Port) Configuration",
   "mcheli_ce_port.configuration.vehicles": "Vehicles",
   "mcheli_ce_port.configuration.vehiclesIcon": "Vehicles Tab Icon",
+  "mcheli_ce_port.configuration.weaponMechanisms": "Weapon mechanisms",
   "mcheli_ce_port.configuration.weapons": "Weapons",
   "mcheli_ce_port.configuration.wreckLifetime": "Wreck Lifetime",
   "mcheli_ce_port.configuration.wrecks": "Wrecks",
