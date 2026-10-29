@@ -192,19 +192,21 @@ public final class LoosePanels {
             io.github.mcheliceport.client.particle.BreakawayEffects.trail(world,edge(p),p.velocity(),p.age,p.restAge>=0?p.age-p.restAge:-1,p.owner.getId());
         // Pieces at the ground are swept every tick; the rest share two round-robin rays a tick.
         var swept=Collections.newSetFromMap(new IdentityHashMap<Piece,Boolean>());
-        for(var p:PIECES)if(p.motion.moving()&&nearGround(world,p.motion)){swept.add(p);sweep(p);}
+        for(var p:PIECES)if(p.motion.moving()&&nearGround(world,p.motion)||p.motion.checkSupport()){swept.add(p);sweep(p);}
         int moving=(int)PIECES.stream().filter(p->p.motion.moving()&&!swept.contains(p)).count();
         for(int i=0,tries=0;i<2&&moving>0&&tries<PIECES.size();tries++){
             var p=PIECES.get(Math.floorMod(collisionCursor++,PIECES.size()));if(!p.motion.moving()||swept.contains(p))continue;i++;sweep(p);
         }
     }
+
     private static void sweep(Piece p){
         var m=p.motion;Vec3 from=m.sweepFrom(),to=m.sweepTo();
         if(!world.hasChunkAt(BlockPos.containing(from))||!world.hasChunkAt(BlockPos.containing(to)))return;
         var hit=world.clip(new ClipContext(from,to,ClipContext.Block.COLLIDER,
                 m.phase==DebrisMotion.Phase.SUNK?ClipContext.Fluid.NONE:ClipContext.Fluid.ANY,CollisionContext.empty()));
         // A sweep that starts inside terrain (spawned in a hillside) cannot resolve a contact face.
-        if(hit.getType()!=HitResult.Type.BLOCK||hit.isInside()){m.clear();return;}
+        if(hit.getType()!=HitResult.Type.BLOCK){m.clear();return;}
+        if(hit.isInside()){m.blocked();return;}
         boolean water=world.getFluidState(hit.getBlockPos()).is(net.minecraft.tags.FluidTags.WATER);
         var n=new Vec3(hit.getDirection().getStepX(),hit.getDirection().getStepY(),hit.getDirection().getStepZ());
         Vec3 before=m.velocity;var contact=m.contact(hit.getLocation(),n,water);
