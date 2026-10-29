@@ -17,6 +17,21 @@ public final class ModelVertices {
      * corner gets the normal of the triangle's last vertex, which is what upstream's
      * {@code GL_FLAT} shade model lit the triangle with.
      */
+    /** Like {@link #emit}, with each vertex's alpha scaled by its entry in {@code weights}. */
+    public static void emitWeighted(VertexConsumer buffer, PoseStack.Pose pose, McheliModel.Group group, int color,
+            float[] weights, int light) {
+        float[] d = group.data();
+        int stride = McheliModel.STRIDE, alpha = color >>> 24, rgb = color & 0xFFFFFF;
+        for (int t = 0; t + 3 * stride <= d.length; t += 3 * stride) {
+            for (int k = 0; k < 4; k++) {
+                int i = t + Math.min(k, 2) * stride;
+                int a = Math.round(alpha * Math.clamp(weights[i / stride], 0F, 1F));
+                buffer.addVertex(pose, d[i], d[i + 1], d[i + 2]).setColor((a << 24) | rgb).setUv(d[i + 3], d[i + 4])
+                        .setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(pose, d[i + 5], d[i + 6], d[i + 7]);
+            }
+        }
+    }
+
     public static void emit(VertexConsumer buffer, PoseStack.Pose pose, List<McheliModel.Group> groups, int color,
             int light, boolean flat) {
         emit(buffer, pose, groups, color, light, flat, false);

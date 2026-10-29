@@ -19,9 +19,14 @@ public final class WreckAppearance {
  private static final Identifier SOOT=Identifier.fromNamespaceAndPath("mcheli_ce_port","textures/effect/m8_fluid_stains.png");
  static final Identifier CHAR=Identifier.fromNamespaceAndPath("mcheli_ce_port","textures/effect/m8_wreck_char.png");
  static final Identifier EMBERS=Identifier.fromNamespaceAndPath("mcheli_ce_port","textures/effect/m8_wreck_embers.png");
- private static final Identifier METAL=Identifier.withDefaultNamespace("textures/block/iron_block.png");
- /** Hull colour as the fire takes hold, and once the paint has burnt. */
- static final int FRESH_TINT=0xFF8A857E,BURNT_TINT=0xFF55514C;
+ static final Identifier BARE=Identifier.fromNamespaceAndPath("mcheli_ce_port","textures/effect/m8_wreck_bare.png");
+ /** Bare aluminium where the paint peeled, and the bronze heat tint on its hot side. */
+ static final int BARE_TINT=0xB8B4AD,HEAT_TINT=0xC28A52;
+ /**
+  * Hull colour as the fire takes hold, and once the paint has burnt: the paint darkens and greys but
+  * stays readable. The black is in the char layer, heaviest where the fire was.
+  */
+ static final int FRESH_TINT=0xFF928D86,BURNT_TINT=0xFF6C6862;
  private static java.lang.ref.WeakReference<Object> world=new java.lang.ref.WeakReference<>(null);
  public static boolean enabled(){return EffectQuality.enhanced()&&ClientConfig.get(ClientConfig.VEHICLE_DAMAGE_DETAILS);}
  public static float settling(AircraftEntity ac){int age=VehicleAtmosphere.wreckAge(ac);return io.github.mcheliceport.client.particle.WreckSequenceEffects.enabled()?io.github.mcheliceport.client.particle.DestructionTimeline.collapse(age):Math.clamp((age+1)/60F,0,1);}
@@ -54,6 +59,15 @@ public final class WreckAppearance {
  static int lerp(float t,int a,int b){int out=0;for(int shift=0;shift<32;shift+=8){int x=a>>>shift&255,y=b>>>shift&255;out|=Math.round(x+(y-x)*Math.clamp(t,0,1))<<shift;}return out;}
  /** Charred skin opacity for a burn level: thin soot at first, nearly solid once burnt. */
  public static int charColor(float burn){return ((int)(255*(.42F+.53F*Math.clamp(burn,0,1)))<<24)|0xFFFFFF;}
+ /** How far the paint has blistered off around the fire: none until it has burnt a while, full once burnt out. */
+ static float blister(float burn){return Math.clamp((burn-.3F)/.55F,0,1);}
+ /** Fire sources in a part's own model space: the engines (or where the fire was), plus a plane's wing roots. */
+ static List<org.joml.Vector3f> sources(AircraftEntity ac,Matrix4f pose,WreckMesh.Parts mesh,boolean planeBody){
+  var inverse=new Matrix4f(pose).invert();var out=new ArrayList<org.joml.Vector3f>();
+  for(var origin:VehicleAtmosphere.wreckOrigins(ac)){var r=origin.subtract(ac.position());out.add(inverse.transformPosition(new org.joml.Vector3f((float)r.x,(float)r.y,(float)r.z)));}
+  if(planeBody)out.addAll(WreckBurn.wingRoots(mesh.shape()));
+  return out;
+ }
  /** How far the hull drops once its gear is gone: from the gear's lowest point to the hull's, in blocks (0 to 2). */
  static float gearDrop(McheliModel.Group hull,List<AircraftPartPoses.Draw> gear){
   float body=Float.POSITIVE_INFINITY,wheels=Float.POSITIVE_INFINITY;var d=hull.data();
@@ -65,7 +79,7 @@ public final class WreckAppearance {
  }
  public static boolean removable(String n){return n.matches("\\$(canopy|hatch|panel|enginecover|cover)[0-9]*")||n.equals("$track_roller0");}
  public static int removed(AircraftEntity ac){var s=STATES.get(ac);return s==null?0:s.removed;}
- public static void clear(){STATES.clear();world.clear();WreckMesh.clear();}
+ public static void clear(){STATES.clear();world.clear();WreckMesh.clear();WreckBurn.clear();}
  public static void apply(AircraftEntity ac,AircraftRenderState render){
   if(world.get()!=ac.level()){clear();world=new java.lang.ref.WeakReference<>(ac.level());}if(!enabled())return;
   var s=STATES.computeIfAbsent(ac,k->new State());boolean fresh=s.seen&&!s.dead&&ac.isDestroyed();s.seen=true;s.dead=ac.isDestroyed();
@@ -115,9 +129,21 @@ public final class WreckAppearance {
    if(group.name().startsWith("$lg"))pose.translate(0,-.35F*settle,0).rotateZ(.16F*settle);
    if(group.name().equals("$weapon0")&&ac instanceof io.github.mcheliceport.entity.tank.TankEntity){var c=mesh.center();pose.translate(c).rotateZ(-.045F*settle).translate(-c.x,-c.y,-c.z);}
    draws.add(new AircraftPartPoses.Draw(pose,List.of(mesh.shape())));
-   if(!render.thermal)VehicleDetailLayers.require(render,pose,CHAR,List.of(mesh.soot()),charColor(burn));
    VehicleDetailLayers.add(render,pose,render.texture,List.of(mesh.paint()),(int)(0x70*(1.15F-.55F*burn))<<24|0x7E7769);
-   VehicleDetailLayers.add(render,pose,METAL,List.of(mesh.metal()),0xA0807C75);
+   if(!render.thermal){
+    float size=scene!=null&&scene.size()>1?scene.size():Math.max(4,ac.getBbWidth());
+    var fire=WreckBurn.get(mesh.soot(),sources(ac,draw.pose(),mesh,plane&&name.equals("$body")),WreckBurn.radius(size));
+    if(fire==null)VehicleDetailLayers.require(render,pose,CHAR,List.of(mesh.soot()),charColor(burn));
+    else{
+     // Peeled paint and heat tint first, then the char over them, heaviest at the fire.
+     int bare=(int)(235*blister(burn));
+     if(bare>0){
+      VehicleDetailLayers.require(render,pose,BARE,fire.metal().group(),bare<<24|BARE_TINT,fire.metal().weight());
+      VehicleDetailLayers.require(render,pose,BARE,fire.heat().group(),(int)(bare*.7F)<<24|HEAT_TINT,fire.heat().weight());
+     }
+     VehicleDetailLayers.require(render,pose,CHAR,fire.charred().group(),charColor(burn),fire.charred().weight());
+    }
+   }
    if(!render.thermal&&glow>0){
     int tiers=Math.min(mesh.embers().size(),(int)Math.ceil(glow*mesh.embers().size()));
     for(int i=0;i<tiers;i++)if(mesh.embers().get(i).vertexCount()>0)render.emissiveDraws.add(new AircraftRenderState.EmissiveDraw(EMBERS,new Matrix4f(pose),List.of(mesh.embers().get(i))));

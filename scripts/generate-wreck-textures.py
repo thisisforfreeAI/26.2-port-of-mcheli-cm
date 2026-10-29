@@ -2,6 +2,7 @@
 
 m8_wreck_char.png    64x64 tileable soot and blistered paint; transparent pits let surviving paint show.
 m8_wreck_embers.png  64x64 tileable glowing cracks and spots on transparent black (drawn full bright).
+m8_wreck_bare.png    64x64 tileable bare metal where blistered paint peeled: dull brushed aluminium, solid and low contrast.
 m8_wreck_ground.png  192x64 atlas: burn scar, skid groove (tileable along its length), fuel pool.
 """
 from pathlib import Path
@@ -79,6 +80,18 @@ def char(x, y):
     return shade + 24 * warm, shade + 10 * warm, shade * 0.85, (205 + 50 * n) * edge
 
 
+def bare(x, y):
+    # Solid and low in contrast so the tile never reads as a repeating pattern; the ragged edge of the
+    # peeled area comes from the burn's own noise, not from holes in this texture.
+    mottle = fractal(13, x, y, 64, 3)
+    brush = fractal(14, x * 0.15, y * 2, 64, 4)
+    grain = fractal(15, x, y, 64, 5)
+    shade = 132 + 22 * brush + 18 * (mottle - 0.5) + 10 * (grain - 0.5)
+    # Faint oxide where the heat was worst.
+    warm = max(0.0, mottle - 0.6) * 1.5
+    return shade + 6 * warm, shade, shade * 0.94 - 6 * warm, 235
+
+
 def embers(x, y):
     crack = fractal(4, x, y, 64, 3)
     spot = fractal(5, x, y, 64, 4)
@@ -136,4 +149,5 @@ def ground(x, y):
 
 write('m8_wreck_char.png', 64, 64, char)
 write('m8_wreck_embers.png', 64, 64, embers)
+write('m8_wreck_bare.png', 64, 64, bare)
 write('m8_wreck_ground.png', 192, 64, ground)

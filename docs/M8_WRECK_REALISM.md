@@ -9,9 +9,12 @@ and follows the existing Enhanced quality and vehicle damage details settings.
 ## What changed
 
 1. **Burnt-out shell.** The hull starts a shade darker than paint and chars over the first fire
-   (18 seconds): a charred skin layer (`m8_wreck_char.png`) thickens from thin soot to nearly solid,
-   with small flaked pits where some paint survives, and the hull tint darkens. Markings disappear
-   under it. Embers (`m8_wreck_embers.png`, drawn full bright) glow in seams at the engine end and wing
+   (18 seconds). The burn spreads from where the fire was (the engines and, on planes, the wing roots)
+   and fades over a fifth of the airframe with a ragged edge (`WreckBurn`): the charred layer
+   (`m8_wreck_char.png`) is nearly solid at the fire and only a light film elsewhere, so the nose, tail,
+   tips and markings stay readable under a darkened, greyed paint. Around the char the paint has
+   peeled to dull bare metal (`m8_wreck_bare.png`), with a narrow bronze heat tint on its hot side.
+   Faces are split to 0.75 blocks first so the fade is smooth on low-poly hulls. Embers (`m8_wreck_embers.png`, drawn full bright) glow in seams at the engine end and wing
    roots, in three nested tiers that go out one by one over 90 seconds after the fire. Torn wings and
    tails and the wreck's loose panels char the same way.
 2. **Fuel fire instead of fire blocks.** Crash and destruction blasts no longer set fire blocks (server

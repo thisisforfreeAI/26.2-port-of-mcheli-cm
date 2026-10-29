@@ -299,7 +299,9 @@ public abstract class AircraftRenderer<T extends AircraftEntity> extends EntityR
             for(var batch:batches.entrySet()){
                 var details=List.copyOf(batch.getValue());
                 collector.submitCustomGeometry(poseStack,net.minecraft.client.renderer.rendertype.RenderTypes.entityTranslucent(batch.getKey(),false),(pose,buffer)->{
-                    for(var detail:details){var local=pose.copy();local.mulPose(detail.pose());ModelVertices.emit(buffer,local,detail.groups(),detail.color(),detailLight,false);}
+                    for(var detail:details){var local=pose.copy();local.mulPose(detail.pose());
+                        if(detail.weights()!=null)ModelVertices.emitWeighted(buffer,local,detail.groups().getFirst(),detail.color(),detail.weights(),detailLight);
+                        else ModelVertices.emit(buffer,local,detail.groups(),detail.color(),detailLight,false);}
                 });
             }
         }

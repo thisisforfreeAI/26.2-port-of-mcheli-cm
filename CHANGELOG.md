@@ -92,6 +92,9 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
   or red. A repair now also heals components when the hull is already whole.
 
 ### Changed
+- Wreck burn look: the char now spreads from the fire (engines and wing roots) and fades out, so the
+  nose, tail, tips and markings stay readable under darkened paint; peeled bare metal and a heat tint ring
+  the burn. Replaces the near-opaque soot over the whole airframe and the flat bare-metal triangles.
 - Wingman marker screens are easier to use. The marker screen explains each type, offers the bases
   nearby as the parent base, warns of an ID another marker already has, and is in English. A new
   marker's automatic ID is now unique and follows its type, so a parking spot turned helipad becomes
