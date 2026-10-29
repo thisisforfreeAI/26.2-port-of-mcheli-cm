@@ -12,13 +12,16 @@ import net.minecraft.resources.Identifier;
 
 /**
  * Upstream {@code PacketMissionAction}, from the mission planner: send an aircraft on a saved
- * route, or abort its planner mission (every planner mission when no aircraft is given).
+ * route, or abort its planner mission (every planner mission when no aircraft is given). The port
+ * adds a recall, which sends the aircraft's mission or order home instead (every one when no
+ * aircraft is given).
  */
 public record MissionActionPayload(int action, Optional<UUID> aircraft, String routeName)
         implements CustomPacketPayload {
 
     public static final int ASSIGN = 0;
     public static final int ABORT = 1;
+    public static final int RECALL = 2;
 
     public static final Type<MissionActionPayload> TYPE =
             new Type<>(Identifier.fromNamespaceAndPath(McheliCePort.MOD_ID, "mission_action"));

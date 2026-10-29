@@ -106,6 +106,178 @@ public final class AutonomousFlightHandler {
         entry.vtolHoverMode = false;
     }
 
+    // ---- recall ----
+
+    /** What a recall did. */
+    public enum RecallResult {
+        /** Flying or taxiing back to its base. */
+        RETURNING,
+        /** Already on its way back or landing. */
+        ALREADY_RETURNING,
+        /** No base to return to: the mission ended where the aircraft is. */
+        NO_BASE,
+        /** Not flying an order or a planner mission. */
+        NOT_ON_MISSION
+    }
+
+    /**
+     * A port addition: ends the aircraft's order or planner mission and sends it home. In the air it
+     * returns as at bingo fuel (the landing circuit or the helipad, then the taxi to parking); on the
+     * ground it taxis back to its parking spot along its taxi route. A planner mission returns to the
+     * base of its landing, take-off or parking node, else to the nearest base.
+     */
+    public static RecallResult recall(ServerLevel level, AircraftEntity wingman, WingmanEntry entry) {
+        if (!entry.isAutonomous()) {
+            return RecallResult.NOT_ON_MISSION;
+        }
+        boolean planner = entry.order == null;
+        if (planner) {
+            String baseId = returnBase(level, wingman, entry);
+            if (baseId == null) {
+                cancelOrder(entry);
+                McheliCePort.LOGGER.info("[Order] {} recall: no base to return to, mission ended", shortId(wingman));
+                return RecallResult.NO_BASE;
+            }
+            entry.order = recallOrder(level, wingman, baseId);
+            entry.mission = null;
+            entry.missionIndex = 0;
+            entry.assignedParkingId = "";
+            entry.departureRouteId = "";
+        }
+        MissionOrder order = entry.order;
+        switch (entry.autoState) {
+            case RTB, DESCEND, CIRCUIT_DOWNWIND, CIRCUIT_BASE, CIRCUIT_FINAL, LANDING, VTOL_LAND -> {
+                return planner ? RecallResult.RETURNING : RecallResult.ALREADY_RETURNING;
+            }
+            case TAXI_IN -> {
+                if (!planner) {
+                    return RecallResult.ALREADY_RETURNING;
+                }
+                taxiHome(level, wingman, entry, order);
+            }
+            case NONE, PARKED, TAXI_OUT, ALIGN, TAKEOFF_ROLL -> taxiHome(level, wingman, entry, order);
+            default -> triggerRtb(level, wingman, entry, "recalled");
+        }
+        entry.rtbReason = "recalled";
+        entry.attackMode = WingmanEntry.ATK_NONE;
+        return RecallResult.RETURNING;
+    }
+
+    /** The base a planner mission returns to: its last landing, take-off or parking node's, else the nearest. */
+    public static @Nullable String returnBase(ServerLevel level, AircraftEntity wingman, WingmanEntry entry) {
+        List<MissionNode> nodes = entry.mission != null ? entry.mission : List.of();
+        for (int i = nodes.size() - 1; i >= 0; i--) {
+            MissionNode node = nodes.get(i);
+            String base = switch (node.type()) {
+                case LAND, TAKEOFF -> nodeBase(level, node.runwayId(), MarkerType.RUNWAY_A);
+                case PARK -> nodeBase(level, node.parkingId(), MarkerType.PARKING);
+                default -> null;
+            };
+            if (base != null) {
+                return base;
+            }
+        }
+        String nearest = null;
+        double best = Double.MAX_VALUE;
+        for (MarkerRegistry.MarkerInfo m : MarkerRegistry.findByType(level, MarkerType.BASE)) {
+            double d = wingman.distanceToSqr(Vec3.atCenterOf(m.pos()));
+            if (!m.id().isEmpty() && d < best) {
+                best = d;
+                nearest = m.id();
+            }
+        }
+        return nearest;
+    }
+
+    /** The base a route node's ID names: a base with that ID, else the base of the marker with it. */
+    private static @Nullable String nodeBase(ServerLevel level, String id, MarkerType type) {
+        if (id.isEmpty()) {
+            return null;
+        }
+        if (MarkerRegistry.findById(level, MarkerType.BASE, id) != null) {
+            return id;
+        }
+        MarkerRegistry.MarkerInfo m = MarkerRegistry.findById(level, type, id);
+        return m != null && !m.baseId().isEmpty() ? m.baseId() : null;
+    }
+
+    /** The order a recalled planner mission flies home on: a ferry to where it is, from the base. */
+    private static MissionOrder recallOrder(ServerLevel level, AircraftEntity wingman, String baseId) {
+        MissionOrder order = new MissionOrder();
+        order.missionTypes.add(MissionType.FERRY);
+        order.baseId = baseId;
+        order.targetX = wingman.getX();
+        order.targetZ = wingman.getZ();
+        order.timeLimitSeconds = 0;
+        order.strikePasses = 0;
+        order.cruiseAlt = Math.min(Math.max(CRUISE_ALT, wingman.getY()), level.getMaxY());
+        // A VTOL plane lands on the base's helipad only when the base has no runway.
+        order.useVstol = isVtol(wingman) && MarkerRegistry.findByBase(level, baseId, MarkerType.RUNWAY_B) == null;
+        return order;
+    }
+
+    /**
+     * Taxis an aircraft still on the ground back to its parking spot: the spot it left from, else a
+     * free one of the base, along that spot's taxi route from its nearest marker, else straight
+     * there. It parks where it is when it is on a spot already or the base has none.
+     */
+    private static void taxiHome(ServerLevel level, AircraftEntity wingman, WingmanEntry entry, MissionOrder order) {
+        entry.climbHold = false;
+        setVtolHoverMode(wingman, entry, false, "recalled on the ground");
+        MarkerRegistry.MarkerInfo parking = findMarkerInfoById(level, entry.assignedParkingId, order.baseId);
+        if (parking == null || parking.type() != MarkerType.PARKING && parking.type() != MarkerType.HELIPAD) {
+            parking = null;
+            for (MarkerRegistry.MarkerInfo m : MarkerRegistry.findAllByBase(level, order.baseId, MarkerType.PARKING)) {
+                if (hdist(wingman, m.pos().getX() + 0.5, m.pos().getZ() + 0.5) < PARK_DIST) {
+                    parking = m;
+                    break;
+                }
+            }
+            if (parking == null) {
+                parking = MarkerRegistry.findAvailableParking(level, order.baseId);
+            }
+        }
+        if (parking == null) {
+            park(level, wingman, entry);
+            McheliCePort.LOGGER.info("[Order] {} recall: no parking at base='{}', parked where it is",
+                    shortId(wingman), order.baseId);
+            return;
+        }
+        entry.assignedParkingId = parking.id();
+        TaxiRoute route = !entry.departureRouteId.isEmpty()
+                ? TaxiRouteRegistry.findById(level, entry.departureRouteId) : null;
+        if (route == null || !route.parkingId().equals(parking.id())) {
+            route = TaxiRouteRegistry.findByParking(level, parking.id());
+        }
+        List<String> queue = new ArrayList<>();
+        if (route != null) {
+            queue.addAll(route.fullDeparture());
+            java.util.Collections.reverse(queue);
+        } else {
+            queue.add(parking.id());
+        }
+        // Starts from the marker nearest the aircraft, so it does not first go back to the runway.
+        int start = 0;
+        double best = Double.MAX_VALUE;
+        for (int i = 0; i < queue.size(); i++) {
+            MarkerRegistry.MarkerInfo m = findMarkerInfoById(level, queue.get(i), order.baseId);
+            if (m != null) {
+                double d = hdist(wingman, m.pos().getX() + 0.5, m.pos().getZ() + 0.5);
+                if (d < best) {
+                    best = d;
+                    start = i;
+                }
+            }
+        }
+        entry.taxiWpQueue = queue;
+        entry.taxiWpIndex = start;
+        entry.taxiPreX = wingman.getX();
+        entry.taxiPreZ = wingman.getZ();
+        entry.autoState = AutonomousState.TAXI_IN;
+        McheliCePort.LOGGER.info("[Order] {} recall: TAXI_IN to parking '{}' queue={} from {}", shortId(wingman),
+                parking.id(), queue, start);
+    }
+
     // ---- after the aircraft move ----
 
     /**

@@ -627,6 +627,12 @@ These follow from how Minecraft 26.2 works or from decisions approved in PORTING
     ID counted the markers of the type, so it repeated IDs once a marker changed type; the port takes
     the lowest number no marker uses and renames an automatic ID of another type when the type
     changes (typed IDs are kept). The marker screen also offers the bases within 500 blocks.
+112. Missions can be recalled, which upstream could not do: its aborts (`order abort`, the planner's
+    Abort Mission) only ended the mission where the aircraft was. The port adds Recall All to the base
+    screen's Mission tab, Return to Base to the planner and `/wingman order rtb`; a recalled aircraft
+    flies upstream's return to base (reason `recalled`), or taxis back to parking if still on the ground.
+    A planner mission has no base of its own, so it returns to the base of its last landing, take-off
+    or parking node, else the nearest base, and stops where it is when there is no base.
 
 ## Upstream content issues kept as they are
 

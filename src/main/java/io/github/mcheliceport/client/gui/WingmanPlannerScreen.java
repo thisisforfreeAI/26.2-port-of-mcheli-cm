@@ -16,7 +16,8 @@ import net.neoforged.neoforge.client.network.ClientPacketDistributor;
  * Upstream's {@code GuiWingmanPlanner}, opened by {@code /wingman gui}: the aircraft on the left
  * and the saved planner routes on the right, each list scrolled with the mouse wheel over its half.
  * Assign sends the selected aircraft on the selected route, Abort ends its planner mission, New
- * opens the route editor and Delete removes the route. Upstream's two 230-pixel panels and eight
+ * opens the route editor and Delete removes the route. The port adds Return to Base, which sends the
+ * aircraft's mission or base order home to land and park. Upstream's two 230-pixel panels and eight
  * rows did not fit a small window; the port narrows the panels and shows fewer rows there.
  */
 public class WingmanPlannerScreen extends Screen {
@@ -42,6 +43,7 @@ public class WingmanPlannerScreen extends Screen {
     private int routeX;
     private Button btnAssign;
     private Button btnAbort;
+    private Button btnRecall;
     private Button btnDelete;
 
     public WingmanPlannerScreen(PlannerDataPayload data) {
@@ -74,14 +76,18 @@ public class WingmanPlannerScreen extends Screen {
                 .bounds(this.routeX, btnY, btnW, 20).build());
         this.btnDelete = this.addRenderableWidget(Button.builder(Component.literal("Delete Route"), b -> this.delete())
                 .bounds(this.routeX + btnW + 5, btnY, btnW, 20).build());
+        int closeY = Math.min(btnY + 25, this.height - 22);
+        this.btnRecall = this.addRenderableWidget(Button.builder(Component.literal("Return to Base"), b -> this.recall())
+                .bounds(this.uavX, closeY, btnW, 20).build());
         this.addRenderableWidget(Button.builder(Component.literal("Close"), b -> this.onClose())
-                .bounds(this.width / 2 - 40, Math.min(btnY + 25, this.height - 22), 80, 20).build());
+                .bounds(this.width / 2 - 40, closeY, 80, 20).build());
         this.refreshButtons();
     }
 
     private void refreshButtons() {
         this.btnAssign.active = this.selUav >= 0 && this.selRoute >= 0;
         this.btnAbort.active = this.selUav >= 0;
+        this.btnRecall.active = this.selUav >= 0;
         this.btnDelete.active = this.selRoute >= 0;
     }
 
@@ -96,6 +102,14 @@ public class WingmanPlannerScreen extends Screen {
     private void abort() {
         if (this.selUav >= 0) {
             ClientPacketDistributor.sendToServer(new MissionActionPayload(MissionActionPayload.ABORT,
+                    Optional.of(this.uavs.get(this.selUav).uuid()), ""));
+            this.onClose();
+        }
+    }
+
+    private void recall() {
+        if (this.selUav >= 0) {
+            ClientPacketDistributor.sendToServer(new MissionActionPayload(MissionActionPayload.RECALL,
                     Optional.of(this.uavs.get(this.selUav).uuid()), ""));
             this.onClose();
         }

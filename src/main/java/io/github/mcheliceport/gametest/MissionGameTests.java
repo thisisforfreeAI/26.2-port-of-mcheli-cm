@@ -12,6 +12,7 @@ import io.github.mcheliceport.net.OpenBaseScreenPayload;
 import io.github.mcheliceport.registry.ModBlocks;
 import io.github.mcheliceport.registry.ModItems;
 import io.github.mcheliceport.wingman.MissionDispatch;
+import io.github.mcheliceport.wingman.MissionPlanner;
 import io.github.mcheliceport.wingman.block.MarkerType;
 import io.github.mcheliceport.wingman.block.WingmanMarkerBlock;
 import io.github.mcheliceport.wingman.block.WingmanMarkerBlockEntity;
@@ -19,6 +20,7 @@ import io.github.mcheliceport.wingman.handler.AutonomousFlightHandler;
 import io.github.mcheliceport.wingman.handler.MissionChunkLoader;
 import io.github.mcheliceport.wingman.handler.WingmanTickHandler;
 import io.github.mcheliceport.wingman.mission.AutonomousState;
+import io.github.mcheliceport.wingman.mission.MissionNode;
 import io.github.mcheliceport.wingman.mission.MissionOrder;
 import io.github.mcheliceport.wingman.mission.MissionType;
 import io.github.mcheliceport.wingman.mission.TaxiRoute;
@@ -53,6 +55,7 @@ final class MissionGameTests {
         ModGameTests.test("wingman_mission_dispatch_checks_the_base", 20, MissionGameTests::dispatch);
         ModGameTests.testAlone("wingman_mission_flies_to_station_and_returns", 20, MissionGameTests::station);
         ModGameTests.testAlone("wingman_mission_taxis_and_parks", 20, MissionGameTests::taxi);
+        ModGameTests.testAlone("wingman_mission_recall_returns_home", 20, MissionGameTests::recall);
     }
 
     private static DispatchOrderPayload payload(BlockPos pos, HeliEntity aircraft, String route, List<String> types) {
@@ -334,6 +337,89 @@ final class MissionGameTests {
             markers.forEach(m -> MarkerRegistry.unregister(level, m.pos()));
             TaxiRouteRegistry.delete(level, "msn_route");
             GameTestSupport.cleanUp(plane);
+        }
+        h.succeed();
+    }
+
+    /**
+     * A port addition: a recalled plane still taxiing out turns back along its route from the marker
+     * nearest it; one on station returns as at bingo fuel, and a second recall finds it returning.
+     * A planner mission returns to the base of its landing node, and a base's Recall All only
+     * recalls that base's missions.
+     */
+    private static void recall(GameTestHelper h) {
+        ServerLevel level = h.getLevel();
+        String base = "msn_rc_base";
+        List<MarkerRegistry.MarkerInfo> markers = new ArrayList<>();
+        MarkerRegistry.MarkerInfo b = new MarkerRegistry.MarkerInfo(h.absolutePos(new BlockPos(1, 1, 8)),
+                MarkerType.BASE, base, "", -1);
+        MarkerRegistry.MarkerInfo p1 = new MarkerRegistry.MarkerInfo(h.absolutePos(new BlockPos(2, 1, 2)),
+                MarkerType.PARKING, "msn_rc_p1", base, 1);
+        MarkerRegistry.MarkerInfo wp = new MarkerRegistry.MarkerInfo(h.absolutePos(new BlockPos(6, 1, 2)),
+                MarkerType.WAYPOINT, "msn_rc_wp", base, -1);
+        MarkerRegistry.MarkerInfo ra = new MarkerRegistry.MarkerInfo(h.absolutePos(new BlockPos(10, 1, 2)),
+                MarkerType.RUNWAY_A, "msn_rc_ra", base, -1);
+        MarkerRegistry.MarkerInfo rb = new MarkerRegistry.MarkerInfo(h.absolutePos(new BlockPos(40, 1, 2)),
+                MarkerType.RUNWAY_B, "msn_rc_rb", base, -1);
+        markers.addAll(List.of(b, p1, wp, ra, rb));
+        markers.forEach(m -> MarkerRegistry.register(level, m));
+        TaxiRoute route = new TaxiRoute("msn_rc_route", base, "msn_rc_p1", "msn_rc_ra", "msn_rc_rb",
+                List.of("msn_rc_wp"), List.of(), -1, "");
+        TaxiRouteRegistry.save(level, route);
+        PlaneEntity plane = plane(h, "p-51d", new Vec3(2.5, 2, 2.5));
+        HeliEntity heli = GameTestSupport.spawn(h, GameTestSupport.AH64, new Vec3(20, 2, 20), 0.0F);
+        try {
+            MissionOrder cap = new MissionOrder();
+            cap.missionTypes.add(MissionType.CAP);
+            cap.baseId = base;
+            WingmanEntry entry = new WingmanEntry();
+            entry.order = cap;
+            entry.assignedParkingId = "msn_rc_p1";
+            entry.departureRouteId = "msn_rc_route";
+            WingmanRegistry.put(plane.getUUID(), entry);
+            AutonomousFlightHandler.tickStart(level);
+            check(h, entry.autoState == AutonomousState.TAXI_OUT, "the plane did not taxi out: " + entry.autoState);
+            plane.setPos(center(wp, plane.getY()));
+            check(h, AutonomousFlightHandler.recall(level, plane, entry) == AutonomousFlightHandler.RecallResult.RETURNING
+                    && entry.autoState == AutonomousState.TAXI_IN
+                    && entry.taxiWpQueue.equals(List.of("msn_rc_ra", "msn_rc_wp", "msn_rc_p1"))
+                    && entry.taxiWpIndex == 1 && entry.rtbReason.equals("recalled") && entry.order == cap,
+                    "the recalled plane does not taxi back from the waypoint: " + entry.taxiWpQueue + " "
+                            + entry.taxiWpIndex);
+            plane.setPos(center(p1, plane.getY()));
+            entry.taxiWpIndex = 2;
+            AutonomousFlightHandler.tickStart(level);
+            AutonomousFlightHandler.tickStart(level);
+            check(h, entry.autoState == AutonomousState.PARKED && !entry.isAutonomous(),
+                    "the recalled plane did not park: " + entry.autoState);
+
+            entry.order = cap;
+            entry.autoState = AutonomousState.ON_STATION;
+            check(h, AutonomousFlightHandler.recall(level, plane, entry) == AutonomousFlightHandler.RecallResult.RETURNING
+                    && entry.autoState == AutonomousState.RTB && entry.rtbReason.equals("recalled"),
+                    "the recalled plane on station did not return: " + entry.autoState);
+            check(h, AutonomousFlightHandler.recall(level, plane, entry)
+                    == AutonomousFlightHandler.RecallResult.ALREADY_RETURNING, "a second recall did not see it returning");
+
+            WingmanEntry heliEntry = new WingmanEntry();
+            WingmanRegistry.put(heli.getUUID(), heliEntry);
+            check(h, AutonomousFlightHandler.recall(level, heli, heliEntry)
+                    == AutonomousFlightHandler.RecallResult.NOT_ON_MISSION, "an idle aircraft was recalled");
+            heliEntry.startMission(List.of(MissionNode.flyTo(heli.getX() + 500, 100, heli.getZ()),
+                    MissionNode.land("msn_rc_ra")));
+            check(h, MissionPlanner.recallAll(level, "msn_rc_other") == 0 && heliEntry.mission != null,
+                    "another base's Recall All recalled the mission");
+            check(h, MissionPlanner.recallAll(level, base) == 1 && heliEntry.mission == null
+                    && heliEntry.order != null && heliEntry.order.baseId.equals(base)
+                    && heliEntry.autoState == AutonomousState.RTB,
+                    "the planner mission did not return to its landing node's base: " + heliEntry.autoState);
+        } finally {
+            WingmanRegistry.remove(plane.getUUID());
+            WingmanRegistry.remove(heli.getUUID());
+            markers.forEach(m -> MarkerRegistry.unregister(level, m.pos()));
+            TaxiRouteRegistry.delete(level, "msn_rc_route");
+            GameTestSupport.cleanUp(plane);
+            GameTestSupport.cleanUp(heli);
         }
         h.succeed();
     }

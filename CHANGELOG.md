@@ -11,6 +11,12 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 ## [Unreleased]
 
 ### Added
+- Recall missions: a running base order or planner mission can now be sent home, where before it could
+  only be aborted in place. In the air the aircraft returns as it does at bingo fuel (landing circuit or
+  helipad, then the taxi route to parking); still on the ground it taxis back to its parking spot. Use
+  **Recall All** on a base's Mission tab (that base's missions), **Return to Base** in the mission
+  planner (`/wingman gui`), or `/wingman order rtb [aircraft]`. A planner mission returns to the base
+  of its landing, take-off or parking node, else to the nearest base.
 - AI fire control: wingmen and aircraft on mission orders pick the weapon that suits their target
   (air-to-air missiles and guns at aircraft, ground missiles, rockets and bombs at vehicles, guns at
   mobs), lead a moving target and allow for drop with guns and rockets, release bombs where they will

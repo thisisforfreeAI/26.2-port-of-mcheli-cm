@@ -149,6 +149,8 @@ public final class ModNetwork {
                 (p, context) -> applyTaxiRouteAction(context.player(), p));
         registrar.playToServer(DispatchOrderPayload.TYPE, DispatchOrderPayload.CODEC,
                 (p, context) -> applyDispatchOrder(context.player(), p));
+        registrar.playToServer(RecallOrdersPayload.TYPE, RecallOrdersPayload.CODEC,
+                (p, context) -> applyRecallOrders(context.player(), p));
         registrar.playToClient(PlannerDataPayload.TYPE, PlannerDataPayload.CODEC,
                 (p, context) -> io.github.mcheliceport.wingman.WingmanClientHooks.openPlanner(p));
         registrar.playToServer(MissionActionPayload.TYPE, MissionActionPayload.CODEC,
@@ -378,6 +380,18 @@ public final class ModNetwork {
     /** Upstream {@code PacketBaseAction}'s {@code DISPATCH_ORDER}, from the base marker the player can edit. */
     public static void applyDispatchOrder(Player player, DispatchOrderPayload p) {
         io.github.mcheliceport.wingman.MissionDispatch.apply(player, p, editableMarker(player, p.pos()));
+    }
+
+    /** The base screen's Recall All, from the base marker the player can edit: its missions return. */
+    public static void applyRecallOrders(Player player, RecallOrdersPayload p) {
+        var marker = editableMarker(player, p.pos());
+        if (marker == null || marker.getMarkerType() != io.github.mcheliceport.wingman.block.MarkerType.BASE
+                || marker.getMarkerId().isEmpty() || !(player.level() instanceof ServerLevel level)) {
+            return;
+        }
+        int count = io.github.mcheliceport.wingman.MissionPlanner.recallAll(level, marker.getMarkerId());
+        player.sendSystemMessage(net.minecraft.network.chat.Component.literal(
+                "§aRecalled " + count + " aircraft to §e" + marker.getMarkerId()));
     }
 
     /**

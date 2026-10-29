@@ -111,6 +111,13 @@ public final class MissionPlanner {
                 abort(uid);
                 player.sendSystemMessage(Component.literal("§aMission aborted."));
             }
+        } else if (p.action() == MissionActionPayload.RECALL) {
+            UUID uid = p.aircraft().orElse(null);
+            if (uid == null) {
+                player.sendSystemMessage(Component.literal("§aRecalled " + recallAll(level, null) + " aircraft."));
+            } else {
+                player.sendSystemMessage(recall(level, uid));
+            }
         }
     }
 
@@ -197,6 +204,46 @@ public final class MissionPlanner {
         for (WingmanEntry e : WingmanRegistry.snapshot().values()) {
             if (e.mission != null && e.isAutonomous()) {
                 endMission(e);
+                count++;
+            }
+        }
+        return count;
+    }
+
+    /** Sends the aircraft's order or planner mission home, and says what it did. */
+    public static Component recall(ServerLevel level, UUID uid) {
+        WingmanEntry entry = WingmanRegistry.get(uid);
+        if (entry == null || !(level.getEntity(uid) instanceof AircraftEntity wingman)) {
+            return Component.literal("§cNo mission to recall.");
+        }
+        String id = uid.toString().substring(0, 8);
+        return switch (AutonomousFlightHandler.recall(level, wingman, entry)) {
+            case RETURNING -> Component.literal("§a" + id + "... returning to base.");
+            case ALREADY_RETURNING -> Component.literal("§e" + id + "... is already returning.");
+            case NO_BASE -> Component.literal("§e" + id + "... has no base to return to; mission ended.");
+            case NOT_ON_MISSION -> Component.literal("§cNo mission to recall.");
+        };
+    }
+
+    /**
+     * Sends home every order and planner mission in the level, or only those of the base when one
+     * is given; the number now returning.
+     */
+    public static int recallAll(ServerLevel level, @Nullable String baseId) {
+        int count = 0;
+        for (Map.Entry<UUID, WingmanEntry> e : WingmanRegistry.snapshot().entrySet()) {
+            WingmanEntry entry = e.getValue();
+            if (!entry.isAutonomous() || !(level.getEntity(e.getKey()) instanceof AircraftEntity wingman)) {
+                continue;
+            }
+            if (baseId != null) {
+                String home = entry.order != null ? entry.order.baseId
+                        : AutonomousFlightHandler.returnBase(level, wingman, entry);
+                if (!baseId.equals(home)) {
+                    continue;
+                }
+            }
+            if (AutonomousFlightHandler.recall(level, wingman, entry) == AutonomousFlightHandler.RecallResult.RETURNING) {
                 count++;
             }
         }
