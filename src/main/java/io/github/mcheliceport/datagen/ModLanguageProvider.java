@@ -201,6 +201,10 @@ public class ModLanguageProvider extends LanguageProvider {
         add(prefix + "explosions", "Explosions");
         add(prefix + "destroyBlock", "Explosions Break Blocks");
         add(prefix + "flamingBlock", "Explosions Start Fires");
+        add(prefix + "wrecks", "Wrecks");
+        add(prefix + "fireBlocks", "Wrecks Start Fires");
+        add(prefix + "persistentWrecks", "Persistent Wrecks");
+        add(prefix + "wreckLifetime", "Wreck Lifetime");
         add(prefix + "rotationLimits", "Rotation Limits");
         add(prefix + "enableRotationLimit", "Enable Rotation Limit");
         add(prefix + "pitchLimitMax", "Pitch Limit (Down)");
