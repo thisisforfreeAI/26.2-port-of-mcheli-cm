@@ -624,7 +624,7 @@ public final class WingmanCommand {
 
     private static LiteralArgumentBuilder<CommandSourceStack> orderCommands() {
         return Commands.literal("order")
-                .executes(c -> usage(c, "/wingman order <dispatch|abort|status|park> [args]"))
+                .executes(c -> usage(c, "/wingman order <dispatch|abort|rtb|status|park> [args]"))
                 .then(Commands.literal("dispatch")
                         .executes(c -> usage(c, "/wingman order dispatch <uuid> <baseId> <types> <targetX> <targetZ>"
                                 + " [orbitR] [alt] [passes] [seconds]. Types: cap, cas, strike, escort, recon, ferry;"
@@ -639,6 +639,10 @@ public final class WingmanCommand {
                         .executes(c -> orderAbort(c, null))
                         .then(Commands.argument("aircraft", StringArgumentType.word()).suggests(AIRCRAFT)
                                 .executes(c -> orderAbort(c, StringArgumentType.getString(c, "aircraft")))))
+                .then(Commands.literal("rtb")
+                        .executes(c -> orderRtb(c, null))
+                        .then(Commands.argument("aircraft", StringArgumentType.word()).suggests(AIRCRAFT)
+                                .executes(c -> orderRtb(c, StringArgumentType.getString(c, "aircraft")))))
                 .then(Commands.literal("status").executes(WingmanCommand::orderStatus))
                 .then(Commands.literal("park")
                         .executes(c -> usage(c, "/wingman order park <uuid> <parkingId>"))
@@ -736,6 +740,25 @@ public final class WingmanCommand {
             }
         }
         return ok(c, "§aAborted " + count + " order(s).");
+    }
+
+    /**
+     * A port addition: sends the order or planner mission home to land and park, every one in the
+     * dimension without an aircraft.
+     */
+    private static int orderRtb(CommandContext<CommandSourceStack> c, @Nullable String arg) throws CommandSyntaxException {
+        ServerPlayer player = c.getSource().getPlayerOrException();
+        ServerLevel level = player.level();
+        if (arg != null) {
+            UUID uid = parseUuid(c, arg);
+            if (uid == null) {
+                return 0;
+            }
+            Component result = MissionPlanner.recall(level, uid);
+            c.getSource().sendSuccess(() -> result, false);
+            return 1;
+        }
+        return ok(c, "§aRecalled " + MissionPlanner.recallAll(level, null) + " aircraft.");
     }
 
     private static void abortOrder(WingmanEntry entry) {

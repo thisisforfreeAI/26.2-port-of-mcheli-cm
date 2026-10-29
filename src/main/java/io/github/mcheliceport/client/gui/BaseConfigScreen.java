@@ -2,6 +2,7 @@ package io.github.mcheliceport.client.gui;
 
 import io.github.mcheliceport.net.DispatchOrderPayload;
 import io.github.mcheliceport.net.OpenBaseScreenPayload;
+import io.github.mcheliceport.net.RecallOrdersPayload;
 import io.github.mcheliceport.net.TaxiRouteActionPayload;
 import io.github.mcheliceport.wingman.block.MarkerType;
 import io.github.mcheliceport.wingman.mission.TaxiRoute;
@@ -33,8 +34,9 @@ import org.lwjgl.glfw.GLFW;
  * waypoints in order, then a summary of both legs and what still stops it saving. Its Mission tab
  * orders one of the aircraft near the base on a mission: the mission types and weapons, the
  * target, orbit, cruise height, strike passes and time limit, and the taxi routes to leave and
- * return by; an arrival route ending at a helipad lands vertically. Each tab scrolls with the
- * mouse wheel.
+ * return by; an arrival route ending at a helipad lands vertically. The port adds Recall All
+ * beside Dispatch, which sends every mission of the base home to land and park. Each tab scrolls
+ * with the mouse wheel.
  *
  * <p>Upstream placed the Taxi Routes tab with fixed offsets that overlapped once a base had
  * helipads, and its labels were partly Japanese. The port lays the tab out from the top down,
@@ -591,6 +593,8 @@ public class BaseConfigScreen extends Screen {
         }
 
         int dispY = ary + this.routeRows() * 20 + 6;
+        this.button(clipped, "Recall All", cx - 124, dispY, 80, 16,
+                () -> ClientPacketDistributor.sendToServer(new RecallOrdersPayload(this.base.pos())));
         this.button(clipped, "Dispatch", cx - 40, dispY, 80, 16, this::dispatchOrder);
         this.orbitAttackButton = this.button(clipped, "Orbit Atk", cx + 44, dispY, 70, 16,
                 () -> this.orbitAttackMode = !this.orbitAttackMode);
