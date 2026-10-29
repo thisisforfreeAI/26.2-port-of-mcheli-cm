@@ -17,6 +17,7 @@ PhysicalProperties:
   Speed: 1.1
   RotationSnapValue: 0.0
 Render:
+  MachOneSpeed: 0.44
   ParticleScale: 0.7
   EnableSeaSurfaceParticle: true
 Weapons:

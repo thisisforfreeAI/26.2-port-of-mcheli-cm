@@ -20,6 +20,7 @@ PhysicalProperties:
     Pitch: 8.5
     Roll: 0.5
 Render:
+  MachOneSpeed: 0.51
   ParticleScale: 0.7
   EnableSeaSurfaceParticle: true
 Weapons:

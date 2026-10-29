@@ -16,6 +16,7 @@ Camera:
 PhysicalProperties:
   Speed: 1.15
 Render:
+  MachOneSpeed: 0.51
   ParticleScale: 0.7
   EnableSeaSurfaceParticle: true
 Weapons:

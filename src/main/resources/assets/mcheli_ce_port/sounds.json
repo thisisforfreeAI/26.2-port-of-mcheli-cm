@@ -1,0 +1,8 @@
+{
+  "m8_sonic_boom": {
+    "subtitle": "mcheli_ce_port.sound.sonic_boom",
+    "sounds": [
+      "mcheli_ce_port:m8_sonic_boom"
+    ]
+  }
+}

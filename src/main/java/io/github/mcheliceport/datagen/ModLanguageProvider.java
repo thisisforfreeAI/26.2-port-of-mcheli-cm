@@ -32,6 +32,8 @@ public class ModLanguageProvider extends LanguageProvider {
     }
 
     private void english() {
+        add("mcheli_ce_port.sound.sonic_boom", "Sonic boom");
+        add("mcheli_ce_port.configuration.supersonicEffects", "Supersonic effects");
         add("mcheli_ce_port.cockpit.engine", "ENG");
         add("mcheli_ce_port.cockpit.fuel", "FUEL");
         add("mcheli_ce_port.cockpit.hull", "HULL");

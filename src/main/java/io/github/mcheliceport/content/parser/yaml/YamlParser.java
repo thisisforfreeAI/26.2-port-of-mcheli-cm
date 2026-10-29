@@ -749,6 +749,11 @@ public final class YamlParser implements ContentParser {
                 case "ModelPitch" -> info.entityPitch = ((Number) entry.getValue()).floatValue();
                 case "ModelRoll" -> info.entityRoll = ((Number) entry.getValue()).floatValue();
                 case "ParticleScale" -> info.particlesScale = getClamped(50f, entry.getValue());
+                case "MachOneSpeed" -> {
+                    float speed=((Number)entry.getValue()).floatValue();
+                    if(!Float.isFinite(speed)||speed<0||speed>100)throw new IllegalArgumentException("MachOneSpeed must be finite and between 0 and 100");
+                    info.machOneSpeed=speed;
+                }
                 case "EngineOutlets" -> {
                     for (Map<String, Object> outlet : (List<Map<String, Object>>) entry.getValue()) {
                         info.engineOutlets.add(new AircraftInfo.EngineOutlet(parseVector(outlet.get("Position")),
