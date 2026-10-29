@@ -619,6 +619,14 @@ These follow from how Minecraft 26.2 works or from decisions approved in PORTING
     longer set fire blocks unless `wrecks.fireBlocks` is on: clients draw a fuel fire under the wreck
     instead. A crashed plane's wreck also settles level onto its belly or back once it stops, where
     upstream left it propped at the angle it landed (drawn that way on clients only).
+111. The wingman marker and base screens use English labels where upstream's were partly Japanese,
+    and are laid out from the top down: upstream's fixed offsets overlapped the Taxi Routes tab's
+    Helipad-B line, summary, waypoint toggle and lists once a base had a helipad. Picking a Runway B
+    only sets end B when the base has a Runway A (upstream also made it the route's end when no A was
+    picked yet), and each marker ID is listed once among the waypoints to add. Upstream's automatic
+    ID counted the markers of the type, so it repeated IDs once a marker changed type; the port takes
+    the lowest number no marker uses and renames an automatic ID of another type when the type
+    changes (typed IDs are kept). The marker screen also offers the bases within 500 blocks.
 
 ## Upstream content issues kept as they are
 

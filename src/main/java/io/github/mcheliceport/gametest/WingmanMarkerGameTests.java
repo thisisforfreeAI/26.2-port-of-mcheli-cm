@@ -6,6 +6,7 @@ import com.mojang.serialization.JsonOps;
 import io.github.mcheliceport.net.MarkerUpdatePayload;
 import io.github.mcheliceport.net.ModNetwork;
 import io.github.mcheliceport.net.OpenBaseScreenPayload;
+import io.github.mcheliceport.net.OpenMarkerScreenPayload;
 import io.github.mcheliceport.net.TaxiRouteActionPayload;
 import io.github.mcheliceport.registry.ModBlocks;
 import io.github.mcheliceport.wingman.block.MarkerType;
@@ -38,6 +39,7 @@ final class WingmanMarkerGameTests {
         ModGameTests.test("wingman_marker_update_applies_within_reach", 20, WingmanMarkerGameTests::update);
         ModGameTests.test("wingman_marker_registry_resolves_bases", 20, WingmanMarkerGameTests::resolve);
         ModGameTests.test("wingman_base_screen_saves_taxi_routes", 20, WingmanMarkerGameTests::taxiRoutes);
+        ModGameTests.test("wingman_marker_ids_stay_unique", 20, WingmanMarkerGameTests::uniqueIds);
     }
 
     private static MarkerRegistry.@Nullable MarkerInfo recorded(ServerLevel level, BlockPos pos) {
@@ -210,6 +212,61 @@ final class WingmanMarkerGameTests {
                 }
             }
             h.succeed();
+        });
+    }
+
+    /**
+     * Upstream counted a type's markers for a new ID, so a parking spot turned helipad kept
+     * {@code p_1} and the next parking spot took {@code p_1} again. The port takes the lowest free
+     * number, renames an automatic ID of another type, keeps a typed one, and gives the marker
+     * screen the bases nearby and the other markers' IDs.
+     */
+    private static void uniqueIds(GameTestHelper h) {
+        ServerLevel level = h.getLevel();
+        BlockPos firstRel = new BlockPos(1, 1, 1);
+        BlockPos secondRel = new BlockPos(1, 1, 3);
+        BlockPos baseRel = new BlockPos(3, 1, 1);
+        WingmanMarkerBlockEntity first = marker(h, firstRel);
+        Player near = GameTestSupport.player(h, GameType.SURVIVAL, new Vec3(2.5, 1, 2.5));
+        h.runAfterDelay(2, () -> {
+            String parkingId = first.getMarkerId();
+            check(h, parkingId.startsWith("p_"), "the first marker took no parking ID: " + parkingId);
+            ModNetwork.applyMarkerUpdate(near, new MarkerUpdatePayload(h.absolutePos(firstRel), MarkerType.HELIPAD,
+                    parkingId, "uid_base", -1));
+            check(h, first.getMarkerId().startsWith("hp_"), "the helipad kept its parking ID: " + first.getMarkerId());
+
+            WingmanMarkerBlockEntity second = marker(h, secondRel);
+            WingmanMarkerBlockEntity base = marker(h, baseRel);
+            h.runAfterDelay(2, () -> {
+                check(h, !second.getMarkerId().equals(first.getMarkerId()), "two markers share an ID");
+                ModNetwork.applyMarkerUpdate(near, new MarkerUpdatePayload(h.absolutePos(secondRel), MarkerType.HELIPAD,
+                        "", "uid_base", -1));
+                check(h, second.getMarkerId().startsWith("hp_") && !second.getMarkerId().equals(first.getMarkerId()),
+                        "the second helipad repeated an ID: " + second.getMarkerId());
+                ModNetwork.applyMarkerUpdate(near, new MarkerUpdatePayload(h.absolutePos(secondRel), MarkerType.WAYPOINT,
+                        "tower", "uid_base", -1));
+                check(h, second.getMarkerId().equals("tower"), "a typed ID was replaced");
+                check(h, WingmanMarkerBlock.isAutoId("hpb_12") && !WingmanMarkerBlock.isAutoId("tower")
+                        && !WingmanMarkerBlock.isAutoId("p_") && !WingmanMarkerBlock.isAutoId("x_1"),
+                        "automatic IDs are recognised wrongly");
+                check(h, WingmanMarkerBlock.nextAutoId(MarkerType.PARKING, List.of("p_1", "p_3")).equals("p_2"),
+                        "the lowest free number was not taken");
+
+                base.apply(MarkerType.BASE, "uid_base", "", -1);
+                BlockPos pos = h.absolutePos(secondRel);
+                check(h, WingmanMarkerBlock.nearbyBases(level, pos).contains("uid_base"), "the base is not offered");
+                check(h, WingmanMarkerBlock.otherIds(level, pos).contains(first.getMarkerId())
+                        && !WingmanMarkerBlock.otherIds(level, pos).contains("tower"), "the other IDs are wrong");
+                var buf = new FriendlyByteBuf(Unpooled.buffer());
+                var sent = new OpenMarkerScreenPayload(pos, MarkerType.WAYPOINT, "tower", "uid_base", -1,
+                        List.of("uid_base"), List.of("hp_1", "p_2"));
+                OpenMarkerScreenPayload.CODEC.encode(buf, sent);
+                check(h, OpenMarkerScreenPayload.CODEC.decode(buf).equals(sent), "the screen payload changed in its codec");
+                for (BlockPos rel : List.of(firstRel, secondRel, baseRel)) {
+                    h.setBlock(rel, Blocks.AIR);
+                }
+                h.succeed();
+            });
         });
     }
 }

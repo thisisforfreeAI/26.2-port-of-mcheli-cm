@@ -495,8 +495,7 @@ public final class WingmanCommand {
         if (marker == null) {
             return 0;
         }
-        String id = marker.getMarkerId().isEmpty() ? WingmanMarkerBlock.autoId(player.level(), type)
-                : marker.getMarkerId();
+        String id = WingmanMarkerBlock.idForType(player.level(), marker.getBlockPos(), marker.getMarkerId(), type);
         marker.apply(type, id, marker.getBaseId(), marker.getParkingHeading());
         return ok(c, "§aMarker type set to " + type.displayName() + " §7id=§e" + id);
     }

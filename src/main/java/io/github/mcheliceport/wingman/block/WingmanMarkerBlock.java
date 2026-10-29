@@ -7,9 +7,12 @@ import io.github.mcheliceport.wingman.MissionDispatch;
 import io.github.mcheliceport.wingman.registry.MarkerRegistry;
 import io.github.mcheliceport.wingman.registry.TaxiRouteRegistry;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -63,7 +66,8 @@ public class WingmanMarkerBlock extends Block implements EntityBlock {
             ModNetwork.sendToPlayer(sp, marker.getMarkerType() == MarkerType.BASE
                     ? baseScreen((ServerLevel) level, pos, marker.getMarkerId())
                     : new OpenMarkerScreenPayload(pos, marker.getMarkerType(), marker.getMarkerId(),
-                            marker.getBaseId(), marker.getParkingHeading()));
+                            marker.getBaseId(), marker.getParkingHeading(), nearbyBases((ServerLevel) level, pos),
+                            otherIds((ServerLevel) level, pos)));
         }
         return InteractionResult.SUCCESS;
     }
@@ -108,16 +112,88 @@ public class WingmanMarkerBlock extends Block implements EntityBlock {
                 runwayB, helipads, helipadB, waypoints, MissionDispatch.nearbyAircraft(level, pos));
     }
 
-    /** Upstream {@code autoId}: the type's prefix and one more than the markers of that type. */
+    /**
+     * Upstream {@code autoId} gave the type's prefix and one more than the markers of that type, which
+     * repeated an ID once a marker changed type (a parking spot turned helipad kept {@code p_1}, and
+     * the next parking spot took {@code p_1} again). The port takes the lowest number no marker uses.
+     */
     public static String autoId(ServerLevel level, MarkerType type) {
-        String prefix = switch (type) {
-            case PARKING -> "p";
-            case RUNWAY_A -> "ra";
-            case RUNWAY_B -> "rb";
-            case HELIPAD -> "hp";
-            case HELIPAD_B -> "hpb";
-            default -> "wp";
-        };
-        return prefix + "_" + (MarkerRegistry.findByType(level, type).size() + 1);
+        return autoId(level, type, null);
+    }
+
+    /** {@link #autoId(ServerLevel, MarkerType)}, not counting the marker at the position. */
+    public static String autoId(ServerLevel level, MarkerType type, @Nullable BlockPos self) {
+        Set<String> taken = new HashSet<>();
+        for (MarkerRegistry.MarkerInfo m : MarkerRegistry.snapshot(level)) {
+            if (!m.pos().equals(self)) {
+                taken.add(m.id());
+            }
+        }
+        return nextAutoId(type, taken);
+    }
+
+    /** The type's prefix and the lowest number not taken, as {@code hp_2}. */
+    public static String nextAutoId(MarkerType type, Collection<String> taken) {
+        for (int n = 1; ; n++) {
+            String id = type.idPrefix() + "_" + n;
+            if (!taken.contains(id)) {
+                return id;
+            }
+        }
+    }
+
+    /** Whether the ID looks automatic for some type, as {@code p_3}. */
+    public static boolean isAutoId(String id) {
+        int sep = id.lastIndexOf('_');
+        if (sep <= 0 || sep == id.length() - 1 || !id.substring(sep + 1).chars().allMatch(Character::isDigit)) {
+            return false;
+        }
+        String prefix = id.substring(0, sep);
+        for (MarkerType type : MarkerType.values()) {
+            if (type.idPrefix().equals(prefix)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * The ID a marker keeps when it becomes the type: a new ID when it has none or an automatic one
+     * of another type ({@code p_1} becoming a helipad is {@code hp_1}), else its own.
+     */
+    public static String idForType(ServerLevel level, BlockPos pos, String id, MarkerType type) {
+        if (type != MarkerType.BASE && (id.isEmpty() || isAutoId(id) && !id.startsWith(type.idPrefix() + "_"))) {
+            return autoId(level, type, pos);
+        }
+        return id;
+    }
+
+    /** Base markers within 500 blocks of the position, nearest first, for the marker screen's base picker. */
+    public static List<String> nearbyBases(ServerLevel level, BlockPos pos) {
+        List<MarkerRegistry.MarkerInfo> bases = new ArrayList<>();
+        for (MarkerRegistry.MarkerInfo m : MarkerRegistry.findByType(level, MarkerType.BASE)) {
+            if (!m.id().isEmpty() && m.pos().distSqr(pos) <= 500.0 * 500.0) {
+                bases.add(m);
+            }
+        }
+        bases.sort(Comparator.comparingDouble(m -> m.pos().distSqr(pos)));
+        List<String> ids = new ArrayList<>();
+        for (MarkerRegistry.MarkerInfo m : bases) {
+            if (!ids.contains(m.id()) && ids.size() < 16) {
+                ids.add(m.id());
+            }
+        }
+        return ids;
+    }
+
+    /** Every other marker's ID, so the marker screen can warn of a duplicate. */
+    public static List<String> otherIds(ServerLevel level, BlockPos pos) {
+        Set<String> ids = new TreeSet<>();
+        for (MarkerRegistry.MarkerInfo m : MarkerRegistry.snapshot(level)) {
+            if (!m.pos().equals(pos) && !m.id().isEmpty()) {
+                ids.add(m.id());
+            }
+        }
+        return new ArrayList<>(ids);
     }
 }
