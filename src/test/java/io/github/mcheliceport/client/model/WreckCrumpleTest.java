@@ -1,5 +1,6 @@
 package io.github.mcheliceport.client.model;
 import static org.junit.jupiter.api.Assertions.*;
+import java.util.ArrayList;
 import org.joml.Vector3f;
 import org.junit.jupiter.api.Test;
 class WreckCrumpleTest {
@@ -49,5 +50,27 @@ class WreckCrumpleTest {
   for(var c:parts.chunks()){var d=c.group().data();float reach=0;for(int i=0;i+7<d.length;i+=8)reach=Math.max(reach,new Vector3f(d[i],d[i+1],d[i+2]).length());
    assertTrue(reach<c.size().length(),"chunk is centred");}
   assertTrue(WreckMesh.build(boxes.group("$body"),true,false).chunks().isEmpty(),"only crashed hulls shed chunks");
+ }
+ @Test void debrisChunksAreCutToACellSoLowPolySliversNeverBecomeSpikes(){
+  // A low-poly nose: a fan of long thin triangles meeting at the tip, on a long slab fuselage.
+  var boxes=new DetailBoxes();boxes.box(-1.5F,0,-12,1.5F,2,8);var body=boxes.group("$body").data();
+  var data=new ArrayList<Float>();for(float f:body)data.add(f);
+  for(int i=0;i<24;i++){double a=i*Math.PI*2/24,b=(i+1)*Math.PI*2/24;
+   float[][] tri={{0,1,12},{(float)Math.cos(a)*1.5F,1+(float)Math.sin(a),8},{(float)Math.cos(b)*1.5F,1+(float)Math.sin(b),8}};
+   for(var v:tri){data.add(v[0]);data.add(v[1]);data.add(v[2]);data.add(0F);data.add(0F);data.add(v[0]);data.add(v[1]-1);data.add(0F);}}
+  float[] d=new float[data.size()];for(int i=0;i<d.length;i++)d[i]=data.get(i);
+  var parts=WreckMesh.build(new McheliModel.Group("$body",d),true,true);
+  assertFalse(parts.chunks().isEmpty());
+  float cell=WreckMesh.chunkCell(new Vector3f(-1.5F,0,-12),new Vector3f(1.5F,2,12));
+  for(var c:parts.chunks()){
+   assertTrue(c.size().x<=cell+1e-3F&&c.size().y<=cell+1e-3F&&c.size().z<=cell+1e-3F,"chunk fits its cell: "+c.size());
+   var g=c.group().data();for(int t=0;t+23<g.length;t+=24)assertTrue(WreckMesh.edge(g,t)<=cell*1.7321F+1e-3F,"no spike longer than the cell");
+  }
+ }
+ @Test void bigLowPolyFacesCarryNoFlatPatchTriangles(){
+  var boxes=new DetailBoxes();boxes.box(-8,0,-8,8,.2F,8);
+  var parts=WreckMesh.build(boxes.group("$body"),false);
+  var d=parts.paint().data();for(int t=0;t+23<d.length;t+=24)assertTrue(WreckMesh.edge(d,t)<=WreckMesh.PATCH_EDGE+.05F);
+  d=parts.metal().data();for(int t=0;t+23<d.length;t+=24)assertTrue(WreckMesh.edge(d,t)<=WreckMesh.PATCH_EDGE+.05F);
  }
 }

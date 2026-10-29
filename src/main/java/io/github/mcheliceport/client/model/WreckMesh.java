@@ -21,6 +21,8 @@ public final class WreckMesh {
  /** UV repeats per block of charred skin, and how far the layer sits off the hull. */
  static final float SOOT_SCALE=.9F,SOOT_LIFT=.007F;
  public static final int EMBER_TIERS=3,MAX_CHUNKS=9;
+ /** Longest triangle edge that may carry a burnt-paint or bare-metal patch, in blocks. */
+ static final float PATCH_EDGE=1.5F;
  public static Parts get(McheliModel.Group source,boolean wing){
   var key=new Key(source,wing);CompletableFuture<Parts> f;
   synchronized(CACHE){f=CACHE.get(key);if(f==null){
@@ -40,7 +42,8 @@ public final class WreckMesh {
    float cx=(d[t]+d[t+8]+d[t+16])/3,cy=(d[t+1]+d[t+9]+d[t+17])/3,cz=(d[t+2]+d[t+10]+d[t+18])/3;
    if(wing&&extent>3&&cx>extent*.95F&&t/24%3==0)continue;
    int hash=Float.floatToIntBits((float)Math.floor(cx*1.7))^Integer.rotateLeft(Float.floatToIntBits((float)Math.floor(cz*1.7)),11);
-   var patch=Math.floorMod(hash,13)<3?paint:Math.floorMod(hash,19)==5?metal:null;
+   // A patch is one whole triangle: on a big low-poly face that is a flat, sharp-edged triangle of bare metal.
+   var patch=edge(d,t)>PATCH_EDGE?null:Math.floorMod(hash,13)<3?paint:Math.floorMod(hash,19)==5?metal:null;
    float[][] tri=new float[3][];boolean crushed=false;
    for(int k=0;k<3;k++){int i=t+k*8;float[] v=Arrays.copyOfRange(d,i,i+8);
     if(wing&&extent>3){float w=Math.clamp((Math.abs(v[0])/extent-.65F)/.35F,0,1);v[1]-=w*w*.55F;}
@@ -85,6 +88,9 @@ public final class WreckMesh {
   return total;
  }
  private static float lattice(int x,int y,int z){int h=x*73856093^y*19349663^z*83492791;h^=h>>>13;h*=0x5bd1e995;h^=h>>>15;return (h&0xFFFF)/32767.5F-1;}
+ static float edge(float[] d,int t){
+  float edge=0;for(int k=0;k<3;k++){int i=t+k*8,j=t+(k+1)%3*8;edge=Math.max(edge,new Vector3f(d[i]-d[j],d[i+1]-d[j+1],d[i+2]-d[j+2]).length());}return edge;
+ }
  private static void faceNormal(float[][] tri){
   var a=new Vector3f(tri[1][0]-tri[0][0],tri[1][1]-tri[0][1],tri[1][2]-tri[0][2]);
   var b=new Vector3f(tri[2][0]-tri[0][0],tri[2][1]-tri[0][1],tri[2][2]-tri[0][2]);
@@ -135,33 +141,43 @@ public final class WreckMesh {
   }
   var groups=new ArrayList<McheliModel.Group>();for(var tier:tiers)groups.add(group("$wreck_embers",tier));return List.copyOf(groups);
  }
- /** Up to {@link #MAX_CHUNKS} compact pieces of skin from separate cells of the hull, for the debris field. */
+ /**
+  * Up to {@link #MAX_CHUNKS} pieces of skin from separate cells of the hull, for the debris field. Each is
+  * the hull cut to one small cell, so a piece is a bent patch of skin no larger than the cell. Whole
+  * triangles are not used: on a low-poly hull they are long slivers and nose-cone fans, which tumble
+  * through the air as stretched spikes.
+  */
  static List<Chunk> chunks(McheliModel.Group hull,Vector3f lo,Vector3f hi){
-  var d=hull.data();float cell=Math.max(.6F,Math.max(hi.z-lo.z,hi.x-lo.x)/8);var cells=new TreeMap<Long,List<Integer>>();
+  var d=hull.data();float cell=chunkCell(lo,hi);var cells=new TreeMap<Long,int[]>();
   for(int t=0;t+23<d.length;t+=24){
-   // Long slivers of skin read as sheets, not fragments: keep triangles about a cell across.
-   float edge=0;for(int k=0;k<3;k++){int i=t+k*8,j=t+(k+1)%3*8;edge=Math.max(edge,new Vector3f(d[i]-d[j],d[i+1]-d[j+1],d[i+2]-d[j+2]).length());}
-   if(edge>cell*1.2F)continue;
-   long key=(long)Math.floor((d[t]+d[t+8]+d[t+16])/3/cell)*1_000_003L+(long)Math.floor((d[t+1]+d[t+9]+d[t+17])/3/cell)*1_009L
-           +(long)Math.floor((d[t+2]+d[t+10]+d[t+18])/3/cell);
-   cells.computeIfAbsent(key,k->new ArrayList<>()).add(t);
+   int x=(int)Math.floor((d[t]+d[t+8]+d[t+16])/3/cell),y=(int)Math.floor((d[t+1]+d[t+9]+d[t+17])/3/cell),z=(int)Math.floor((d[t+2]+d[t+10]+d[t+18])/3/cell);
+   cells.computeIfAbsent(x*1_000_003L+y*1_009L+z,k->new int[]{x,y,z,0})[3]++;
   }
-  var picks=new ArrayList<Map.Entry<Long,List<Integer>>>();
-  for(var e:cells.entrySet())if(e.getValue().size()>=6&&e.getValue().size()<=300)picks.add(e);
-  picks.sort(Comparator.comparingInt(e->Long.hashCode(e.getKey()*0x9E3779B97F4A7C15L)));
-  var out=new ArrayList<Chunk>();
+  // Cells with some detail first (a seam, a frame, a curve), in a stable shuffled order.
+  var picks=new ArrayList<Map.Entry<Long,int[]>>(cells.entrySet());
+  picks.sort(Comparator.<Map.Entry<Long,int[]>>comparingInt(e->e.getValue()[3]>=4?0:1).thenComparingInt(e->Long.hashCode(e.getKey()*0x9E3779B97F4A7C15L)));
+  var out=new ArrayList<Chunk>();int tries=0;
   for(var e:picks){
-   if(out.size()>=MAX_CHUNKS)break;
-   var c=new Vector3f(Float.POSITIVE_INFINITY);var h=new Vector3f(Float.NEGATIVE_INFINITY);
-   for(int t:e.getValue())for(int k=0;k<3;k++){int i=t+k*8;var p=new Vector3f(d[i],d[i+1],d[i+2]);c.min(p);h.max(p);}
-   var size=new Vector3f(h).sub(c);if(size.x<.15F&&size.y<.15F||size.y<.15F&&size.z<.15F||size.x<.15F&&size.z<.15F)continue;
-   var center=new Vector3f(c).add(h).mul(.5F);float[] data=new float[e.getValue().size()*24];int o=0;
-   for(int t:e.getValue())for(int k=0;k<3;k++){int i=t+k*8;
-    data[o++]=d[i]-center.x;data[o++]=d[i+1]-center.y;data[o++]=d[i+2]-center.z;for(int a=3;a<8;a++)data[o++]=d[i+a];}
+   if(out.size()>=MAX_CHUNKS||++tries>MAX_CHUNKS*6)break;
+   var c=e.getValue();float[] boxLo={c[0]*cell,c[1]*cell,c[2]*cell},boxHi={boxLo[0]+cell,boxLo[1]+cell,boxLo[2]+cell};
+   var near=new ArrayList<Float>();
+   for(int t=0;t+23<d.length;t+=24){
+    boolean overlaps=true;
+    for(int a=0;a<3&&overlaps;a++){float min=Math.min(d[t+a],Math.min(d[t+8+a],d[t+16+a])),max=Math.max(d[t+a],Math.max(d[t+8+a],d[t+16+a]));overlaps=max>=boxLo[a]&&min<=boxHi[a];}
+    if(overlaps)for(int i=t;i<t+24;i++)near.add(d[i]);
+   }
+   var piece=BreakupMeshes.boxSplit(group("$wreck_chunk",near),boxLo,boxHi)[1].data();if(piece.length<24)continue;
+   var min=new Vector3f(Float.POSITIVE_INFINITY);var max=new Vector3f(Float.NEGATIVE_INFINITY);
+   for(int i=0;i+7<piece.length;i+=8){var p=new Vector3f(piece[i],piece[i+1],piece[i+2]);min.min(p);max.max(p);}
+   var size=new Vector3f(max).sub(min);if(size.x<.15F&&size.y<.15F||size.y<.15F&&size.z<.15F||size.x<.15F&&size.z<.15F)continue;
+   var center=new Vector3f(min).add(max).mul(.5F);float[] data=piece.clone();
+   for(int i=0;i+7<data.length;i+=8){data[i]-=center.x;data[i+1]-=center.y;data[i+2]-=center.z;}
    out.add(new Chunk(new McheliModel.Group("$wreck_chunk",data),center,size.max(new Vector3f(.12F))));
   }
   return List.copyOf(out);
  }
+ /** Edge of the cells chunks are cut from: about a twelfth of the airframe, 0.6 to 1.6 blocks. */
+ static float chunkCell(Vector3f lo,Vector3f hi){return Math.clamp(Math.max(hi.z-lo.z,hi.x-lo.x)/12,.6F,1.6F);}
  private static McheliModel.Group group(String name,List<Float> v){float[] d=new float[v.size()];for(int i=0;i<d.length;i++)d[i]=v.get(i);return new McheliModel.Group(name,d);}
  public static void clear(){synchronized(CACHE){CACHE.clear();}synchronized(SOOT){SOOT.clear();}}
 }

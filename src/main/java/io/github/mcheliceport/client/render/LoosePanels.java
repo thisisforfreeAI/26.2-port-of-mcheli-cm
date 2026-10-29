@@ -123,7 +123,7 @@ public final class LoosePanels {
         if(!SPECS.containsKey(group)){if(SPECS.size()>=1024)SPECS.clear();SPECS.put(group,LoosePanelLook.spec(group));}
         return SPECS.get(group);
     }
-    public static void extract(AircraftEntity entity,AircraftRenderState render){
+    public static void extract(AircraftEntity entity,AircraftRenderState render,float partialTicks){
         var mc=Minecraft.getInstance();if(mc.level!=world){clear();world=mc.level;}
         if(!enabled()||render.far||render.texture==null
                 ||mc.gameRenderer.mainCamera().position().distanceToSqr(entity.position())>32*32)return;
@@ -160,7 +160,8 @@ public final class LoosePanels {
                 if(group==state.detached&&occurrence==state.occurrence){PanelInteriors.add(render,draw.pose(),group);continue;}
                 var s=spec(group);
                 if(s==null){unchanged.add(group);continue;}
-                float angle=LoosePanelLook.rattle(fraction,tick,entity.getId()+group.name().hashCode());
+                // Airflow shakes a damaged panel; a wreck lying on the ground has none, and its charred skin is drawn unshaken.
+                float angle=entity.isDestroyed()?0:LoosePanelLook.rattle(fraction,tick+partialTicks,entity.getId()+group.name().hashCode());
                 if(angle==0){unchanged.add(group);continue;}
                 var c=s.center();var pose=new Matrix4f(draw.pose()).translate(c).rotateZ(angle).rotateX(angle*.45F).translate(-c.x,-c.y,-c.z);
                 draws.add(new AircraftPartPoses.Draw(pose,List.of(group)));
@@ -189,25 +190,42 @@ public final class LoosePanels {
         }
         for(var p:PIECES)if(p.edge!=null&&p.age<p.life-10)
             io.github.mcheliceport.client.particle.BreakawayEffects.trail(world,edge(p),p.velocity(),p.age,p.restAge>=0?p.age-p.restAge:-1,p.owner.getId());
-        // Round-robin swept segments: at most two world rays per tick, even with eight pieces.
-        int moving=(int)PIECES.stream().filter(p->p.motion.moving()).count();
+        // Pieces at the ground are swept every tick; the rest share two round-robin rays a tick.
+        var swept=Collections.newSetFromMap(new IdentityHashMap<Piece,Boolean>());
+        for(var p:PIECES)if(p.motion.moving()&&nearGround(world,p.motion)){swept.add(p);sweep(p);}
+        int moving=(int)PIECES.stream().filter(p->p.motion.moving()&&!swept.contains(p)).count();
         for(int i=0,tries=0;i<2&&moving>0&&tries<PIECES.size();tries++){
-            var p=PIECES.get(Math.floorMod(collisionCursor++,PIECES.size()));var m=p.motion;if(!m.moving())continue;i++;
-            Vec3 from=m.sweepFrom(),to=m.sweepTo();
-            if(!world.hasChunkAt(BlockPos.containing(from))||!world.hasChunkAt(BlockPos.containing(to)))continue;
-            var hit=world.clip(new ClipContext(from,to,ClipContext.Block.COLLIDER,
-                    m.phase==DebrisMotion.Phase.SUNK?ClipContext.Fluid.NONE:ClipContext.Fluid.ANY,CollisionContext.empty()));
-            // A sweep that starts inside terrain (spawned in a hillside) cannot resolve a contact face.
-            if(hit.getType()!=HitResult.Type.BLOCK||hit.isInside()){m.clear();continue;}
-            boolean water=world.getFluidState(hit.getBlockPos()).is(net.minecraft.tags.FluidTags.WATER);
-            var n=new Vec3(hit.getDirection().getStepX(),hit.getDirection().getStepY(),hit.getDirection().getStepZ());
-            Vec3 before=m.velocity;var contact=m.contact(hit.getLocation(),n,water);
-            switch(contact){
-                case SPLASH -> {io.github.mcheliceport.client.particle.VehicleWaterEffects.splash(world,hit.getLocation(),m.impact);p.life=Math.min(p.life,p.age+60);}
-                case BOUNCE,LAND -> io.github.mcheliceport.client.particle.DebrisImpactEffects.strike(world,hit.getLocation(),before,m.impact,p.span,p.seed+m.bounces());
-                default -> {}
-            }
+            var p=PIECES.get(Math.floorMod(collisionCursor++,PIECES.size()));if(!p.motion.moving()||swept.contains(p))continue;i++;sweep(p);
         }
+    }
+    private static void sweep(Piece p){
+        var m=p.motion;Vec3 from=m.sweepFrom(),to=m.sweepTo();
+        if(!world.hasChunkAt(BlockPos.containing(from))||!world.hasChunkAt(BlockPos.containing(to)))return;
+        var hit=world.clip(new ClipContext(from,to,ClipContext.Block.COLLIDER,
+                m.phase==DebrisMotion.Phase.SUNK?ClipContext.Fluid.NONE:ClipContext.Fluid.ANY,CollisionContext.empty()));
+        // A sweep that starts inside terrain (spawned in a hillside) cannot resolve a contact face.
+        if(hit.getType()!=HitResult.Type.BLOCK||hit.isInside()){m.clear();return;}
+        boolean water=world.getFluidState(hit.getBlockPos()).is(net.minecraft.tags.FluidTags.WATER);
+        var n=new Vec3(hit.getDirection().getStepX(),hit.getDirection().getStepY(),hit.getDirection().getStepZ());
+        Vec3 before=m.velocity;var contact=m.contact(hit.getLocation(),n,water);
+        switch(contact){
+            case SPLASH -> {io.github.mcheliceport.client.particle.VehicleWaterEffects.splash(world,hit.getLocation(),m.impact);p.life=Math.min(p.life,p.age+60);}
+            case BOUNCE,LAND -> io.github.mcheliceport.client.particle.DebrisImpactEffects.strike(world,hit.getLocation(),before,m.impact,p.span,p.seed+m.bounces());
+            default -> {}
+        }
+    }
+    /**
+     * Whether a fragment is at, or within this tick's fall of, the top of the terrain under it. Such a
+     * fragment is swept every tick: left to the round-robin it fell into the ground for several ticks
+     * between sweeps, then popped back out and bounced, which made settling debris shake and flicker.
+     */
+    static boolean nearGround(net.minecraft.world.level.Level level,DebrisMotion m){
+        Vec3 from=m.sweepFrom(),to=m.sweepTo();
+        int top=Math.max(level.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING,
+                        net.minecraft.util.Mth.floor(from.x),net.minecraft.util.Mth.floor(from.z)),
+                level.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING,
+                        net.minecraft.util.Mth.floor(to.x),net.minecraft.util.Mth.floor(to.z)));
+        return top>=Math.min(from.y,to.y)-1-Math.abs(m.velocity.y);
     }
     private static boolean kept(Piece p){return p.restAge>=0&&!p.skin&&p.owner.isDestroyed()&&!p.owner.isRemoved()&&p.motion.phase!=DebrisMotion.Phase.SUNK;}
     /** A section at rest leaves a scorch, smolders, and fades well after the fight has moved on. */
