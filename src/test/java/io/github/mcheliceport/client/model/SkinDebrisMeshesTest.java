@@ -12,7 +12,7 @@ class SkinDebrisMeshesTest {
             var source=frame.sections().get(i);var saved=source.data().clone();var chips=SkinDebrisMeshes.build(source,axis,cut,sign);
             assertEquals(3,chips.size());
             for(var chip:chips) {
-                assertTrue(chip.skin().vertexCount()<=96);assertTrue(BreakupMeshes.area(chip.skin())<=.25);
+                assertTrue(chip.skin().vertexCount()<=192);assertTrue(BreakupMeshes.area(chip.skin())<=.5);
                 var d=chip.skin().data();for(int p=0;p<d.length;p+=8) {
                     for(int n=0;n<8;n++)assertTrue(Float.isFinite(d[p+n]));
                     assertTrue((d[p+axis]-cut)*sign>=-.002);

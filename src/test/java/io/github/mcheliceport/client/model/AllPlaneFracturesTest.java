@@ -34,4 +34,17 @@ class AllPlaneFracturesTest {
         assertTrue(checked>60,"too few cuts exercised: "+checked);
         if(!failures.isEmpty())fail(failures.size()+" open cuts:\n"+String.join("\n",failures));
     }
+    /** A flying wing's torn wing keeps its trailing edge; nothing outboard is left floating on the stump. */
+    @Test void theB2LosesWholeWingsAndOnlyItsCentreTail() throws Exception {
+        Path file=ContentTestSupport.projectDir().resolve("src/main/resources/assets/mcheli/models/planes/b-2a.mqo");
+        McheliModel model;try(var in=Files.newInputStream(file)){model=MqoParser.parse("b-2a.mqo",in);}
+        var body=model.groups.stream().filter(g->g.name().equals("$body")).findFirst().orElseThrow();
+        var b=BreakupMeshes.bounds(body);var frame=BreakupMeshes.airframeBuild(body,7);
+        var left=BreakupMeshes.bounds(frame.sections().get(0));var right=BreakupMeshes.bounds(frame.sections().get(1));
+        assertEquals(b.low().z,left.low().z,.05);assertEquals(b.low().z,right.low().z,.05);
+        var tail=BreakupMeshes.bounds(frame.sections().get(2));
+        assertTrue(tail.low().x>=frame.leftCut()-.01&&tail.high().x<=frame.rightCut()+.01,"tail "+tail);
+        var kept=BreakupMeshes.bounds(BreakupMeshes.airframeBuild(body,1).kept());
+        assertTrue(kept.low().x>=frame.leftCut()-.01,"nothing of the left wing stays outboard of its cut: "+kept);
+    }
 }

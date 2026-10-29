@@ -248,17 +248,29 @@ public final class LoosePanels {
             int pieceLight=thermal?LightCoordsUtil.FULL_BRIGHT:p.light;
             // Torn sections fell burning and wreck panels burnt with the hull: both are charred.
             boolean burnt=!thermal&&WreckAppearance.enabled()&&(p.tear!=null||p.owner.isDestroyed());
-            int color=((int)(255*Math.clamp((p.life-age)/15,0,1))<<24)|(thermal?0xFFFFFF:burnt?0x8A857E:0xDADADA);
+            boolean hulk=burnt&&p.owner.isDestroyed();
+            int color=((int)(255*Math.clamp((p.life-age)/15,0,1))<<24)|(thermal?0xFFFFFF:hulk?0x8A857E:0xDADADA);
             event.getSubmitNodeCollector().submitCustomGeometry(event.getPoseStack(),RenderTypes.entityTranslucent(texture,false),(pose,buffer)->{
                 var local=pose.copy();local.mulPose(transform);ModelVertices.emit(buffer,local,List.of(p.group),color,pieceLight,false);
             });
             if(burnt){
-                var soot=io.github.mcheliceport.client.model.WreckMesh.sootOf(p.group);
-                float charring=p.tear!=null&&!p.owner.isDestroyed()?Math.min(1,.3F+p.age/240F):1;
-                int sootColor=((int)(((color>>>24)&255)*(.5F+.4F*charring))<<24)|0xFFFFFF;
-                event.getSubmitNodeCollector().submitCustomGeometry(event.getPoseStack(),RenderTypes.entityTranslucent(WreckAppearance.CHAR,false),(pose,buffer)->{
-                    var local=pose.copy();local.mulPose(transform);ModelVertices.emit(buffer,local,List.of(soot),sootColor,pieceLight,false);
-                });
+                int alpha=(color>>>24)&255;
+                if(p.tear!=null&&!p.owner.isDestroyed()){
+                    // A section torn off in flight is scorched at its root, not painted over: the fire spreads out slowly.
+                    var bands=io.github.mcheliceport.client.model.BreakupMeshes.scorch(p.group,p.tear.axis(),p.tear.cut(),-p.tear.outward());
+                    float charring=Math.min(1,p.age/240F);
+                    if(bands!=null)for(int b=0;b<2;b++){
+                        var soot=bands[b];int sootColor=((int)(alpha*(b==0?.55F+.35F*charring:.15F+.35F*charring))<<24)|0xFFFFFF;
+                        event.getSubmitNodeCollector().submitCustomGeometry(event.getPoseStack(),RenderTypes.entityTranslucent(WreckAppearance.CHAR,false),(pose,buffer)->{
+                            var local=pose.copy();local.mulPose(transform);ModelVertices.emit(buffer,local,List.of(soot),sootColor,pieceLight,false);
+                        });
+                    }
+                }else{
+                    var soot=io.github.mcheliceport.client.model.WreckMesh.sootOf(p.group);int sootColor=((int)(alpha*.9F)<<24)|0xFFFFFF;
+                    event.getSubmitNodeCollector().submitCustomGeometry(event.getPoseStack(),RenderTypes.entityTranslucent(WreckAppearance.CHAR,false),(pose,buffer)->{
+                        var local=pose.copy();local.mulPose(transform);ModelVertices.emit(buffer,local,List.of(soot),sootColor,pieceLight,false);
+                    });
+                }
             }
             var shell=p.tear==null?null:io.github.mcheliceport.client.model.BreakupMeshes.shell(p.group,p.tear.axis(),p.tear.cut(),p.tear.outward());
             if(shell==null)continue;
