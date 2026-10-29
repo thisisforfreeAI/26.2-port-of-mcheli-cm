@@ -14,7 +14,18 @@ public final class BreakupMeshes {
             Bounds bounds,Vec3 opening,float wingCut,float tailCut){}
     public record Airframe(McheliModel.Group kept,List<McheliModel.Group> sections,McheliModel.Group ribs,
             Bounds bounds,float leftCut,float rightCut,float tailCut,int mask,Map<Integer,Vec3> openings,FractureInteriorMeshes.Details fracture,
-            McheliModel.Group lining) {}
+            McheliModel.Group lining,float leftAft,float rightAft) {
+        /**
+         * The section a body-space point would go with: 0 left wing, 1 right wing, 2 tail, -1 the core.
+         * Outboard of a wing cut everything is wing, except what lies behind that side's trailing line
+         * (behind the wing, or a stabiliser tip that went with the tail).
+         */
+        public int section(Vector3f p) {
+            if(p.x<leftCut)return p.z<leftAft?2:0;
+            if(p.x>rightCut)return p.z<rightAft?2:1;
+            return p.z<tailCut?2:-1;
+        }
+    }
     public static Airframe airframe(McheliModel.Group source,int mask) {
         if(source.vertexCount()<3||source.vertexCount()>60000)return null;
         return (Airframe)get(new Key(source,"airframe-"+(mask&7),Vec3.ZERO),()->airframeBuild(source,mask&7));
@@ -39,15 +50,36 @@ public final class BreakupMeshes {
         return (List<SkinDebrisMeshes.Chip>)get(new Key(section,"skin_debris",new Vec3(axis,cut,outward)),
                 ()->SkinDebrisMeshes.build(section,axis,cut,outward));
     }
+    /**
+     * Soot for a torn section, limited to its root: a dark band next to the cut and a fainter one
+     * beyond it, so the paint further out stays readable. {@code side} points from the cut into the section.
+     */
+    public static McheliModel.Group[] scorch(McheliModel.Group section,int axis,float cut,int side) {
+        if(section.vertexCount()<3||section.vertexCount()>12000)return null;
+        return (McheliModel.Group[])get(new Key(section,"scorch",new Vec3(axis,cut,side)),()->scorchBuild(section,axis,cut,side));
+    }
+    static final float SCORCH_NEAR=.9F,SCORCH_FAR=2.4F;
+    static McheliModel.Group[] scorchBuild(McheliModel.Group section,int axis,float cut,int side) {
+        // Bands are scaled down on a short section (a tail), so it is not charred end to end.
+        var b=bounds(section);float extent=axis==0?b.high.x-b.low.x:b.high.z-b.low.z;
+        var near=split(section,axis,cut+side*Math.min(SCORCH_NEAR,extent*.15F));McheliModel.Group band=side>0?near[0]:near[1],rest=side>0?near[1]:near[0];
+        var far=split(rest,axis,cut+side*Math.min(SCORCH_FAR,extent*.35F));
+        return new McheliModel.Group[]{WreckMesh.soot(band),WreckMesh.soot(side>0?far[0]:far[1])};
+    }
     /** Disjoint left/right/tail sections: combinations cannot duplicate or regrow removed surfaces. */
     public static Airframe airframeBuild(McheliModel.Group source,int requested) {
         var b=bounds(source);float left=b.low.x*.55F,right=b.high.x*.55F,tail=b.low.z+(b.high.z-b.low.z)*.27F;
-        var aft=b.high.z-b.low.z>6?split(source,2,tail):new McheliModel.Group[]{empty("$tail"),source};
-        var port=b.high.x-b.low.x>5?split(aft[1],0,left):new McheliModel.Group[]{empty("$left"),aft[1]};
-        var starboard=b.high.x-b.low.x>5?split(port[1],0,right):new McheliModel.Group[]{port[1],empty("$right")};
-        var sections=List.of(port[0],starboard[1],aft[0]);int mask=0;
+        // Wings come off along their whole chord, so a flying wing or a delta keeps no floating trailing edge;
+        // the tail line only cuts the centre, plus any stabiliser tip that sits wholly behind a wing.
+        boolean wide=b.high.x-b.low.x>5,deep=b.high.z-b.low.z>6;
+        var port=wide?split(source,0,left):new McheliModel.Group[]{empty("$left"),source};
+        var starboard=wide?split(port[1],0,right):new McheliModel.Group[]{port[1],empty("$right")};
+        var aft=deep?split(starboard[0],2,tail):new McheliModel.Group[]{empty("$tail"),starboard[0]};
+        var leftWing=deep?outboard(port[0],tail):new Outboard(port[0],empty("$tail"),Float.NEGATIVE_INFINITY);
+        var rightWing=deep?outboard(starboard[1],tail):new Outboard(starboard[1],empty("$tail"),Float.NEGATIVE_INFINITY);
+        var sections=List.of(leftWing.wing(),rightWing.wing(),join("$tail",List.of(aft[0],leftWing.aft(),rightWing.aft())));int mask=0;
         for(int i=0;i<3;i++)if((requested&(1<<i))!=0&&sections.get(i).vertexCount()>0&&sections.get(i).vertexCount()<=9000)mask|=1<<i;
-        var kept=new ArrayList<McheliModel.Group>();kept.add(starboard[0]);
+        var kept=new ArrayList<McheliModel.Group>();kept.add(aft[1]);
         for(int i=0;i<3;i++)if((mask&(1<<i))==0)kept.add(sections.get(i));
         var frame=mask==0?source:join("$body",kept);var ribs=new ArrayList<McheliModel.Group>();var openings=new HashMap<Integer,Vec3>();
         var fracture=new ArrayList<FractureInteriorMeshes.Details>();var linings=new ArrayList<McheliModel.Group>();
@@ -63,14 +95,90 @@ public final class BreakupMeshes {
                 else baseline.box(v.x-.12F,v.y-.025F,v.z-.10F,v.x+.12F,v.y+.025F,v.z+.10F);
             }
             var old=baseline.group("$airframe_spars");ribs.add(old);
-            linings.add(FractureInteriorMeshes.lining(frame,axis,cut,6144/Integer.bitCount(mask)));
+            linings.add(axis==2?FractureInteriorMeshes.lining(frame,axis,cut,6144/Integer.bitCount(mask),left,right)
+                    :FractureInteriorMeshes.lining(frame,axis,cut,6144/Integer.bitCount(mask)));
             var detail=FractureInteriorMeshes.build(frame,axis,cut,i==1?1:-1);
             if(detail.vertices()==0){var empty=FractureInteriorMeshes.empty();detail=new FractureInteriorMeshes.Details(empty.cavity(),old,empty.cables(),0);}
             fracture.add(detail);
         }
         if(mask!=0)prepare(frame);
         return new Airframe(frame,sections,join("$airframe_spars",ribs),b,left,right,tail,mask,Map.copyOf(openings),FractureInteriorMeshes.merge(fracture),
-                join("$fracture_lining",linings));
+                join("$fracture_lining",linings),leftWing.trailing(),rightWing.trailing());
+    }
+    private record Outboard(McheliModel.Group wing,McheliModel.Group aft,float trailing){}
+    /**
+     * Splits the skin outboard of a wing cut into connected pieces. The largest is the wing; a piece
+     * clear of its planform and behind it is a stabiliser tip and goes with the tail. Pieces that
+     * overlap or touch the wing (separate upper and lower skins, flaps, pods) stay with it.
+     */
+    static Outboard outboard(McheliModel.Group region,float tail) {
+        var d=region.data();int triangles=d.length/24;
+        if(triangles==0)return new Outboard(region,empty("$tail"),Float.NEGATIVE_INFINITY);
+        // Pieces are triangles joined through shared edges: a wing and a stabiliser that only touch at a point stay apart.
+        var ids=new HashMap<Long,Integer>();var edges=new HashMap<Long,Integer>();int[] parent=new int[triangles];int[] corner=new int[3];
+        for(int t=0;t<triangles;t++){
+            parent[t]=t;
+            for(int k=0;k<3;k++){
+                int at=t*24+k*8;long key=(Math.round(d[at]*500)&0x1FFFFF)<<42|(Math.round(d[at+1]*500)&0x1FFFFF)<<21|(Math.round(d[at+2]*500)&0x1FFFFF);
+                corner[k]=ids.computeIfAbsent(key,x->ids.size());
+            }
+            for(int k=0;k<3;k++){
+                int a=corner[k],b=corner[(k+1)%3];if(a==b)continue;
+                Integer other=edges.putIfAbsent((long)Math.min(a,b)<<32|Math.max(a,b),t);if(other!=null)union(parent,other,t);
+            }
+        }
+        var area=new HashMap<Integer,Double>();var low=new HashMap<Integer,Float>();var high=new HashMap<Integer,Float>();var sum=new HashMap<Integer,Double>();
+        for(int t=0;t<triangles;t++){
+            int root=find(parent,t),at=t*24;
+            float zl=Math.min(d[at+2],Math.min(d[at+10],d[at+18])),zh=Math.max(d[at+2],Math.max(d[at+10],d[at+18]));
+            double a=triangleArea(d,at);area.merge(root,a,Double::sum);sum.merge(root,a*(d[at+2]+d[at+10]+d[at+18])/3,Double::sum);
+            low.merge(root,zl,Math::min);high.merge(root,zh,Math::max);
+        }
+        int wing=area.entrySet().stream().max(Map.Entry.comparingByValue()).orElseThrow().getKey();
+        // A largest piece behind the tail line is itself a stabiliser: fall back to the plain tail cut.
+        if(high.get(wing)<tail){var halves=split(region,2,tail);return new Outboard(halves[1],halves[0],tail);}
+        // A stabiliser tip sits behind the wing, clear of its planform.
+        var planform=new Planform(bounds(region));
+        for(int t=0;t<triangles;t++)if(find(parent,t)==wing)planform.fill(d,t*24);
+        double wingCentre=sum.get(wing)/Math.max(1E-9,area.get(wing));
+        float trailing=low.get(wing);var aft=new HashSet<Integer>();var touching=new HashSet<Integer>();
+        for(int t=0;t<triangles;t++){int root=find(parent,t);if(root!=wing&&planform.touches(d,t*24))touching.add(root);}
+        for(int root:area.keySet())if(root!=wing&&!touching.contains(root)){
+            double centre=area.get(root)>1E-9?sum.get(root)/area.get(root):(low.get(root)+high.get(root))*.5;
+            if(centre<wingCentre&&centre<tail+(high.get(wing)-tail)*.5){aft.add(root);trailing=Math.max(trailing,high.get(root)+.01F);}
+        }
+        if(aft.isEmpty())return new Outboard(region,empty("$tail"),trailing);
+        var kept=new ArrayList<Float>();var gone=new ArrayList<Float>();
+        for(int t=0;t<triangles;t++){var out=aft.contains(find(parent,t))?gone:kept;for(int i=t*24;i<t*24+24;i++)out.add(d[i]);}
+        return new Outboard(group(region.name(),kept),group("$tail",gone),trailing);
+    }
+    /** Top-down occupancy of a piece on a quarter-block grid. */
+    private static final class Planform {
+        static final float CELL=.25F;final float x0,z0;final int w,h;boolean[] cells;
+        Planform(Bounds b){x0=b.low.x;z0=b.low.z;w=Math.clamp((int)Math.ceil((b.high.x-b.low.x)/CELL)+1,1,512);h=Math.clamp((int)Math.ceil((b.high.z-b.low.z)/CELL)+1,1,512);cells=new boolean[w*h];}
+        int cx(float x){return Math.clamp((int)((x-x0)/CELL),0,w-1);}
+        int cz(float z){return Math.clamp((int)((z-z0)/CELL),0,h-1);}
+        void fill(float[] d,int t){
+            float ax=d[t],az=d[t+2],bx=d[t+8],bz=d[t+10],cx=d[t+16],cz=d[t+18];
+            for(int k=0;k<3;k++)cells[cz(d[t+k*8+2])*w+cx(d[t+k*8])]=true;
+            float area=(bx-ax)*(cz-az)-(bz-az)*(cx-ax);if(Math.abs(area)<1E-6F)return;
+            for(int j=cz(Math.min(az,Math.min(bz,cz)));j<=cz(Math.max(az,Math.max(bz,cz)));j++)
+                for(int i=cx(Math.min(ax,Math.min(bx,cx)));i<=cx(Math.max(ax,Math.max(bx,cx)));i++){
+                    float px=x0+(i+.5F)*CELL,pz=z0+(j+.5F)*CELL;
+                    float u=((bx-px)*(cz-pz)-(bz-pz)*(cx-px))/area,v=((cx-px)*(az-pz)-(cz-pz)*(ax-px))/area;
+                    if(u>=0&&v>=0&&u+v<=1)cells[j*w+i]=true;
+                }
+        }
+        boolean touches(float[] d,int t){
+            for(int k=0;k<3;k++)if(cells[cz(d[t+k*8+2])*w+cx(d[t+k*8])])return true;
+            return cells[cz((d[t+2]+d[t+10]+d[t+18])/3)*w+cx((d[t]+d[t+8]+d[t+16])/3)];
+        }
+    }
+    private static int find(int[] parent,int i){while(parent[i]!=i){parent[i]=parent[parent[i]];i=parent[i];}return i;}
+    private static void union(int[] parent,int a,int b){a=find(parent,a);b=find(parent,b);if(a!=b)parent[a]=b;}
+    private static double triangleArea(float[] d,int t){
+        double ax=d[t+8]-d[t],ay=d[t+9]-d[t+1],az=d[t+10]-d[t+2],bx=d[t+16]-d[t],by=d[t+17]-d[t+1],bz=d[t+18]-d[t+2];
+        double x=ay*bz-az*by,y=az*bx-ax*bz,z=ax*by-ay*bx;return Math.sqrt(x*x+y*y+z*z)*.5;
     }
     private static McheliModel.Group join(String name,List<McheliModel.Group> groups){
         int size=groups.stream().mapToInt(g->g.data().length).sum();float[] data=new float[size];int at=0;

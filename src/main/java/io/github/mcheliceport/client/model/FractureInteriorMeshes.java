@@ -194,14 +194,18 @@ public final class FractureInteriorMeshes {
      * The depth shrinks until the copy fits {@code limit} vertices; the source stays untouched.
      */
     public static McheliModel.Group lining(McheliModel.Group group,int axis,float cut,int limit) {
-        var d=group.data();float depth=2.5F;int count;
+        return lining(group,axis,cut,limit,Float.NEGATIVE_INFINITY,Float.POSITIVE_INFINITY);
+    }
+    /** As above, for a cut that only spans {@code low..high} across its plane (a tail line between the wing cuts). */
+    public static McheliModel.Group lining(McheliModel.Group group,int axis,float cut,int limit,float low,float high) {
+        var d=group.data();float depth=2.5F;int count;int across=axis==0?2:0;
         while(true){
-            count=0;for(int t=0;t+23<d.length;t+=24)if(near(d,t,axis,cut,depth))count+=3;
+            count=0;for(int t=0;t+23<d.length;t+=24)if(near(d,t,axis,cut,depth)&&within(d,t,across,low,high))count+=3;
             if(count<=limit||depth<.3F)break;depth*=.6F;
         }
         var out=new FloatArrayList(Math.min(count,limit)*8);
         for(int t=0;t+23<d.length&&out.size()/8+3<=limit;t+=24) {
-            if(!near(d,t,axis,cut,depth))continue;
+            if(!near(d,t,axis,cut,depth)||!within(d,t,across,low,high))continue;
             float ux=d[t+8]-d[t],uy=d[t+9]-d[t+1],uz=d[t+10]-d[t+2],vx=d[t+16]-d[t],vy=d[t+17]-d[t+1],vz=d[t+18]-d[t+2];
             float nx=uy*vz-uz*vy,ny=uz*vx-ux*vz,nz=ux*vy-uy*vx,length=(float)Math.sqrt(nx*nx+ny*ny+nz*nz);
             if(!(length>1.0E-6F))continue;nx/=length;ny/=length;nz/=length;
@@ -209,6 +213,9 @@ public final class FractureInteriorMeshes {
                 out.add(d[i]-nx*INSET);out.add(d[i+1]-ny*INSET);out.add(d[i+2]-nz*INSET);out.add(d[i+3]);out.add(d[i+4]);out.add(-nx);out.add(-ny);out.add(-nz);}
         }
         return new McheliModel.Group("$fracture_lining",out.toFloatArray());
+    }
+    private static boolean within(float[] d,int t,int axis,float low,float high) {
+        for(int k=0;k<3;k++)if(d[t+k*8+axis]>=low&&d[t+k*8+axis]<=high)return true;return false;
     }
     private static boolean near(float[] d,int t,int axis,float cut,float depth) {
         for(int k=0;k<3;k++)if(Math.abs(d[t+k*8+axis]-cut)<=depth)return true;return false;

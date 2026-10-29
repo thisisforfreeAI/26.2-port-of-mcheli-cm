@@ -17,6 +17,23 @@ and drawn with back faces culled, and the cut caps were skipped for any open or 
 `AllPlaneFracturesTest` tears both wings and the tail of every stock plane body and checks that
 both sides of each cut are closed.
 
+## Where the sections are cut
+
+- A wing comes off along its whole chord. The tail line used to run across the full span, so on
+  a flying wing or a delta (B-2, X-47B) a torn wing lost only a forward triangle and left its
+  outer trailing edge hanging off the stump, and a torn tail took a strip from tip to tip.
+- Outboard of a wing cut, the skin is split into pieces joined by shared edges. The largest is the
+  wing; a piece clear of its planform and behind it (a stabiliser tip) goes with the tail. The tail
+  line itself only cuts between the wing cuts. Attached parts follow `Airframe.section`.
+- A section torn off in flight keeps its paint: soot covers a band at the torn root and a fainter
+  one past it, darkening as it burns. Sections of a destroyed hulk stay charred all over.
+- Small skin chips have a painted underside a plate's thickness in, so a tumbling chip no longer
+  vanishes when it turns its back to the camera.
+
+`AllPlaneFracturesTest.theB2LosesWholeWingsAndOnlyItsCentreTail` and
+`BreakupMeshesTest.aWingTearsAlongItsWholeChordAndAStabiliserTipGoesWithTheTail` cover both
+layouts.
+
 ## Native captures
 
 OpenGL / llvmpipe under Xvfb, 1280×720, Polished style. Not composited.
@@ -37,3 +54,5 @@ picks the planes.
 | ![](screens/m8-breakaway/f22a-7-landed-pieces.jpg) F-22 sections landed | ![](screens/m8-breakaway/f-15e-6-tail-stump.jpg) F-15E tail stump |
 | ![](screens/m8-breakaway/f-15e-3-wing-stump.jpg) F-15E wing stump | ![](screens/m8-breakaway/f-35a-4-wing-stump-grazing.jpg) F-35A stump, grazing angle |
 | ![](screens/m8-breakaway/a-10-3-wing-stump.jpg) A-10 wing stump | ![](screens/m8-breakaway/a-10-2b-falling-trail.jpg) A-10 wing falling |
+| ![](screens/m8-breakaway/b-2a-1b-separation-above.jpg) B-2 wing tearing off along its whole chord | ![](screens/m8-breakaway/b-2a-2-falling-trail.jpg) B-2 wing falling, paint kept, root scorched |
+| ![](screens/m8-breakaway/b-2a-5-tail-separation.jpg) B-2 losing only its centre tail | |

@@ -32,8 +32,22 @@ public final class SkinDebrisMeshes {
             if(skin.vertexCount()<3||skin.vertexCount()>96||area<.002||area>.25)continue;
             var bounds=BreakupMeshes.bounds(skin);boolean overlaps=false;
             for(var chip:chips)if(chip.bounds.center().distanceSquared(bounds.center())<.04F)overlaps=true;
-            if(!overlaps)chips.add(new Chip(skin,bounds));
+            if(!overlaps)chips.add(new Chip(plate(skin),bounds));
         }
         return List.copyOf(chips);
+    }
+    static final float THICKNESS=.03F;
+    /**
+     * The painted skin plus its underside, pulled in by a plate's thickness. Models are drawn culled,
+     * so a lone outer skin vanished each time a tumbling chip turned its back to the camera.
+     */
+    static McheliModel.Group plate(McheliModel.Group skin) {
+        var d=skin.data();float[] out=Arrays.copyOf(d,d.length*2);
+        for(int t=0;t+23<d.length;t+=24)for(int k=0;k<3;k++){
+            int from=t+(k==0?0:k==1?16:8),to=d.length+t+k*8;
+            for(int a=0;a<3;a++)out[to+a]=d[from+a]-d[from+5+a]*THICKNESS;
+            out[to+3]=d[from+3];out[to+4]=d[from+4];for(int a=5;a<8;a++)out[to+a]=-d[from+a];
+        }
+        return new McheliModel.Group(skin.name(),out);
     }
 }

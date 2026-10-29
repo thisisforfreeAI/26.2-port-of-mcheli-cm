@@ -62,7 +62,7 @@ public final class BreakawayProbe {
     private static Vec3 piece(){
         try{var f=LoosePanels.class.getDeclaredField("PIECES");f.setAccessible(true);var list=(java.util.List<?>)f.get(null);
             for(int i=list.size()-1;i>=0;i--){var p=list.get(i);var t=p.getClass().getDeclaredField("tear");t.setAccessible(true);
-                if(t.get(p)!=null){var at=p.getClass().getDeclaredField("position");at.setAccessible(true);return (Vec3)at.get(p);}}
+                if(t.get(p)!=null){var at=p.getClass().getDeclaredField("motion");at.setAccessible(true);return ((DebrisMotion)at.get(p)).position;}}
         }catch(ReflectiveOperationException e){throw new IllegalStateException(e);}
         return null;
     }
@@ -92,6 +92,8 @@ public final class BreakawayProbe {
         }
         if(age==40)damage(AirframeDamage.LEFT);
         if(age==47)shot("1-wing-separation",piece(),new Vec3(-5,2,-5));
+        if(age==43)shot("1a-separation-above",opening(AirframeDamage.LEFT),new Vec3(-3,7,-6));
+        if(age==50)shot("1b-separation-above",opening(AirframeDamage.LEFT),new Vec3(-3,8,-7));
         if(age==58)shot("2-falling-trail",piece(),new Vec3(-6,2.5,-6));
         if(age==68)shot("2b-falling-trail",piece(),new Vec3(-5,1.5,-5));
         if(age==100)shot("3-wing-stump",opening(AirframeDamage.LEFT),new Vec3(-2.8,1.3,-1.9));

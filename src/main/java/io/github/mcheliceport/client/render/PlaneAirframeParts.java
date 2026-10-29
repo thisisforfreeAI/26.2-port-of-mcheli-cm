@@ -82,8 +82,7 @@ public final class PlaneAirframeParts {
                 var part=BreakupMeshes.part(group);
                 if(part!=null){
                     var center=new Matrix4f(inverse).mul(pose).transformPosition(part.bounds().center());
-                    boolean lost=(actual&1)!=0&&center.x<frame.leftCut() || (actual&2)!=0&&center.x>frame.rightCut()
-                            || (actual&4)!=0&&center.z<frame.tailCut();
+                    int section=frame.section(center);boolean lost=section>=0&&(actual&(1<<section))!=0;
                     if(lost)continue;
                 }
             }
