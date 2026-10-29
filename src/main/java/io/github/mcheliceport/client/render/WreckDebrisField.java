@@ -31,7 +31,7 @@ import org.joml.Vector3f;
  */
 @EventBusSubscriber(modid="mcheli_ce_port",value=Dist.CLIENT)
 public final class WreckDebrisField {
-    public static final int MAX_FIELDS=6,MAX_PIECES=72,MAX_VERTICES=36000,RAYS=3;
+    public static final int MAX_FIELDS=6,MAX_PIECES=72,MAX_VERTICES=36000,RAYS=3,GROUND_RAYS=24;
     static final Identifier SOOT=Identifier.fromNamespaceAndPath("mcheli_ce_port","textures/effect/m8_wreck_char.png");
     /** Skin chunks render darker than the hull's paint; gear keeps a little more of its colour. */
     static final int CHUNK_TINT=0xFF5E5A55,GEAR_TINT=0xFF77726B,SOOT_TINT=0xE0FFFFFF;
@@ -111,20 +111,25 @@ public final class WreckDebrisField {
             if(p.motion.phase==DebrisMotion.Phase.SLIDE)
                 io.github.mcheliceport.client.particle.DebrisImpactEffects.scrape(world,p.motion.position.add(0,-p.motion.height(),0),p.motion.velocity,tick,f.scene.seed);
         }
+        // Pieces at the ground are swept every tick (up to GROUND_RAYS); the rest share RAYS round-robin.
+        var swept=Collections.newSetFromMap(new IdentityHashMap<Piece,Boolean>());
+        for(var p:moving)if(swept.size()<GROUND_RAYS&&p.motion.moving()&&LoosePanels.nearGround(world,p.motion)){swept.add(p);sweep(p.motion);}
         for(int i=0,tries=0;i<RAYS&&!moving.isEmpty()&&tries<moving.size();tries++){
-            var p=moving.get(Math.floorMod(cursor++,moving.size()));var m=p.motion;if(!m.moving())continue;i++;
-            Vec3 from=m.sweepFrom(),to=m.sweepTo();
-            if(!world.hasChunkAt(BlockPos.containing(from))||!world.hasChunkAt(BlockPos.containing(to)))continue;
-            var hit=world.clip(new ClipContext(from,to,ClipContext.Block.COLLIDER,
-                    m.phase==DebrisMotion.Phase.SUNK?ClipContext.Fluid.NONE:ClipContext.Fluid.ANY,CollisionContext.empty()));
-            if(hit.getType()!=HitResult.Type.BLOCK||hit.isInside()){m.clear();continue;}
-            boolean water=world.getFluidState(hit.getBlockPos()).is(net.minecraft.tags.FluidTags.WATER);
-            var n=new Vec3(hit.getDirection().getStepX(),hit.getDirection().getStepY(),hit.getDirection().getStepZ());
-            Vec3 before=m.velocity;var contact=m.contact(hit.getLocation(),n,water);
-            if(contact==DebrisMotion.Event.BOUNCE||contact==DebrisMotion.Event.LAND)
-                io.github.mcheliceport.client.particle.DebrisImpactEffects.strike(world,hit.getLocation(),before,m.impact,.6F,cursor);
-            else if(contact==DebrisMotion.Event.SPLASH)io.github.mcheliceport.client.particle.VehicleWaterEffects.splash(world,hit.getLocation(),m.impact);
+            var p=moving.get(Math.floorMod(cursor++,moving.size()));if(!p.motion.moving()||swept.contains(p))continue;i++;sweep(p.motion);
         }
+    }
+    private static void sweep(DebrisMotion m){
+        Vec3 from=m.sweepFrom(),to=m.sweepTo();
+        if(!world.hasChunkAt(BlockPos.containing(from))||!world.hasChunkAt(BlockPos.containing(to)))return;
+        var hit=world.clip(new ClipContext(from,to,ClipContext.Block.COLLIDER,
+                m.phase==DebrisMotion.Phase.SUNK?ClipContext.Fluid.NONE:ClipContext.Fluid.ANY,CollisionContext.empty()));
+        if(hit.getType()!=HitResult.Type.BLOCK||hit.isInside()){m.clear();return;}
+        boolean water=world.getFluidState(hit.getBlockPos()).is(net.minecraft.tags.FluidTags.WATER);
+        var n=new Vec3(hit.getDirection().getStepX(),hit.getDirection().getStepY(),hit.getDirection().getStepZ());
+        Vec3 before=m.velocity;var contact=m.contact(hit.getLocation(),n,water);
+        if(contact==DebrisMotion.Event.BOUNCE||contact==DebrisMotion.Event.LAND)
+            io.github.mcheliceport.client.particle.DebrisImpactEffects.strike(world,hit.getLocation(),before,m.impact,.6F,cursor);
+        else if(contact==DebrisMotion.Event.SPLASH)io.github.mcheliceport.client.particle.VehicleWaterEffects.splash(world,hit.getLocation(),m.impact);
     }
     @SubscribeEvent public static void submit(SubmitCustomGeometryEvent event){
         if(FIELDS.isEmpty()||world!=Minecraft.getInstance().level||!WreckScene.enabled())return;

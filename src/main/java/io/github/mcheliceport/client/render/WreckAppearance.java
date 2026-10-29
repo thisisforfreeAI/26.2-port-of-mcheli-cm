@@ -14,7 +14,7 @@ import org.joml.Matrix4f;
  * canopy shatters and its landing gear is torn off into the debris field. No entity pose or collision edits.
  */
 public final class WreckAppearance {
- private static final class State {boolean seen,dead,glass;int removed;long restStart=-1;float drop=-1;Matrix4f rest=new Matrix4f();final Set<McheliModel.Group> scattered=Collections.newSetFromMap(new IdentityHashMap<>());}
+ private static final class State {boolean seen,dead,glass;int removed;float restProgress;long restTick=-1;float drop=-1;Matrix4f rest=new Matrix4f();final Set<McheliModel.Group> scattered=Collections.newSetFromMap(new IdentityHashMap<>());}
  private static final Map<AircraftEntity,State> STATES=Collections.synchronizedMap(new WeakHashMap<>());
  private static final Identifier SOOT=Identifier.fromNamespaceAndPath("mcheli_ce_port","textures/effect/m8_fluid_stains.png");
  static final Identifier CHAR=Identifier.fromNamespaceAndPath("mcheli_ce_port","textures/effect/m8_wreck_char.png");
@@ -78,9 +78,13 @@ public final class WreckAppearance {
   float settle=settling(ac);
   // A crashed plane that has stopped sliding settles level instead of staying propped at its impact angle.
   long now=ac.level().getGameTime();
-  boolean still=plane&&down&&ac.position().subtract(ac.xo,ac.yo,ac.zo).horizontalDistanceSqr()<.0025;
-  if(!still)s.restStart=-1;else if(s.restStart<0)s.restStart=now;
-  float rest=s.restStart<0?0:(now-s.restStart)/(float)SETTLE;rest=rest*rest*(3-2*Math.min(1,rest));
+  // Progress eases in and out instead of restarting: a stopped hulk that is nudged by a tick of sync
+  // movement would otherwise snap back to its impact attitude and settle again, over and over.
+  double moved=ac.position().subtract(ac.xo,ac.yo,ac.zo).horizontalDistanceSqr();
+  float step=s.restTick<0?0:Math.clamp(now-s.restTick,0,SETTLE)/(float)SETTLE;s.restTick=now;
+  if(plane&&down&&moved<.0025)s.restProgress=Math.min(1,s.restProgress+step);
+  else if(!(plane&&down)||moved>.04)s.restProgress=Math.max(0,s.restProgress-step);
+  float rest=s.restProgress*s.restProgress*(3-2*s.restProgress);
   s.rest=plane&&down&&s.drop>=0?restCorrection(render.yaw,render.pitch,render.roll,Math.min(1,rest),s.drop):new Matrix4f();
   var root=new Matrix4f(s.rest).translate(0,-.10F*settle,0).rotateZ(.025F*settle).rotateX(-.018F*settle);
   var draws=new ArrayList<AircraftPartPoses.Draw>();int removed=0;
