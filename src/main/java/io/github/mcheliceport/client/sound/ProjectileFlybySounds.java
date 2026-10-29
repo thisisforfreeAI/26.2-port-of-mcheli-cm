@@ -27,6 +27,7 @@ public final class ProjectileFlybySounds {
     private ProjectileFlybySounds(){}
     public static int tracks(){return TRACKS.size();}
     public static int voices(){return PLAYING.size();}
+    public static int activeVoices(){var sounds=Minecraft.getInstance().getSoundManager();return (int)PLAYING.stream().filter(sounds::isActive).count();}
     public static int played(){return played;}
     public static void clear(){
         var sounds=Minecraft.getInstance().getSoundManager();for(var cue:PLAYING){cue.end();sounds.stop(cue);}

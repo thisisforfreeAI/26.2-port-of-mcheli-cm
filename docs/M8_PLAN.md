@@ -465,8 +465,9 @@ change original weapon craters. Existing upstream features count as foundations 
   boom for supported fast aircraft. Define the content/speed mapping explicitly, prevent
   repeated threshold chatter, and retain bounded particle and pending-audio admission.
   [Implementation and limits](M8_SUPERSONIC_EFFECTS.md) · [native examples](M8_SUPERSONIC_GALLERY.md).
-- [ ] **Flyby audio:** refine existing directional engine audio with bounded Doppler, plus
+- [x] **Flyby audio:** refine existing directional engine audio with bounded Doppler, plus
   conventional rocket/shell approach cues. Avoid duplicate loops, rider Doppler and NTM audio.
+  [Implementation and limits](M8_FLYBY_AUDIO.md) · [native examples and cues](M8_FLYBY_GALLERY.md).
 - [ ] **Landing feedback:** supported tire compression and suspension response, touchdown
   smoke and hard-contact sparks from real contact/motion transitions; no handling changes.
 - [ ] **Night-flight lighting:** authored navigation strobes, restrained cockpit illumination

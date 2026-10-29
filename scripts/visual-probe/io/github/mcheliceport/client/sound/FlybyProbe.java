@@ -25,7 +25,7 @@ public final class FlybyProbe {
     private static final String[] NAMES={"f-35a","f-15e","ah-64","vertical-pass","own-pilot","disabled","hydra70","cannon","agm158-smokeless","ntm-bypass","projectile-load","engine-load-low","engine-load-balanced","classic"};
     private static final List<AircraftEntity> actors=new ArrayList<>();
     private static final List<BaseBulletEntity> shots=new ArrayList<>();
-    private static int ticks,phase=-1,age,voices,nearMisses;private static float approach,recede;private static String capture;
+    private static int ticks,phase=-1,age,voices,nearMisses,cuePeak;private static float approach,recede;private static String capture;
     private static WeaponInfo definition;
     private static Vec3 ear(){return phase>=6&&phase<=10?new Vec3(0,100,0):new Vec3(15,108,-10);}
     private static void fly(AircraftEntity ac){
@@ -46,9 +46,12 @@ public final class FlybyProbe {
     }
     private static void shot(BaseBulletEntity shot){
         int i=shots.indexOf(shot);shot.xo=shot.getX();shot.yo=shot.getY();shot.zo=shot.getZ();shot.tickCount++;
-        var at=new Vec3(phase==10?(i%4)*.5+2:2,100,80-Math.max(0,age-40)*4);
+        int travel=phase==9?age%50:Math.max(0,age-40-(phase==10?i%4*5:0));
+        var at=new Vec3(phase==10?(i%4)*.5+2:2,100,80-travel*4);
+        if(phase==9){definition.useHBM=age<50;definition.payloadNTM=age>=50&&age<100?WeaponInfo.Payload.NTM_NUKE:WeaponInfo.Payload.NONE;
+            shot.shootingEntity=age>=100?Minecraft.getInstance().player:null;}
         shot.setPos(at.x,at.y,at.z);shot.setDeltaMovement(at.subtract(shot.xo,shot.yo,shot.zo));
-        if(age>90)shot.discard();
+        if(age>(phase==9?140:110))shot.discard();
     }
     private static final class Rocket extends RocketEntity {
         Rocket(Minecraft mc){super(ModEntityTypes.ROCKET.get(),mc.level);}
@@ -67,13 +70,15 @@ public final class FlybyProbe {
         if(++ticks==40){
             for(String c:new String[]{"kill @e[type=!minecraft:player]","gamemode spectator","time set noon","weather clear","gamerule minecraft:advance_time false"})mc.player.connection.sendCommand(c);
             mc.getWindow().setWindowed(1280,720);mc.options.enableVsync().set(false);mc.options.framerateLimit().set(120);mc.options.cloudStatus().set(CloudStatus.OFF);mc.options.fov().set(60);
+            mc.options.getSoundSourceOptionInstance(net.minecraft.sounds.SoundSource.MASTER).set(1D);
+            mc.options.getSoundSourceOptionInstance(net.minecraft.sounds.SoundSource.NEUTRAL).set(1D);
             if(!mc.gui.hud.isHidden())mc.gui.hud.toggle();ClientConfig.ENGINE_STARTUP_EFFECTS.set(false);ClientConfig.ADAPTIVE_EFFECTS.set(false);ClientConfig.SUPERSONIC_EFFECTS.set(false);
         }
         if(ticks<160)return;int next=START+(ticks-160)/150;age=(ticks-160)%150;
         if(next>=Math.min(END,NAMES.length)){System.out.println("M8_FLYBY all_passed=true start="+START+" end="+END);mc.stop();return;}
         if(next!=phase){
             mc.player.stopRiding();actors.forEach(AircraftEntity::discard);actors.clear();shots.forEach(BaseBulletEntity::discard);shots.clear();AircraftEngineSound.clear();mc.particleEngine.clearParticles();
-            phase=next;voices=nearMisses=0;approach=recede=1;
+            phase=next;voices=nearMisses=cuePeak=0;approach=recede=1;
             ClientConfig.EFFECT_QUALITY.set(EffectQuality.ENHANCED);ClientConfig.EFFECT_STYLE.set(phase==13?ClientConfig.EffectStyle.CLASSIC:ClientConfig.EffectStyle.POLISHED);
             ClientConfig.FLYBY_AUDIO.set(phase!=5);ClientConfig.EFFECT_BUDGET.set(phase==11?ClientConfig.EffectBudget.LOW:ClientConfig.EffectBudget.BALANCED);
             if(phase<6||phase>=11){
@@ -93,23 +98,25 @@ public final class FlybyProbe {
             System.out.println("M8_FLYBY scene="+NAMES[phase]+" actors="+actors.size()+" shots="+shots.size());
         }
         if(age%30==0){var at=ear();mc.player.connection.sendCommand("tp @s "+at.x+" "+at.y+" "+at.z+" 30 18");}
-        voices=Math.max(voices,AircraftEngineSound.voices());nearMisses=Math.max(nearMisses,ProjectileFlybySounds.voices());
+        voices=Math.max(voices,AircraftEngineSound.voices());nearMisses=Math.max(nearMisses,ProjectileFlybySounds.voices());cuePeak=Math.max(cuePeak,ProjectileFlybySounds.played());
         int cap=phase==11?12:24;
         if(AircraftEngineSound.voices()>cap||ProjectileFlybySounds.voices()>4||ProjectileFlybySounds.tracks()>128)throw new IllegalStateException("Audio voice bound exceeded");
         if(!actors.isEmpty()){
             var status=AircraftEngineSound.status(actors.getFirst());
             if(age==25)approach=status.doppler();if(age==80)recede=status.doppler();
             if(phase==4&&Math.abs(status.doppler()-1)>1E-5)throw new IllegalStateException("Own cockpit received Doppler");
-            if(age==40&&phase==3){mc.player.connection.sendCommand("tp @s 100 100 100");}
+            if(age==40&&phase<3&&!status.active())throw new IllegalStateException("Engine sound instance was not active");
         }
-        if(phase==9&&age==75){definition.useHBM=false;definition.payloadNTM=WeaponInfo.Payload.NTM_NUKE;}
+        if(phase==10&&age==70){if(nearMisses!=4)throw new IllegalStateException("Did not exercise four live incoming cues: "+nearMisses);ClientConfig.FLYBY_AUDIO.set(false);}
+        if((phase==6||phase==7||phase==8||phase==10)&&age==60&&ProjectileFlybySounds.activeVoices()==0)throw new IllegalStateException("Incoming cue was not active in the sound engine");
+        if(phase==10&&age==74&&(ProjectileFlybySounds.voices()!=0||ProjectileFlybySounds.tracks()!=0))throw new IllegalStateException("Disabled flybys retained sound state");
         if(age==50&&phase<3)capture=NAMES[phase];
         if(age==120){
             if((phase<4)&&!(approach>1&&recede<1))throw new IllegalStateException("Missing 3D pass pitch "+NAMES[phase]+" "+approach+"/"+recede);
-            if((phase==6||phase==7||phase==8||phase==10)&&ProjectileFlybySounds.played()==0)throw new IllegalStateException("No incoming cue "+NAMES[phase]);
-            if((phase==5||phase==9||phase==13)&&ProjectileFlybySounds.played()!=0)throw new IllegalStateException("Excluded incoming cue");
+            if((phase==6||phase==7||phase==8||phase==10)&&cuePeak==0)throw new IllegalStateException("No incoming cue "+NAMES[phase]);
+            if((phase==5||phase==9||phase==13)&&cuePeak!=0)throw new IllegalStateException("Excluded incoming cue");
             if(phase==11&&voices!=12||phase==12&&voices!=24)throw new IllegalStateException("Engine cap not exercised "+voices);
-            System.out.println("M8_FLYBY passed=true scene="+NAMES[phase]+" approach="+approach+" recede="+recede+" peak_engine_voices="+voices+" peak_incoming_voices="+nearMisses+" cues="+ProjectileFlybySounds.played());
+            System.out.println("M8_FLYBY passed=true scene="+NAMES[phase]+" approach="+approach+" recede="+recede+" peak_engine_voices="+voices+" peak_incoming_voices="+nearMisses+" cues="+cuePeak);
         }
     }
     @SubscribeEvent public static void camera(ViewportEvent.ComputeFov e){if(ENABLED&&phase>=0)e.getCamera().setPosition(ear());}
