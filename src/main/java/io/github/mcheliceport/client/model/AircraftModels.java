@@ -151,8 +151,11 @@ public final class AircraftModels {
         if (CommonConfig.SPEC.isLoaded() && CommonConfig.DEBUG_LOG.get()) {
             LOGGER.info("Loaded {} with {} part models", body, parts.size());
         }
-        VehicleSurfaceShade.prepare(body, VehicleDetailShade.zones(info));
-        for (McheliModel part : parts.values()) VehicleSurfaceShade.prepare(part);
+        boolean canopy = body.groups.stream().anyMatch(g -> VehicleCanopyFinish.canopy(g.name()))
+                || parts.values().stream().anyMatch(m -> m.groups.stream().anyMatch(g -> VehicleCanopyFinish.canopy(g.name())));
+        var glazing = canopy ? VehicleCanopyFinish.load(resources, dir, info) : java.util.List.<VehicleGlassAlpha.Mask>of();
+        VehicleSurfaceShade.prepare(body, VehicleDetailShade.zones(info), glazing);
+        for (McheliModel part : parts.values()) VehicleSurfaceShade.prepare(part, java.util.List.of(), glazing);
         var loaded=new VehicleModels(body, Map.copyOf(parts));
         if(info instanceof io.github.mcheliceport.content.aircraft.PlaneInfo plane)LandingGearMesh.prepare(plane,loaded);
         CockpitLightMesh.prepare(info,loaded);

@@ -498,6 +498,21 @@ localized fire/smoke contrast, baked vehicle material cues, terrain scars, groun
 and distance transitions within the existing budgets. Keep the Modern on/off toggle,
 original craters and 60 FPS target. NTM work remains owned by Claude and is untouched.
 
+### Blast readability and material refinement
+
+Approved after the effects-range batch. [Implementation and limits](M8_BLAST_READABILITY.md) ·
+[native examples](M8_BLAST_READABILITY_GALLERY.md).
+
+- [x] Compact two-tick opening flash, faster hot pockets and staged support smoke.
+- [x] Dominant billows, shorter irregular wisps and a legacy/rolling-smoke mix for small rockets.
+- [x] Bounded samples of removed solid terrain, angular crater dust and independent rim sampling.
+- [x] Heading-shaped rockets, broad grounded bombs and narrower rising penetrator eruptions.
+- [x] Loader-baked material contrast and alpha-confirmed glazing that preserves opaque frames.
+- [x] Primary silhouettes thinned once with distance; optional geometry fades into billboards.
+
+Original damage/crater generation, flight behavior and fire rates are retained. Software-renderer
+previews and bounded admission checks do not establish the target PC's 60 FPS acceptance.
+
 ## Localized vehicle damage
 
 [Vehicle impact marks](M8_VEHICLE_IMPACT_MARKS.md): gun-hit paint/metal chips, explosive

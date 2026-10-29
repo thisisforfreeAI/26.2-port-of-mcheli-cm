@@ -119,6 +119,11 @@ class PayloadCodecTest {
                 io.github.mcheliceport.effect.BlastStyle.BLAST,
                 io.github.mcheliceport.effect.BlastDirection.from(new net.minecraft.world.phys.Vec3(-3, -1, 2)));
         assertEquals(directed, roundTrip(ExplosionEffectPayload.CODEC, directed));
+        var terrain = new ExplosionEffectPayload(directed.x(),directed.y(),directed.z(),directed.size(),false,
+                blocks,directed.blastStyle(),directed.direction(),blocks);
+        assertEquals(terrain,roundTrip(ExplosionEffectPayload.CODEC,terrain));
+        org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class,()->new ExplosionEffectPayload(
+                0,0,0,1,false,blocks,directed.blastStyle(),directed.direction(),java.util.Collections.nCopies(257,blocks.getFirst())));
         ExplosionEffectPayload empty = new ExplosionEffectPayload(0, 0, 0, 0, false, java.util.List.of());
         assertEquals(empty, roundTrip(ExplosionEffectPayload.CODEC, empty));
         for (var style : io.github.mcheliceport.effect.BlastStyle.values()) {

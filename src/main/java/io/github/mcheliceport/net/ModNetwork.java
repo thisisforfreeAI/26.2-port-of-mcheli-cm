@@ -46,8 +46,8 @@ public final class ModNetwork {
 
     private static final Logger LOGGER = LogUtils.getLogger();
     /** Bump when payload encoding, menu layout or synchronized entity data changes. */
-    // The marker screen's payload carries the nearby bases and the other markers' IDs.
-    public static final String VERSION = "32";
+    // Explosion effects also carry bounded samples of removed solid terrain.
+    public static final String VERSION = "33";
 
     private ModNetwork() {
     }
@@ -114,7 +114,7 @@ public final class ModNetwork {
                 (p, context) -> { var hooks = WeaponClientHooks.get(); if (hooks != null) hooks.explosionSound(p); });
         registrar.playToClient(ExplosionEffectPayload.TYPE, ExplosionEffectPayload.CODEC,
                 (p, context) -> McheliEffects.explosionEffects(context.player().level(), p.x(), p.y(), p.z(),
-                        p.size(), p.inWater(), p.affectedBlocks(), p.blastStyle(), p.direction()));
+                        p.size(), p.inWater(), p.affectedBlocks(), p.blastStyle(), p.direction(), p.terrainBlocks()));
         registrar.playToClient(ServerSettingsPayload.TYPE, ServerSettingsPayload.CODEC,
                 (payload, context) -> ServerSettings.setClient(payload.toValues()));
         registrar.playToClient(TitlePayload.TYPE, TitlePayload.CODEC,

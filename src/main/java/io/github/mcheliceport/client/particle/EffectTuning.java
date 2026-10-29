@@ -39,7 +39,9 @@ public final class EffectTuning {
     /** Primary blast quotas already shrink with pressure; keep distance and vanilla thinning. */
     public static int admissionStride(double distanceSquared, int particleSetting, boolean flash,
             int pressure, boolean blastLobe) {
-        return stride(distanceSquared, particleSetting, flash)
+        // The primary emitter already reduces lobe count smoothly with distance.
+        // Applying the trail stride again made clouds collapse at 64/128 blocks.
+        return (blastLobe && !flash ? 1 << Math.clamp(particleSetting, 0, 2) : stride(distanceSquared, particleSetting, flash))
                 * (flash || blastLobe ? 1 : 1 + Math.clamp(pressure, 0, 3));
     }
 

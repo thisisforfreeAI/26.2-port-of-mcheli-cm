@@ -18,6 +18,11 @@ final class ExplosionCloudEmitter {
 
     static boolean emit(ClientLevel level, double x, double y, double z, float power, BlastStyle style,
             BlastDirection direction, float footprint) {
+        return emit(level, x, y, z, power, style, direction, footprint, BlastSurfaceFootprint.EMPTY);
+    }
+
+    static boolean emit(ClientLevel level, double x, double y, double z, float power, BlastStyle style,
+            BlastDirection direction, float footprint, BlastSurfaceFootprint surface) {
         var quality = ClientConfig.get(ClientConfig.EFFECT_BUDGET);
         boolean modern = ModernExplosionLook.enabled();
         int count = BlastReadability.distantLobes(ExplosionSequence.lobes(power, style, quality, EffectPerformance.pressure()),
@@ -32,28 +37,31 @@ final class ExplosionCloudEmitter {
         Random random = new Random(Double.doubleToLongBits(x) ^ Long.rotateLeft(Double.doubleToLongBits(z), 21)
                 ^ level.getGameTime() ^ 0xB1A57L);
         Vec3 axis = direction.burstAxis();
+        flash(level, x, y, z, power, style);
         if (ExplosionSequence.smokeLed(power, style) && (!modern || style == BlastStyle.CANNON)) {
             boolean directed = !direction.equals(BlastDirection.NONE);
             int fireCount = ExplosionSequence.smokeFireLobes(power, style, count);
             // Make the impact visible before the growing legacy puffs spend coverage admission.
             boolean core = false;
-            for (int i = 0; i < fireCount; i++) core |= fire(level, x, y, z, power, style, fireRadius, i, random, modern);
-            flash(level, x, y, z, power, style);
+            for (int i = 0; i < fireCount; i++) core |= fire(level, x, y, z, power, style, fireRadius, i, random, axis, modern);
             boolean groundEmitted = false;
             for (int i = 0; i < count - fireCount; i++) {
                 double angle = i * 2.3999632297 + random.nextDouble() * 0.4;
                 double spread = radius * random.nextDouble() * 0.9;
                 // Keep the old puff sheet and growth, concentrating known rocket impacts along their heading.
                 double reach = radius * random.nextDouble() * 0.3;
-                oldSmoke(level, x + Math.cos(angle) * spread * (directed ? 0.9 : 1) + axis.x * reach,
-                        y + random.nextDouble() * radius * (directed ? 0.25 : 0.4) + axis.y * reach,
-                        z + Math.sin(angle) * spread * (directed ? 0.9 : 1) + axis.z * reach, power, style, random, axis, radius / Math.max(0.25F, ExplosionSequence.radius(power, style)));
+                if (style == BlastStyle.CANNON || i % 3 == 1) {
+                    oldSmoke(level, x + Math.cos(angle) * spread * (directed ? .8 : 1) + axis.x * reach,
+                            y + random.nextDouble() * radius * .25 + axis.y * reach,
+                            z + Math.sin(angle) * spread * (directed ? .8 : 1) + axis.z * reach,
+                            power, style, random, axis, radius / Math.max(.25F, ExplosionSequence.radius(power, style)));
+                } else smoke(level, x, y, z, power, style, radius, i, Math.max(1, (count-fireCount+1)/2), random, axis, modern);
                 if (i == 3 && footprint > 0) {
-                    BlastGroundEffects.emit(level, x, y, z, power, style, direction, footprint);
+                    BlastGroundEffects.emit(level, x, y, z, power, style, direction, footprint, surface);
                     groundEmitted = true;
                 }
             }
-            if (!groundEmitted) BlastGroundEffects.emit(level, x, y, z, power, style, direction, footprint);
+            if (!groundEmitted) BlastGroundEffects.emit(level, x, y, z, power, style, direction, footprint, surface);
             ClientEffects.spawnExplosionSparks(level, x, y, z, power, style);
             return core;
         }
@@ -61,21 +69,21 @@ final class ExplosionCloudEmitter {
                 ? ModernExplosionLook.smallSmokeLobes(count,style) : ExplosionSequence.smokeLobes(count, style);
         int baseCount = (smokeCount + 1) / 2;
         int priority = Math.min(4, smokeCount);
-        // The core must precede support smoke and optional glow: at high adaptive pressure,
-        // one close support quad can otherwise spend most of the shared coverage allowance.
-        boolean core = fire(level, x, y, z, power, style, fireRadius, 0, random, modern);
-        flash(level, x, y, z, power, style);
+        // The compact flash and core precede support smoke, which can spend substantial coverage.
+        boolean core = fire(level, x, y, z, power, style, fireRadius, 0, random, axis, modern);
+        int earlyFire = Math.min(3, count-smokeCount);
+        for (int i=1;i<earlyFire;i++) fire(level,x,y,z,power,style,fireRadius,i,random,axis,modern);
         for (int slot = 0; slot < priority; slot++) {
             int i = smokeIndex(slot, baseCount, smokeCount);
             support(level, x, y, z, power, style, radius, i, baseCount, random, axis, modern);
         }
-        if (footprint > 0) BlastGroundEffects.emit(level, x, y, z, power, style, direction, footprint);
+        if (footprint > 0) BlastGroundEffects.emit(level, x, y, z, power, style, direction, footprint, surface);
         for (int slot = priority; slot < smokeCount; slot++) {
             int i = smokeIndex(slot, baseCount, smokeCount);
             support(level, x, y, z, power, style, radius, i, baseCount, random, axis, modern);
         }
-        for (int i = 1; i < count - smokeCount; i++) fire(level, x, y, z, power, style, fireRadius, i, random, modern);
-        if (footprint <= 0) BlastGroundEffects.emit(level, x, y, z, power, style, direction, footprint);
+        for (int i = earlyFire; i < count - smokeCount; i++) fire(level, x, y, z, power, style, fireRadius, i, random, axis, modern);
+        if (footprint <= 0) BlastGroundEffects.emit(level, x, y, z, power, style, direction, footprint, surface);
         ClientEffects.spawnExplosionSparks(level, x, y, z, power, style);
         return core;
     }
@@ -84,7 +92,7 @@ final class ExplosionCloudEmitter {
         float radius = ExplosionSequence.flashRadius(power, style);
         if (EffectPerformance.optionalGlows() && EffectAdmission.admit(level, x, y, z, false, radius)) {
             Minecraft.getInstance().particleEngine.add(new ImpactCoreParticle(level, x, y + 0.3, z, radius,
-                    ExplosionLook.broad(style) ? 3 : 2));
+                    2, true));
         }
     }
 
@@ -110,35 +118,38 @@ final class ExplosionCloudEmitter {
         double angle = i * 2.3999632297 + random.nextDouble() * 0.6;
         double dx = Math.cos(angle), dz = Math.sin(angle);
         double spread = radius * (base ? 0.38 + random.nextDouble() * 0.24 : 0.16 + random.nextDouble() * 0.26);
-        Vec3 footprint = ExplosionFootprint.cloudOffset(power, style, axis, dx * spread, dz * spread, radius);
+        Vec3 footprint = BlastShape.offset(style, axis, dx * spread, dz * spread, radius);
         double px = x + footprint.x, pz = z + footprint.z;
-        double py = y + radius * (base ? 0.07 : 0.22 + tier * 0.12);
-        boolean wisp = i % 3 == 2;
-        float r = radius * ExplosionSequence.smokeScale(wisp, random.nextFloat());
+        double py = y + radius * BlastShape.height(style, base, random.nextFloat());
+        boolean wisp = BlastShape.wisp(i);
+        float r = radius * BlastShape.scale(i, random.nextFloat());
         int cards = BlastDepthLook.cloudCards(EffectAdmission.depthDetail(level, px, py, pz), false, i);
         if (!EffectAdmission.admitBlastLobe(level, px, py, pz, r * (cards > 1 ? 1.25F : 1), cards)) {
             if (cards == 1 || !EffectAdmission.admitBlastLobe(level, px, py, pz, r)) return;
             cards = 1;
         }
-        double speed = radius * (base ? 0.055 : 0.009) * (0.8 + random.nextDouble() * 0.4);
-        int delay = ExplosionSequence.smokeDelay(base, base ? i : tier);
+        double speed = radius * (style == BlastStyle.PENETRATOR ? .012 : base ? .055 : .009) * (0.8 + random.nextDouble() * 0.4);
+        int delay = ExplosionSequence.smokeDelay(base, base ? i : tier) + (style == BlastStyle.PENETRATOR ? 1 : 0);
         int life = BlastSmokeMotion.lifetime(Math.min(116, ExplosionSequence.life(power, style)
                 + (base ? 12 : 20) + random.nextInt(8)), wisp);
         Minecraft.getInstance().particleEngine.add(new BlastCloudParticle(level, px, py, pz,
-                dx * speed, base ? 0.01 : 0.045 + Math.min(3, tier) * 0.018, dz * speed,
+                dx * speed + (style == BlastStyle.BLAST ? axis.x * speed * .55 : 0),
+                style == BlastStyle.PENETRATOR ? .12 + random.nextDouble() * .08 : base ? .01 : .045 + random.nextDouble() * .05,
+                dz * speed + (style == BlastStyle.BLAST ? axis.z * speed * .55 : 0),
                 r, life, 0, wisp ? 0.52F : base ? 0.92F : 0.86F, delay, base,
                 base || tier < 2 ? (modern ? ModernExplosionLook.fireTicks(ExplosionSequence.fireTicks(power,style),style)
                         : ExplosionSequence.fireTicks(power, style)) : 0, cards, modern));
     }
 
     private static boolean fire(ClientLevel level, double x, double y, double z, float power, BlastStyle style,
-            float radius, int i, Random random, boolean modern) {
+            float radius, int i, Random random, Vec3 axis, boolean modern) {
         double angle = i * 2.3999632297 + random.nextDouble() * 0.6;
         double dx = Math.cos(angle), dz = Math.sin(angle);
         // Overlapping pockets punch through the developing smoke, rather than flying away
         // as a ring of identical fireballs. Each one leaves its own cooling smoke behind.
         double spread = i == 0 ? 0 : radius * (0.18 + random.nextDouble() * 0.18);
-        double px = x + dx * spread, pz = z + dz * spread;
+        var offset = BlastShape.offset(style, axis, dx * spread, dz * spread, i == 0 ? 0 : radius);
+        double px = x + offset.x, pz = z + offset.z;
         boolean lingering = style == BlastStyle.INCENDIARY;
         double py = y + radius * (lingering ? 0.07 : 0.10 + random.nextDouble() * 0.10);
         float r = radius * (i == 0 ? 0.82F : 0.48F + random.nextFloat() * 0.27F);
@@ -178,12 +189,12 @@ final class ExplosionCloudEmitter {
         puff.diffusible = true;
         puff.coherentDrift = puff.enhanced;
         puff.eroding = WreckEffects.refined();
-        if(puff.eroding)puff.useBillow(SmokeAtlas.EXPLOSION);
+        if(puff.eroding)puff.useBillow(wisp ? SmokeAtlas.WISPS : SmokeAtlas.EXPLOSION);
         puff.silhouetteOpacity = wisp ? .56F : .9F;
         puff.disableCollision();
         puff.particleScale = nominal * ExplosionLook.startScale(power, style, quality);
         puff.particleMaxScale = nominal * 2;
-        puff.heat = (ExplosionSequence.smokeLed(power, style) ? 0.55F : 0.3F) * (wisp ? .45F : 1);
+        puff.heat = .18F * (wisp ? .45F : 1);
         puff.coolingShare = ExplosionLook.coolingShare(style);
         puff.motionYUpAge = 2;
         int minimumLife = style == BlastStyle.BLAST || style == BlastStyle.PENETRATOR ? 44 + (int) Math.min(power, 12) * 3 : 8;

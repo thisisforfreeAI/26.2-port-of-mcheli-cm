@@ -7,6 +7,7 @@ import net.minecraft.resources.Identifier;
 
 /** A cohesive fire lobe becomes a shaded cloud; no block collision or entity wind scans. */
 final class BlastCloudParticle extends SmokeParticle {
+    private float detail, previousDetail;
     static final Identifier TEXTURE = Identifier.fromNamespaceAndPath("mcheli_ce_port", "m8_blast_cloud");
     static final Identifier MODERN_TEXTURE = Identifier.fromNamespaceAndPath("mcheli_ce_port", "m8_modern_blast_cloud");
     private final boolean modern;
@@ -76,10 +77,13 @@ final class BlastCloudParticle extends SmokeParticle {
         this.turnSin = Math.sin(turn);
         this.turnCos = Math.cos(turn);
         this.fadeTicks = 24 + this.random.nextInt(24);
+        this.detail = this.previousDetail = cards > 1 ? BlastDepthLook.visibility(level,x,y,z) : 0;
     }
 
     @Override public void tick() {
         this.xo = this.x; this.yo = this.y; this.zo = this.z;
+        this.previousDetail = this.detail;
+        this.detail = BlastDepthLook.approach(this.detail, this.cards > 1 ? BlastDepthLook.visibility(level,x,y,z) : 0);
         if (++this.age >= this.lifetime) { this.remove(); return; }
         if (this.age <= this.delay) return;
         this.move(this.xd, this.yd, this.zd);
@@ -124,9 +128,7 @@ final class BlastCloudParticle extends SmokeParticle {
         // Skip SmokeParticle's fire tint/fade; the dedicated sheet contains that transition.
         this.getFacingCameraMode().setRotation(this.rotation, camera, partialTick);
         this.rotation.rotateZ(this.angle + (this.fireTicks > 0 ? localAge * 0.018F : 0));
-        float detail = this.cards>1 ? BlastDepthLook.visibility(io.github.mcheliceport.config.ClientConfig.get(
-                io.github.mcheliceport.config.ClientConfig.EFFECT_BUDGET),EffectPerformance.pressure(),
-                camera.position().distanceToSqr(this.x,this.y,this.z)) : 0;
+        float detail = net.minecraft.util.Mth.lerp(partialTick,this.previousDetail,this.detail);
         boolean depth = detail>0;
         float alpha = this.alpha;
         if (depth && this.cards == 3) this.alpha *= 1-.15F*detail;

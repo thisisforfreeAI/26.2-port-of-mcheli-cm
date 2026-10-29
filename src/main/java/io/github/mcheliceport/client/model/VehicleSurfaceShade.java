@@ -15,13 +15,22 @@ public final class VehicleSurfaceShade {
     }
     public static void prepare(McheliModel model) { prepare(model, java.util.List.of()); }
     public static void prepare(McheliModel model, java.util.List<VehicleDetailShade.Zone> zones) {
+        prepare(model, zones, java.util.List.of());
+    }
+    static void prepare(McheliModel model, java.util.List<VehicleDetailShade.Zone> zones,
+            java.util.List<VehicleGlassAlpha.Mask> glass) {
         boolean hasBody = model.containsPart("$body");
         for (var group : model.groups) {
             float[] shade = bake(group.data());
             var material = VehicleSurfaceFinish.material(group.name());
             int[] colors = shade == null ? null : new int[shade.length];
+            boolean glazing = false;
             if (colors != null) for (int i = 0; i < shade.length; i++) {
-                float value = VehicleSurfaceFinish.shade(material, shade[i]);
+                if (i % 3 == 0) glazing = VehicleCanopyFinish.canopy(group.name())
+                        && VehicleCanopyFinish.glass(group.data(), i * McheliModel.STRIDE, glass);
+                int vertex = i * McheliModel.STRIDE;
+                float value = VehicleSurfaceFinish.shade(glazing ? VehicleSurfaceFinish.Material.GLASS : material, shade[i],
+                        group.data()[vertex+5], group.data()[vertex+6], group.data()[vertex+7]);
                 if (!zones.isEmpty() && (!hasBody || group.name().equalsIgnoreCase("$body"))) {
                     int at = i * McheliModel.STRIDE;
                     value = Math.max(0.84F, value * VehicleDetailShade.factor(zones,

@@ -1,0 +1,333 @@
+{
+  "feature": "M8 default blast readability and material refinement",
+  "baselineSource": "9289bb2",
+  "target": {
+    "fps": 60,
+    "resolution": [
+      1920,
+      1080
+    ],
+    "gpu": "RTX 3060 8 GB",
+    "cpu": "Ryzen 7 7800X3D",
+    "hardwareVerified": false
+  },
+  "localRuntime": {
+    "java": 25,
+    "minecraft": "26.2",
+    "neoForge": "26.2.0.88",
+    "renderer": "Mesa software: lavapipe / llvmpipe",
+    "captureResolution": [
+      1280,
+      720
+    ],
+    "optionalDependenciesExcludedLocally": true,
+    "distributedLocalJar": false
+  },
+  "unitTests": {
+    "passed": 539,
+    "failed": 0
+  },
+  "requiredLocalGameTests": {
+    "passed": 295,
+    "failed": 0
+  },
+  "native": [
+    {
+      "backend": "Vulkan",
+      "type": "controlled effects / stationary vehicle diagnostic",
+      "scenes": 10,
+      "results": [
+        {
+          "scene": "rocket",
+          "peakCustomParticles": 36,
+          "peakRimBirths": 14,
+          "drained": true
+        },
+        {
+          "scene": "bomb",
+          "peakCustomParticles": 34,
+          "peakRimBirths": 14,
+          "drained": true
+        },
+        {
+          "scene": "penetrator",
+          "peakCustomParticles": 30,
+          "peakRimBirths": 14,
+          "drained": true
+        },
+        {
+          "scene": "far64",
+          "peakCustomParticles": 36,
+          "peakRimBirths": 10,
+          "drained": true
+        },
+        {
+          "scene": "far128",
+          "peakCustomParticles": 20,
+          "peakRimBirths": 5,
+          "drained": true
+        },
+        {
+          "scene": "detail-transition",
+          "peakCustomParticles": 33,
+          "peakRimBirths": 14,
+          "drained": true
+        },
+        {
+          "scene": "salvo",
+          "peakCustomParticles": 155,
+          "peakRimBirths": 14,
+          "drained": true
+        }
+      ],
+      "allPassed": true,
+      "archive": "final-vulkan-diagnostics"
+    },
+    {
+      "backend": "OpenGL",
+      "type": "controlled effects / stationary vehicle diagnostic",
+      "scenes": 10,
+      "results": [
+        {
+          "scene": "rocket",
+          "peakCustomParticles": 36,
+          "peakRimBirths": 14,
+          "drained": true
+        },
+        {
+          "scene": "bomb",
+          "peakCustomParticles": 35,
+          "peakRimBirths": 14,
+          "drained": true
+        },
+        {
+          "scene": "penetrator",
+          "peakCustomParticles": 34,
+          "peakRimBirths": 14,
+          "drained": true
+        },
+        {
+          "scene": "far64",
+          "peakCustomParticles": 36,
+          "peakRimBirths": 10,
+          "drained": true
+        },
+        {
+          "scene": "far128",
+          "peakCustomParticles": 20,
+          "peakRimBirths": 5,
+          "drained": true
+        },
+        {
+          "scene": "detail-transition",
+          "peakCustomParticles": 35,
+          "peakRimBirths": 14,
+          "drained": true
+        },
+        {
+          "scene": "salvo",
+          "peakCustomParticles": 166,
+          "peakRimBirths": 14,
+          "drained": true
+        }
+      ],
+      "allPassed": true,
+      "archive": "final-opengl-diagnostics"
+    },
+    {
+      "backend": "Vulkan",
+      "type": "controlled effects / stationary vehicle diagnostic",
+      "scenes": 2,
+      "results": [
+        {
+          "scene": "deep-center",
+          "peakCustomParticles": 38,
+          "peakRimBirths": 11,
+          "drained": true
+        },
+        {
+          "scene": "airburst",
+          "peakCustomParticles": 27,
+          "peakRimBirths": 0,
+          "drained": true
+        }
+      ],
+      "allPassed": true,
+      "archive": "final-vulkan-edge-cases"
+    },
+    {
+      "backend": "Vulkan",
+      "type": "controlled effects / stationary vehicle diagnostic",
+      "scenes": 1,
+      "results": [],
+      "allPassed": true,
+      "archive": "final-vulkan-canopy-guard"
+    },
+    {
+      "backend": "Vulkan",
+      "type": "actual production weapon impacts via player-facing range",
+      "allPassed": true,
+      "scenes": [
+        {
+          "name": "hydra-sand",
+          "serverTransitObserved": true,
+          "clientTransitObserved": true
+        },
+        {
+          "name": "agm158-soil",
+          "serverTransitObserved": true,
+          "clientTransitObserved": true
+        },
+        {
+          "name": "mk82-stone",
+          "serverTransitObserved": true,
+          "clientTransitObserved": true
+        },
+        {
+          "name": "gbu57-soil-night",
+          "serverTransitObserved": true,
+          "clientTransitObserved": true
+        },
+        {
+          "name": "hydra-water",
+          "serverTransitObserved": true,
+          "clientTransitObserved": true
+        },
+        {
+          "name": "classic-hydra",
+          "serverTransitObserved": true,
+          "clientTransitObserved": false
+        },
+        {
+          "name": "modern-mk82",
+          "serverTransitObserved": true,
+          "clientTransitObserved": true
+        }
+      ],
+      "peakRangeBlocksPerTick": 2048,
+      "returnModeRestored": true,
+      "returnPositionRestored": true,
+      "archive": "final-vulkan-range"
+    }
+  ],
+  "limits": {
+    "smokeLiveBalanced": 1536,
+    "coverageUnitsPerTickBalanced": 256,
+    "terrainSurfaceReadsPerTickBalanced": 96,
+    "fragmentLiveBalanced": 36,
+    "fragmentBirthsPerTickBalanced": 6,
+    "rimBirthsPerTickBalanced": 20,
+    "cosmeticTerrainSamples": 256,
+    "postDestructionReadsMax": 256,
+    "extraPayloadBytesMax": 1538,
+    "networkProtocol": 33,
+    "originalCratersAndGameplayPreserved": true,
+    "gameRandomCallsAdded": 0,
+    "ntmIntegrationModified": false
+  },
+  "materialEvidence": {
+    "m1a2ExplicitMaterialGroups": 18,
+    "f35ConfirmedGlassVertices": 114,
+    "apacheUnknownGlassGuessed": false
+  },
+  "screenshots": [
+    {
+      "file": "docs/screens/m8-blast-readability/m1a2.png",
+      "sha256": "f8e5c74ca409affd33e968c4e1056c7cb670310cac5b1f5123e723d53c5708b0",
+      "unedited": true,
+      "sourceArchive": "final-vulkan-diagnostics",
+      "sourceFilename": "m8-refinement-m1a2-shaded.png"
+    },
+    {
+      "file": "docs/screens/m8-blast-readability/apache.png",
+      "sha256": "04f766c076c427360c421739c9a25f0dfd34a11eee20d6ece1026ae092b11072",
+      "unedited": true,
+      "sourceArchive": "final-vulkan-diagnostics",
+      "sourceFilename": "m8-refinement-ah-64-shaded.png"
+    },
+    {
+      "file": "docs/screens/m8-blast-readability/f35.png",
+      "sha256": "6dc6829254dabb659136968048a0fbef3f1069f861a3b52508046783e4156079",
+      "unedited": true,
+      "sourceArchive": "final-vulkan-diagnostics",
+      "sourceFilename": "m8-refinement-f-35a-shaded.png"
+    },
+    {
+      "file": "docs/screens/m8-blast-readability/distant128.png",
+      "sha256": "f040c811cacdc81779d91a3e2d6fda8c7376d9900ffd7105e504be302e51fbec",
+      "unedited": true,
+      "sourceArchive": "final-vulkan-diagnostics",
+      "sourceFilename": "m8-refinement-far128-age24.png"
+    },
+    {
+      "file": "docs/screens/m8-blast-readability/salvo.png",
+      "sha256": "6af9c4faf078fac8aea8e537d60d35cfcd3772d4088385c945683d81ff5fb9e8",
+      "unedited": true,
+      "sourceArchive": "final-vulkan-diagnostics",
+      "sourceFilename": "m8-refinement-salvo-age24.png"
+    },
+    {
+      "file": "docs/screens/m8-blast-readability/agm-before.png",
+      "sha256": "4942075c5be8aac845da68be1623a60c88c677f139230beef63c098499efcd87",
+      "unedited": true,
+      "sourceArchive": "baseline",
+      "sourceFilename": "m8-range-agm158-soil-smoke.png"
+    },
+    {
+      "file": "docs/screens/m8-blast-readability/hydra-opening.png",
+      "sha256": "15e389d6e0c12ad75cd5d60fa4bc9d1468951dbd3036e15766a429be7cf12159",
+      "unedited": true,
+      "sourceArchive": "final-vulkan-range",
+      "sourceFilename": "m8-range-hydra-sand-age6.png"
+    },
+    {
+      "file": "docs/screens/m8-blast-readability/hydra-smoke.png",
+      "sha256": "9781146cd7995d69f07cbb8eb31d2a684f75ed1d91ca5147b1b22912324da4a4",
+      "unedited": true,
+      "sourceArchive": "final-vulkan-range",
+      "sourceFilename": "m8-range-hydra-sand-smoke.png"
+    },
+    {
+      "file": "docs/screens/m8-blast-readability/agm-opening.png",
+      "sha256": "f01baeef0cda89bec6222adf38bed066a3ea78c239555d61388a00bb155e02dc",
+      "unedited": true,
+      "sourceArchive": "final-vulkan-range",
+      "sourceFilename": "m8-range-agm158-soil-age6.png"
+    },
+    {
+      "file": "docs/screens/m8-blast-readability/agm-smoke.png",
+      "sha256": "4af6665dca28a20ef2f323187f5d2aefccfee6211f7f3a7aafcbc942ffb251b4",
+      "unedited": true,
+      "sourceArchive": "final-vulkan-range",
+      "sourceFilename": "m8-range-agm158-soil-smoke.png"
+    },
+    {
+      "file": "docs/screens/m8-blast-readability/mk82-smoke.png",
+      "sha256": "731172668b6aad950cdf2f5f26a9bdf8778bd6ee27d217181abbf49cfad7832e",
+      "unedited": true,
+      "sourceArchive": "final-vulkan-range",
+      "sourceFilename": "m8-range-mk82-stone-smoke.png"
+    },
+    {
+      "file": "docs/screens/m8-blast-readability/gbu57-opening.png",
+      "sha256": "93d7cd2a548fd8d558ade9faa26a751744b3654fcb9f78983022e2e595bc1e1a",
+      "unedited": true,
+      "sourceArchive": "final-vulkan-range",
+      "sourceFilename": "m8-range-gbu57-soil-night-age6.png"
+    },
+    {
+      "file": "docs/screens/m8-blast-readability/gbu57-smoke.png",
+      "sha256": "0cb4681195ee425d09aa87b2e532a01cd5fc6a6e9d1867230a467ca1b7cede04",
+      "unedited": true,
+      "sourceArchive": "final-vulkan-range",
+      "sourceFilename": "m8-range-gbu57-soil-night-smoke.png"
+    }
+  ],
+  "notes": [
+    "Native counts demonstrate bounded behavior, not target-PC frame times.",
+    "Classic may skip client-observed transit under software lag; actual server projectile birth and impact are independently confirmed.",
+    "Diagnostic footprints and client fixtures are separate from actual range weapon impacts.",
+    "Matching protocol 33 builds are required on client and server.",
+    "Normal and real NTM CI results are recorded on the pull request."
+  ]
+}

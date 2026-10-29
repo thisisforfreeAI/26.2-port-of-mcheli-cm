@@ -73,7 +73,7 @@ public final class ExplosionSequence {
     }
 
     public static float flashRadius(float power, BlastStyle style) {
-        return radius(power, style) * 1.5F;
+        return radius(power, style) * .95F;
     }
 
     /** Spend most large-blast requests on smoke, retaining at least one pocket of fire. */
@@ -87,8 +87,8 @@ public final class ExplosionSequence {
 
     /** Delayed particles are admitted at birth; there is no deferred emitter or spawn queue. */
     public static float cloudGrowth(float age, int delay, boolean fire, boolean base) {
-        float t = Math.clamp((age - delay) / (fire ? 6 : base ? 18 : 26), 0, 1);
-        float start = fire ? 0.16F : 0.26F;
+        float t = Math.clamp((age - delay) / (fire ? 4 : base ? 18 : 26), 0, 1);
+        float start = fire ? 0.32F : 0.20F;
         return start + (1 - start) * (1 - (1 - t) * (1 - t));
     }
 
@@ -102,8 +102,12 @@ public final class ExplosionSequence {
     }
 
     public static float flashGrowth(float age, int life) {
+        return flashGrowth(age, life, false);
+    }
+    public static float flashGrowth(float age, int life, boolean sharp) {
         float t = Math.clamp(age / Math.max(1, life), 0, 1);
-        return 0.25F + 0.75F * (1 - (1 - t) * (1 - t));
+        float start = sharp ? .65F : .25F;
+        return start + (1 - start) * (1 - (1 - t) * (1 - t));
     }
 
     public static float backlight(float age, int duration) {

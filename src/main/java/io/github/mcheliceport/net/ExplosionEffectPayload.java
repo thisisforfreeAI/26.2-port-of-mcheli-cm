@@ -17,7 +17,18 @@ import net.minecraft.resources.Identifier;
  * blocks travel as offsets from the block at the centre.
  */
 public record ExplosionEffectPayload(double x, double y, double z, float size, boolean inWater,
-        List<BlockPos> affectedBlocks, BlastStyle blastStyle, BlastDirection direction) implements CustomPacketPayload {
+        List<BlockPos> affectedBlocks, BlastStyle blastStyle, BlastDirection direction,
+        List<BlockPos> terrainBlocks) implements CustomPacketPayload {
+
+    public ExplosionEffectPayload {
+        if (terrainBlocks.size() > io.github.mcheliceport.effect.BlastTerrainSample.LIMIT)
+            throw new IllegalArgumentException("Too many cosmetic terrain samples");
+        terrainBlocks = List.copyOf(terrainBlocks);
+    }
+    public ExplosionEffectPayload(double x, double y, double z, float size, boolean inWater,
+            List<BlockPos> blocks, BlastStyle style, BlastDirection direction) {
+        this(x, y, z, size, inWater, blocks, style, direction, List.of());
+    }
 
     public ExplosionEffectPayload(double x, double y, double z, float size, boolean inWater,
             List<BlockPos> blocks, BlastStyle style) {
@@ -59,6 +70,12 @@ public record ExplosionEffectPayload(double x, double y, double z, float size, b
                     buf.writeShort(pos.getY() - origin.getY());
                     buf.writeShort(pos.getZ() - origin.getZ());
                 }
+                List<BlockPos> terrain = p.terrainBlocks.stream().filter(pos -> fits(pos.getX()-origin.getX())
+                        && fits(pos.getY()-origin.getY()) && fits(pos.getZ()-origin.getZ())).toList();
+                buf.writeVarInt(terrain.size());
+                for (BlockPos pos : terrain) {
+                    buf.writeShort(pos.getX()-origin.getX());buf.writeShort(pos.getY()-origin.getY());buf.writeShort(pos.getZ()-origin.getZ());
+                }
             },
             buf -> {
                 double x = buf.readDouble();
@@ -77,7 +94,12 @@ public record ExplosionEffectPayload(double x, double y, double z, float size, b
                 for (int i = 0; i < n; i++) {
                     blocks.add(origin.offset(buf.readShort(), buf.readShort(), buf.readShort()));
                 }
-                return new ExplosionEffectPayload(x, y, z, size, inWater, blocks, style, direction);
+                int count = buf.readVarInt();
+                if (count < 0 || count > io.github.mcheliceport.effect.BlastTerrainSample.LIMIT || count > buf.readableBytes()/6)
+                    throw new IllegalArgumentException("Bad terrain sample count " + count);
+                List<BlockPos> terrain = new ArrayList<>(count);
+                for (int i=0;i<count;i++) terrain.add(origin.offset(buf.readShort(),buf.readShort(),buf.readShort()));
+                return new ExplosionEffectPayload(x, y, z, size, inWater, blocks, style, direction, terrain);
             });
 
     private static boolean fits(int offset) {
