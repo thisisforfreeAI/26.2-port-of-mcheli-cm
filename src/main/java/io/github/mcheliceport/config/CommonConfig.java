@@ -61,6 +61,9 @@ public final class CommonConfig {
     public static final ModConfigSpec.ConfigValue<List<? extends String>> DAMAGE_OTHER_BY_EXTERNAL;
     public static final ModConfigSpec.BooleanValue EXPLOSION_DESTROY_BLOCK;
     public static final ModConfigSpec.BooleanValue EXPLOSION_FLAMING_BLOCK;
+    public static final ModConfigSpec.BooleanValue WRECK_FIRE_BLOCKS;
+    public static final ModConfigSpec.BooleanValue PERSISTENT_WRECKS;
+    public static final ModConfigSpec.IntValue WRECK_LIFETIME;
     public static final ModConfigSpec SPEC;
 
     static {
@@ -234,6 +237,20 @@ public final class CommonConfig {
         EXPLOSION_FLAMING_BLOCK = builder
                 .comment("Incendiary explosions set blocks on fire. Upstream: Explosion_FlamingBlock.")
                 .define("flamingBlock", true);
+        builder.pop();
+
+        builder.comment("Destroyed vehicles (not in upstream).").push("wrecks");
+        WRECK_FIRE_BLOCKS = builder
+                .comment("Crashing and destroyed vehicles set fire blocks around the wreck, as upstream does.",
+                        "Off: the wreck burns with a cosmetic fuel fire instead, and blocks are not set alight.")
+                .define("fireBlocks", false);
+        PERSISTENT_WRECKS = builder
+                .comment("A destroyed vehicle stays as a burnt-out hulk for wreckLifetime seconds instead of",
+                        "despawnCount. Remove hulks early with /mcheli clearwrecks.")
+                .define("persistentWrecks", true);
+        WRECK_LIFETIME = builder
+                .comment("Seconds a hulk stays when persistentWrecks is on. 0 keeps it until /mcheli clearwrecks.")
+                .defineInRange("wreckLifetime", 600, 0, 1000000);
         builder.pop();
 
         SPEC = builder.build();

@@ -3044,8 +3044,7 @@ public abstract class AircraftEntity extends Entity
                         this.explosionByCrash(0.0);
                         this.damageSinceDestroyed = this.getMaxHP();
                     } else {
-                        McheliExplosion.newExplosion(level, null, attacker, this.getX(), this.getY(), this.getZ(),
-                                2.0F, 2.0F, true, true, true, 5);
+                        McheliExplosion.newWreckExplosion(level, attacker, this.getX(), this.getY(), this.getZ(), 2.0F, 2.0F);
                     }
                 } else {
                     this.removeByPlayer((Player) attacker);
@@ -3105,7 +3104,7 @@ public abstract class AircraftEntity extends Entity
                 this.switchCameraMode(player, AircraftCamera.MODE_NORMAL);
             }
         }
-        this.setDespawnCount(20 * CommonConfig.DESPAWN_COUNT.get());
+        this.setDespawnCount(wreckTicks());
         this.rotDestroyedPitch = this.random.nextFloat() - 0.5F;
         this.rotDestroyedRoll = (this.random.nextFloat() - 0.5F) * 0.5F;
         this.rotDestroyedYaw = 0.0F;
@@ -3125,6 +3124,18 @@ public abstract class AircraftEntity extends Entity
                 }
             }
         }
+    }
+
+    /**
+     * Ticks a wreck stays: upstream's {@code DespawnCount}, or the persistent hulk's lifetime
+     * ({@code wrecks.wreckLifetime}, 0 meaning until {@code /mcheli clearwrecks}).
+     */
+    public static int wreckTicks() {
+        if (!CommonConfig.get(CommonConfig.PERSISTENT_WRECKS)) {
+            return 20 * CommonConfig.DESPAWN_COUNT.get();
+        }
+        int seconds = CommonConfig.get(CommonConfig.WRECK_LIFETIME);
+        return seconds == 0 ? Integer.MAX_VALUE : (int) Math.min(Integer.MAX_VALUE, 20L * seconds);
     }
 
     private @Nullable Entity lastAttacker;
@@ -3242,8 +3253,8 @@ public abstract class AircraftEntity extends Entity
     public void explosionByCrash(double prevMotionY) {
         float exp = this.info != null ? this.info.maxFuel / 400.0F : 2.0F;
         exp = Mth.clamp(exp, 1.0F, 15.0F);
-        McheliExplosion.newExplosion(this.level(), null, null, this.getX(), this.getY(), this.getZ(), exp,
-                exp >= 2.0F ? exp * 0.5F : 1.0F, true, true, true, 5);
+        McheliExplosion.newWreckExplosion(this.level(), null, this.getX(), this.getY(), this.getZ(), exp,
+                exp >= 2.0F ? exp * 0.5F : 1.0F);
     }
 
     /** Upstream {@code onUpdate_CollisionGroundDamage}. */

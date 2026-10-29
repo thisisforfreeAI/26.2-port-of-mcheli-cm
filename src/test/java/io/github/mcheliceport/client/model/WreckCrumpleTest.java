@@ -1,0 +1,53 @@
+package io.github.mcheliceport.client.model;
+import static org.junit.jupiter.api.Assertions.*;
+import org.joml.Vector3f;
+import org.junit.jupiter.api.Test;
+class WreckCrumpleTest {
+ private static McheliModel.Group fuselage(){var boxes=new DetailBoxes();boxes.box(-1,0,-8,1,1.5F,8);return boxes.group("$body");}
+ @Test void onlyTheFrontOfACrashedHullMovesAndTheNoseIsShortenedAndLowered(){
+  var source=fuselage();var wreck=WreckMesh.build(source,true,true);var d=source.data();var w=wreck.shape().data();
+  assertEquals(d.length,w.length);float noseBefore=-99,noseAfter=-99,lowBefore=99,lowAfter=99;
+  for(int i=0;i+7<d.length;i+=8){
+   if(d[i+2]<=-8+.62F*16){assertEquals(d[i],w[i]);assertEquals(d[i+1],w[i+1]);assertEquals(d[i+2],w[i+2]);}
+   noseBefore=Math.max(noseBefore,d[i+2]);noseAfter=Math.max(noseAfter,w[i+2]);
+   if(d[i+2]>7.9F){lowBefore=Math.min(lowBefore,d[i+1]);lowAfter=Math.min(lowAfter,w[i+1]);}
+  }
+  assertTrue(noseAfter<noseBefore-.8F,"nose pushed back: "+noseAfter);
+  assertTrue(lowAfter<lowBefore-.3F,"nose droops: "+lowAfter);
+ }
+ @Test void sharedCornersStayTogetherSoTheCrushedSkinHasNoCracks(){
+  var source=fuselage();var w=WreckMesh.build(source,true,true).shape().data();var d=source.data();
+  var moved=new java.util.HashMap<String,String>();
+  for(int i=0;i+7<d.length;i+=8){String before=d[i]+","+d[i+1]+","+d[i+2],after=w[i]+","+w[i+1]+","+w[i+2];
+   var old=moved.putIfAbsent(before,after);if(old!=null)assertEquals(old,after);}
+ }
+ @Test void crushedFacesAreFacetedAndStillFaceOutwards(){
+  var source=fuselage();var w=WreckMesh.build(source,true,true).shape().data();var d=source.data();
+  for(int t=0;t+23<d.length;t+=24){
+   var before=new Vector3f(d[t+5],d[t+6],d[t+7]);var after=new Vector3f(w[t+5],w[t+6],w[t+7]);
+   assertTrue(before.dot(after)>0,"normal flipped at "+t);assertEquals(1,after.length(),1e-3);
+  }
+ }
+ @Test void charredSkinCoversEveryTriangleJustOffTheHull(){
+  var source=fuselage();var parts=WreckMesh.build(source,false);var hull=parts.shape().data();var soot=parts.soot().data();
+  assertEquals(hull.length,soot.length);
+  for(int i=0;i+7<hull.length;i+=8){
+   float lift=(soot[i]-hull[i])*hull[i+5]+(soot[i+1]-hull[i+1])*hull[i+6]+(soot[i+2]-hull[i+2])*hull[i+7];
+   assertEquals(WreckMesh.SOOT_LIFT,lift,1e-5);
+  }
+  // Projected uvs tile with world position, not the authored texture layout.
+  assertNotEquals(hull[3],soot[3]);
+  assertSame(WreckMesh.sootOf(source),WreckMesh.sootOf(source));
+ }
+ @Test void emberTiersAreBoundedAndDebrisChunksAreSmallRecentredPieces(){
+  var boxes=new DetailBoxes();for(int i=0;i<8;i++)boxes.box(-3+i*.7F,0,-8,-2.4F+i*.7F,1.4F,8);
+  var parts=WreckMesh.build(boxes.group("$body"),true,true);
+  assertEquals(WreckMesh.EMBER_TIERS,parts.embers().size());
+  int total=parts.embers().stream().mapToInt(McheliModel.Group::vertexCount).sum();
+  assertTrue(total>0&&total<parts.shape().vertexCount(),"embers "+total);
+  assertTrue(parts.chunks().size()<=WreckMesh.MAX_CHUNKS&&!parts.chunks().isEmpty());
+  for(var c:parts.chunks()){var d=c.group().data();float reach=0;for(int i=0;i+7<d.length;i+=8)reach=Math.max(reach,new Vector3f(d[i],d[i+1],d[i+2]).length());
+   assertTrue(reach<c.size().length(),"chunk is centred");}
+  assertTrue(WreckMesh.build(boxes.group("$body"),true,false).chunks().isEmpty(),"only crashed hulls shed chunks");
+ }
+}

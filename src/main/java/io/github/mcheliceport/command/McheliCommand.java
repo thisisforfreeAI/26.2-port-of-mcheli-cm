@@ -91,7 +91,7 @@ public final class McheliCommand {
     public static final String DEFAULT_DUMP_FOLDER = "mcheli_yaml_dump";
     /** Upstream's {@code ALL_COMMAND} order. */
     public static final List<String> SUBCOMMANDS = List.of("sendss", "modlist", "reconfig", "title", "fill", "status", "killentity",
-            "removeentity", "attackentity", "showboundingbox", "list", "delayhitbox", "dumpyaml", "anticheat");
+            "removeentity", "attackentity", "showboundingbox", "list", "delayhitbox", "dumpyaml", "anticheat", "clearwrecks");
     public static final int MAX_FILL = 3_000_000;
     static final List<String> DAMAGE_SOURCES = List.of("player", "inFire", "onFire", "lava", "inWall", "drown",
             "starve", "cactus", "fall", "outOfWorld", "generic", "magic", "wither", "anvil", "fallingBlock");
@@ -159,6 +159,10 @@ public final class McheliCommand {
                         .executes(c -> antiCheat(c, null))
                         .then(Commands.argument("player", EntityArgument.player())
                                 .executes(c -> antiCheat(c, EntityArgument.getPlayer(c, "player")))))
+                .then(sub("clearwrecks")
+                        .executes(c -> clearWrecks(c, -1))
+                        .then(Commands.argument("radius", IntegerArgumentType.integer(1))
+                                .executes(c -> clearWrecks(c, IntegerArgumentType.getInteger(c, "radius")))))
                 .then(sub("reconfig").executes(McheliCommand::reconfig))
                 .then(sub("dumpyaml")
                         .executes(c -> dumpYaml(c, DEFAULT_DUMP_FOLDER))
@@ -234,6 +238,32 @@ public final class McheliCommand {
      * M9: the anti-cheat violation scores of online players, or one player's counts by check and
      * latest failures. Returns how many players (or failures) were listed.
      */
+    /** Removes destroyed vehicles (persistent hulks) in every level, or within a radius of the source. */
+    private static int clearWrecks(CommandContext<CommandSourceStack> c, int radius) {
+        CommandSourceStack source = c.getSource();
+        var at = source.getPosition();
+        int removed = 0;
+        for (var level : source.getServer().getAllLevels()) {
+            if (radius > 0 && level != source.getLevel()) {
+                continue;
+            }
+            var wrecks = new java.util.ArrayList<io.github.mcheliceport.entity.aircraft.AircraftEntity>();
+            for (var entity : level.getAllEntities()) {
+                if (entity instanceof io.github.mcheliceport.entity.aircraft.AircraftEntity ac && ac.isDestroyed()
+                        && (radius <= 0 || ac.position().distanceToSqr(at) <= (double) radius * radius)) {
+                    wrecks.add(ac);
+                }
+            }
+            for (var ac : wrecks) {
+                ac.discard();
+                removed++;
+            }
+        }
+        int count = removed;
+        source.sendSuccess(() -> Component.literal("Removed " + count + (count == 1 ? " wreck" : " wrecks")), true);
+        return count;
+    }
+
     private static int antiCheat(CommandContext<CommandSourceStack> c, @Nullable ServerPlayer target) {
         CommandSourceStack source = c.getSource();
         long now = source.getLevel().getGameTime();

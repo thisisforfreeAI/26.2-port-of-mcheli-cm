@@ -79,6 +79,8 @@ public class McheliExplosion extends ServerExplosion {
     public int countSetFireEntity;
     public boolean isPlaySound;
     public boolean isInWater;
+    /** False for a wreck whose fire is cosmetic; the blast still looks and damages as incendiary. */
+    public boolean fireBlocks = true;
     public float explosionSizeBlock;
     public float explosionDamagePower;
     public float explosionBlockPower;
@@ -139,12 +141,22 @@ public class McheliExplosion extends ServerExplosion {
 
     /** Upstream {@code MCH_Explosion#newExplosion}: explodes in air and sends the effects to clients. */
     public static @Nullable Result newExplosion(Level level, Params p) {
-        return explode(level, p, false);
+        return explode(level, p, false, true);
+    }
+
+    /**
+     * A destroyed vehicle's blast: incendiary as upstream, but it sets fire blocks only when
+     * {@code wrecks.fireBlocks} is on; otherwise clients draw the wreck's own fuel fire.
+     */
+    public static @Nullable Result newWreckExplosion(Level level, @Nullable Entity player, double x, double y, double z,
+            float size, float sizeBlock) {
+        return explode(level, Params.of(null, player, x, y, z, size, sizeBlock, true, true, true, 5, null), false,
+                CommonConfig.get(CommonConfig.WRECK_FIRE_BLOCKS));
     }
 
     /** Upstream {@code MCH_Explosion#newExplosionInWater}: blocks resist more, and clients see splashes. */
     public static @Nullable Result newExplosionInWater(Level level, Params p) {
-        return explode(level, p, true);
+        return explode(level, p, true, true);
     }
 
     /** Upstream's most used overload: {@code newExplosion(w, exploder, player, x, y, z, size, sizeBlock, playSound, smoking, flaming, destroyBlock, fire)}. */
@@ -155,7 +167,7 @@ public class McheliExplosion extends ServerExplosion {
                 isDestroyBlock, countSetFireEntity, null));
     }
 
-    private static @Nullable Result explode(Level level, Params p, boolean inWater) {
+    private static @Nullable Result explode(Level level, Params p, boolean inWater, boolean fireBlocks) {
         if (!(level instanceof ServerLevel serverLevel)) {
             return null;
         }
@@ -168,6 +180,7 @@ public class McheliExplosion extends ServerExplosion {
         exp.countSetFireEntity = p.countSetFireEntity();
         exp.isPlaySound = p.playSound();
         exp.isInWater = inWater;
+        exp.fireBlocks = fireBlocks;
         exp.damageFactor = p.damageFactor();
         if (EventHooks.onExplosionStart(serverLevel, exp)) {
             return exp.result;
@@ -384,7 +397,7 @@ public class McheliExplosion extends ServerExplosion {
                 Block.popResource(this.world, stack.pos, stack.stack);
             }
         }
-        if (this.causesFire && CommonConfig.get(CommonConfig.EXPLOSION_FLAMING_BLOCK)) {
+        if (this.causesFire && this.fireBlocks && CommonConfig.get(CommonConfig.EXPLOSION_FLAMING_BLOCK)) {
             for (BlockPos pos : this.affectedBlocks) {
                 if (this.world.getBlockState(pos).isAir() && this.world.getBlockState(pos.below()).isSolidRender()
                         && rand.nextInt(3) == 0) {
