@@ -44,7 +44,8 @@ public final class EffectsSettingsScreen extends Screen {
             ModList.get().getModContainerById(McheliCePort.MOD_ID).ifPresent(container->
                     minecraft.gui.setScreen(new ConfigurationScreen(container,this)));
         }).bounds(x,y+122,220,20).build());
-        addRenderableWidget(Button.builder(Component.translatable("gui.done"),b->onClose()).bounds(x,y+146,220,20).build());
+        addRenderableWidget(Button.builder(Component.literal("Test range"),b->minecraft.gui.setScreen(new EffectsRangeScreen(this))).bounds(x,y+146,220,20).build());
+        addRenderableWidget(Button.builder(Component.translatable("gui.done"),b->onClose()).bounds(x,y+170,220,20).build());
     }
     private static Component bloodLabel() { return Component.translatable("mcheli.effects.blood", onOff(ClientConfig.get(ClientConfig.VEHICLE_BLOOD))); }
     private static Component modernLabel() {
