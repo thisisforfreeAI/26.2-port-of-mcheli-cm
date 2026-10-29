@@ -1,11 +1,14 @@
 package io.github.mcheliceport.client.sound;
 
 import io.github.mcheliceport.content.aircraft.AircraftInfo;
+import io.github.mcheliceport.config.ClientConfig;
+import io.github.mcheliceport.config.EffectQuality;
+import io.github.mcheliceport.client.particle.EffectPerformance;
+import io.github.mcheliceport.entity.weapon.BaseBulletEntity;
 import io.github.mcheliceport.entity.aircraft.AircraftEntity;
 import io.github.mcheliceport.entity.heli.HeliEntity;
 import io.github.mcheliceport.util.McheliSounds;
-import java.util.Map;
-import java.util.WeakHashMap;
+import java.util.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
@@ -13,6 +16,7 @@ import net.minecraft.client.resources.sounds.AbstractTickableSoundInstance;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.phys.Vec3;
 
 /**
  * The looping engine and rotor sound of vehicles: upstream's {@code MCH_SoundUpdater}, run once a
@@ -22,7 +26,17 @@ import net.minecraft.world.entity.Entity;
  */
 public final class AircraftEngineSound {
 
-    private static final Map<AircraftEntity, AircraftEngineSound> UPDATERS = new WeakHashMap<>();
+    private static final Map<AircraftEntity, AircraftEngineSound> UPDATERS = new LinkedHashMap<>();
+    private static ClientLevel soundWorld;
+    private record Candidate(AircraftEntity aircraft,double priority){}
+    private static final Comparator<Candidate> ORDER=Comparator.comparingDouble(Candidate::priority).thenComparingInt(c->c.aircraft.getId());
+    private final FlightAudioLook flight=new FlightAudioLook();
+    public record Status(float doppler,float pitch,float volume,boolean active){}
+    public static int voices(){return UPDATERS.size();}
+    public static Status status(AircraftEntity ac){var u=UPDATERS.get(ac);return u==null?new Status(1,0,0,false):new Status(u.flight.value(),u.aircraftPitch,u.aircraftVolume,Minecraft.getInstance().getSoundManager().isActive(u.sound));}
+    public static boolean polished(){return EffectQuality.enhanced()&&ClientConfig.get(ClientConfig.FLYBY_AUDIO);}
+    public static void clear(){var mc=Minecraft.getInstance();UPDATERS.values().forEach(u->u.stop(mc));UPDATERS.clear();soundWorld=null;
+        io.github.mcheliceport.client.particle.SupersonicEffects.clear();ProjectileFlybySounds.clear();}
 
     private final AircraftEntity aircraft;
     private final String soundName;
@@ -85,34 +99,45 @@ public final class AircraftEngineSound {
         ClientLevel level = mc.level;
         LocalPlayer player = mc.player;
         if (level == null || player == null) {
-            io.github.mcheliceport.client.particle.SupersonicEffects.clear();
-            UPDATERS.values().forEach(u -> u.stop(mc));
-            UPDATERS.clear();
+            clear();
             return;
         }
+        if(soundWorld!=level){clear();soundWorld=level;}
+        if(mc.isPaused())return;
         io.github.mcheliceport.client.particle.SupersonicEffects.begin(mc);
+        ProjectileFlybySounds.begin(mc);
+        Vec3 ear=mc.gameRenderer.mainCamera().position();
+        int cap=FlightAudioLook.voiceCap(ClientConfig.get(ClientConfig.EFFECT_BUDGET).ordinal(),EffectPerformance.pressure());
+        var nearest=new PriorityQueue<Candidate>(cap,ORDER.reversed());
         for (Entity entity : level.entitiesForRendering()) {
+            if(entity instanceof BaseBulletEntity bullet){ProjectileFlybySounds.observe(bullet);continue;}
             if (entity instanceof AircraftEntity aircraft) {
                 io.github.mcheliceport.client.particle.SupersonicEffects.observe(aircraft);
-                AircraftEngineSound updater = UPDATERS.get(aircraft);
-                if (updater == null) {
-                    String name = soundName(aircraft);
-                    if (name.isEmpty()) {
-                        continue;
-                    }
-                    updater = new AircraftEngineSound(aircraft, name);
-                    UPDATERS.put(aircraft, updater);
-                }
-                updater.update(mc, player);
+                var info=aircraft.getAcInfo();if(info==null||aircraft.isRemoved()||aircraft.isDestroyed()||soundName(aircraft).isEmpty())continue;
+                float volume=info.soundVolume*soundVolume(aircraft);if(!Float.isFinite(volume)||volume<.01F)continue;
+                boolean aboard=aircraft.getSeatIdByEntity(player)>=0;
+                double distance=ear.distanceTo(aircraft.position()),range=FlightAudioLook.range(info.soundRange)*Math.max(1,Math.min(2,volume));
+                if(!aboard&&distance>range)continue;
+                double priority=aboard?-1E6:distance-(UPDATERS.containsKey(aircraft)?4:0);
+                if(nearest.size()>=cap&&priority>nearest.peek().priority)continue;
+                nearest.add(new Candidate(aircraft,priority));if(nearest.size()>cap)nearest.poll();
             }
         }
+        var selected=new HashSet<AircraftEntity>();for(var candidate:nearest)selected.add(candidate.aircraft);
         UPDATERS.entrySet().removeIf(e -> {
-            if (e.getKey().isRemoved() || e.getKey().level() != level) {
+            if (!selected.contains(e.getKey())||e.getKey().isRemoved() || e.getKey().level() != level) {
                 e.getValue().stop(mc);
                 return true;
             }
             return false;
         });
+        var ordered=new ArrayList<>(nearest);ordered.sort(ORDER);
+        for(var candidate:ordered){
+            var aircraft=candidate.aircraft;String name=soundName(aircraft);var updater=UPDATERS.get(aircraft);
+            if(updater!=null&&!updater.soundName.equals(name)){updater.stop(mc);UPDATERS.remove(aircraft);updater=null;}
+            if(updater==null){updater=new AircraftEngineSound(aircraft,name);UPDATERS.put(aircraft,updater);}
+            updater.update(mc,player);
+        }
     }
 
     /** Upstream {@code getSoundName}: the content's {@code SoundMove}, else {@code heli} for helicopters. */
@@ -190,7 +215,18 @@ public final class AircraftEngineSound {
         if (this.isMoving) {
             this.aircraftVolume = info.soundVolume * soundVolume(this.aircraft);
             this.aircraftPitch = info.soundPitch * soundPitch(this.aircraft);
-            if (!isRide) {
+            boolean modern=polished();Vec3 ear=mc.gameRenderer.mainCamera().position();
+            float shift=flight.tick(aircraft.position(),ear,isRide,modern);
+            if(modern){
+                aircraftPitch*=shift;
+                boolean jet=aircraft.getAcInfo().machOneSpeed>0||aircraft.getAcInfo().engineOutlets.stream().anyMatch(AircraftInfo.EngineOutlet::jet);
+                double forward=io.github.mcheliceport.util.McheliMath.rotVec3(0,0,1,-aircraft.getYaw(),-aircraft.getPitch(),-aircraft.getRoll()).dot(ear.subtract(aircraft.position()).normalize());
+                double range=FlightAudioLook.range(info.soundRange)*Math.max(1,Math.min(2,aircraftVolume));
+                if(!isRide)aircraftVolume*=FlightAudioLook.rearGain(forward,jet)*FlightAudioLook.edgeFade(ear.distanceTo(aircraft.position()),range);
+                aircraftVolume=Float.isFinite(aircraftVolume)?Math.clamp(aircraftVolume,0,2):0;
+                aircraftPitch=Float.isFinite(aircraftPitch)?Math.clamp(aircraftPitch,.05F,4):1;
+                addPitch=0;prevDist=Math.hypot(player.getX()-aircraft.getX(),player.getZ()-aircraft.getZ());
+            }else if (!isRide) {
                 double dx = player.getX() - this.aircraft.getX();
                 double dz = player.getZ() - this.aircraft.getZ();
                 double dist = Math.sqrt(dx * dx + dz * dz);
@@ -228,10 +264,11 @@ public final class AircraftEngineSound {
             if (isRide) {
                 this.sound.setPosition(this.aircraft.getX(), this.aircraft.getY(), this.aircraft.getZ());
             } else {
-                double px = player.getX();
-                double py = player.getY();
-                double pz = player.getZ();
-                double scale = info.soundRange / 16.0;
+                Vec3 ear=mc.gameRenderer.mainCamera().position();
+                double px = ear.x;
+                double py = ear.y;
+                double pz = ear.z;
+                double scale = FlightAudioLook.range(info.soundRange) / 16.0;
                 this.sound.setPosition(px + (this.aircraft.getX() - px) / scale,
                         py + (this.aircraft.getY() - py) / scale, pz + (this.aircraft.getZ() - pz) / scale);
             }

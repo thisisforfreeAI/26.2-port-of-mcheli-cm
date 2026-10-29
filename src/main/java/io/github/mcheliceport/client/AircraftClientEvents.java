@@ -96,6 +96,7 @@ public final class AircraftClientEvents {
             io.github.mcheliceport.multiplay.MultiplayManager.setClientState(true, false);
             MouseFlight.reset();
             AircraftCameraClient.reset();
+            AircraftEngineSound.clear();
             WeaponClient.reset();
             TargetMarkers.INSTANCE.reset();
             io.github.mcheliceport.client.camera.GltdCameraClient.reset();
