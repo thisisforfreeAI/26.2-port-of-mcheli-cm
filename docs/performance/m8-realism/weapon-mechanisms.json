@@ -1,0 +1,166 @@
+{
+  "kind": "conventional-weapon-mechanism-presentation",
+  "unit_results": {
+    "tests": 515,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "runs": [
+    {
+      "backend": "VULKAN",
+      "all_passed": true,
+      "scenes": [
+        {
+          "passed": true,
+          "scene": "a-10-barrel",
+          "peak_cases": 0,
+          "peak_resting": 0,
+          "peak_rays": 0,
+          "peak_batches": 0,
+          "peak_recoil": 1.0,
+          "rotated": true,
+          "support_wake": false
+        },
+        {
+          "passed": true,
+          "scene": "ah-64-cases",
+          "peak_cases": 40,
+          "peak_resting": 40,
+          "peak_rays": 12,
+          "peak_batches": 1,
+          "peak_recoil": 1.0,
+          "rotated": true,
+          "support_wake": false
+        },
+        {
+          "passed": true,
+          "scene": "m1a2-recoil",
+          "peak_cases": 0,
+          "peak_resting": 0,
+          "peak_rays": 0,
+          "peak_batches": 0,
+          "peak_recoil": 1.0,
+          "rotated": true,
+          "support_wake": false
+        },
+        {
+          "passed": true,
+          "scene": "f-35a-bay",
+          "peak_cases": 0,
+          "peak_resting": 0,
+          "peak_rays": 0,
+          "peak_batches": 0,
+          "peak_recoil": 1.0,
+          "rotated": true,
+          "support_wake": false
+        }
+      ]
+    },
+    {
+      "backend": "OPENGL",
+      "all_passed": true,
+      "scenes": [
+        {
+          "passed": true,
+          "scene": "disabled",
+          "peak_cases": 40,
+          "peak_resting": 0,
+          "peak_rays": 40,
+          "peak_batches": 40,
+          "peak_recoil": 1.0,
+          "rotated": true,
+          "support_wake": false
+        },
+        {
+          "passed": true,
+          "scene": "classic",
+          "peak_cases": 40,
+          "peak_resting": 0,
+          "peak_rays": 40,
+          "peak_batches": 40,
+          "peak_recoil": 1.0,
+          "rotated": true,
+          "support_wake": false
+        },
+        {
+          "passed": true,
+          "scene": "case-load",
+          "peak_cases": 128,
+          "peak_resting": 128,
+          "peak_rays": 120,
+          "peak_batches": 1,
+          "peak_recoil": 0.0,
+          "rotated": false,
+          "support_wake": false
+        },
+        {
+          "passed": true,
+          "scene": "support-removed",
+          "peak_cases": 40,
+          "peak_resting": 40,
+          "peak_rays": 40,
+          "peak_batches": 1,
+          "peak_recoil": 1.0,
+          "rotated": true,
+          "support_wake": true
+        },
+        {
+          "passed": true,
+          "scene": "ntm-bypass",
+          "peak_cases": 0,
+          "peak_resting": 0,
+          "peak_rays": 0,
+          "peak_batches": 0,
+          "peak_recoil": 0.0,
+          "rotated": false,
+          "support_wake": false
+        },
+        {
+          "passed": true,
+          "scene": "ntm-flagged-bay",
+          "peak_cases": 0,
+          "peak_resting": 0,
+          "peak_rays": 0,
+          "peak_batches": 0,
+          "peak_recoil": 1.0,
+          "rotated": true,
+          "support_wake": false
+        }
+      ]
+    }
+  ],
+  "screenshots": [
+    {
+      "path": "docs/screens/m8-weapon-mechanisms/m8-mechanism-a-10-barrel-detail.png",
+      "sha256": "c1a4e2df3793d829a2a3b835f896fe49a71da9427a43e30db1851fe1508f1adb",
+      "native_unedited": true
+    },
+    {
+      "path": "docs/screens/m8-weapon-mechanisms/m8-mechanism-ah-64-cases-detail.png",
+      "sha256": "d123569795c495fdd70bf86320e33449c691f1a8c066fe9f3367bb18cbc80039",
+      "native_unedited": true
+    },
+    {
+      "path": "docs/screens/m8-weapon-mechanisms/m8-mechanism-f-35a-bay-detail.png",
+      "sha256": "ac204f7ce0cbd86d82844acf825f73f194cc653aa18328ab4ada567c44b49e99",
+      "native_unedited": true
+    },
+    {
+      "path": "docs/screens/m8-weapon-mechanisms/m8-mechanism-m1a2-recoil-action.png",
+      "sha256": "891a2a13b8c11976cd1402e319f77ec83394f11ef3a94c2914e72a0d631f4fb6",
+      "native_unedited": true
+    }
+  ],
+  "limits": {
+    "balanced_births_per_tick": 8,
+    "balanced_live_cases": 128,
+    "case_range_blocks": 96,
+    "spinning_sets": 128,
+    "bay_owners": 128
+  },
+  "target_fps": 60,
+  "target_hardware": "RTX 3060 8 GB, Ryzen 7 7800X3D, 1080p",
+  "target_hardware_measured": false,
+  "native_fixture": "Replicated client shot-bit replay, no server projectiles or ammunition use. Optional NTM absent: bay bypass tested with a fixture-only NTM flag on the selected conventional set."
+}

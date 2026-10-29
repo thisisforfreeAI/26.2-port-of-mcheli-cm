@@ -24,7 +24,7 @@ import net.neoforged.neoforge.client.event.*;
 public final class WeaponMechanismProbe {
     private static final boolean ENABLED=Boolean.getBoolean("mcheli.probeMechanisms");
     private static final int START=Integer.getInteger("mcheli.probeMechanismStart",0),END=Integer.getInteger("mcheli.probeMechanismEnd",10);
-    private static final String[] NAMES={"a-10-barrel","ah-64-cases","m1a2-recoil","f-35a-bay","disabled","classic","case-load","support-removed","ntm-bypass","ntm-bay"};
+    private static final String[] NAMES={"a-10-barrel","ah-64-cases","m1a2-recoil","f-35a-bay","disabled","classic","case-load","support-removed","ntm-bypass","ntm-flagged-bay"};
     private static int ticks,phase=-1,age,peakCases,peakRest,peakRays,peakBatches;private static float peakRecoil;private static boolean rotated,woke;private static float lastBarrel;private static AircraftEntity actor;private static WeaponSet set;private static int gunId,bit;private static String capture;
     @SuppressWarnings("unchecked") private static EntityDataAccessor<Integer> shotKey(){try{var field=AircraftEntity.class.getDeclaredField("DATA_USE_WEAPON");field.setAccessible(true);return (EntityDataAccessor<Integer>)field.get(null);}catch(ReflectiveOperationException e){throw new IllegalStateException(e);}}
     private static final EntityDataAccessor<Integer> SHOT=ENABLED?shotKey():null;
@@ -53,7 +53,8 @@ public final class WeaponMechanismProbe {
             actor=phase==0||(phase==3||phase==9)?new Plane(mc):phase==2?new Tank(mc):new Heli(mc);String model=phase==0?"a-10":phase==2?"m1a2":(phase==3||phase==9)?"f-35a":"ah-64";
             actor.setId(1180000+phase);actor.setAircraftTypeName(model);actor.setTextureName(model);actor.setPos(0,(phase==3||phase==9)?-56:-60,20);
             var parts=actor.getParts();for(int i=0;i<parts.length;i++)parts[i].setId(1650000+phase*100+i);mc.level.addEntity(actor);
-            String weapon=phase==0?"gau-8":phase==2?"rehinmetall_apfsds":(phase==3||phase==9)?phase==9?"ntm_b61_tactical":"gbu-39_b_sdb":"m230";set=actor.weapons().getWeaponByName(weapon);if(set==null)throw new IllegalStateException("Missing mechanism weapon "+weapon);
+            String weapon=phase==0?"gau-8":phase==2?"rehinmetall_apfsds":(phase==3||phase==9)?"gbu-39_b_sdb":"m230";set=actor.weapons().getWeaponByName(weapon);if(set==null)throw new IllegalStateException("Missing mechanism weapon "+weapon);
+            if(phase==9)set.getInfo().useHBM=true; // Fixture-only classification: NTM slots are absent without the optional mod.
             int offset=0;for(gunId=0;gunId<actor.weapons().getWeaponNum();gunId++){if(actor.weapons().getWeapon(gunId)==set)break;offset+=actor.weapons().getWeapon(gunId).getWeaponsCount();}bit=1<<offset;
             if((phase==3||phase==9)){actor.weapons().updateWeaponID(0,-1);if(!mc.player.startRiding(actor,true,true))throw new IllegalStateException("Bay pilot mount failed");}
             System.out.println("M8_MECHANISM scene="+NAMES[phase]+" weapon="+weapon+" authored_case="+(set.getInfo().cartridge!=null));
@@ -79,6 +80,7 @@ public final class WeaponMechanismProbe {
         if(WeaponEffects.cartridges()>128||WeaponEffects.casingRays()>128||WeaponMechanisms.spins()>128)throw new IllegalStateException("Mechanism budget exceeded");
         if(age==53||age==68)capture=NAMES[phase]+(age==53?"-action":"-detail");
         if(age==170){
+            if(phase==9)set.getInfo().useHBM=false;
             if(phase==0&&(!rotated||peakCases!=0))throw new IllegalStateException("Closed-feed barrel/casing behavior wrong");
             if((phase==1||phase==6||phase==7)&&(peakCases==0||peakRest==0))throw new IllegalStateException("No eject/bounce/settle sequence");
             if(phase==2&&peakRecoil==0)throw new IllegalStateException("Tank recoil absent");

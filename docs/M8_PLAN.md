@@ -475,9 +475,10 @@ change original weapon craters. Existing upstream features count as foundations 
   and terrain-connected landing lights. Reuse existing light/ground-patch rendering and
   distance/detail reduction rather than adding an unrestricted world-light simulation.
   [Implementation, profile coverage and limits](M8_NIGHT_FLIGHT_LIGHTING.md) · [native examples](M8_NIGHT_FLIGHT_GALLERY.md).
-- [ ] **Weapon mechanisms:** refine supported rotating barrels, recoil, casing ejection and
+- [x] **Weapon mechanisms:** refine supported rotating barrels, recoil, casing ejection and
   launcher-door sequencing. Respect existing animations, authored mounts and real shot events;
   do not alter weapon fire rates or Claude's weapon-selection logic.
+  [Implementation and limits](M8_WEAPON_MECHANISMS.md) · [native examples](M8_WEAPON_MECHANISMS_GALLERY.md).
 - [ ] **Aircraft customization:** expose existing selectable liveries and add supported
   markings/identifiers and restrained wear choices. Persist and sync selections with validation;
   avoid replacing Claude's broken-section/wreck artwork.
