@@ -6,10 +6,16 @@ import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
 /** The stock searchlight's cone frame, shared by rendering, culling and living-entity lighting. */
-public record SearchLightBeam(Matrix4f pose, AircraftInfo.SearchLight light, float strength) {
-    public SearchLightBeam { strength = Float.isFinite(strength) ? Math.clamp(strength, 0, 1) : 0; }
-    public SearchLightBeam(Matrix4f pose, AircraftInfo.SearchLight light) { this(pose, light, 1); }
-    public SearchLightBeam dim(float value) { return new SearchLightBeam(pose, light, value); }
+public record SearchLightBeam(Matrix4f pose, AircraftInfo.SearchLight light, float strength,float scatter) {
+    public SearchLightBeam {
+        strength = Float.isFinite(strength) ? Math.clamp(strength, 0, 1) : 0;
+        scatter=Float.isFinite(scatter)?Math.clamp(scatter,0,1):0;
+    }
+    public SearchLightBeam(Matrix4f pose,AircraftInfo.SearchLight light,float strength){this(pose,light,strength,1);}
+    public SearchLightBeam(Matrix4f pose, AircraftInfo.SearchLight light) { this(pose, light, 1,1); }
+    public SearchLightBeam dim(float value) { return new SearchLightBeam(pose, light, value,scatter); }
+    /** Atmospheric visibility is separate from terrain and entity illumination. */
+    public SearchLightBeam withScatter(float value){return new SearchLightBeam(pose,light,strength,value);}
     public static boolean usable(AircraftInfo.SearchLight light) {
         return light.height > 0 && light.width > 0 && Float.isFinite(light.height) && Float.isFinite(light.width)
                 && Float.isFinite(light.yaw) && Float.isFinite(light.pitch) && Float.isFinite(light.stRot)

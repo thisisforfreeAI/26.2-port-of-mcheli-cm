@@ -468,17 +468,21 @@ change original weapon craters. Existing upstream features count as foundations 
 - [x] **Flyby audio:** refine existing directional engine audio with bounded Doppler, plus
   conventional rocket/shell approach cues. Avoid duplicate loops, rider Doppler and NTM audio.
   [Implementation and limits](M8_FLYBY_AUDIO.md) · [native examples and cues](M8_FLYBY_GALLERY.md).
-- [ ] **Landing feedback:** supported tire compression and suspension response, touchdown
+- [x] **Landing feedback:** supported tire compression and suspension response, touchdown
   smoke and hard-contact sparks from real contact/motion transitions; no handling changes.
-- [ ] **Night-flight lighting:** authored navigation strobes, restrained cockpit illumination
+  [Implementation and limits](M8_LANDING_FEEDBACK.md) · [native examples](M8_LANDING_GALLERY.md).
+- [x] **Night-flight lighting:** authored navigation strobes, restrained cockpit illumination
   and terrain-connected landing lights. Reuse existing light/ground-patch rendering and
   distance/detail reduction rather than adding an unrestricted world-light simulation.
-- [ ] **Weapon mechanisms:** refine supported rotating barrels, recoil, casing ejection and
+  [Implementation, profile coverage and limits](M8_NIGHT_FLIGHT_LIGHTING.md) · [native examples](M8_NIGHT_FLIGHT_GALLERY.md).
+- [x] **Weapon mechanisms:** refine supported rotating barrels, recoil, casing ejection and
   launcher-door sequencing. Respect existing animations, authored mounts and real shot events;
   do not alter weapon fire rates or Claude's weapon-selection logic.
-- [ ] **Aircraft customization:** expose existing selectable liveries and add supported
+  [Implementation and limits](M8_WEAPON_MECHANISMS.md) · [native examples](M8_WEAPON_MECHANISMS_GALLERY.md).
+- [x] **Aircraft customization:** expose existing selectable liveries and add supported
   markings/identifiers and restrained wear choices. Persist and sync selections with validation;
   avoid replacing Claude's broken-section/wreck artwork.
+  [Controls and profile coverage](M8_AIRCRAFT_CUSTOMIZATION.md) · [native examples](M8_AIRCRAFT_CUSTOMIZATION_GALLERY.md).
 - [ ] **Effects test range:** a player-facing controlled comparison of weapons, lighting and
   quality presets, with reset/cleanup and a clear singleplayer/operator boundary. Use actual
   production effects and distinguish frame-rate measurements from particle counts.

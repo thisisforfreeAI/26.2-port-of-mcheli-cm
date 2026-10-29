@@ -1,0 +1,200 @@
+{
+  "kind": "terrain-connected-aircraft-landing-feedback",
+  "unit_results": {
+    "tests": 501,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "runs": [
+    {
+      "backend": "VULKAN",
+      "all_passed": true,
+      "scenes": [
+        {
+          "passed": true,
+          "scene": "f-35a-runway",
+          "peak_states": 1,
+          "peak_rays": 3,
+          "peak_births": 6,
+          "peak_puffs": 6,
+          "peak_sparks": 0,
+          "peak_compression": 0.067655556,
+          "touchdowns": 3
+        },
+        {
+          "passed": true,
+          "scene": "f-15e-sand",
+          "peak_states": 1,
+          "peak_rays": 3,
+          "peak_births": 6,
+          "peak_puffs": 6,
+          "peak_sparks": 0,
+          "peak_compression": 0.06765556,
+          "touchdowns": 3
+        },
+        {
+          "passed": true,
+          "scene": "a-10-grass",
+          "peak_states": 1,
+          "peak_rays": 3,
+          "peak_births": 6,
+          "peak_puffs": 6,
+          "peak_sparks": 0,
+          "peak_compression": 0.067655556,
+          "touchdowns": 2
+        }
+      ]
+    },
+    {
+      "backend": "OPENGL",
+      "all_passed": true,
+      "scenes": [
+        {
+          "passed": true,
+          "scene": "hard-contact",
+          "peak_states": 1,
+          "peak_rays": 3,
+          "peak_births": 12,
+          "peak_puffs": 6,
+          "peak_sparks": 6,
+          "peak_compression": 0.09378,
+          "touchdowns": 3
+        },
+        {
+          "passed": true,
+          "scene": "parked",
+          "peak_states": 1,
+          "peak_rays": 3,
+          "peak_births": 0,
+          "peak_puffs": 0,
+          "peak_sparks": 0,
+          "peak_compression": 0.029999996,
+          "touchdowns": 0
+        },
+        {
+          "passed": true,
+          "scene": "gear-up",
+          "peak_states": 0,
+          "peak_rays": 0,
+          "peak_births": 0,
+          "peak_puffs": 0,
+          "peak_sparks": 0,
+          "peak_compression": 0.0,
+          "touchdowns": 0
+        },
+        {
+          "passed": true,
+          "scene": "disabled",
+          "peak_states": 0,
+          "peak_rays": 0,
+          "peak_births": 0,
+          "peak_puffs": 0,
+          "peak_sparks": 0,
+          "peak_compression": 0.0,
+          "touchdowns": 0
+        },
+        {
+          "passed": true,
+          "scene": "classic",
+          "peak_states": 0,
+          "peak_rays": 0,
+          "peak_births": 0,
+          "peak_puffs": 0,
+          "peak_sparks": 0,
+          "peak_compression": 0.0,
+          "touchdowns": 0
+        },
+        {
+          "passed": true,
+          "scene": "warp",
+          "peak_states": 1,
+          "peak_rays": 3,
+          "peak_births": 0,
+          "peak_puffs": 0,
+          "peak_sparks": 0,
+          "peak_compression": 0.029999996,
+          "touchdowns": 0
+        },
+        {
+          "passed": true,
+          "scene": "shared-load",
+          "peak_states": 32,
+          "peak_rays": 24,
+          "peak_births": 12,
+          "peak_puffs": 48,
+          "peak_sparks": 0,
+          "peak_compression": 0.067655556,
+          "touchdowns": 96
+        },
+        {
+          "passed": true,
+          "scene": "uneven-load",
+          "peak_states": 1,
+          "peak_rays": 3,
+          "peak_births": 0,
+          "peak_puffs": 0,
+          "peak_sparks": 0,
+          "peak_compression": 0.0413469,
+          "touchdowns": 0
+        },
+        {
+          "passed": true,
+          "scene": "water",
+          "peak_states": 1,
+          "peak_rays": 3,
+          "peak_births": 0,
+          "peak_puffs": 0,
+          "peak_sparks": 0,
+          "peak_compression": 0.0,
+          "touchdowns": 0
+        }
+      ]
+    }
+  ],
+  "limits": {
+    "aircraft_states": 32,
+    "range_blocks": 64,
+    "rays_per_client_tick": 24,
+    "births_per_client_tick": 12,
+    "cached_gear_groups": 256,
+    "gear_groups_per_aircraft": 8,
+    "contacts_per_group": 4
+  },
+  "screenshots": [
+    {
+      "path": "docs/screens/m8-landing/a-10-grass-gear.png",
+      "sha256": "fbcd43b106383baebaae9bb0463dca54b2ba19c879489ce4847d47eff741d093",
+      "native_unedited": true
+    },
+    {
+      "path": "docs/screens/m8-landing/a-10-grass-touchdown.png",
+      "sha256": "dd3c217ee487bff6e3960745e7565b38ceae5a0b6d2b957ba832d93b7887110d",
+      "native_unedited": true
+    },
+    {
+      "path": "docs/screens/m8-landing/f-15e-sand-gear.png",
+      "sha256": "f0d255d11ca848f55bc2ae4d790b3de2298f11286b78ad9fbcb61d334015c8c5",
+      "native_unedited": true
+    },
+    {
+      "path": "docs/screens/m8-landing/f-15e-sand-touchdown.png",
+      "sha256": "7e95ef74894e35e0a9df5aa0c55acdb44af2ed17d9b340fff69932d523d482f5",
+      "native_unedited": true
+    },
+    {
+      "path": "docs/screens/m8-landing/f-35a-runway-gear.png",
+      "sha256": "d238c4c02b9b9bf6ce6cac6f4d405d19f8c0bb5d7c74598e4bc814486f75fdf6",
+      "native_unedited": true
+    },
+    {
+      "path": "docs/screens/m8-landing/f-35a-runway-touchdown.png",
+      "sha256": "1371502d5c035d93b4fa300150215c9e3e6fd61fa84bb5b73bd9d80b89d6b6c3",
+      "native_unedited": true
+    }
+  ],
+  "target_fps": 60,
+  "target_hardware": "RTX 3060 8 GB, Ryzen 7 7800X3D, 1080p",
+  "target_hardware_measured": false,
+  "native_scenes": "Controlled client trajectories, not piloted physics; original craters unchanged."
+}

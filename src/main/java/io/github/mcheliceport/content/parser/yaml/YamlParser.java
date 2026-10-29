@@ -754,6 +754,15 @@ public final class YamlParser implements ContentParser {
                     if(!Float.isFinite(speed)||speed<0||speed>100)throw new IllegalArgumentException("MachOneSpeed must be finite and between 0 and 100");
                     info.machOneSpeed=speed;
                 }
+                case "FlightLamps" -> {
+                    for(var lamp:(List<Map<String,Object>>)entry.getValue()){
+                        if(info.flightLamps.size()>=16)throw new IllegalArgumentException("At most 16 FlightLamps are supported");
+                        String color=lamp.getOrDefault("Color","FFFFFF").toString().replaceFirst("^(#|0[xX])", "");
+                        info.flightLamps.add(new AircraftInfo.FlightLamp(parseVector(lamp.get("Position")),
+                                lamp.getOrDefault("PartName","body").toString(),AircraftInfo.FlightLampKind.valueOf(lamp.getOrDefault("Type","NAVIGATION").toString().toUpperCase(Locale.ROOT)),
+                                Integer.parseUnsignedInt(color,16),((Number)lamp.getOrDefault("Radius",.1)).floatValue()));
+                    }
+                }
                 case "EngineOutlets" -> {
                     for (Map<String, Object> outlet : (List<Map<String, Object>>) entry.getValue()) {
                         info.engineOutlets.add(new AircraftInfo.EngineOutlet(parseVector(outlet.get("Position")),

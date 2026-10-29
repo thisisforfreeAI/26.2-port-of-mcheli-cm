@@ -74,8 +74,9 @@ public abstract class AircraftRenderer<T extends AircraftEntity> extends EntityR
         super.extractRenderState(entity, state, partialTicks);
         state.draws.clear();
         state.impactDraws.clear();
-        state.emissiveDraws.clear();state.detailDraws.clear();
+        state.emissiveDraws.clear();state.detailDraws.clear();state.markingDraws.clear();
         state.searchLights.clear();
+        state.flightLamps.clear();
         state.boxes.clear();
         state.ropeHooks.clear(); state.ropeLength = 0;
         state.texture = null;
@@ -98,7 +99,8 @@ public abstract class AircraftRenderer<T extends AircraftEntity> extends EntityR
                 if (strength > 0 && io.github.mcheliceport.entity.aircraft.SearchLightBeam.usable(light)) {
                     state.searchLights.add(io.github.mcheliceport.entity.aircraft.SearchLightBeam.of(light,
                             ypr[0], ypr[1], ypr[2], entity.searchLightYaw(partialTicks), entity.searchLightPitch(partialTicks),
-                            Mth.lerp(partialTicks, entity.previousSteeringYaw, entity.steeringYaw)).dim(strength));
+                            Mth.lerp(partialTicks, entity.previousSteeringYaw, entity.steeringYaw)).dim(strength)
+                            .withScatter(FlightLightLook.beamScatter(light.m8Only,entity.level().getRainLevel(partialTicks))));
                 }
             }
         }
@@ -142,6 +144,7 @@ public abstract class AircraftRenderer<T extends AircraftEntity> extends EntityR
                 eraIndex++;
             }
         }
+        io.github.mcheliceport.client.particle.LandingEffects.apply(entity,state,partialTicks);
         SmallVehicleMotion.apply(entity,state,partialTicks);
         CockpitInstrumentMotion.apply(entity,state,partialTicks);
         DestructionParts.apply(entity,state,partialTicks);
@@ -151,6 +154,8 @@ public abstract class AircraftRenderer<T extends AircraftEntity> extends EntityR
         io.github.mcheliceport.client.particle.VehicleSurfaceBuildup.extract(entity,state);
         VehicleImpactMarks.extract(entity,state);
         io.github.mcheliceport.client.particle.VehicleWeaponHeat.extract(entity,state);
+        FlightLighting.extract(entity,state,partialTicks);
+        AircraftMarkings.extract(entity,state);
     }
 
     protected abstract String directory();
@@ -235,6 +240,7 @@ public abstract class AircraftRenderer<T extends AircraftEntity> extends EntityR
         }
         if (entity.isSearchLightOn() && info != null) {
             for (var light : info.searchLights) {
+                if(!FlightLighting.allowed(entity,light))continue;
                 if (!io.github.mcheliceport.entity.aircraft.SearchLightBeam.usable(light)) { continue; }
                 var beam = io.github.mcheliceport.entity.aircraft.SearchLightBeam.of(light, entity.getYaw(),
                         entity.getPitch(), entity.getRoll(), entity.searchLightYaw(1), entity.searchLightPitch(1), entity.steeringYaw);
@@ -250,6 +256,7 @@ public abstract class AircraftRenderer<T extends AircraftEntity> extends EntityR
     public void submit(AircraftRenderState state, PoseStack poseStack, SubmitNodeCollector collector,
             CameraRenderState camera) {
         SearchLightRenderer.submit(state.searchLights, poseStack, collector);
+        GlowGeometry.lamps(poseStack,collector,camera,state.flightLamps);
         if (!state.ropeHooks.isEmpty() && state.ropeLength > 0) {
             float width = Minecraft.getInstance().gameRenderer.gameRenderState().windowRenderState.appropriateLineWidth;
             var hooks = List.copyOf(state.ropeHooks); float length = state.ropeLength;
@@ -296,6 +303,7 @@ public abstract class AircraftRenderer<T extends AircraftEntity> extends EntityR
                 });
             }
         }
+        AircraftMarkings.submit(state,poseStack,collector);
         if(!state.impactDraws.isEmpty()) {
             var marks=List.copyOf(state.impactDraws);
             int impactLight=state.lightCoords;
@@ -322,7 +330,7 @@ public abstract class AircraftRenderer<T extends AircraftEntity> extends EntityR
                     (pose, buffer) -> {
                         PoseStack.Pose p = pose.copy();
                         p.mulPose(draw.pose());
-                        ModelVertices.emit(buffer, p, draw.groups(), 0xFFFFFFFF,
+                        ModelVertices.emit(buffer, p, draw.groups(), draw.color(),
                                 net.minecraft.util.LightCoordsUtil.FULL_BRIGHT, false);
                     });
         }

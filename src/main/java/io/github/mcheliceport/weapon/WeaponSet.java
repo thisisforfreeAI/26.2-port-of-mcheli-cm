@@ -315,7 +315,7 @@ public class WeaponSet {
             Vec3 motion = shooter.getDeltaMovement();
             WeaponClientHooks.spawnCartridge(shooter.level(), current.cartridge, shooter.getX() + offset.x,
                     shooter.getY() + offset.y, shooter.getZ() + offset.z, motion.x, motion.y, motion.z,
-                    shooter.getYRot() + this.yaw, shooter.getXRot() + this.pitch);
+                    shooter.getYRot() + this.yaw, shooter.getXRot() + this.pitch,current.getInfo());
         }
         if (index < this.recoilBuffer.length) {
             updateRecoil(this.recoilBuffer[index], isUsed);

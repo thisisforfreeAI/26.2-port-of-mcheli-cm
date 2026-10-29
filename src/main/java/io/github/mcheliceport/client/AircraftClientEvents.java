@@ -97,7 +97,9 @@ public final class AircraftClientEvents {
             MouseFlight.reset();
             AircraftCameraClient.reset();
             AircraftEngineSound.clear();
+            io.github.mcheliceport.client.render.FlightLighting.clear();
             WeaponClient.reset();
+            io.github.mcheliceport.client.render.WeaponMechanisms.clear();
             TargetMarkers.INSTANCE.reset();
             io.github.mcheliceport.client.camera.GltdCameraClient.reset();
             io.github.mcheliceport.client.tool.LightWeaponClient.reset();

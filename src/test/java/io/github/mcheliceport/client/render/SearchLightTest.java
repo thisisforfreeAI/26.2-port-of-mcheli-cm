@@ -70,14 +70,22 @@ class SearchLightTest {
         var legacy = ContentTestSupport.load(ContentTestSupport.legacyPack());
         int count = 0;
         for (var info : stock.aircraft()) {
-            if (info.searchLights.isEmpty()) { continue; }
+            var lamps=info.searchLights.stream().filter(light->!light.m8Only).toList();
+            if (lamps.isEmpty()) { continue; }
             var old = legacy.aircraft().stream().filter(i -> i.name.equals(info.name)).findFirst().orElseThrow();
-            for (int i = 0; i < info.searchLights.size(); i++) {
-                assertEquals(old.searchLights.get(i).colorStart, info.searchLights.get(i).colorStart);
-                assertEquals(old.searchLights.get(i).colorEnd, info.searchLights.get(i).colorEnd); count++;
+            assertEquals(old.searchLights.size(),lamps.size());
+            for (int i = 0; i < lamps.size(); i++) {
+                assertEquals(old.searchLights.get(i).colorStart, lamps.get(i).colorStart);
+                assertEquals(old.searchLights.get(i).colorEnd, lamps.get(i).colorEnd); count++;
             }
         }
         assertEquals(15, count);
+    }
+    @Test void faintAtmosphericVisibilityKeepsTerrainAndEntityIllumination(){
+        var beam=SearchLightBeam.of(lamp(false,false,0,0,0),0,0,0,0,0,0).withScatter(FlightLightLook.beamScatter(true,0));
+        assertTrue(beam.scatter()<.05F);assertEquals(15,beam.blockLight(beam.point(0,20,0)));
+        assertEquals(3,beam.dim(.2F).blockLight(beam.point(0,20,0)));
+        assertTrue(FlightLightLook.beamScatter(true,1)>beam.scatter());assertEquals(1,FlightLightLook.beamScatter(false,1));
     }
     @Test void addonLightCoverRotatesAroundItsPivot() {
         var info = new HeliInfo(ContentLocation.builtin("cover"), "cover.yml", "yaml");

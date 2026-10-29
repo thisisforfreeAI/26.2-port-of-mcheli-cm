@@ -47,11 +47,11 @@ public final class SearchLightRenderer {
                 var p = pose.copy(); p.mulPose(beam.pose());
                 float radius = beam.light().width / 2;
                 for (int i = 0; i < 24; i++) {
-                    buffer.addVertex(p, 0, 0, 0).setColor(dim(beam.light().colorStart, beam.strength()));
+                    buffer.addVertex(p, 0, 0, 0).setColor(dim(beam.light().colorStart, beam.strength()*beam.scatter()));
                     for (int n = i; n <= i + 1; n++) {
                         double angle = Math.toRadians(n * 15);
                         buffer.addVertex(p, (float) Math.sin(angle) * radius, beam.light().height,
-                                (float) Math.cos(angle) * radius).setColor(dim(beam.light().colorEnd, beam.strength()));
+                                (float) Math.cos(angle) * radius).setColor(dim(beam.light().colorEnd, beam.strength()*beam.scatter()));
                     }
                 }
             }

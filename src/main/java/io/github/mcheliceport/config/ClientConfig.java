@@ -49,6 +49,10 @@ public final class ClientConfig {
     public static final ModConfigSpec.BooleanValue COCKPIT_FEEDBACK;
     public static final ModConfigSpec.BooleanValue SUPERSONIC_EFFECTS;
     public static final ModConfigSpec.BooleanValue FLYBY_AUDIO;
+    public static final ModConfigSpec.BooleanValue LANDING_FEEDBACK;
+    public static final ModConfigSpec.BooleanValue NIGHT_FLIGHT_LIGHTING;
+    public static final ModConfigSpec.BooleanValue WEAPON_MECHANISMS;
+    public static final ModConfigSpec.BooleanValue AIRCRAFT_CUSTOMIZATION;
     public static final ModConfigSpec.BooleanValue VEHICLE_BLOOD;
     public static final ModConfigSpec.BooleanValue VEHICLE_DESTRUCTION_SEQUENCES;
     public static final ModConfigSpec.BooleanValue VEHICLE_DAMAGE_DETAILS;
@@ -190,6 +194,13 @@ public final class ClientConfig {
                 .define("supersonicEffects",true);
         FLYBY_AUDIO = builder.comment("Smooth directional vehicle Doppler and bounded conventional rocket/cannon near-miss cues. NTM weapons keep their own audio.")
                 .define("flybyAudio",true);
+        LANDING_FEEDBACK = builder.comment("Cosmetic compression of supported deployed primary gear, surface-colored touchdown puffs and restrained hard-contact sparks. No handling changes.")
+                .define("landingFeedback",true);
+        NIGHT_FLIGHT_LIGHTING = builder.comment("Authored navigation lamps and strobes, restrained cockpit illumination and terrain-connected landing lights. Reuses existing render pipelines; no world light-engine updates.")
+                .define("nightFlightLighting",true);
+        AIRCRAFT_CUSTOMIZATION = builder.comment("Show supported intact-aircraft identification marks and restrained cosmetic wear.").define("aircraftCustomization",true);
+        WEAPON_MECHANISMS = builder.comment("Smoother conventional barrel/recoil and bay presentation, with sized standard casings that bounce and settle. Existing weapon timing, custom models and ejection settings remain authoritative.")
+                .define("weaponMechanisms",true);
         VEHICLE_WATER_DETAILS = builder.comment("Bounded V wakes, shallow-water spray and detached-panel splashes.").define("vehicleWaterDetails",true);
         VEHICLE_SMALL_MOTION = builder.comment("Flexible supported antennas, authored nozzle-cover vibration and hanging exposed cables.").define("vehicleSmallMotion",true);
         VEHICLE_SURFACE_BUILDUP = builder.comment("Mud and dust on lower panels, washed by water and rain; soot near exhausts.").define("vehicleSurfaceBuildup",true);

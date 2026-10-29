@@ -175,6 +175,8 @@ public abstract class AircraftInfo extends BaseInfo {
     public float particlesScale = 1.0F;
     /** Optional cosmetic engine outlets, in model coordinates; absent outlets are never guessed. */
     public final List<EngineOutlet> engineOutlets = new ArrayList<>();
+    /** Authored visual lamps. Positions share their named model part's transforms. */
+    public final List<FlightLamp> flightLamps = new ArrayList<>();
     /** Optional cosmetic Mach-one mapping in unscaled game blocks/tick; zero disables it. */
     public float machOneSpeed=0;
     /** M10b: guns reload slower (1.4x) while no loader seat is manned; only for vehicles with a loader seat. */
@@ -1107,6 +1109,9 @@ public abstract class AircraftInfo extends BaseInfo {
 
     public static class SearchLight {
 
+        /** Optional lighting refinement; old content keeps its original searchlight behavior. */
+        public boolean m8Only;
+
         public final Vec3 pos;
         public final int colorStart;
         public final int colorEnd;
@@ -1268,6 +1273,16 @@ public abstract class AircraftInfo extends BaseInfo {
         @Override
         public String toString() {
             return "WeaponSet{type='" + this.type + "', weapons=" + this.weapons + '}';
+        }
+    }
+
+    public enum FlightLampKind {NAVIGATION,STROBE,COCKPIT}
+    public record FlightLamp(Vec3 position,String part,FlightLampKind kind,int color,float radius){
+        public FlightLamp {
+            if(part!=null&&part.startsWith("$"))part=part.substring(1);
+            if(position==null||!Double.isFinite(position.lengthSqr())||Math.max(Math.abs(position.x),Math.max(Math.abs(position.y),Math.abs(position.z)))>128
+                    ||part==null||!part.matches("[a-zA-Z0-9_.-]{1,40}")||kind==null||color<0||color>0xFFFFFF
+                    ||!Float.isFinite(radius)||radius<.02F||radius>2)throw new IllegalArgumentException("Invalid flight lamp position, part, RGB color or radius");
         }
     }
 

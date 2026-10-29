@@ -15,6 +15,10 @@ import org.junit.jupiter.api.Test;
 
 /** Exit criterion E8: every M3 payload survives its codec, and the control bits are CE's. */
 class PayloadCodecTest {
+    @Test void aircraftAppearanceSelectionRoundTrips(){
+        var p=new AircraftAppearancePayload(123,"f-35a",new io.github.mcheliceport.appearance.AircraftAppearance(127,3,2,1).packed());
+        assertEquals(p,roundTrip(AircraftAppearancePayload.CODEC,p));
+    }
     @Test void vehicleImpactRoundTripsAndRejectsInvalidGeometry(){
         var id=java.util.UUID.randomUUID();
         var p=new VehicleImpactPayload(52,id,.5F,1,-3,0,0,-1,.3F,true,123);

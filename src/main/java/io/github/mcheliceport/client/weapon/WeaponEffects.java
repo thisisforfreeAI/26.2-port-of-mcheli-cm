@@ -13,6 +13,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.LinkedHashMap;
+import org.joml.Matrix4f;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
@@ -46,6 +49,12 @@ public final class WeaponEffects {
     private static final RandomSource RAND = RandomSource.create();
     private static long casingTick = Long.MIN_VALUE;
     private static int casingsThisTick;
+    private static int casingRays;
+    private static int casingBatches;
+    public static int cartridges(){return CARTRIDGES.size();}
+    public static int restingCartridges(){return (int)CARTRIDGES.stream().filter(c->c.resting).count();}
+    public static int casingRays(){return casingRays;}
+    public static int casingBatches(){return casingBatches;}
 
     private WeaponEffects() {
     }
@@ -58,6 +67,11 @@ public final class WeaponEffects {
     /** Upstream {@code MCH_EntityCartridge#spawnCartridge}. */
     public static void spawnCartridge(Level level, CartridgeInfo info, double x, double y, double z, double mx,
             double my, double mz, float yaw, float pitch) {
+        spawnCartridge(level,info,x,y,z,mx,my,mz,yaw,pitch,false);
+    }
+    /** Conventional standard-case models opt into motion/batching; ejection settings are retained. */
+    public static void spawnCartridge(Level level, CartridgeInfo info, double x, double y, double z, double mx,
+            double my, double mz, float yaw, float pitch,boolean refined) {
         if (level != Minecraft.getInstance().level || ClientConfig.get(ClientConfig.ALIVE_TIME_OF_CARTRIDGE) <= 0
                 || Minecraft.getInstance().gameRenderer.mainCamera().position().distanceToSqr(x, y, z) > 96 * 96) return;
         if (casingTick != level.getGameTime()) { casingTick = level.getGameTime(); casingsThisTick = 0; }
@@ -67,7 +81,7 @@ public final class WeaponEffects {
         int limit = io.github.mcheliceport.client.particle.VehicleAtmosphereLook.casingLimit(budget);
         while (CARTRIDGES.size() >= limit) CARTRIDGES.removeFirst();
         Cartridge c = new Cartridge(level, info, x, y, z, mx + (RAND.nextFloat() - 0.5) * 0.07, my,
-                mz + (RAND.nextFloat() - 0.5) * 0.07);
+                mz + (RAND.nextFloat() - 0.5) * 0.07,refined);
         c.yaw = c.prevYaw = c.targetYaw = yaw;
         c.pitch = c.prevPitch = c.targetPitch = pitch;
         float cy = (yaw + info.yaw) * Mth.DEG_TO_RAD;
@@ -88,15 +102,18 @@ public final class WeaponEffects {
         BEAMS.clear();
         CARTRIDGES.clear();
         casingTick = Long.MIN_VALUE; casingsThisTick = 0;
+        casingRays=casingBatches=0;
     }
 
     /** Upstream {@code MCH_RenderLaser#onClientTick} and {@code MCH_EntityCartridge#onUpdate}. */
     static void tick(@Nullable Level level) {
+        casingRays=0;
+        Vec3 observer=Minecraft.getInstance().gameRenderer.mainCamera().position();
         BEAMS.removeIf(beam -> --beam.lifeTicks <= 0);
         int aliveTime = ClientConfig.get(ClientConfig.ALIVE_TIME_OF_CARTRIDGE);
         for (Iterator<Cartridge> it = CARTRIDGES.iterator(); it.hasNext(); ) {
             Cartridge c = it.next();
-            if (c.level != level || c.age >= aliveTime) {
+            if (c.level != level || c.age >= aliveTime || c.refined&&observer.distanceToSqr(c.x,c.y,c.z)>96*96) {
                 it.remove();
                 continue;
             }
@@ -106,6 +123,7 @@ public final class WeaponEffects {
 
     /** Draws beams and cartridges; registered on the game bus. */
     public static void onSubmitGeometry(SubmitCustomGeometryEvent event) {
+        casingBatches=0;
         if (BEAMS.isEmpty() && CARTRIDGES.isEmpty()) {
             return;
         }
@@ -131,10 +149,29 @@ public final class WeaponEffects {
             });
             poseStack.popPose();
         }
+        var batches=new LinkedHashMap<String,List<CaseDraw>>();
         for (Cartridge c : CARTRIDGES) {
-            submitCartridge(c, poseStack, collector, cam, partialTicks);
+            if(!c.refined){submitCartridge(c, poseStack, collector, cam, partialTicks);casingBatches++;continue;}
+            double x=Mth.lerp(partialTicks,c.prevX,c.x),y=Mth.lerp(partialTicks,c.prevY,c.y),z=Mth.lerp(partialTicks,c.prevZ,c.z);
+            var block=BlockPos.containing(x,y,z);
+            if(c.age-c.lightAge>=5||!block.equals(c.lightBlock)){
+                c.light=LightCoordsUtil.pack(c.level.getBrightness(LightLayer.BLOCK,block),c.level.getBrightness(LightLayer.SKY,block));c.lightAge=c.age;c.lightBlock=block;
+            }
+            var matrix=new Matrix4f().translation((float)(x-cam.x),(float)(y-cam.y),(float)(z-cam.z))
+                    .rotateY(-Mth.rotLerp(partialTicks,c.prevYaw,c.yaw)*Mth.DEG_TO_RAD)
+                    .rotateX(Mth.lerp(partialTicks,c.prevPitch,c.pitch)*Mth.DEG_TO_RAD)
+                    .rotateZ(Mth.lerp(partialTicks,c.prevRoll,c.roll)*Mth.DEG_TO_RAD).scale(c.scale);
+            batches.computeIfAbsent(c.name,k->new ArrayList<>()).add(new CaseDraw(matrix,c.light));
+        }
+        for(var entry:batches.entrySet()){
+            var model=BulletModels.bullet(entry.getKey());if(model==null)continue;
+            var texture=Identifier.fromNamespaceAndPath("mcheli","textures/bullets/"+entry.getKey().toLowerCase(Locale.ROOT)+".png");var draws=List.copyOf(entry.getValue());
+            collector.submitCustomGeometry(poseStack,AircraftRenderTypes.aircraft(texture),(pose,buffer)->{
+                for(var draw:draws){var p=pose.copy();p.mulPose(draw.pose);ModelVertices.emit(buffer,p,model.groups,0xFFFFFFFF,draw.light,false);}
+            });casingBatches++;
         }
     }
+    private record CaseDraw(Matrix4f pose,int light){}
 
     /** Upstream {@code MCH_RenderLaser#renderBeam}: a wide faint glow and a bright core, facing the view. */
     private static void renderBeam(Beam beam, PoseStack.Pose pose, VertexConsumer buffer, Vec3 look, long worldTime,
@@ -230,6 +267,7 @@ public final class WeaponEffects {
         poseStack.scale(c.scale, c.scale, c.scale);
         poseStack.mulPose(Axis.YP.rotationDegrees(-yaw));
         poseStack.mulPose(Axis.XP.rotationDegrees(pitch));
+        if(c.refined)poseStack.mulPose(Axis.ZP.rotationDegrees(Mth.lerp(partialTicks,c.prevRoll,c.roll)));
         collector.submitCustomGeometry(poseStack, AircraftRenderTypes.aircraft(texture),
                 (pose, buffer) -> ModelVertices.emit(buffer, pose, groups, 0xFFFFFFFF, light, false));
         poseStack.popPose();
@@ -278,8 +316,14 @@ public final class WeaponEffects {
         float targetYaw;
         float targetPitch;
         int age;
+        final boolean refined;
+        boolean resting;
+        int groundHits;
+        BlockPos support;
+        float roll,prevRoll,rollSpeed;
+        BlockPos lightBlock;int light,lightAge=-1000;
 
-        Cartridge(Level level, CartridgeInfo info, double x, double y, double z, double mx, double my, double mz) {
+        Cartridge(Level level, CartridgeInfo info, double x, double y, double z, double mx, double my, double mz,boolean refined) {
             this.level = level;
             this.name = info.name;
             this.bound = info.bound;
@@ -291,6 +335,7 @@ public final class WeaponEffects {
             this.mx = mx;
             this.my = my;
             this.mz = mz;
+            this.refined=refined;if(refined)rollSpeed=(RAND.nextBoolean()?1:-1)*(18+RAND.nextFloat()*12);
         }
 
         void tick() {
@@ -299,7 +344,18 @@ public final class WeaponEffects {
             this.prevZ = this.z;
             this.prevYaw = this.yaw;
             this.prevPitch = this.pitch;
+            this.prevRoll=this.roll;
             this.age++;
+            if(refined){
+                if(resting){
+                    rollSpeed*=.6F;roll+=rollSpeed;pitch+=(0-pitch)*.35F;
+                    if(age%10==0&&(support==null||!level.hasChunkAt(support)||level.getBlockState(support).getCollisionShape(level,support).isEmpty())){
+                        resting=false;groundHits=0;my=-.02;
+                    }
+                    return;
+                }
+                roll+=rollSpeed;rollSpeed*=.99F;
+            }
             this.mx *= 0.98;
             this.mz *= 0.98;
             this.my += this.gravity;
@@ -322,6 +378,7 @@ public final class WeaponEffects {
         private void move() {
             Vec3 from = new Vec3(this.x, this.y, this.z);
             Vec3 to = new Vec3(this.x + this.mx, this.y + this.my, this.z + this.mz);
+            casingRays++;
             BlockHitResult m = this.level.clip(new ClipContext(from, to, ClipContext.Block.COLLIDER,
                     ClipContext.Fluid.NONE, net.minecraft.world.phys.shapes.CollisionContext.empty()));
             double d = Math.max(Math.max(Math.abs(this.mx), Math.abs(this.my)), Math.abs(this.mz));
@@ -354,6 +411,11 @@ public final class WeaponEffects {
                     }
                 }
                 case UP -> {
+                    if(refined){
+                        y=hit.y+.014*scale+.002;support=m.getBlockPos();
+                        if(++groundHits>=2||d<.075){resting=true;mx=my=mz=0;targetPitch=0;return;}
+                        mx*=.55;mz*=.55;rollSpeed*=.55F;
+                    }
                     if (this.my < 0.0) {
                         this.my = -this.my * this.bound;
                     }

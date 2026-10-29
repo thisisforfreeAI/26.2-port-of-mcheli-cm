@@ -1,0 +1,107 @@
+{
+  "kind": "persistent-validated-liveries-and-fitted-intact-aircraft-marks",
+  "unit_results": {
+    "tests": 519,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "runs": [
+    {
+      "backend": "VULKAN",
+      "all_passed": true,
+      "scenes": [
+        {
+          "passed": true,
+          "scene": "f-35a-127",
+          "peak_vertices": 177
+        },
+        {
+          "passed": true,
+          "scene": "f-15e-204",
+          "peak_vertices": 123
+        },
+        {
+          "passed": true,
+          "scene": "a-10-042",
+          "peak_vertices": 165
+        }
+      ]
+    },
+    {
+      "backend": "OPENGL",
+      "all_passed": true,
+      "scenes": [
+        {
+          "passed": true,
+          "scene": "disabled",
+          "peak_vertices": 0
+        },
+        {
+          "passed": true,
+          "scene": "classic",
+          "peak_vertices": 0
+        },
+        {
+          "passed": true,
+          "scene": "shared-load",
+          "peak_vertices": 4602
+        },
+        {
+          "passed": true,
+          "scene": "server-menu",
+          "peak_vertices": 177
+        }
+      ]
+    }
+  ],
+  "screenshots": [
+    {
+      "path": "docs/screens/m8-aircraft-customization/m8-appearance-a-10-042.png",
+      "sha256": "76bf429839428a946154f24b8b21189312983b27f452c3fa0237ec5bce835b95",
+      "native_unedited": true
+    },
+    {
+      "path": "docs/screens/m8-aircraft-customization/m8-appearance-f-15e-204.png",
+      "sha256": "9d1fa6568f7ffe7121dee2b080e62f30568bffe9153a09f294d5439c79ef51a3",
+      "native_unedited": true
+    },
+    {
+      "path": "docs/screens/m8-aircraft-customization/m8-appearance-f-35a-127.png",
+      "sha256": "53d6bae6728016e472de6747188b898c78f2c177e938f48a9ca320f3707e2e61",
+      "native_unedited": true
+    },
+    {
+      "path": "docs/screens/m8-aircraft-customization/m8-appearance-server-applied.png",
+      "sha256": "52231efa9611f06ec286cfa17cc34582103a5be48d28c375226825c986210218",
+      "native_unedited": true
+    },
+    {
+      "path": "docs/screens/m8-aircraft-customization/m8-appearance-server-menu.png",
+      "sha256": "887146f6c7ccef2f33c986dd5fd4754752399edef8615ff50e6846580a7fdbee",
+      "native_unedited": true
+    }
+  ],
+  "profiles": [
+    "f-35a",
+    "f-15e",
+    "a-10"
+  ],
+  "limits": {
+    "marking_vertices_low_balanced_high": [
+      2048,
+      6144,
+      12288
+    ],
+    "marking_range_blocks": 96,
+    "cached_groups": 32
+  },
+  "actual_server_menu_packet_sync": true,
+  "gui_minimum_tested": [
+    320,
+    240
+  ],
+  "target_fps": 60,
+  "target_hardware": "RTX 3060 8 GB, Ryzen 7 7800X3D, 1080p",
+  "target_hardware_measured": false
+}

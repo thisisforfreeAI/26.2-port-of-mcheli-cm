@@ -52,7 +52,7 @@ public class AircraftScreen extends AbstractContainerScreen<AircraftMenu> {
     private static final int WEAPON_PANEL_W = 176;
     private static final int WEAPON_ROW_H = 22;
     /** The strip under the player inventory holding the command field. */
-    private static final int COMMAND_STRIP_H = 24;
+    private static final int COMMAND_STRIP_H = 46;
 
     /** A weapon set with a magazine and its reload button. */
     private record WeaponRow(int weaponId, WeaponSet set, Button button) {
@@ -117,6 +117,9 @@ public class AircraftScreen extends AbstractContainerScreen<AircraftMenu> {
 
     private void initCommandStrip(AircraftEntity aircraft) {
         int sy = this.topPos + this.imageHeight - COMMAND_STRIP_H + 4;
+        if(aircraft!=null)this.addRenderableWidget(Button.builder(Component.literal("Appearance"),b ->
+                {this.saveCommand();this.minecraft.gui.setScreen(new AircraftAppearanceScreen(this,this.menu,aircraft));})
+                .bounds(this.leftPos+6,sy+22,this.imageWidth-12,18).build());
         this.commandField = new EditBox(this.font, this.leftPos + 6, sy + 1, 150, 16, Component.literal("Command"));
         this.commandField.setMaxLength(AircraftCommandPayload.MAX_LENGTH);
         this.commandField.setValue(aircraft != null ? aircraft.getCommand() : "");
@@ -176,13 +179,17 @@ public class AircraftScreen extends AbstractContainerScreen<AircraftMenu> {
      */
     @Override
     public void onClose() {
+        this.saveCommand();
+        super.onClose();
+    }
+
+    private void saveCommand() {
         AircraftEntity aircraft = this.menu.getAircraft();
         if (aircraft != null && this.commandField != null && this.commandEditable
                 && !this.commandField.getValue().equals(aircraft.getCommand())) {
             ClientPacketDistributor.sendToServer(new AircraftCommandPayload(aircraft.getId(),
                     this.commandField.getValue()));
         }
-        super.onClose();
     }
 
     private void resupply(int weaponId) {

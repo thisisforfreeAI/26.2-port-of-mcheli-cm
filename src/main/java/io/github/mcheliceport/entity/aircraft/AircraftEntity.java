@@ -188,6 +188,9 @@ public abstract class AircraftEntity extends Entity
     private static final EntityDataAccessor<Integer> DATA_RADAR_BLANK =
             SynchedEntityData.defineId(AircraftEntity.class, EntityDataSerializers.INT);
 
+    private static final EntityDataAccessor<Integer> DATA_APPEARANCE =
+            SynchedEntityData.defineId(AircraftEntity.class, EntityDataSerializers.INT);
+
     private static final AircraftHitBox[] NO_HIT_BOXES = new AircraftHitBox[0];
     private static final SeatEntity[] NO_SEATS = new SeatEntity[0];
 
@@ -463,6 +466,7 @@ public abstract class AircraftEntity extends Entity
         builder.define(DATA_AMMO_STOCK, -1);
         builder.define(DATA_ICE, 0.0F);
         builder.define(DATA_RADAR_BLANK, 0);
+        builder.define(DATA_APPEARANCE, 0);
     }
 
     @Override
@@ -951,6 +955,14 @@ public abstract class AircraftEntity extends Entity
 
     public void setFuelType(String type) {
         this.entityData.set(DATA_FUEL_TYPE, type);
+    }
+
+    public io.github.mcheliceport.appearance.AircraftAppearance getAppearance() {
+        return io.github.mcheliceport.appearance.AircraftAppearance.unpack(this.entityData.get(DATA_APPEARANCE));
+    }
+
+    public void setAppearance(io.github.mcheliceport.appearance.AircraftAppearance appearance) {
+        this.entityData.set(DATA_APPEARANCE, appearance.packed());
     }
 
     public String getTextureName() {
@@ -3815,6 +3827,7 @@ public abstract class AircraftEntity extends Entity
         this.pairedController = input.read("PairedUavController", net.minecraft.core.UUIDUtil.CODEC).orElse(null);
         this.setDespawnCount(input.getIntOr("AcDespawnCount", 0));
         this.setTextureName(input.getStringOr("TextureName", ""));
+        this.setAppearance(io.github.mcheliceport.appearance.AircraftAppearance.unpack(input.getIntOr("M8Appearance", 0)));
         this.setRoll(input.getFloatOr("AcRoll", 0.0F));
         this.prevRoll = this.getRoll();
         this.prevLastRiderYaw = this.lastRiderYaw = input.getFloatOr("AcLastRYaw", 0.0F);
@@ -3867,6 +3880,7 @@ public abstract class AircraftEntity extends Entity
         output.putFloat("SearchLightPitch", this.entityData.get(DATA_LIGHT_PITCH));
         output.putString("AcERAState", this.getEraState());
         output.putString("TextureName", this.getTextureName());
+        output.putInt("M8Appearance", this.getAppearance().packed());
         output.putString("TypeName", this.getAircraftTypeName());
         output.putInt("PartStatus", this.partStatus() & this.getLastPartStatusMask());
         output.putInt("AcFuel", this.getFuel());
