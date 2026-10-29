@@ -471,9 +471,10 @@ change original weapon craters. Existing upstream features count as foundations 
 - [x] **Landing feedback:** supported tire compression and suspension response, touchdown
   smoke and hard-contact sparks from real contact/motion transitions; no handling changes.
   [Implementation and limits](M8_LANDING_FEEDBACK.md) · [native examples](M8_LANDING_GALLERY.md).
-- [ ] **Night-flight lighting:** authored navigation strobes, restrained cockpit illumination
+- [x] **Night-flight lighting:** authored navigation strobes, restrained cockpit illumination
   and terrain-connected landing lights. Reuse existing light/ground-patch rendering and
   distance/detail reduction rather than adding an unrestricted world-light simulation.
+  [Implementation, profile coverage and limits](M8_NIGHT_FLIGHT_LIGHTING.md) · [native examples](M8_NIGHT_FLIGHT_GALLERY.md).
 - [ ] **Weapon mechanisms:** refine supported rotating barrels, recoil, casing ejection and
   launcher-door sequencing. Respect existing animations, authored mounts and real shot events;
   do not alter weapon fire rates or Claude's weapon-selection logic.

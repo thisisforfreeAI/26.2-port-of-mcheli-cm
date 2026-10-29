@@ -1,0 +1,220 @@
+{
+  "kind": "authored-flight-lamps-cockpit-surfaces-and-cached-terrain-light",
+  "unit_results": {
+    "tests": 509,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "runs": [
+    {
+      "backend": "VULKAN",
+      "all_passed": true,
+      "scenes": [
+        {
+          "passed": true,
+          "scene": "f-35a-night",
+          "peak_lamps": 5,
+          "peak_cockpit_vertices": 0,
+          "peak_rays": 19,
+          "peak_surfaces": 9,
+          "peak_sources": 1
+        },
+        {
+          "passed": true,
+          "scene": "f-15e-night",
+          "peak_lamps": 5,
+          "peak_cockpit_vertices": 0,
+          "peak_rays": 19,
+          "peak_surfaces": 9,
+          "peak_sources": 1
+        },
+        {
+          "passed": true,
+          "scene": "a-10-night",
+          "peak_lamps": 5,
+          "peak_cockpit_vertices": 0,
+          "peak_rays": 19,
+          "peak_surfaces": 9,
+          "peak_sources": 1
+        }
+      ]
+    },
+    {
+      "backend": "OPENGL",
+      "all_passed": true,
+      "scenes": [
+        {
+          "passed": true,
+          "scene": "f-35a-cockpit",
+          "peak_lamps": 4,
+          "peak_cockpit_vertices": 300,
+          "peak_rays": 19,
+          "peak_surfaces": 9,
+          "peak_sources": 1
+        },
+        {
+          "passed": true,
+          "scene": "f-15e-cockpit",
+          "peak_lamps": 5,
+          "peak_cockpit_vertices": 615,
+          "peak_rays": 19,
+          "peak_surfaces": 9,
+          "peak_sources": 1
+        },
+        {
+          "passed": true,
+          "scene": "a-10-cockpit",
+          "peak_lamps": 5,
+          "peak_cockpit_vertices": 300,
+          "peak_rays": 19,
+          "peak_surfaces": 9,
+          "peak_sources": 1
+        },
+        {
+          "passed": true,
+          "scene": "landing-off",
+          "peak_lamps": 4,
+          "peak_cockpit_vertices": 0,
+          "peak_rays": 0,
+          "peak_surfaces": 0,
+          "peak_sources": 0
+        },
+        {
+          "passed": true,
+          "scene": "disabled",
+          "peak_lamps": 0,
+          "peak_cockpit_vertices": 0,
+          "peak_rays": 0,
+          "peak_surfaces": 0,
+          "peak_sources": 0
+        },
+        {
+          "passed": true,
+          "scene": "daylight",
+          "peak_lamps": 5,
+          "peak_cockpit_vertices": 0,
+          "peak_rays": 0,
+          "peak_surfaces": 0,
+          "peak_sources": 0
+        },
+        {
+          "passed": true,
+          "scene": "classic",
+          "peak_lamps": 0,
+          "peak_cockpit_vertices": 0,
+          "peak_rays": 0,
+          "peak_surfaces": 0,
+          "peak_sources": 0
+        },
+        {
+          "passed": true,
+          "scene": "gear-folded",
+          "peak_lamps": 4,
+          "peak_cockpit_vertices": 0,
+          "peak_rays": 0,
+          "peak_surfaces": 0,
+          "peak_sources": 0
+        },
+        {
+          "passed": true,
+          "scene": "water",
+          "peak_lamps": 5,
+          "peak_cockpit_vertices": 0,
+          "peak_rays": 10,
+          "peak_surfaces": 0,
+          "peak_sources": 1
+        },
+        {
+          "passed": true,
+          "scene": "blocked",
+          "peak_lamps": 5,
+          "peak_cockpit_vertices": 0,
+          "peak_rays": 1,
+          "peak_surfaces": 0,
+          "peak_sources": 1
+        },
+        {
+          "passed": true,
+          "scene": "unpowered",
+          "peak_lamps": 0,
+          "peak_cockpit_vertices": 0,
+          "peak_rays": 0,
+          "peak_surfaces": 0,
+          "peak_sources": 0
+        },
+        {
+          "passed": true,
+          "scene": "shared-load",
+          "peak_lamps": 64,
+          "peak_cockpit_vertices": 0,
+          "peak_rays": 19,
+          "peak_surfaces": 36,
+          "peak_sources": 4
+        },
+        {
+          "passed": true,
+          "scene": "parked-pool",
+          "peak_lamps": 5,
+          "peak_cockpit_vertices": 0,
+          "peak_rays": 19,
+          "peak_surfaces": 9,
+          "peak_sources": 1
+        }
+      ]
+    }
+  ],
+  "limits": {
+    "logical_lamps_low_balanced_high": [
+      32,
+      64,
+      96
+    ],
+    "cockpit_vertices_per_view": 4096,
+    "nearby_projectors": 4,
+    "projection_range_blocks": 96,
+    "terrain_rays_per_client_tick": 19,
+    "cached_faces_per_projector": 9
+  },
+  "screenshots": [
+    {
+      "path": "docs/screens/m8-night-flight/m8-night-a-10-cockpit.png",
+      "sha256": "1423eb692072a6a44e8cc587911e75dbadc475b796588a8903eb148c6b48e195",
+      "native_unedited": true
+    },
+    {
+      "path": "docs/screens/m8-night-flight/m8-night-a-10-night.png",
+      "sha256": "adb08858cd53b2dc6b4a73a34b8e55441237d8b8a6339b8bd662d58ea128f656",
+      "native_unedited": true
+    },
+    {
+      "path": "docs/screens/m8-night-flight/m8-night-f-15e-cockpit.png",
+      "sha256": "201ef154eca8626bcbb79c0338ae5e6fbb881f4e037a9d2efb39cf604945bea0",
+      "native_unedited": true
+    },
+    {
+      "path": "docs/screens/m8-night-flight/m8-night-f-15e-night.png",
+      "sha256": "65c153cc74bf5b062f5568ce641c27d94affee920e56523ac86c89d6a472d8f6",
+      "native_unedited": true
+    },
+    {
+      "path": "docs/screens/m8-night-flight/m8-night-f-35a-cockpit.png",
+      "sha256": "b6024028471b51c00af7d7eef6c9f1151fbb23604112d5cbbcdadfdfb9060edd",
+      "native_unedited": true
+    },
+    {
+      "path": "docs/screens/m8-night-flight/m8-night-f-35a-night.png",
+      "sha256": "1eea204e2fc19925691afc36aad16e96bfe60e60c6e8ef37855ec169bd7595be",
+      "native_unedited": true
+    }
+  ],
+  "target_fps": 60,
+  "target_hardware": "RTX 3060 8 GB, Ryzen 7 7800X3D, 1080p",
+  "target_hardware_measured": false,
+  "profiles": [
+    "f-35a",
+    "f-15e",
+    "a-10"
+  ],
+  "native_fixture": "Controlled models and mounted pilot views on real terrain, not piloted flight."
+}
