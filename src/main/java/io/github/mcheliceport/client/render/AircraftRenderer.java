@@ -142,6 +142,7 @@ public abstract class AircraftRenderer<T extends AircraftEntity> extends EntityR
                 eraIndex++;
             }
         }
+        io.github.mcheliceport.client.particle.LandingEffects.apply(entity,state,partialTicks);
         SmallVehicleMotion.apply(entity,state,partialTicks);
         CockpitInstrumentMotion.apply(entity,state,partialTicks);
         DestructionParts.apply(entity,state,partialTicks);

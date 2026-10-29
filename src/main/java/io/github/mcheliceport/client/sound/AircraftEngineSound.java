@@ -36,7 +36,7 @@ public final class AircraftEngineSound {
     public static Status status(AircraftEntity ac){var u=UPDATERS.get(ac);return u==null?new Status(1,0,0,false):new Status(u.flight.value(),u.aircraftPitch,u.aircraftVolume,Minecraft.getInstance().getSoundManager().isActive(u.sound));}
     public static boolean polished(){return EffectQuality.enhanced()&&ClientConfig.get(ClientConfig.FLYBY_AUDIO);}
     public static void clear(){var mc=Minecraft.getInstance();UPDATERS.values().forEach(u->u.stop(mc));UPDATERS.clear();soundWorld=null;
-        io.github.mcheliceport.client.particle.SupersonicEffects.clear();ProjectileFlybySounds.clear();}
+        io.github.mcheliceport.client.particle.SupersonicEffects.clear();ProjectileFlybySounds.clear();io.github.mcheliceport.client.particle.LandingEffects.clear();}
 
     private final AircraftEntity aircraft;
     private final String soundName;
@@ -106,6 +106,7 @@ public final class AircraftEngineSound {
         if(mc.isPaused())return;
         io.github.mcheliceport.client.particle.SupersonicEffects.begin(mc);
         ProjectileFlybySounds.begin(mc);
+        io.github.mcheliceport.client.particle.LandingEffects.begin(mc);
         Vec3 ear=mc.gameRenderer.mainCamera().position();
         int cap=FlightAudioLook.voiceCap(ClientConfig.get(ClientConfig.EFFECT_BUDGET).ordinal(),EffectPerformance.pressure());
         var nearest=new PriorityQueue<Candidate>(cap,ORDER.reversed());
@@ -113,6 +114,7 @@ public final class AircraftEngineSound {
             if(entity instanceof BaseBulletEntity bullet){ProjectileFlybySounds.observe(bullet);continue;}
             if (entity instanceof AircraftEntity aircraft) {
                 io.github.mcheliceport.client.particle.SupersonicEffects.observe(aircraft);
+                io.github.mcheliceport.client.particle.LandingEffects.observe(aircraft);
                 var info=aircraft.getAcInfo();if(info==null||aircraft.isRemoved()||aircraft.isDestroyed()||soundName(aircraft).isEmpty())continue;
                 float volume=info.soundVolume*soundVolume(aircraft);if(!Float.isFinite(volume)||volume<.01F)continue;
                 boolean aboard=aircraft.getSeatIdByEntity(player)>=0;

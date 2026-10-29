@@ -166,6 +166,7 @@
   "mcheli_ce_port.configuration.itemFuel": "Keep Fuel on the Item",
   "mcheli_ce_port.configuration.itemsIcon": "Items Tab Icon",
   "mcheli_ce_port.configuration.killPassengersWhenDestroyed": "Kill Passengers When Destroyed",
+  "mcheli_ce_port.configuration.landingFeedback": "Landing feedback",
   "mcheli_ce_port.configuration.modernExplosions": "Modern explosions",
   "mcheli_ce_port.configuration.mouse": "Mouse Flight",
   "mcheli_ce_port.configuration.mouseControlFlightSimMode": "Flight Sim Mode",

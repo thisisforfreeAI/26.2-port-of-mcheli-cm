@@ -153,7 +153,9 @@ public final class AircraftModels {
         }
         VehicleSurfaceShade.prepare(body, VehicleDetailShade.zones(info));
         for (McheliModel part : parts.values()) VehicleSurfaceShade.prepare(part);
-        return new VehicleModels(body, Map.copyOf(parts));
+        var loaded=new VehicleModels(body, Map.copyOf(parts));
+        if(info instanceof io.github.mcheliceport.content.aircraft.PlaneInfo plane)LandingGearMesh.prepare(plane,loaded);
+        return loaded;
     }
 
     /**
@@ -282,6 +284,7 @@ public final class AircraftModels {
         @Override
         protected Map<String, Entry> prepare(ResourceManager manager, ProfilerFiller profiler) {
             VehicleImpactSurface.clear();
+            LandingGearMesh.clear();
             VehicleSkinMeshes.clear();
             BreakupMeshes.clear();
             io.github.mcheliceport.client.render.WreckAppearance.clear();
