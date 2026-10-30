@@ -23,6 +23,7 @@ import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 
 /**
  * Draws vehicles with their models (render path A of PORTING_PLAN.md section 5.4). Ported from
@@ -133,6 +134,24 @@ public abstract class AircraftRenderer<T extends AircraftEntity> extends EntityR
                 && ClientConfig.get(ClientConfig.VEHICLE_SURFACE_SHADE)
                 && io.github.mcheliceport.config.EffectQuality.enhanced();
         state.flat = !(info.smoothShading && ClientConfig.get(ClientConfig.SMOOTH_SHADING));
+        state.realistic = !state.thermal && SceneLights.enabled();
+        state.lightProbe = null;
+        if (state.realistic && !state.far) {
+            AABB box = entity.getBoundingBox();
+            for (AircraftHitBox hitBox : entity.getHitBoxes()) {
+                box = box.minmax(hitBox.getBoundingBox());
+            }
+            // Wings and tails reach past the hit boxes: span the model as it is turned now.
+            McheliModel body = models.body();
+            Vec3 at = entity.getPosition(partialTicks);
+            for (int corner = 0; corner < 8; corner++) {
+                Vec3 offset = McheliMath.rotVec3((corner & 1) == 0 ? body.minX : body.maxX,
+                        (corner & 2) == 0 ? body.minY : body.maxY, (corner & 4) == 0 ? body.minZ : body.maxZ,
+                        -ypr[0], -ypr[1], -ypr[2]);
+                box = box.minmax(new AABB(at.add(offset), at.add(offset)));
+            }
+            state.lightProbe = VehicleLightProbe.sample(entity.level(), box);
+        }
         this.drawParts(entity, info, models, input(entity, ypr, partialTicks), partialTicks, state.draws);
         GlMatrixStack eraPose = AircraftPartPoses.bodyStack(input(entity, ypr, partialTicks));
         int eraIndex = 0;
@@ -283,7 +302,7 @@ public abstract class AircraftRenderer<T extends AircraftEntity> extends EntityR
             boolean surfaceShade = state.surfaceShade;
             boolean baked = state.outlineColor == net.minecraft.client.renderer.entity.state.EntityRenderState.NO_OUTLINE
                     && io.github.mcheliceport.client.render.baked.BakedVehicles.submit(collector, poseStack, texture,
-                            draws, color, light, flat, surfaceShade, state.far);
+                            draws, color, light, flat, surfaceShade, state.far, state.lightProbe, state.realistic);
             if (!baked) collector.submitCustomGeometry(poseStack, type, (pose, buffer) -> {
                 for (AircraftPartPoses.Draw draw : draws) {
                     PoseStack.Pose p = pose.copy();

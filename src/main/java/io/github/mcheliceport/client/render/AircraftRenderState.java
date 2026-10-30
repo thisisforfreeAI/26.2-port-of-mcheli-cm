@@ -20,6 +20,10 @@ public class AircraftRenderState extends EntityRenderState {
     public int color;
     public boolean flat;
     public boolean surfaceShade;
+    /** Lit by the sun or moon and nearby flashes and fires; see {@link SceneLights}. */
+    public boolean realistic;
+    /** Light at the corners of the vehicle's box, or null for its single light value. */
+    public VehicleLightProbe lightProbe;
     public float contactShadowRadius = 2;
     public final List<AircraftPartPoses.Draw> draws = new ArrayList<>();
     public record DetailDraw(Identifier texture,Matrix4f pose,List<McheliModel.Group> groups,int color){}

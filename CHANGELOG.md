@@ -11,6 +11,14 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 ## [Unreleased]
 
 ### Added
+- Realistic lighting (M8): vehicles are lit from where the sun or moon really is, warm and low at
+  dusk and dawn, faint and cool under the moon, flatter in rain, with a soft sun glint on their
+  panels. Explosions, muzzle flashes, burning wrecks and flares now light nearby vehicles, mobs and
+  players for as long as they burn, and burning wrecks and flares also light the ground around them.
+  Light is sampled at the corners of a vehicle, so a bomber half inside a hangar is dark inside and
+  lit outside instead of taking one light value from its centre. Client-only and on by default with
+  Enhanced effects; `effects.realisticLighting` turns it off. The world's block light is never
+  changed. See `docs/M8_REALISTIC_LIGHTING.md`.
 - Recall missions: a running base order or planner mission can now be sent home, where before it could
   only be aborted in place. In the air the aircraft returns as it does at bingo fuel (landing circuit or
   helipad, then the taxi route to parking); still on the ground it taxis back to its parking spot. Use

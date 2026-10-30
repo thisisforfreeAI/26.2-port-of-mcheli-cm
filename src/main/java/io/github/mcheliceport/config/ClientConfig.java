@@ -51,6 +51,7 @@ public final class ClientConfig {
     public static final ModConfigSpec.BooleanValue FLYBY_AUDIO;
     public static final ModConfigSpec.BooleanValue LANDING_FEEDBACK;
     public static final ModConfigSpec.BooleanValue NIGHT_FLIGHT_LIGHTING;
+    public static final ModConfigSpec.BooleanValue REALISTIC_LIGHTING;
     public static final ModConfigSpec.BooleanValue WEAPON_MECHANISMS;
     public static final ModConfigSpec.BooleanValue AIRCRAFT_CUSTOMIZATION;
     public static final ModConfigSpec.BooleanValue VEHICLE_BLOOD;
@@ -198,6 +199,8 @@ public final class ClientConfig {
                 .define("landingFeedback",true);
         NIGHT_FLIGHT_LIGHTING = builder.comment("Authored navigation lamps and strobes, restrained cockpit illumination and terrain-connected landing lights. Reuses existing render pipelines; no world light-engine updates.")
                 .define("nightFlightLighting",true);
+        REALISTIC_LIGHTING = builder.comment("Vehicles lit by the sun or moon (warm at dusk, cool at night) with a soft panel sheen and light sampled along the airframe; explosions, muzzle flashes, burning wrecks and flares briefly light nearby vehicles, mobs and ground. Client-only; the world's block light is unchanged.")
+                .define("realisticLighting",true);
         AIRCRAFT_CUSTOMIZATION = builder.comment("Show supported intact-aircraft identification marks and restrained cosmetic wear.").define("aircraftCustomization",true);
         WEAPON_MECHANISMS = builder.comment("Smoother conventional barrel/recoil and bay presentation, with sized standard casings that bounce and settle. Existing weapon timing, custom models and ejection settings remain authoritative.")
                 .define("weaponMechanisms",true);

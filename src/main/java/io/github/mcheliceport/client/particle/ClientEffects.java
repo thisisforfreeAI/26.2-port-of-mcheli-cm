@@ -121,6 +121,7 @@ public final class ClientEffects implements McheliEffects.Sink {
         boolean enhanced = EffectQuality.enhanced();
         fx.enhanced = enhanced;
         Minecraft.getInstance().particleEngine.add(fx);
+        io.github.mcheliceport.client.render.SceneLights.muzzle(clientLevel, x, y, z, size, r, g, b);
         if (enhanced && optionalGlow(clientLevel, x, y, z, size * 2.08F)) {
             // M8: a short warm glow around the flash.
             Minecraft.getInstance().particleEngine.add(new GlowParticle(clientLevel, x, y, z, size * 1.6F, 0.3F,

@@ -13,9 +13,16 @@ class BakedVehiclesTest {
     }
 
     @Test
-    void partBlockHoldsTwoMatricesColourLightAndFlag() {
-        // std140: two mat4 (128), vec4 (16), ivec2 (8), int (4).
-        assertEquals(156, BakedVehicles.PART_UBO_SIZE);
+    void partBlockHoldsTwoMatricesColourLightFlagAndLightProbe() {
+        // std140: two mat4 (128), vec4 (16), ivec2 (8), int (4), then aligned to 160: the probe's
+        // corner, size and four vec4 of corner light (96).
+        assertEquals(256, BakedVehicles.PART_UBO_SIZE);
+    }
+
+    @Test
+    void lightsBlockHoldsKeyFillCountAndEightPointLights() {
+        // std140: key direction, key colour, fill, count, then eight positions and eight colours.
+        assertEquals((4 + 16) * 16, BakedVehicles.LIGHTS_UBO_SIZE);
     }
 
     @Test

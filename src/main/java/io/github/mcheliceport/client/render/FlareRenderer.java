@@ -78,6 +78,7 @@ public class FlareRenderer<T extends Entity> extends EntityRenderer<T, FlareRend
         state.pitch = entity.getXRot();
         state.enhanced = EffectQuality.enhanced();
         state.flickerId = entity.getId();
+        if (state.enhanced && this.glows) SceneLights.flare(entity.level(), entity, entity.getX(), entity.getY(), entity.getZ());
         state.halo = state.enhanced && this.glows
                 && EntityGlowAdmission.flare((net.minecraft.client.multiplayer.ClientLevel) entity.level(),
                         entity.getX(), entity.getY(), entity.getZ());
