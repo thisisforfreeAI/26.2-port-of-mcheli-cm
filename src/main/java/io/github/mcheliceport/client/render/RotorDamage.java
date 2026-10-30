@@ -13,7 +13,7 @@ import org.joml.Vector3f;
 public final class RotorDamage {
     private record Key(McheliModel.Group group,float x,float y,float z,float ax,float ay,float az){}
     private record Pair(RotorDamageMesh.Variant bent,RotorDamageMesh.Variant chipped){}
-    private static final Map<Key,CompletableFuture<Pair>> CACHE=new LinkedHashMap<>();
+    private static final Map<Key,CompletableFuture<Pair>> CACHE=new LinkedHashMap<>(16,.75F,true);
     private static final Map<HeliEntity,Integer> APPLIED=Collections.synchronizedMap(new WeakHashMap<>());
     private static final ExecutorService LOADER=Executors.newSingleThreadExecutor(r->{var t=new Thread(r,"mcheli-rotor-damage");t.setDaemon(true);return t;});
     private static int pending;

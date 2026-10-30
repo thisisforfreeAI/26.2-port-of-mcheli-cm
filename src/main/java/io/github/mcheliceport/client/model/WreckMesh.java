@@ -14,7 +14,7 @@ public final class WreckMesh {
   public Parts(McheliModel.Group shape,McheliModel.Group paint,McheliModel.Group metal,Vector3f center){this(shape,paint,metal,center,group("$wreck_soot",List.of()),List.of(),List.of());}
  }
  private record Key(McheliModel.Group group,boolean wing){}
- private static final Map<Key,CompletableFuture<Parts>> CACHE=new LinkedHashMap<>();
+ private static final Map<Key,CompletableFuture<Parts>> CACHE=new LinkedHashMap<>(16,.75F,true);
  private static final Map<McheliModel.Group,McheliModel.Group> SOOT=new WeakHashMap<>();
  private static final ExecutorService LOADER=Executors.newSingleThreadExecutor(r->{var t=new Thread(r,"mcheli-wreck-mesh");t.setDaemon(true);return t;});
  private static int pending;

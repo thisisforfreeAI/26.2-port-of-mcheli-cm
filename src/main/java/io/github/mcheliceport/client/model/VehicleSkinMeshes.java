@@ -6,18 +6,20 @@ import java.util.concurrent.*;
 /** Bounded asynchronous overlay geometry; original groups and their UVs remain unchanged. */
 public final class VehicleSkinMeshes {
     public record Skin(McheliModel.Group raised,McheliModel.Group top,McheliModel.Group lower){}
-    private static final Map<McheliModel.Group,CompletableFuture<Skin>> CACHE=new LinkedHashMap<>();
+    private static final Map<McheliModel.Group,CompletableFuture<Skin>> CACHE=new LinkedHashMap<>(16,.75F,true);
     private static final ExecutorService LOADER=Executors.newSingleThreadExecutor(r->{var t=new Thread(r,"mcheli-vehicle-skin");t.setDaemon(true);return t;});
     private record Region(McheliModel.Group group,net.minecraft.world.phys.Vec3 point,float radius){}
-    private static final Map<Region,CompletableFuture<McheliModel.Group>> REGIONS=new LinkedHashMap<>();
+    private static final Map<Region,CompletableFuture<McheliModel.Group>> REGIONS=new LinkedHashMap<>(16,.75F,true);
     private static int pending;
     public static McheliModel.Group region(McheliModel.Group group,net.minecraft.world.phys.Vec3 point,float radius){
-        var key=new Region(group,point,radius);CompletableFuture<McheliModel.Group> future;
+        // An eighth of a block: float jitter in a wreck's fire position must reuse the patch, not rebuild it.
+        var at=new net.minecraft.world.phys.Vec3(Math.round(point.x*8)/8.0,Math.round(point.y*8)/8.0,Math.round(point.z*8)/8.0);
+        var key=new Region(group,at,radius);CompletableFuture<McheliModel.Group> future;
         synchronized(CACHE){future=REGIONS.get(key);if(future==null){
             if(pending>=4||group.vertexCount()>60000)return null;
             if(REGIONS.size()>=32){var it=REGIONS.entrySet().iterator();boolean removed=false;while(it.hasNext())if(it.next().getValue().isDone()){it.remove();removed=true;break;}if(!removed)return null;}
             future=new CompletableFuture<>();REGIONS.put(key,future);pending++;var result=future;
-            LOADER.execute(()->{McheliModel.Group mesh=null;try{mesh=regionMesh(group,point,radius);}finally{result.complete(mesh);synchronized(CACHE){pending--;}}});
+            LOADER.execute(()->{McheliModel.Group mesh=null;try{mesh=regionMesh(group,at,radius);}finally{result.complete(mesh);synchronized(CACHE){pending--;}}});
         }}return future.getNow(null);
     }
     static McheliModel.Group regionMesh(McheliModel.Group group,net.minecraft.world.phys.Vec3 p,float radius){

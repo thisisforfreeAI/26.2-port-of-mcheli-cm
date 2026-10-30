@@ -111,6 +111,16 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
   both legs and what still stops a save, and no longer overlaps its labels. Network protocol 32.
   See `docs/M6B_PLAN.md`.
 
+### Fixed
+- Damage details no longer flicker on and off. Open panel interiors, dangling cables, ribs and wreck
+  paint were re-admitted to the detail budget every frame, so whichever vehicle was extracted first or a
+  shift in frame-time pressure decided what showed; a layer that showed last frame now keeps its place
+  (up to twice the budget). A burning wreck keeps its burn while the fire position only jitters, and
+  while a moved fire's new burn is building, instead of flashing the old full-hull char. Torn planes no
+  longer show their lost wing or tail parts blinking back: the mesh caches behind breakup parts, wreck
+  meshes, panel inserts, skin patches and burns evict the least recently used entry, and the breakup
+  cache holds 128 instead of 32 (an F-35 asks for about 80 parts each frame).
+
 ## [0.6.0] - 2026-10-25 (M6 preview: gameplay and multiplayer)
 
 ### Added

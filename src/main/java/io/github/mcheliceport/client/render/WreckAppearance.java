@@ -132,8 +132,9 @@ public final class WreckAppearance {
    VehicleDetailLayers.add(render,pose,render.texture,List.of(mesh.paint()),(int)(0x70*(1.15F-.55F*burn))<<24|0x7E7769);
    if(!render.thermal){
     float size=scene!=null&&scene.size()>1?scene.size():Math.max(4,ac.getBbWidth());
-    var fire=WreckBurn.get(mesh.soot(),sources(ac,draw.pose(),mesh,plane&&name.equals("$body")),WreckBurn.radius(size));
-    if(fire==null)VehicleDetailLayers.require(render,pose,CHAR,List.of(mesh.soot()),charColor(burn));
+    var fire=WreckBurn.stable(mesh.soot(),sources(ac,draw.pose(),mesh,plane&&name.equals("$body")),WreckBurn.radius(size));
+    // Only until the first burn is ready: the faint film the burn has away from the fire, never a full-hull char.
+    if(fire==null)VehicleDetailLayers.require(render,pose,CHAR,List.of(mesh.soot()),WreckBurn.waiting(charColor(burn)));
     else{
      // Peeled paint and heat tint first, then the char over them, heaviest at the fire.
      int bare=(int)(235*blister(burn));
