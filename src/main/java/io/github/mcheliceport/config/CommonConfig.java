@@ -62,6 +62,7 @@ public final class CommonConfig {
     public static final ModConfigSpec.BooleanValue EXPLOSION_DESTROY_BLOCK;
     public static final ModConfigSpec.BooleanValue EXPLOSION_FLAMING_BLOCK;
     public static final ModConfigSpec.BooleanValue WRECK_FIRE_BLOCKS;
+    public static final ModConfigSpec.BooleanValue WRECK_CRATERS;
     public static final ModConfigSpec.BooleanValue PERSISTENT_WRECKS;
     public static final ModConfigSpec.IntValue WRECK_LIFETIME;
     public static final ModConfigSpec SPEC;
@@ -244,6 +245,11 @@ public final class CommonConfig {
                 .comment("Crashing and destroyed vehicles set fire blocks around the wreck, as upstream does.",
                         "Off: the wreck burns with a cosmetic fuel fire instead, and blocks are not set alight.")
                 .define("fireBlocks", false);
+        WRECK_CRATERS = builder
+                .comment("A crashing or destroyed vehicle's blast digs a crater under it, as upstream does, and the",
+                        "hulk drops into the hole. Off: the blast breaks only what stands above the ground the wreck",
+                        "lies on, and the hulk rests on the surface.")
+                .define("wreckCraters", false);
         PERSISTENT_WRECKS = builder
                 .comment("A destroyed vehicle stays as a burnt-out hulk for wreckLifetime seconds instead of",
                         "despawnCount. Remove hulks early with /mcheli clearwrecks.")

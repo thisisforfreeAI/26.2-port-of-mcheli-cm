@@ -112,6 +112,12 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
   See `docs/M6B_PLAN.md`.
 
 ### Fixed
+- A crashed or destroyed vehicle's wreck no longer sinks into the ground. Its own blast dug a crater
+  right under it and the hulk dropped into the hole, so most of the airframe ended up hidden below the
+  surface. The blast now breaks only what stands above the ground the wreck lies on (trees, fences,
+  walls it hit) and leaves the ground itself, so the hulk rests on the surface on its burn scar.
+  Weapon explosions still dig craters as before. Server config `wrecks.wreckCraters` restores
+  upstream's crater.
 - Damage details no longer flicker on and off. Open panel interiors, dangling cables, ribs and wreck
   paint were re-admitted to the detail budget every frame, so whichever vehicle was extracted first or a
   shift in frame-time pressure decided what showed; a layer that showed last frame now keeps its place

@@ -618,7 +618,9 @@ These follow from how Minecraft 26.2 works or from decisions approved in PORTING
     after `DespawnCount` (25) seconds; turning `persistentWrecks` off restores that. Their blasts no
     longer set fire blocks unless `wrecks.fireBlocks` is on: clients draw a fuel fire under the wreck
     instead. A crashed plane's wreck also settles level onto its belly or back once it stops, where
-    upstream left it propped at the angle it landed (drawn that way on clients only).
+    upstream left it propped at the angle it landed (drawn that way on clients only). A wreck's blast
+    also leaves the ground it lies on standing (blocks below the wreck's feet), so the hulk does not
+    drop into a crater of its own; `wrecks.wreckCraters` restores upstream's crater.
 111. The wingman marker and base screens use English labels where upstream's were partly Japanese,
     and are laid out from the top down: upstream's fixed offsets overlapped the Taxi Routes tab's
     Helipad-B line, summary, waypoint toggle and lists once a base had a helipad. Picking a Runway B

@@ -211,6 +211,7 @@ public class ModLanguageProvider extends LanguageProvider {
         add(prefix + "wrecks", "Wrecks");
         add(prefix + "fireBlocks", "Wrecks Start Fires");
         add(prefix + "persistentWrecks", "Persistent Wrecks");
+        add(prefix + "wreckCraters", "Wreck Blasts Dig Craters");
         add(prefix + "wreckLifetime", "Wreck Lifetime");
         add(prefix + "rotationLimits", "Rotation Limits");
         add(prefix + "enableRotationLimit", "Enable Rotation Limit");

@@ -15,6 +15,7 @@ import io.github.mcheliceport.registry.ModEntityTypes;
 import io.github.mcheliceport.registry.ModItems;
 import io.github.mcheliceport.weapon.WeaponParam;
 import io.github.mcheliceport.weapon.WeaponSet;
+import io.github.mcheliceport.weapon.explosion.McheliExplosion;
 import io.github.mcheliceport.weapon.guidance.WeaponGuidanceSystem;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.entity.EntitySpawnReason;
@@ -22,6 +23,7 @@ import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.monster.zombie.Husk;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
 
 /** Upstream's smaller combat systems: {@code Destruct} bombs, the pulse-Doppler notch and the iron curtain. */
@@ -34,6 +36,7 @@ final class CombatGameTests {
         ModGameTests.test("destruct_bomb_blows_up_its_uav", 40, CombatGameTests::destruct);
         ModGameTests.test("notch_breaks_plane_to_plane_lock", 20, CombatGameTests::notch);
         ModGameTests.test("iron_curtain_blocks_damage_while_it_runs", 20, CombatGameTests::ironCurtain);
+        ModGameTests.test("wreck_blast_leaves_the_ground_it_lies_on", 20, CombatGameTests::wreckGround);
     }
 
     private static PlaneEntity plane(GameTestHelper h, Vec3 relative) {
@@ -74,6 +77,29 @@ final class CombatGameTests {
             husk.discard();
             h.succeed();
         });
+    }
+
+    /**
+     * A wreck's blast breaks what stands on the ground (a fence) but not the ground under the wreck, so
+     * the hulk does not drop into a crater; the same blast as a weapon's still digs one.
+     */
+    private static void wreckGround(GameTestHelper h) {
+        for (int x = 2; x <= 22; x++) {
+            for (int y = 1; y <= 3; y++) {
+                for (int z = 2; z <= 22; z++) { h.setBlock(x, y, z, Blocks.DIRT); }
+            }
+        }
+        h.setBlock(7, 4, 6, Blocks.OAK_FENCE);
+        Vec3 wreck = h.absoluteVec(new Vec3(6.5, 4.0, 6.5));
+        McheliExplosion.newWreckExplosion(h.getLevel(), null, wreck.x, wreck.y, wreck.z, 4.5F, 2.25F);
+        for (int x = 4; x <= 9; x++) {
+            for (int z = 4; z <= 9; z++) { check(h, !h.getBlockState(new net.minecraft.core.BlockPos(x, 3, z)).isAir(), "the wreck's blast dug into the ground at " + x + ", " + z); }
+        }
+        check(h, h.getBlockState(new net.minecraft.core.BlockPos(7, 4, 6)).isAir(), "the wreck's blast left the fence beside it");
+        Vec3 bomb = h.absoluteVec(new Vec3(17.5, 4.0, 17.5));
+        McheliExplosion.newExplosion(h.getLevel(), null, null, bomb.x, bomb.y, bomb.z, 4.5F, 2.25F, false, false, true, 0);
+        check(h, h.getBlockState(new net.minecraft.core.BlockPos(17, 3, 17)).isAir(), "the same blast from a weapon dug no crater");
+        h.succeed();
     }
 
     /**
