@@ -27,6 +27,8 @@ final class WreckEffects {
         if(sequence!=null&&sequence.turret&&sequence.ring!=null)ammunition=sequence.ring;
         CookoffEffects.emit(level,aircraft,cooling,ammunition);
         int pressure=1+EffectPerformance.pressure();
+        if(fire>0){Vec3 heart=Vec3.ZERO;for(Vec3 o:origins)heart=heart.add(o);
+            io.github.mcheliceport.client.render.SceneLights.fire(level,aircraft,heart.scale(1.0/origins.size()),fire);}
         if (fire>0 && Math.floorMod(tick+id,5*pressure)==0) {
             float radius=.4F+.5F*fire;
             if (VehicleAtmosphere.admit(level,pos,radius*1.35F)) {

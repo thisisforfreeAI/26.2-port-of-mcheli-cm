@@ -55,6 +55,7 @@ public final class McheliCePortClient {
         io.github.mcheliceport.client.render.baked.BakedVehicles.register(modBus);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(io.github.mcheliceport.client.render.FarVehicles::onClientTick);
         modBus.addListener(io.github.mcheliceport.client.render.SearchLightRenderer::registerModifiers);
+        modBus.addListener(io.github.mcheliceport.client.render.SceneLights::registerModifiers);
         modBus.addListener(io.github.mcheliceport.client.render.SearchLightRenderer::registerPipelines);
         modBus.addListener(AircraftHudLayer::register);
         modBus.addListener(io.github.mcheliceport.client.hud.ToolHudLayer::register);
