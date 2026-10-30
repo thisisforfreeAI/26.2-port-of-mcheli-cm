@@ -8,7 +8,7 @@ import org.joml.Matrix4f;
 
 /** Small inserts built off-thread. Existing cockpits are left open and visible. */
 public final class PanelInteriors {
-    private static final Map<McheliModel.Group,CompletableFuture<PanelInteriorMesh.Parts>> CACHE=new LinkedHashMap<>();
+    private static final Map<McheliModel.Group,CompletableFuture<PanelInteriorMesh.Parts>> CACHE=new LinkedHashMap<>(16,.75F,true);
     private static final ExecutorService LOADER=Executors.newSingleThreadExecutor(r->{var t=new Thread(r,"mcheli-panel-interiors");t.setDaemon(true);return t;});
     private static final Identifier DARK=Identifier.withDefaultNamespace("textures/block/polished_deepslate.png"),METAL=Identifier.withDefaultNamespace("textures/block/iron_block.png");
     private static final McheliModel.Group CABLE;

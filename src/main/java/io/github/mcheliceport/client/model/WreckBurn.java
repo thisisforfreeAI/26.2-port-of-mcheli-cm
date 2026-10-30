@@ -23,7 +23,7 @@ public final class WreckBurn {
  static final float METAL_AT=.34F,METAL_WIDTH=.16F,TINT_AT=.52F,TINT_WIDTH=.11F;
  static final int MAX_VERTICES=90000;
  private record Key(McheliModel.Group group,List<Long> sources,int radius){}
- private static final Map<Key,CompletableFuture<Burn>> CACHE=new LinkedHashMap<>();
+ private static final Map<Key,CompletableFuture<Burn>> CACHE=new LinkedHashMap<>(16,.75F,true);
  private static final ExecutorService LOADER=Executors.newSingleThreadExecutor(r->{var t=new Thread(r,"mcheli-wreck-burn");t.setDaemon(true);return t;});
  private WreckBurn(){}
  /**
@@ -41,7 +41,30 @@ public final class WreckBurn {
    LOADER.execute(()->{Burn b=null;try{b=build(soot,at,radius);}finally{result.complete(b);}});
   }}return f.getNow(null);
  }
- public static void clear(){synchronized(CACHE){CACHE.clear();}}
+ private record Shown(List<Vector3f> sources,float radius,Burn burn){}
+ private static final Map<McheliModel.Group,Shown> SHOWN=new WeakHashMap<>();
+ /**
+  * As {@link #get}, but a part keeps the burn it last showed while its fire stays within half a block
+  * (one key step) of where it was, and while a moved fire's new burn is still building. Pose jitter at a
+  * rounding edge otherwise swapped burns, and every swap fell back to the old full-hull char meanwhile.
+  */
+ public static Burn stable(McheliModel.Group soot,List<Vector3f> sources,float radius){
+  Shown last;synchronized(SHOWN){last=SHOWN.get(soot);}
+  if(last!=null&&near(last.sources(),sources,.5F)&&Math.abs(last.radius()-radius)<.5F)return last.burn();
+  var burn=get(soot,sources,radius);
+  if(burn==null)return last==null?null:last.burn();
+  var copy=new ArrayList<Vector3f>();for(var s:sources)copy.add(new Vector3f(s));
+  synchronized(SHOWN){SHOWN.put(soot,new Shown(copy,radius,burn));}
+  return burn;
+ }
+ static boolean near(List<Vector3f> a,List<Vector3f> b,float within){
+  if(a.size()!=b.size())return false;
+  for(int i=0;i<a.size();i++)if(a.get(i).distanceSquared(b.get(i))>=within*within)return false;
+  return true;
+ }
+ /** The char's opacity away from the fire, for a hull whose first burn is still building. */
+ public static int waiting(int charColor){return Math.round((charColor>>>24)*FLOOR)<<24|charColor&0xFFFFFF;}
+ public static void clear(){synchronized(CACHE){CACHE.clear();}synchronized(SHOWN){SHOWN.clear();}}
  /** Fire radius for an airframe of this size: a fifth of it, never under 2.5 blocks. */
  public static float radius(float size){return Math.max(2.5F,size*.2F);}
  /**

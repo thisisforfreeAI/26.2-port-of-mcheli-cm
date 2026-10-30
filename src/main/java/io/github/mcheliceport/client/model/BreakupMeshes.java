@@ -186,7 +186,9 @@ public final class BreakupMeshes {
         return new McheliModel.Group(name,data);
     }
     private record Key(Object source,String kind,Vec3 anchor){}
-    private static final Map<Key,CompletableFuture<Object>> CACHE=new LinkedHashMap<>();
+    // Least recently used goes first, and a torn plane asks for a part for every group each frame (80 on an
+    // F-35): a smaller, insertion-ordered cache rebuilt them in turn, so lost-section parts blinked back on.
+    private static final Map<Key,CompletableFuture<Object>> CACHE=new LinkedHashMap<>(16,.75F,true);
     private static final ExecutorService LOADER=Executors.newSingleThreadExecutor(r->{var t=new Thread(r,"mcheli-breakup-sections");t.setDaemon(true);return t;});
     private static int pending;
     private BreakupMeshes(){}
@@ -194,7 +196,7 @@ public final class BreakupMeshes {
         CompletableFuture<Object> future;
         synchronized(CACHE){future=CACHE.get(key);if(future==null){
             if(pending>=4)return null;
-            if(CACHE.size()>=32){var it=CACHE.entrySet().iterator();boolean removed=false;while(it.hasNext())if(it.next().getValue().isDone()){it.remove();removed=true;break;}if(!removed)return null;}
+            if(CACHE.size()>=128){var it=CACHE.entrySet().iterator();boolean removed=false;while(it.hasNext())if(it.next().getValue().isDone()){it.remove();removed=true;break;}if(!removed)return null;}
             future=new CompletableFuture<>();CACHE.put(key,future);pending++;var result=future;
             LOADER.execute(()->{Object value=null;try{value=build.get();}finally{result.complete(value);synchronized(CACHE){pending--;}}});
         }}return future.getNow(null);

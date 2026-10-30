@@ -11,7 +11,7 @@ import org.joml.Matrix4f;
 /** Cached whip segments and tiny vibration of authored nozzle covers; no physical forces. */
 public final class SmallVehicleMotion {
     private record Key(String name,McheliModel.Group group){}
-    private static final Map<Key,CompletableFuture<SmallMotionMesh.Parts>> CACHE=new LinkedHashMap<>();
+    private static final Map<Key,CompletableFuture<SmallMotionMesh.Parts>> CACHE=new LinkedHashMap<>(16,.75F,true);
     private static final Map<AircraftEntity,Integer> MOVED=Collections.synchronizedMap(new WeakHashMap<>());
     private static final ExecutorService LOADER=Executors.newSingleThreadExecutor(r->{var t=new Thread(r,"mcheli-small-motion");t.setDaemon(true);return t;});
     private static int pending;
