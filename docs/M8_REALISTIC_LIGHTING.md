@@ -61,7 +61,8 @@ vehicles and vehicles past the render distance keep the single value.
 
 Use `-Dmcheli.probeBackend=OPENGL` for the other backend. The opt-in driver uses the disposable
 flat `M6Smoke` world in `.run/m8-preview` and captures noon, low sun, a night explosion beside an
-F-15E and a B-29 half inside a shed, each with the setting off and then on, from the same camera.
+F-15E and a B-29 parked in a shed that is open at the front, with one wing through its side
+wall, each with the setting off and then on, from the same camera.
 
 ## Validation
 
