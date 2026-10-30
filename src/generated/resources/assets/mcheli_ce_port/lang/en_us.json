@@ -212,6 +212,7 @@
   "mcheli_ce_port.configuration.vehiclesIcon": "Vehicles Tab Icon",
   "mcheli_ce_port.configuration.weaponMechanisms": "Weapon mechanisms",
   "mcheli_ce_port.configuration.weapons": "Weapons",
+  "mcheli_ce_port.configuration.wreckCraters": "Wreck Blasts Dig Craters",
   "mcheli_ce_port.configuration.wreckLifetime": "Wreck Lifetime",
   "mcheli_ce_port.configuration.wrecks": "Wrecks",
   "mcheli_ce_port.sound.rocket_flyby": "Rocket rushes past",

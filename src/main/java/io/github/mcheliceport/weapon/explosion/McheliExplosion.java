@@ -88,6 +88,8 @@ public class McheliExplosion extends ServerExplosion {
     public float explosionDamageRadius;
     public @Nullable DamageFactor damageFactor;
     public boolean explosionThroughWall;
+    /** Blocks below this y are left standing: a wreck's blast scorches the ground it lies on but digs no pit. */
+    public int keepGroundBelow = Integer.MIN_VALUE;
     public float explosionThroughWallFactor = 1.0F;
     private final List<BlockPos> affectedBlocks = new ArrayList<>();
     private final Result result = new Result();
@@ -152,7 +154,16 @@ public class McheliExplosion extends ServerExplosion {
     public static @Nullable Result newWreckExplosion(Level level, @Nullable Entity player, double x, double y, double z,
             float size, float sizeBlock) {
         return explode(level, Params.of(null, player, x, y, z, size, sizeBlock, true, true, true, 5, null), false,
-                CommonConfig.get(CommonConfig.WRECK_FIRE_BLOCKS));
+                CommonConfig.get(CommonConfig.WRECK_FIRE_BLOCKS),
+                CommonConfig.get(CommonConfig.WRECK_CRATERS) ? Integer.MIN_VALUE : groundLevel(y));
+    }
+
+    /**
+     * The lowest block row a wreck's blast may break, from the wreck's feet: the block it rests on
+     * (a full block or a slab) stays, so the hulk does not drop into its own crater.
+     */
+    public static int groundLevel(double feetY) {
+        return Mth.floor(feetY + 0.5);
     }
 
     /** Upstream {@code MCH_Explosion#newExplosionInWater}: blocks resist more, and clients see splashes. */
@@ -169,6 +180,11 @@ public class McheliExplosion extends ServerExplosion {
     }
 
     private static @Nullable Result explode(Level level, Params p, boolean inWater, boolean fireBlocks) {
+        return explode(level, p, inWater, fireBlocks, Integer.MIN_VALUE);
+    }
+
+    private static @Nullable Result explode(Level level, Params p, boolean inWater, boolean fireBlocks,
+            int keepGroundBelow) {
         if (!(level instanceof ServerLevel serverLevel)) {
             return null;
         }
@@ -182,6 +198,7 @@ public class McheliExplosion extends ServerExplosion {
         exp.isPlaySound = p.playSound();
         exp.isInWater = inWater;
         exp.fireBlocks = fireBlocks;
+        exp.keepGroundBelow = keepGroundBelow;
         exp.damageFactor = p.damageFactor();
         if (EventHooks.onExplosionStart(serverLevel, exp)) {
             return exp.result;
@@ -282,6 +299,9 @@ public class McheliExplosion extends ServerExplosion {
         this.world.gameEvent(this.exploder, GameEvent.EXPLODE, this.center());
         this.affectedBlocks.addAll(rayMarchBlocks(this.world, this, this.x, this.y, this.z, this.explosionSizeBlock,
                 this.explosionBlockPower, this.isInWater, this.world.getRandom()));
+        if (this.keepGroundBelow != Integer.MIN_VALUE) {
+            this.affectedBlocks.removeIf(pos -> pos.getY() < this.keepGroundBelow);
+        }
         float damageRadius = this.explosionDamageRadius > 0.0F ? this.explosionDamageRadius : this.size;
         float f = damageRadius * 2.0F;
         int i = Mth.floor(this.x - f - 1.0);
