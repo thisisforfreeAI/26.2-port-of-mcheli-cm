@@ -1,0 +1,233 @@
+{
+  "feature": "Retain plane rear fuselage",
+  "base": "b7e14eb",
+  "appliesTo": "all planes through common visual breakup paths",
+  "unitTestsPassed": 558,
+  "requiredLocalGameTestsPassed": 297,
+  "native": [
+    {
+      "backend": "Vulkan",
+      "planes": [
+        "a-10",
+        "b-2a",
+        "f-35a",
+        "f22a"
+      ],
+      "checkpoints": [
+        {
+          "plane": "f22a",
+          "age": 25,
+          "savedDamage": 4,
+          "meshMask": 0
+        },
+        {
+          "plane": "f22a",
+          "age": 95,
+          "savedDamage": 4,
+          "meshMask": 0
+        },
+        {
+          "plane": "f22a",
+          "age": 290,
+          "savedDamage": 4,
+          "meshMask": 2
+        },
+        {
+          "plane": "b-2a",
+          "age": 25,
+          "savedDamage": 4,
+          "meshMask": 0
+        },
+        {
+          "plane": "b-2a",
+          "age": 95,
+          "savedDamage": 4,
+          "meshMask": 0
+        },
+        {
+          "plane": "b-2a",
+          "age": 290,
+          "savedDamage": 4,
+          "meshMask": 2
+        },
+        {
+          "plane": "f-35a",
+          "age": 25,
+          "savedDamage": 4,
+          "meshMask": 0
+        },
+        {
+          "plane": "f-35a",
+          "age": 95,
+          "savedDamage": 4,
+          "meshMask": 0
+        },
+        {
+          "plane": "f-35a",
+          "age": 290,
+          "savedDamage": 4,
+          "meshMask": 2
+        },
+        {
+          "plane": "a-10",
+          "age": 25,
+          "savedDamage": 4,
+          "meshMask": 0
+        },
+        {
+          "plane": "a-10",
+          "age": 95,
+          "savedDamage": 4,
+          "meshMask": 0
+        },
+        {
+          "plane": "a-10",
+          "age": 290,
+          "savedDamage": 4,
+          "meshMask": 2
+        }
+      ],
+      "passed": true
+    },
+    {
+      "backend": "OpenGL",
+      "planes": [
+        "a-10",
+        "b-2a",
+        "f-35a",
+        "f22a"
+      ],
+      "checkpoints": [
+        {
+          "plane": "f22a",
+          "age": 25,
+          "savedDamage": 4,
+          "meshMask": 0
+        },
+        {
+          "plane": "f22a",
+          "age": 95,
+          "savedDamage": 4,
+          "meshMask": 0
+        },
+        {
+          "plane": "f22a",
+          "age": 290,
+          "savedDamage": 4,
+          "meshMask": 2
+        },
+        {
+          "plane": "b-2a",
+          "age": 25,
+          "savedDamage": 4,
+          "meshMask": 0
+        },
+        {
+          "plane": "b-2a",
+          "age": 95,
+          "savedDamage": 4,
+          "meshMask": 0
+        },
+        {
+          "plane": "b-2a",
+          "age": 290,
+          "savedDamage": 4,
+          "meshMask": 2
+        },
+        {
+          "plane": "f-35a",
+          "age": 25,
+          "savedDamage": 4,
+          "meshMask": 0
+        },
+        {
+          "plane": "f-35a",
+          "age": 95,
+          "savedDamage": 4,
+          "meshMask": 0
+        },
+        {
+          "plane": "f-35a",
+          "age": 290,
+          "savedDamage": 4,
+          "meshMask": 2
+        },
+        {
+          "plane": "a-10",
+          "age": 25,
+          "savedDamage": 4,
+          "meshMask": 0
+        },
+        {
+          "plane": "a-10",
+          "age": 95,
+          "savedDamage": 4,
+          "meshMask": 0
+        },
+        {
+          "plane": "a-10",
+          "age": 290,
+          "savedDamage": 4,
+          "meshMask": 2
+        }
+      ],
+      "passed": true
+    }
+  ],
+  "images": [
+    {
+      "file": "docs/screens/m8-retained-fuselage/a-10-tail-damage.png",
+      "sha256": "e7dda61ebaaf277b7d33e15907072630b4e99ee2f2aee1d09b8e9c0117d301a8",
+      "unedited": true
+    },
+    {
+      "file": "docs/screens/m8-retained-fuselage/a-10-wreck.png",
+      "sha256": "9f68b06f7e55e172af2fcf51018d3a848a9c85d1877f6d7c5be291515579ec60",
+      "unedited": true
+    },
+    {
+      "file": "docs/screens/m8-retained-fuselage/b-2a-tail-damage.png",
+      "sha256": "670c521e55eb4b12a0c27ada2cd7584963ab9e64dcc4ae8cdb232668c0a06940",
+      "unedited": true
+    },
+    {
+      "file": "docs/screens/m8-retained-fuselage/b-2a-wreck.png",
+      "sha256": "90edc890a42921b9cf28ea8ec0a999194aca22739481ac40520e3aa38e6bc457",
+      "unedited": true
+    },
+    {
+      "file": "docs/screens/m8-retained-fuselage/f-35a-tail-damage.png",
+      "sha256": "cfd5ca67d4a90bdbd5bba4387cefd10285e8f1e4d72ffb575eac28f87326e772",
+      "unedited": true
+    },
+    {
+      "file": "docs/screens/m8-retained-fuselage/f-35a-wreck.png",
+      "sha256": "837e17dd084b564501a6bad51634c5cbfead06d60f0523ebcb3c7fe7a8f93c96",
+      "unedited": true
+    },
+    {
+      "file": "docs/screens/m8-retained-fuselage/f22a-tail-damage.png",
+      "sha256": "fa44c6f625c4dd698b2c43f1599d0c29f885f431ce2ac7b43b1c939fa12aaf81",
+      "unedited": true
+    },
+    {
+      "file": "docs/screens/m8-retained-fuselage/f22a-wreck.png",
+      "sha256": "1ba313cb34c4c0b6859dab0a48da291d50e4f3830891042c99a40181de349f92",
+      "unedited": true
+    }
+  ],
+  "preserved": [
+    "component health/save format",
+    "wing breakup",
+    "bounded small control panels",
+    "flight/collision/weapons",
+    "wreck burn/crumple art",
+    "craters",
+    "NTM integration"
+  ],
+  "notes": [
+    "Held client visual states, not recordings of real crashes.",
+    "Local software Mesa validation does not establish target-PC FPS.",
+    "No new draw passes or particle budget."
+  ]
+}

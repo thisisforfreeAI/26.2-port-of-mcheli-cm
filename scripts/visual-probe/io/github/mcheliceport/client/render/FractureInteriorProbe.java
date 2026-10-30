@@ -63,7 +63,8 @@ public final class FractureInteriorProbe {
         if(age==85||age==105||age==185||age==200||age==260||age==350)capture=NAMES[phase]+(age==85?"-wing-overview":age==105?"-wing-close":age==185?"-tail-overview":age==200?"-tail-close":age==260?"-wreck-close":"-repaired");
         if((age==110||age==205)&&phase!=3&&phase!=4){
             var s=WreckSequenceEffects.get(actors.getFirst());
-            if(s==null||s.airframe==null||s.airframe.mask()!=(age==110?1:4))throw new IllegalStateException("Missing fracture geometry");
+            if(s==null||s.airframe==null||s.airframe.mask()!=(age==110?1:0))throw new IllegalStateException("Missing fracture geometry");
+            if(age==205){if(s.tail||s.airframe.openings().containsKey(4))throw new IllegalStateException("Rear fuselage detached");return;}
             var d=s.airframe.fracture();
             if(d.vertices()>3072||d.ribs().vertexCount()==0)throw new IllegalStateException("Invalid fracture detail bounds");
             if(age==110&&phase<3&&d.cables().vertexCount()==0)throw new IllegalStateException("Supported wing has no fracture wires");

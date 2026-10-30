@@ -542,12 +542,16 @@ remains open.
 
 ## Live airborne airframe breakup
 
-[Localized wing/tail failures](M8_LIVE_AIRFRAME.md) now remove plane sections while hull HP
+[Localized wing failures](M8_LIVE_AIRFRAME.md) remove outer plane sections while hull HP
 remains. Independent structural component health saves/syncs and repairs through M9; appended
-slots preserve engine/rotor/fuel ordering. Cached disjoint masks keep left/right/tail loss
+slots preserve engine/rotor/fuel ordering. Cached disjoint masks keep left/right wing loss
 consistent into wreck stages. Full-velocity mesh fragments retain the existing debris limits.
 Visual breakup leaves lift/handling, hitboxes, weapons and craters unchanged. NTM integration
 is untouched; 60 FPS on the target PC remains unmeasured.
+
+[Rear-fuselage correction](M8_RETAINED_FUSELAGE.md): whole-back separation is disabled for every
+plane, including the B-2. Saved tail damage and late wreck stages keep the rear fuselage attached;
+supported smaller rudder/elevator panels can still break. [Updated examples](M8_RETAINED_FUSELAGE_GALLERY.md).
 
 ## Wreck aftermath refinement
 
@@ -560,7 +564,7 @@ work. Existing collision, handling, craters and NTM ownership are preserved.
 ## Staged destruction sequences
 
 [Eight staged additions](M8_DESTRUCTION_SEQUENCES.md) implement rare supported turret ejection,
-broken tracks, cover blowouts, wing/tail separation, ground-contact rotor strikes, interior bursts,
+broken tracks, cover blowouts, wing separation, ground-contact rotor strikes, interior bursts,
 delayed collapse and smoldering openings. [Native examples](M8_DESTRUCTION_SEQUENCES_GALLERY.md)
 cover tanks, planes and helicopters. These remain bounded client presentation with original
 craters and gameplay intact. The separate [blood investigation](M8_VEHICLE_BLOOD_INVESTIGATION.md)

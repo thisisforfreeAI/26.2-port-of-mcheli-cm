@@ -6,9 +6,9 @@ import java.nio.file.*;
 import java.util.*;
 import org.junit.jupiter.api.Test;
 
-/** Every stock plane body, torn at both wings and the tail, closes each cut on the kept and the falling side. */
+/** Every stock plane body, torn at both wings, retains the fuselage and closes each cut on the kept and the falling side. */
 class AllPlaneFracturesTest {
-    @Test void everyStockPlaneClosesEveryTornWingAndTail() throws Exception {
+    @Test void everyStockPlaneClosesTornWingsAndRetainsTheRearFuselage() throws Exception {
         Path root=ContentTestSupport.projectDir().resolve("src/main/resources/assets/mcheli/models/planes");
         List<Path> files;try(var walk=Files.list(root)){files=walk.filter(p->p.toString().endsWith(".mqo")||p.toString().endsWith(".obj")).sorted().toList();}
         assertTrue(files.size()>30,"expected the stock planes, found "+files.size());
@@ -19,6 +19,11 @@ class AllPlaneFracturesTest {
             var body=model.groups.stream().filter(g->g.name().equals("$body")).findFirst().orElse(null);
             if(body==null||body.vertexCount()<3||body.vertexCount()>60000)continue;
             var frame=BreakupMeshes.airframeBuild(body,7);
+            var tailOnly=BreakupMeshes.airframeBuild(body,4);
+            assertEquals(0,tailOnly.mask(),name+" tail damage must not detach the fuselage");
+            assertSame(body,tailOnly.kept(),name+" tail-only damage preserves the original body");
+            assertFalse(frame.openings().containsKey(4),name+" no invented tail cut");
+            assertArrayEquals(BreakupMeshes.airframeBuild(body,3).kept().data(),frame.kept().data(),name);
             for(int i=0;i<3;i++) {
                 int bit=1<<i;if((frame.mask()&bit)==0||!frame.openings().containsKey(bit))continue;
                 int axis=i==2?2:0,outward=i==1?1:-1;float cut=i==0?frame.leftCut():i==1?frame.rightCut():frame.tailCut();
@@ -35,7 +40,7 @@ class AllPlaneFracturesTest {
         if(!failures.isEmpty())fail(failures.size()+" open cuts:\n"+String.join("\n",failures));
     }
     /** A flying wing's torn wing keeps its trailing edge; nothing outboard is left floating on the stump. */
-    @Test void theB2LosesWholeWingsAndOnlyItsCentreTail() throws Exception {
+    @Test void theB2RetainsItsCentreWhileItsWingsCanStillBreak() throws Exception {
         Path file=ContentTestSupport.projectDir().resolve("src/main/resources/assets/mcheli/models/planes/b-2a.mqo");
         McheliModel model;try(var in=Files.newInputStream(file)){model=MqoParser.parse("b-2a.mqo",in);}
         var body=model.groups.stream().filter(g->g.name().equals("$body")).findFirst().orElseThrow();

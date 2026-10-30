@@ -28,7 +28,9 @@ public final class BreakupMeshes {
     }
     public static Airframe airframe(McheliModel.Group source,int mask) {
         if(source.vertexCount()<3||source.vertexCount()>60000)return null;
-        return (Airframe)get(new Key(source,"airframe-"+(mask&7),Vec3.ZERO),()->airframeBuild(source,mask&7));
+        // Rear damage is retained for control panels; it cannot detach a fuselage slab.
+        int detachable=mask&3;
+        return (Airframe)get(new Key(source,"airframe-"+detachable,Vec3.ZERO),()->airframeBuild(source,detachable));
     }
     public static ControlSurfaceMeshes.Model controls(McheliModel.Group source,Airframe layout) {
         if(source.vertexCount()<3||source.vertexCount()>60000)return null;
@@ -66,11 +68,12 @@ public final class BreakupMeshes {
         var far=split(rest,axis,cut+side*Math.min(SCORCH_FAR,extent*.35F));
         return new McheliModel.Group[]{WreckMesh.soot(band),WreckMesh.soot(side>0?far[0]:far[1])};
     }
-    /** Disjoint left/right/tail sections: combinations cannot duplicate or regrow removed surfaces. */
+    /** Disjoint wing/rear templates: only wings detach; the rear template identifies small controls. */
     public static Airframe airframeBuild(McheliModel.Group source,int requested) {
+        requested &= 3; // Never turn tail damage or a late wreck stage into whole-aft separation.
         var b=bounds(source);float left=b.low.x*.55F,right=b.high.x*.55F,tail=b.low.z+(b.high.z-b.low.z)*.27F;
         // Wings come off along their whole chord, so a flying wing or a delta keeps no floating trailing edge;
-        // the tail line only cuts the centre, plus any stabiliser tip that sits wholly behind a wing.
+        // the rear template is retained on the body, including separate stabiliser tips.
         boolean wide=b.high.x-b.low.x>5,deep=b.high.z-b.low.z>6;
         var port=wide?split(source,0,left):new McheliModel.Group[]{empty("$left"),source};
         var starboard=wide?split(port[1],0,right):new McheliModel.Group[]{port[1],empty("$right")};
@@ -248,21 +251,16 @@ public final class BreakupMeshes {
         }
         float wingCut=b.high.x*.68F,tailCut=b.low.z+(b.high.z-b.low.z)*.27F;
         var wing=plane&&b.high.x-b.low.x>5?split(remaining,0,wingCut):new McheliModel.Group[]{remaining,empty("$wing_section")};
-        var tail=plane&&b.high.z-b.low.z>6?split(wing[0],2,tailCut):new McheliModel.Group[]{empty("$tail_section"),wing[0]};
         // No unsupported massive falling sections: retain their original surface instead.
         if(wing[1].vertexCount()>9000)wing=new McheliModel.Group[]{remaining,empty("$wing_section")};
-        tail=plane&&b.high.z-b.low.z>6?split(wing[0],2,tailCut):new McheliModel.Group[]{empty("$tail_section"),wing[0]};
-        if(tail[0].vertexCount()>9000)tail=new McheliModel.Group[]{empty("$tail_section"),wing[0]};
+        // Legacy staged-body callers also retain the rear fuselage.
+        var tail=new McheliModel.Group[]{empty("$tail_section"),wing[0]};
         if(plane){
-            var wingEdge=edge(wing[0],0,wingCut);var tailEdge=edge(tail[1],2,tailCut);
+            var wingEdge=edge(wing[0],0,wingCut);
             if(!wingEdge.isEmpty())for(int i=0;i<3;i++){
                 float z=wingEdge.stream().map(v->v.z).min(Float::compare).orElse(0F)+(wingEdge.stream().map(v->v.z).max(Float::compare).orElse(0F)-wingEdge.stream().map(v->v.z).min(Float::compare).orElse(0F))*(i+1)/4;
                 final float target=z;var point=wingEdge.stream().min(java.util.Comparator.comparingDouble(v->Math.abs(v.z-target))).orElseThrow();
                 machinery.box(wingCut-.08F,point.y-.02F,point.z-.035F,wingCut+.13F+i*.025F,point.y+.02F,point.z+.035F);
-            }
-            if(!tailEdge.isEmpty()){
-                var point=tailEdge.stream().min(java.util.Comparator.comparingDouble(v->Math.abs(v.x))).orElseThrow();
-                machinery.box(point.x-.20F,point.y-.03F,tailCut-.13F,point.x+.20F,point.y+.03F,tailCut+.13F);
             }
         }
         var frames=List.of(remaining,wing[0],tail[1]);for(var frame:frames)prepare(frame);

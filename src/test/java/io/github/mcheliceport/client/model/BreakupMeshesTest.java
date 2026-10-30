@@ -13,7 +13,7 @@ class BreakupMeshesTest {
     @Test void bodyStagesConserveAllRemovedSectionsAndLeaveTheCore(){
         var box=new DetailBoxes();box.box(-6,0,-10,6,2,6);var source=box.group("$body");var original=source.data().clone();
         var parts=BreakupMeshes.bodyBuild(source,true,new Vec3(2,2,-4));assertArrayEquals(original,source.data());
-        assertTrue(parts.wing().vertexCount()>0);assertTrue(parts.tail().vertexCount()>0);assertTrue(parts.tailGone().vertexCount()>0);
+        assertTrue(parts.wing().vertexCount()>0);assertEquals(0,parts.tail().vertexCount());assertSame(parts.wingGone(),parts.tailGone());assertTrue(parts.tailGone().vertexCount()>0);
         assertEquals(area(source),area(parts.cover())+area(parts.wing())+area(parts.tail())+area(parts.tailGone()),.01);
     }
     @Test void bladeTipSelectionCutsTheOuterNegativeArmInsteadOfItsHub(){
@@ -30,8 +30,8 @@ class BreakupMeshesTest {
     @Test void liveAirframeMasksConserveSurfaceAndNeverRemoveTheOtherWing() {
         var box=new DetailBoxes();box.box(-7,0,-10,7,2,6);var source=box.group("$body");var original=source.data().clone();
         for(int mask=0;mask<8;mask++){
-            var frame=BreakupMeshes.airframeBuild(source,mask);assertEquals(mask,frame.mask());
-            assertEquals(Integer.bitCount(mask),frame.openings().size());
+            var frame=BreakupMeshes.airframeBuild(source,mask);assertEquals(mask&3,frame.mask());
+            assertEquals(Integer.bitCount(mask&3),frame.openings().size());
             for(var entry:frame.openings().entrySet()){
                 var at=entry.getValue();assertTrue(Double.isFinite(at.lengthSqr()));
                 assertTrue(at.y>=0&&at.y<=2&&at.z>=-10&&at.z<=6);
@@ -39,14 +39,14 @@ class BreakupMeshesTest {
                         entry.getKey()==4?at.z:at.x,.002);
             }
             double total=area(frame.kept());
-            for(int i=0;i<3;i++)if((mask&(1<<i))!=0)total+=area(frame.sections().get(i));
+            for(int i=0;i<3;i++)if((frame.mask()&(1<<i))!=0)total+=area(frame.sections().get(i));
             assertEquals(area(source),total,.01,"mask "+mask);assertTrue(frame.kept().vertexCount()>0);
         }
         var left=BreakupMeshes.airframeBuild(source,1);assertEquals(7,BreakupMeshes.bounds(left.kept()).high().x,.001);
         var right=BreakupMeshes.airframeBuild(source,2);assertEquals(-7,BreakupMeshes.bounds(right.kept()).low().x,.001);
         assertArrayEquals(original,source.data());
     }
-    @Test void aWingTearsAlongItsWholeChordAndAStabiliserTipGoesWithTheTail() {
+    @Test void aWingTearsAlongItsWholeChordWhileTheRearFuselageStaysAttached() {
         // A flying wing: one continuous skin, so the torn wing keeps its trailing edge.
         var slab=new DetailBoxes();slab.box(-7,0,-10,7,1,6);var flying=BreakupMeshes.airframeBuild(slab.group("$body"),7);
         var wing=BreakupMeshes.bounds(flying.sections().get(0));
@@ -62,7 +62,9 @@ class BreakupMeshesTest {
         assertEquals(2,frame.section(new org.joml.Vector3f(-4.8F,.6F,-9)));
         assertEquals(1,frame.section(new org.joml.Vector3f(6,.6F,0)));
         assertEquals(-1,frame.section(new org.joml.Vector3f(0,.6F,0)));
-        double total=area(frame.kept());for(var section:frame.sections())total+=area(section);
+        double total=area(frame.kept());for(int i=0;i<3;i++)if((frame.mask()&(1<<i))!=0)total+=area(frame.sections().get(i));
+        assertEquals(0,frame.mask()&4);
+        assertSame(source,BreakupMeshes.airframeBuild(source,4).kept());
         assertEquals(area(source),total,.01);
     }
     @Test void aTornSectionIsScorchedOnlyNearItsRoot() {

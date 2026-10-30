@@ -27,7 +27,8 @@ public final class PlaneAirframeParts {
                 for(int i=0;i<3;i++)state.scattered.remove("skin"+bit+":"+i);}
         }
         state.liveMask=missing;
-        int requested=missing|(state.age>=56?AirframeDamage.RIGHT:0)|(state.age>=110?AirframeDamage.TAIL:0);
+        // Keep the fuselage connected on every aircraft, including saved tail damage and old wrecks.
+        int requested=(missing|(state.age>=56?AirframeDamage.RIGHT:0))&(AirframeDamage.LEFT|AirframeDamage.RIGHT);
         double distance=Minecraft.getInstance().gameRenderer.mainCamera().position().distanceToSqr(ac.position());
         boolean nearby=distance<=40*40,solid=distance<=96*96;
         var output=new ArrayList<AircraftPartPoses.Draw>();BreakupMeshes.Airframe frame=null;

@@ -1,5 +1,9 @@
 # Airborne wing and tail breakup
 
+**Current behavior:** [whole-rear separation has been removed](M8_RETAINED_FUSELAGE.md) for all
+planes. Rear component health remains saved/synced and can damage smaller control panels, but
+the fuselage stays attached. The original implementation and older images below are historical.
+
 Planes can lose an outer left wing, outer right wing or rear airframe section while they still
 have hull HP. Each section is driven by its own server-authoritative component health, rather
 than a generic low-hull-health threshold. This adds visual structural failure and moving mesh

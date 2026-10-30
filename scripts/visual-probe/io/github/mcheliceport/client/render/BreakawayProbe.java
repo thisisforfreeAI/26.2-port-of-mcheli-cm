@@ -24,7 +24,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.*;
 
 /**
- * Non-shipping scene for torn wings and tails: separation burst, falling trail, closed stumps seen
+ * Non-shipping scene for torn wings and retained rear fuselages: separation burst, falling trail, closed stumps seen
  * from grazing angles, and the landed pieces. Creates the flat probe world when it is missing.
  * Run with {@code -Dmcheli.probeBreakaway=true -I scripts/visual-probe.init.gradle runClient}.
  */
@@ -99,8 +99,8 @@ public final class BreakawayProbe {
         if(age==100)shot("3-wing-stump",opening(AirframeDamage.LEFT),new Vec3(-2.8,1.3,-1.9));
         if(age==106)shot("4-wing-stump-grazing",opening(AirframeDamage.LEFT),new Vec3(-1.4,.35,2.4));
         if(age==130)damage(AirframeDamage.LEFT|AirframeDamage.TAIL);
-        if(age==137)shot("5-tail-separation",piece(),new Vec3(-5,2.5,-7));
-        if(age==175)shot("6-tail-stump",opening(AirframeDamage.TAIL),new Vec3(-1.6,1.1,-3.2));
+        if(age==137)shot("5-rear-retained",HOME,new Vec3(-16,7,-15));
+        if(age==175)shot("6-rear-retained",HOME,new Vec3(-16,7,-15));
         if(age==200)shot("7-landed-pieces",piece(),new Vec3(-4,2.5,-4));
         if(age==260)shot("8-overview",HOME.add(0,-5,-2),new Vec3(-13,5,-12));
         if(age%20==0)System.out.println("M8_BREAKAWAY age="+age+" pieces="+LoosePanels.pieces()+" detail_vertices="+VehicleDetailLayers.vertices());

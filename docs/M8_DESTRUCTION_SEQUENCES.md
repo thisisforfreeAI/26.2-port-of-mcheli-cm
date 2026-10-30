@@ -1,5 +1,8 @@
 # M8 destruction sequences
 
+**Update:** [plane rear fuselages now stay attached](M8_RETAINED_FUSELAGE.md). The original
+whole-tail breakup stage described below is retired; wing and small control-panel damage remain.
+
 The eight requested additions use bounded client presentation: rare supported tank
 ammunition turret separation, track failure, engine cover blowouts, wing/tail breakup,
 ground-contact rotor strikes, secondary interior bursts, delayed collapse and smoldering

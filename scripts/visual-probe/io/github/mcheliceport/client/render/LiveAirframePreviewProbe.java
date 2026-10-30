@@ -53,7 +53,7 @@ public final class LiveAirframePreviewProbe {
         if(age==60)damage(1);if(age==110)damage(0);if(age==130)damage(2);if(age==185)damage(6);if(age==330)damage(0);
         if(age==40||age==80||age==155||age==205||age==300)capture=NAMES[phase]+"-age"+age;
         if(age==90||age==165||age==210){
-            int expected=age==90?1:age==165?2:6;var s=WreckSequenceEffects.get(plane);
+            int expected=age==90?1:2;var s=WreckSequenceEffects.get(plane);
             if(plane.isDestroyed()||plane.getDamageTaken()>=plane.getMaxHP()||s==null||s.airframe==null||s.airframe.mask()!=expected||LoosePanels.airframePieces(plane)<1)
                 throw new IllegalStateException("Missing live airframe breakup: "+NAMES[phase]+" expected="+expected+" mesh="+(s==null||s.airframe==null?-1:s.airframe.mask())+" debris="+LoosePanels.airframePieces(plane));
             System.out.println("M8_LIVE_AIRFRAME vehicle="+NAMES[phase]+" live_mask="+expected+" hp="+plane.getHP()+" pieces="+LoosePanels.airframePieces(plane));
@@ -63,7 +63,7 @@ public final class LiveAirframePreviewProbe {
             if(AirframeDamage.missing(plane)!=0||LoosePanels.pieces()!=0||s!=null&&(s.parts&12)!=0)throw new IllegalStateException("Repair retained lost structure/debris");
             System.out.println("M8_LIVE_AIRFRAME vehicle="+NAMES[phase]+" repair_restored=true");
         }
-        if(age==300){var s=WreckSequenceEffects.get(plane);if(s==null||s.airframe==null||(s.airframe.mask()&6)!=6)throw new IllegalStateException("Wreck regrew a live-lost part");System.out.println("M8_LIVE_AIRFRAME wreck_preserved=true");}
+        if(age==300){var s=WreckSequenceEffects.get(plane);if(s==null||s.airframe==null||(s.airframe.mask()&2)!=2)throw new IllegalStateException("Wreck regrew a live-lost part");System.out.println("M8_LIVE_AIRFRAME wreck_preserved=true");}
     }
     @SubscribeEvent public static void camera(ViewportEvent.ComputeFov event){if(ENABLED&&plane!=null)event.getCamera().setPosition(plane.position().add(phase==2?new Vec3(12,12,7):new Vec3(9,9,4)));}
     @SubscribeEvent public static void angles(ViewportEvent.ComputeCameraAngles event){if(ENABLED&&plane!=null){event.setYaw(135);event.setPitch(phase==2?31:29);event.setRoll(0);}}
