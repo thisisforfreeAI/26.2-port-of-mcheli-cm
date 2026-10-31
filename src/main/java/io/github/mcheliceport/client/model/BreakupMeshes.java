@@ -80,9 +80,12 @@ public final class BreakupMeshes {
         var leftWing=deep?outboard(port[0],tail):new Outboard(port[0],empty("$tail"),Float.NEGATIVE_INFINITY);
         var rightWing=deep?outboard(starboard[1],tail):new Outboard(starboard[1],empty("$tail"),Float.NEGATIVE_INFINITY);
         var empennage=empennage(aft[0]);
-        var sections=List.of(leftWing.wing(),rightWing.wing(),join("$tail",List.of(empennage[1],leftWing.aft(),rightWing.aft())));int mask=0;
+        // A fin modelled into the fuselage skin leaves a slot where it stood; seen through it the tail cone's
+        // culled inner walls made the whole rear fuselage look like a see-through wedge. Both sides are closed.
+        var finRoot=rootPatch(empennage[0],empennage[1]);
+        var sections=List.of(leftWing.wing(),rightWing.wing(),join("$tail",List.of(empennage[1],finRoot,leftWing.aft(),rightWing.aft())));int mask=0;
         for(int i=0;i<3;i++)if((requested&(1<<i))!=0&&sections.get(i).vertexCount()>0&&sections.get(i).vertexCount()<=9000)mask|=1<<i;
-        var kept=new ArrayList<McheliModel.Group>();kept.add(aft[1]);kept.add(empennage[0]);
+        var kept=new ArrayList<McheliModel.Group>();kept.add(aft[1]);kept.add(empennage[0]);if((mask&4)!=0)kept.add(finRoot);
         for(int i=0;i<3;i++)if((mask&(1<<i))==0)kept.add(sections.get(i));
         var frame=mask==0?source:join("$body",kept);var ribs=new ArrayList<McheliModel.Group>();var openings=new HashMap<Integer,Vec3>();
         var fracture=new ArrayList<FractureInteriorMeshes.Details>();var linings=new ArrayList<McheliModel.Group>();
@@ -230,6 +233,67 @@ public final class BreakupMeshes {
         return new McheliModel.Group[]{group(region.name(),kept),group("$tail",gone)};
     }
     private record Edge(long a,long b){}
+    /**
+     * Closes the holes a part torn off along its own triangles leaves in {@code kept}. The border of a hole is
+     * the edges {@code kept} uses once whose corners {@code gone} shares; these models are far from closed
+     * meshes (T-junctions, unwelded seams), so the border is rarely one tidy loop. Each torn piece's border
+     * corners are instead laid flat across the hole (looking down on a fin's root, or in from the side at a
+     * stabiliser's), and their outline is filled, sunk a hair under the skin so the real skin wins where they
+     * overlap. It faces both ways, as inner walls are culled and these models do not wind consistently, and
+     * takes one UV from inside a painted triangle beside the hole, never a transparent texel.
+     */
+    static McheliModel.Group rootPatch(McheliModel.Group kept,McheliModel.Group gone){
+        var g=gone.data();var d=kept.data();if(g.length==0||d.length==0)return empty("$fin_root");
+        int[] parent=pieces(g,null);var piece=new HashMap<Long,Integer>();
+        for(int t=0;t+23<g.length;t+=24)for(int k=0;k<3;k++)piece.putIfAbsent(corner(g,t+k*8),find(parent,t/24));
+        var uses=new HashMap<Edge,Integer>();var at=new HashMap<Long,float[]>();var beside=new HashMap<Long,Integer>();
+        for(int t=0;t+23<d.length;t+=24)for(int k=0;k<3;k++){
+            int i=t+k*8,j=t+(k+1)%3*8;long ka=corner(d,i),kb=corner(d,j);if(ka==kb)continue;
+            uses.merge(new Edge(Math.min(ka,kb),Math.max(ka,kb)),1,Integer::sum);
+            at.putIfAbsent(ka,Arrays.copyOfRange(d,i,i+8));beside.putIfAbsent(ka,t);
+        }
+        var borders=new HashMap<Integer,LinkedHashSet<Long>>();
+        for(var e:uses.entrySet()){
+            if(e.getValue()!=1)continue;Integer pa=piece.get(e.getKey().a()),pb=piece.get(e.getKey().b());
+            if(pa==null||!pa.equals(pb))continue;var border=borders.computeIfAbsent(pa,x->new LinkedHashSet<>());border.add(e.getKey().a());border.add(e.getKey().b());
+        }
+        var tube=bounds(kept);float cx=(tube.low.x+tube.high.x)*.5F,cy=(tube.low.y+tube.high.y)*.5F;
+        var out=new ArrayList<Float>();
+        for(var border:borders.values()){
+            if(border.size()<3)continue;
+            float mx=0,my=0;for(long v:border){var p=at.get(v);mx+=p[0]/border.size();my+=p[1]/border.size();}
+            // A fin stands up from the top or the belly: look down at its root. A stabiliser stands out sideways.
+            boolean upright=Math.abs(my-cy)>=Math.abs(mx-cx);int u=upright?0:1,w=2;
+            var points=new ArrayList<float[]>();for(long v:border)points.add(at.get(v));
+            var hull=hull(points,u,w);if(hull.size()<3)continue;
+            int t=beside.get(border.iterator().next());float tu=(d[t+3]+d[t+11]+d[t+19])/3,tv=(d[t+4]+d[t+12]+d[t+20])/3;
+            var flat=new ArrayList<float[]>();
+            for(var p:hull){
+                var q=p.clone();q[3]=tu;q[4]=tv;
+                if(upright)q[1]+=Math.signum(cy-q[1])*SINK;else q[0]+=Math.signum(cx-q[0])*SINK;
+                flat.add(q);
+            }
+            for(int n=1;n+1<flat.size();n++){fan(out,flat.getFirst(),flat.get(n),flat.get(n+1));fan(out,flat.getFirst(),flat.get(n+1),flat.get(n));}
+        }
+        return group("$fin_root",out);
+    }
+    /** How far a root patch sits under the skin around it, in blocks. */
+    static final float SINK=.012F;
+    /** Convex outline of points seen along the axis that is neither {@code u} nor {@code w}, in order. */
+    private static List<float[]> hull(List<float[]> points,int u,int w){
+        var sorted=new ArrayList<>(points);sorted.sort((p,q)->p[u]!=q[u]?Float.compare(p[u],q[u]):Float.compare(p[w],q[w]));
+        var lower=new ArrayList<float[]>();var upper=new ArrayList<float[]>();
+        for(var p:sorted){while(lower.size()>=2&&turn(lower.get(lower.size()-2),lower.getLast(),p,u,w)<=0)lower.removeLast();lower.add(p);}
+        for(var p:sorted.reversed()){while(upper.size()>=2&&turn(upper.get(upper.size()-2),upper.getLast(),p,u,w)<=0)upper.removeLast();upper.add(p);}
+        lower.removeLast();upper.removeLast();lower.addAll(upper);return lower;
+    }
+    private static float turn(float[] o,float[] a,float[] b,int u,int w){return (a[u]-o[u])*(b[w]-o[w])-(a[w]-o[w])*(b[u]-o[u]);}
+    /** One patch triangle, its normal along its own winding so the side it shows is lit from that side. */
+    private static void fan(List<Float> out,float[] a,float[] b,float[] c){
+        float ux=b[0]-a[0],uy=b[1]-a[1],uz=b[2]-a[2],vx=c[0]-a[0],vy=c[1]-a[1],vz=c[2]-a[2];
+        float nx=uy*vz-uz*vy,ny=uz*vx-ux*vz,nz=ux*vy-uy*vx,length=(float)Math.sqrt(nx*nx+ny*ny+nz*nz);if(length<1E-7F)return;
+        for(var v:new float[][]{a,b,c}){for(int i=0;i<5;i++)out.add(v[i]);out.add(nx/length);out.add(ny/length);out.add(nz/length);}
+    }
     /**
      * A thin shell that faces every way around the flight axis is an engine nacelle or a float, not a fin: fins
      * and stabilisers, even together, face only a few ways.

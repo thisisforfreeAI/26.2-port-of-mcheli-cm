@@ -48,12 +48,24 @@ public final class LoosePanels {
             var size=part==null?new Vector3f(.6F):new Vector3f(part.bounds().high()).sub(part.bounds().low()).mul(local.getScale(new Vector3f()));
             span=Math.max(size.x,Math.max(size.y,size.z));
             motion=new DebrisMotion(position,velocity,new Vector3f(),local.getNormalizedRotation(new Quaternionf()),size,seed);
+            if(part!=null)motion.keel(keel(group,part.bounds()).mul(local.getScale(new Vector3f())));
         }
         Vec3 velocity(){return motion.velocity;}
         void velocity(Vec3 v){motion.velocity=v;}
         boolean settled(){return motion.phase==DebrisMotion.Phase.REST||motion.phase==DebrisMotion.Phase.SUNK;}
     }
     private LoosePanels(){}
+    /** Area-weighted middle of a piece's skin, relative to the middle of its bounds, in its model space. */
+    static Vector3f keel(McheliModel.Group group,io.github.mcheliceport.client.model.BreakupMeshes.Bounds bounds){
+        var d=group.data();double x=0,y=0,z=0,total=0;
+        for(int t=0;t+23<d.length;t+=24){
+            double ax=d[t+8]-d[t],ay=d[t+9]-d[t+1],az=d[t+10]-d[t+2],bx=d[t+16]-d[t],by=d[t+17]-d[t+1],bz=d[t+18]-d[t+2];
+            double cx=ay*bz-az*by,cy=az*bx-ax*bz,cz=ax*by-ay*bx,area=Math.sqrt(cx*cx+cy*cy+cz*cz);
+            x+=area*(d[t]+d[t+8]+d[t+16])/3;y+=area*(d[t+1]+d[t+9]+d[t+17])/3;z+=area*(d[t+2]+d[t+10]+d[t+18])/3;total+=area;
+        }
+        if(total<=0)return new Vector3f();
+        return new Vector3f((float)(x/total),(float)(y/total),(float)(z/total)).sub(bounds.center());
+    }
     public static void wreckPiece(AircraftEntity owner,Identifier texture,McheliModel.Group group,Matrix4f pose,Vector3f center){
         scatter(owner,texture,group,pose,center,new Vec3(0,.22,0));
     }

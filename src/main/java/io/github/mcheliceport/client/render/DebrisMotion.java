@@ -29,6 +29,8 @@ public final class DebrisMotion {
     private final float plate, seed;
     private Vec3 hinge, hingeVelocity, arm;
     private final Vector3f tear=new Vector3f();
+    /** Where the fragment's skin is centred, off the middle of its box, along its own axes (see {@link #keel}). */
+    private final Vector3f keel=new Vector3f();
     private int ripTicks, age, bounces;
     private double groundY;
     public Phase phase;
@@ -47,6 +49,12 @@ public final class DebrisMotion {
         if(finite(inheritedSpin))spin.set(inheritedSpin);clampSpin();inherited.set(spin);
         phase=Phase.FREE;
     }
+    /**
+     * The centre of the fragment's skin (its area-weighted middle) relative to the middle of its box, along the
+     * same axes as its size. A lopsided piece settles heavy side down: a torn tail lies on its stabilisers
+     * with the fin up, instead of balancing on the fin's tip with the stabilisers held up in the air.
+     */
+    public void keel(Vector3f offset){if(finite(offset))keel.set(offset);}
     /** The aircraft's own rotation at the moment of release, kept on top of the tear fold. */
     public void inherit(Vector3f rate){if(age>0||!finite(rate))return;spin.set(rate);clampSpin();inherited.set(spin);}
     /** Before release, the section folds about its torn root (an offset from the centre) for a few ticks. */
@@ -119,16 +127,25 @@ public final class DebrisMotion {
         Vec3 flat=new Vec3(velocity.x,0,velocity.z);double s=flat.length();
         flat=s<.012?Vec3.ZERO:flat.scale(Math.max(0,s-.03-.12*s)/s);
         velocity=flat;spin.mul(.6F);rotate();
-        // Settle onto the broadest face; the centre lowers as the fragment flattens.
-        Vec3 a=normal();var to=new Quaternionf().rotationTo((float)a.x,(float)a.y,(float)a.z,0,a.y>=0?1:-1,0);
+        // Settle onto the broadest face, heavy side down; the centre lowers as the fragment flattens.
+        Vec3 a=normal();float up=settleUp(a);var to=new Quaternionf().rotationTo((float)a.x,(float)a.y,(float)a.z,0,up,0);
         orientation.set(new Quaternionf().slerp(to,.22F).mul(orientation)).normalize();
         position=new Vec3(position.x+flat.x,groundY+height(),position.z+flat.z);
-        if(flat==Vec3.ZERO&&Math.abs(normal().y)>.98) {
-            a=normal();orientation.premul(new Quaternionf().rotationTo((float)a.x,(float)a.y,(float)a.z,0,a.y>=0?1:-1,0)).normalize();
+        if(flat==Vec3.ZERO&&normal().y*up>.98) {
+            a=normal();orientation.premul(new Quaternionf().rotationTo((float)a.x,(float)a.y,(float)a.z,0,up,0)).normalize();
             position=new Vec3(position.x,groundY+height(),position.z);phase=Phase.REST;spin.zero();velocity=Vec3.ZERO;
         }
     }
 
+    /**
+     * Which way the thin axis ends up: whichever is nearer, unless the skin is clearly off-centre along it,
+     * in which case the side with more skin goes down.
+     */
+    private float settleUp(Vec3 normal){
+        float k=keel.get(thin);
+        if(Math.abs(k)>half.get(thin)*.15F)return k<0?1:-1;
+        return normal.y>=0?1:-1;
+    }
     public boolean moving(){return phase==Phase.FREE||phase==Phase.SLIDE||phase==Phase.SUNK;}
     /** Actual cosmetic fragment span, for contact dust and sound sizing. */
     public float span(){return 2*Math.max(half.x,Math.max(half.y,half.z));}
