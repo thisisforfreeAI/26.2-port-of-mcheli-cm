@@ -100,6 +100,11 @@ public final class WreckRealismProbe {
         if(t==440)shot("6-smolder",heading.scale(9).add(side.scale(-10)).add(0,4.5,0),at);
         if(t==1300)shot("7-cold-hulk",heading.scale(10).add(side.scale(-11)).add(0,5,0),at);
         if(t==1320)shot("8-cold-close",heading.scale(3).add(side.scale(-5.5)).add(0,2.6,0),at);
+        // Framed by the airframe's size, so a big bomber's breakup is seen whole.
+        var scene=mc.level.getEntity(s.getId()) instanceof AircraftEntity c?WreckScene.get(c):null;
+        float size=scene==null?10:Math.max(10,scene.size());
+        if(t==90)shot("2b-burning-wide",heading.scale(size*.5).add(side.scale(-size*1.3)).add(0,size*.55,0),at);
+        if(t==1340)shot("9-cold-overview",heading.scale(size*.6).add(side.scale(-size*1.1)).add(0,size*1.1,0),at);
     }
     private static int countFire(Minecraft mc){
         int n=0;var b=net.minecraft.core.BlockPos.containing(HOME);
