@@ -42,7 +42,6 @@ public final class VehicleAtmosphere {
     private VehicleAtmosphere() {}
 
     public static float engineHeat(AircraftEntity aircraft) {
-        if(aircraft instanceof PlaneEntity p && io.github.mcheliceport.client.render.PlaneAirframeParts.tailMissing(p))return 0;
         State state = STATES.get(aircraft);
         return EffectQuality.enhanced() && ClientConfig.get(ClientConfig.ENGINE_STARTUP_EFFECTS) && state != null
                 ? state.engine.heat() : EngineExhaustLook.strength(aircraft.getCurrentThrottle());
@@ -107,8 +106,7 @@ public final class VehicleAtmosphere {
             state.cooling.tick(aircraft.isDestroyed());
             if(aircraft instanceof PlaneEntity plane)WingVaporEffects.update(level,plane,state.condensation,now);
             WreckSequenceEffects.tick(level,aircraft,state.cooling.age());
-            boolean powered = !aircraft.isDestroyed() && aircraft.canUseFuel()
-                    && !(aircraft instanceof PlaneEntity p && io.github.mcheliceport.client.render.PlaneAirframeParts.tailMissing(p));
+            boolean powered = !aircraft.isDestroyed() && aircraft.canUseFuel();
             state.engine.tick(aircraft.getCurrentThrottle(), powered);
             if (!ClientConfig.get(ClientConfig.ENGINE_STARTUP_EFFECTS)) state.stop();
             else {
@@ -157,10 +155,6 @@ public final class VehicleAtmosphere {
 
     /** Prefer authored engine anchors. A short startup puff may use the machinery below a lift rotor. */
     public static List<Vec3> origins(AircraftEntity aircraft) {
-        if(aircraft instanceof PlaneEntity p && io.github.mcheliceport.client.render.PlaneAirframeParts.tailMissing(p)) {
-            var sequence=WreckSequenceEffects.get(aircraft);
-            if(sequence!=null&&sequence.opening!=null)return List.of(sequence.opening);
-        }
         var info = aircraft.getAcInfo();
         List<Vec3> result = new ArrayList<>(2);
         var outlets = EngineExhaustLook.outlets(info, aircraft instanceof PlaneEntity p ? p.getNozzleRotation() : 0);

@@ -18,7 +18,6 @@ public final class PlaneAirframeParts {
     /** Inner skin is the aircraft's own paint in shadow; bulkheads are bare scorched alloy. */
     static final int LINING=0xFF6A665F,CAP=0xFF3D3934;
     private PlaneAirframeParts() {}
-    public static boolean tailMissing(PlaneEntity ac) {var state=WreckSequenceEffects.get(ac);return state!=null&&state.tail;}
     public static void apply(PlaneEntity ac,AircraftRenderState render,WreckSequenceEffects.State state,BreakupMeshes.Body engineBody) {
         long now=ac.level().getGameTime();int missing=AirframeDamage.missing(ac);
         if(state.liveMask>=0&&!ac.isDestroyed())for(int bit:new int[]{1,2,4}){
@@ -61,8 +60,9 @@ public final class PlaneAirframeParts {
                         VehicleDetailLayers.add(render,settled,METAL,List.of(detail.ribs()),0xFF777168);
                         VehicleDetailLayers.add(render,settled,METAL,List.of(detail.cables()),0xFF302C27);
                     }else VehicleDetailLayers.add(render,settled,METAL,List.of(frame.ribs()),0xFF595752);
-                    if((actual&4)!=0){
-                        var b=frame.bounds();var at=settled.transformPosition(new Vector3f(0,(b.low().y+b.high().y)*.45F,frame.tailCut()+.1F));
+                    var root=frame.openings().get(4);
+                    if((actual&4)!=0&&root!=null){
+                        var at=settled.transformPosition(new Vector3f((float)root.x,(float)root.y,(float)root.z));
                         state.opening=ac.position().add(at.x,at.y,at.z);
                     }
                     for(int i=0;i<3;i++)if((actual&(1<<i))!=0){

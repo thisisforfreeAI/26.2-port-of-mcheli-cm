@@ -100,6 +100,10 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
   or red. A repair now also heals components when the hull is already whole.
 
 ### Changed
+- A plane that loses its tail, in flight or in a crash, no longer drops the whole back of its fuselage.
+  Only the fins and stabilisers snap off at their roots; the rear fuselage, engine nozzles and exhaust
+  stay on the airframe. Parts are told apart by shape, so this works on every stock and add-on plane:
+  a fin or stabiliser is a thin plate standing clear of the fuselage tube.
 - Wreck burn look: the char now spreads from the fire (engines and wing roots) and fades out, so the
   nose, tail, tips and markings stay readable under darkened paint; peeled bare metal and a heat tint ring
   the burn. Replaces the near-opaque soot over the whole airframe and the flat bare-metal triangles.
