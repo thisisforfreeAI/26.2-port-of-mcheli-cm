@@ -18,12 +18,13 @@ public final class BreakupMeshes {
         /**
          * The section a body-space point would go with: 0 left wing, 1 right wing, 2 tail, -1 the core.
          * Outboard of a wing cut everything is wing, except what lies behind that side's trailing line
-         * (behind the wing, or a stabiliser tip that went with the tail).
+         * (behind the wing, or a stabiliser tip that went with the tail). Between the cuts is the fuselage,
+         * which stays whole: only the fins and stabilisers on it come off with the tail.
          */
         public int section(Vector3f p) {
             if(p.x<leftCut)return p.z<leftAft?2:0;
             if(p.x>rightCut)return p.z<rightAft?2:1;
-            return p.z<tailCut?2:-1;
+            return -1;
         }
     }
     public static Airframe airframe(McheliModel.Group source,int mask) {
@@ -69,34 +70,37 @@ public final class BreakupMeshes {
     /** Disjoint left/right/tail sections: combinations cannot duplicate or regrow removed surfaces. */
     public static Airframe airframeBuild(McheliModel.Group source,int requested) {
         var b=bounds(source);float left=b.low.x*.55F,right=b.high.x*.55F,tail=b.low.z+(b.high.z-b.low.z)*.27F;
-        // Wings come off along their whole chord, so a flying wing or a delta keeps no floating trailing edge;
-        // the tail line only cuts the centre, plus any stabiliser tip that sits wholly behind a wing.
+        // Wings come off along their whole chord, so a flying wing or a delta keeps no floating trailing edge.
+        // Behind the tail line only the fins and stabilisers break away, plus any stabiliser tip that sits
+        // wholly behind a wing: the rear fuselage stays on, as it does on a real crashed airframe.
         boolean wide=b.high.x-b.low.x>5,deep=b.high.z-b.low.z>6;
         var port=wide?split(source,0,left):new McheliModel.Group[]{empty("$left"),source};
         var starboard=wide?split(port[1],0,right):new McheliModel.Group[]{port[1],empty("$right")};
         var aft=deep?split(starboard[0],2,tail):new McheliModel.Group[]{empty("$tail"),starboard[0]};
         var leftWing=deep?outboard(port[0],tail):new Outboard(port[0],empty("$tail"),Float.NEGATIVE_INFINITY);
         var rightWing=deep?outboard(starboard[1],tail):new Outboard(starboard[1],empty("$tail"),Float.NEGATIVE_INFINITY);
-        var sections=List.of(leftWing.wing(),rightWing.wing(),join("$tail",List.of(aft[0],leftWing.aft(),rightWing.aft())));int mask=0;
+        var empennage=empennage(aft[0]);
+        var sections=List.of(leftWing.wing(),rightWing.wing(),join("$tail",List.of(empennage[1],leftWing.aft(),rightWing.aft())));int mask=0;
         for(int i=0;i<3;i++)if((requested&(1<<i))!=0&&sections.get(i).vertexCount()>0&&sections.get(i).vertexCount()<=9000)mask|=1<<i;
-        var kept=new ArrayList<McheliModel.Group>();kept.add(aft[1]);
+        var kept=new ArrayList<McheliModel.Group>();kept.add(aft[1]);kept.add(empennage[0]);
         for(int i=0;i<3;i++)if((mask&(1<<i))==0)kept.add(sections.get(i));
         var frame=mask==0?source:join("$body",kept);var ribs=new ArrayList<McheliModel.Group>();var openings=new HashMap<Integer,Vec3>();
         var fracture=new ArrayList<FractureInteriorMeshes.Details>();var linings=new ArrayList<McheliModel.Group>();
-        for(int i=0;i<3;i++)if((mask&(1<<i))!=0){
-            int axis=i==2?2:0;float cut=i==0?left:i==1?right:tail;var points=edge(frame,axis,cut);
+        if((mask&4)!=0){var root=root(sections.get(2),frame);if(root!=null)openings.put(4,root);}
+        // Wing cuts are sawn through the structure, so they get spars, a lining and a capped cavity; a fin
+        // snaps off at its root and leaves the fuselage closed.
+        for(int i=0;i<2;i++)if((mask&(1<<i))!=0){
+            int axis=0;float cut=i==0?left:right;var points=edge(frame,axis,cut);
             if(points.isEmpty())continue;
             double x=0,y=0,z=0;for(var v:points){x+=v.x;y+=v.y;z+=v.z;}
             openings.put(1<<i,new Vec3(x/points.size(),y/points.size(),z/points.size()));
             var baseline=new DetailBoxes();
             for(int n=0;n<Math.min(3,points.size());n++){
                 var v=points.get(n*points.size()/Math.min(3,points.size()));
-                if(axis==0)baseline.box(v.x-.12F,v.y-.025F,v.z-.04F,v.x+.12F,v.y+.025F,v.z+.04F);
-                else baseline.box(v.x-.12F,v.y-.025F,v.z-.10F,v.x+.12F,v.y+.025F,v.z+.10F);
+                baseline.box(v.x-.12F,v.y-.025F,v.z-.04F,v.x+.12F,v.y+.025F,v.z+.04F);
             }
             var old=baseline.group("$airframe_spars");ribs.add(old);
-            linings.add(axis==2?FractureInteriorMeshes.lining(frame,axis,cut,6144/Integer.bitCount(mask),left,right)
-                    :FractureInteriorMeshes.lining(frame,axis,cut,6144/Integer.bitCount(mask)));
+            linings.add(FractureInteriorMeshes.lining(frame,axis,cut,6144/Integer.bitCount(mask&3)));
             var detail=FractureInteriorMeshes.build(frame,axis,cut,i==1?1:-1);
             if(detail.vertices()==0){var empty=FractureInteriorMeshes.empty();detail=new FractureInteriorMeshes.Details(empty.cavity(),old,empty.cables(),0);}
             fracture.add(detail);
@@ -105,6 +109,17 @@ public final class BreakupMeshes {
         return new Airframe(frame,sections,join("$airframe_spars",ribs),b,left,right,tail,mask,Map.copyOf(openings),FractureInteriorMeshes.merge(fracture),
                 join("$fracture_lining",linings),leftWing.trailing(),rightWing.trailing());
     }
+    /** Where a torn-off tail met the airframe: the middle of the corners it shares with the kept skin. */
+    static Vec3 root(McheliModel.Group section,McheliModel.Group kept){
+        var d=section.data();if(d.length==0)return null;var corners=new HashSet<Long>();var k=kept.data();
+        for(int i=0;i+7<k.length;i+=8)corners.add(corner(k,i));
+        double x=0,y=0,z=0;int n=0;
+        for(int i=0;i+7<d.length;i+=8)if(corners.contains(corner(d,i))){x+=d[i];y+=d[i+1];z+=d[i+2];n++;}
+        // A fin modelled as its own piece shares no corners: its foot is the bottom of the section.
+        if(n==0){var b=bounds(section);var c=b.center();return new Vec3(c.x,b.low().y,c.z);}
+        return new Vec3(x/n,y/n,z/n);
+    }
+    private static long corner(float[] d,int at){return (Math.round(d[at]*500)&0x1FFFFF)<<42|(Math.round(d[at+1]*500)&0x1FFFFF)<<21|(Math.round(d[at+2]*500)&0x1FFFFF);}
     private record Outboard(McheliModel.Group wing,McheliModel.Group aft,float trailing){}
     /**
      * Splits the skin outboard of a wing cut into connected pieces. The largest is the wing; a piece
@@ -114,19 +129,7 @@ public final class BreakupMeshes {
     static Outboard outboard(McheliModel.Group region,float tail) {
         var d=region.data();int triangles=d.length/24;
         if(triangles==0)return new Outboard(region,empty("$tail"),Float.NEGATIVE_INFINITY);
-        // Pieces are triangles joined through shared edges: a wing and a stabiliser that only touch at a point stay apart.
-        var ids=new HashMap<Long,Integer>();var edges=new HashMap<Long,Integer>();int[] parent=new int[triangles];int[] corner=new int[3];
-        for(int t=0;t<triangles;t++){
-            parent[t]=t;
-            for(int k=0;k<3;k++){
-                int at=t*24+k*8;long key=(Math.round(d[at]*500)&0x1FFFFF)<<42|(Math.round(d[at+1]*500)&0x1FFFFF)<<21|(Math.round(d[at+2]*500)&0x1FFFFF);
-                corner[k]=ids.computeIfAbsent(key,x->ids.size());
-            }
-            for(int k=0;k<3;k++){
-                int a=corner[k],b=corner[(k+1)%3];if(a==b)continue;
-                Integer other=edges.putIfAbsent((long)Math.min(a,b)<<32|Math.max(a,b),t);if(other!=null)union(parent,other,t);
-            }
-        }
+        int[] parent=pieces(d,null);
         var area=new HashMap<Integer,Double>();var low=new HashMap<Integer,Float>();var high=new HashMap<Integer,Float>();var sum=new HashMap<Integer,Double>();
         for(int t=0;t<triangles;t++){
             int root=find(parent,t),at=t*24;
@@ -152,6 +155,105 @@ public final class BreakupMeshes {
         for(int t=0;t<triangles;t++){var out=aft.contains(find(parent,t))?gone:kept;for(int i=t*24;i<t*24+24;i++)out.add(d[i]);}
         return new Outboard(group(region.name(),kept),group("$tail",gone),trailing);
     }
+    /** Skin closer than this to the skin facing it is a fin or stabiliser plate, not the fuselage tube. */
+    static final float PLATE=.4F,CLEAR=.25F;
+    /**
+     * Splits the skin behind the tail line into the fuselage, which stays, and the thin plates on it (fins,
+     * stabilisers, strakes), which can snap off. A plate is told apart by its thickness: looking inward from
+     * its skin, the opposite skin is a hand's width away, where across the fuselage it is the whole tube.
+     */
+    static McheliModel.Group[] empennage(McheliModel.Group region) {
+        var d=region.data();int triangles=d.length/24;
+        if(triangles==0)return new McheliModel.Group[]{region,empty("$tail")};
+        boolean[] plate=new boolean[triangles];
+        for(int t=0;t<triangles;t++){
+            int a=t*24;float ux=d[a+8]-d[a],uy=d[a+9]-d[a+1],uz=d[a+10]-d[a+2],vx=d[a+16]-d[a],vy=d[a+17]-d[a+1],vz=d[a+18]-d[a+2];
+            float nx=uy*vz-uz*vy,ny=uz*vx-ux*vz,nz=ux*vy-uy*vx,length=(float)Math.sqrt(nx*nx+ny*ny+nz*nz);if(length<1E-9F)continue;
+            float ox=(d[a]+d[a+8]+d[a+16])/3,oy=(d[a+1]+d[a+9]+d[a+17])/3,oz=(d[a+2]+d[a+10]+d[a+18])/3;
+            // Skins wind outward (their inner walls are culled), so the facing skin lies along the inward normal.
+            plate[t]=nearest(d,t,ox,oy,oz,-nx/length,-ny/length,-nz/length,PLATE)<PLATE;
+        }
+        // Engine nozzles and duct walls are thin too, but sit inside the fuselage: only a plate that stands
+        // clear of the tube, above, below or out to the side, is a fin or a stabiliser.
+        // The tube's extent is taken by area, leaving out the rims and caps of the plates (thick along their own
+        // normal), so neither they nor a sliver of fin skin the test missed can stretch it.
+        var neighbours=new HashMap<Edge,List<Integer>>();
+        for(int t=0;t<triangles;t++)for(int k=0;k<3;k++){
+            long a=corner(d,t*24+k*8),b=corner(d,t*24+(k+1)%3*8);if(a==b)continue;
+            neighbours.computeIfAbsent(new Edge(Math.min(a,b),Math.max(a,b)),x->new ArrayList<>()).add(t);
+        }
+        boolean[] rim=new boolean[triangles];
+        for(var shared:neighbours.values()){boolean any=false;for(int t:shared)any|=plate[t];if(any)for(int t:shared)rim[t]=true;}
+        var tube=new Vector3f();var tubeHigh=new Vector3f();
+        for(int axis=0;axis<2;axis++){
+            var samples=new ArrayList<float[]>();double total=0;
+            for(int t=0;t<triangles;t++)if(!rim[t]){double a=triangleArea(d,t*24);total+=a;for(int k=0;k<3;k++)samples.add(new float[]{d[t*24+k*8+axis],(float)a/3});}
+            if(samples.isEmpty()){tube.set(Float.POSITIVE_INFINITY);tubeHigh.set(Float.NEGATIVE_INFINITY);break;}
+            samples.sort((p,q)->Float.compare(p[0],q[0]));double run=0;float lo=samples.getFirst()[0],hi=samples.getLast()[0];boolean found=false;
+            for(var sample:samples){run+=sample[1];if(!found&&run>=total*.02){lo=sample[0];found=true;}if(run>=total*.98){hi=sample[0];break;}}
+            tube.setComponent(axis,lo);tubeHigh.setComponent(axis,hi);
+        }
+        int[] parent=pieces(d,plate);var low=new HashMap<Integer,Vector3f>();var high=new HashMap<Integer,Vector3f>();
+        var facing=new HashMap<Integer,double[]>();var area=new HashMap<Integer,Double>();
+        for(int t=0;t<triangles;t++)if(plate[t]){
+            int root=find(parent,t),a=t*24;var l=low.computeIfAbsent(root,x->new Vector3f(Float.POSITIVE_INFINITY));var h=high.computeIfAbsent(root,x->new Vector3f(Float.NEGATIVE_INFINITY));
+            for(int k=0;k<3;k++){var v=new Vector3f(d[a+k*8],d[a+k*8+1],d[a+k*8+2]);l.min(v);h.max(v);}
+            double w=triangleArea(d,a);area.merge(root,w,Double::sum);
+            float ux=d[a+8]-d[a],uy=d[a+9]-d[a+1],uz=d[a+10]-d[a+2],vx=d[a+16]-d[a],vy=d[a+17]-d[a+1],vz=d[a+18]-d[a+2];
+            double nx=uy*vz-uz*vy,ny=uz*vx-ux*vz,nz=ux*vy-uy*vx;
+            if(nx*nx+ny*ny>nz*nz)facing.computeIfAbsent(root,x->new double[12])[Math.floorMod((int)Math.floor(Math.atan2(ny,nx)/(Math.PI/6)),12)]+=w;
+        }
+        boolean[] fin=new boolean[triangles];var queue=new ArrayDeque<Integer>();
+        for(int t=0;t<triangles;t++){
+            if(plate[t]){int root=find(parent,t);var l=low.get(root);var h=high.get(root);
+                fin[t]=(outside(l.x,l.y,tube,tubeHigh)||outside(h.x,h.y,tube,tubeHigh))&&!ring(facing.get(root),area.get(root));}
+            else{
+                // A tip the thickness test missed still lies wholly outside the tube.
+                fin[t]=true;
+                for(int k=0;k<3&&fin[t];k++)fin[t]=outside(d[t*24+k*8],d[t*24+k*8+1],tube,tubeHigh);
+            }
+            if(fin[t])queue.add(t);
+        }
+        // So do the edges and end caps of a fin (thick along their own normal) that sit out past the tube.
+        while(!queue.isEmpty()){
+            int t=queue.poll();
+            for(int k=0;k<3;k++){
+                long a=corner(d,t*24+k*8),b=corner(d,t*24+(k+1)%3*8);
+                for(int n:neighbours.getOrDefault(new Edge(Math.min(a,b),Math.max(a,b)),List.of())){
+                    if(fin[n])continue;int at=n*24;
+                    if(outside((d[at]+d[at+8]+d[at+16])/3,(d[at+1]+d[at+9]+d[at+17])/3,tube,tubeHigh)){fin[n]=true;queue.add(n);}
+                }
+            }
+        }
+        var kept=new ArrayList<Float>();var gone=new ArrayList<Float>();
+        for(int t=0;t<triangles;t++){var out=fin[t]?gone:kept;for(int i=t*24;i<t*24+24;i++)out.add(d[i]);}
+        return new McheliModel.Group[]{group(region.name(),kept),group("$tail",gone)};
+    }
+    private record Edge(long a,long b){}
+    /**
+     * A thin shell that faces every way around the flight axis is an engine nacelle or a float, not a fin: fins
+     * and stabilisers, even together, face only a few ways.
+     */
+    private static boolean ring(double[] facing,double area){
+        if(facing==null)return false;int ways=0;for(double w:facing)if(w>area*.03)ways++;return ways>=7;
+    }
+    private static boolean outside(float x,float y,Vector3f low,Vector3f high){
+        return x<low.x-CLEAR||x>high.x+CLEAR||y<low.y-CLEAR||y>high.y+CLEAR;
+    }
+    /** Distance along a ray to the nearest other triangle within {@code limit}, or {@code limit}. */
+    private static float nearest(float[] d,int self,float ox,float oy,float oz,float dx,float dy,float dz,float limit){
+        float best=limit;
+        for(int s=0;s+23<d.length;s+=24){
+            if(s==self*24)continue;
+            float e1x=d[s+8]-d[s],e1y=d[s+9]-d[s+1],e1z=d[s+10]-d[s+2],e2x=d[s+16]-d[s],e2y=d[s+17]-d[s+1],e2z=d[s+18]-d[s+2];
+            float px=dy*e2z-dz*e2y,py=dz*e2x-dx*e2z,pz=dx*e2y-dy*e2x,det=e1x*px+e1y*py+e1z*pz;
+            if(Math.abs(det)<1E-9F)continue;float inv=1/det;
+            float sx=ox-d[s],sy=oy-d[s+1],sz=oz-d[s+2],u=(sx*px+sy*py+sz*pz)*inv;if(u<0||u>1)continue;
+            float qx=sy*e1z-sz*e1y,qy=sz*e1x-sx*e1z,qz=sx*e1y-sy*e1x,v=(dx*qx+dy*qy+dz*qz)*inv;if(v<0||u+v>1)continue;
+            float hit=(e2x*qx+e2y*qy+e2z*qz)*inv;if(hit>-1E-4F&&hit<best)best=hit;
+        }
+        return best;
+    }
     /** Top-down occupancy of a piece on a quarter-block grid. */
     private static final class Planform {
         static final float CELL=.25F;final float x0,z0;final int w,h;boolean[] cells;
@@ -173,6 +275,24 @@ public final class BreakupMeshes {
             for(int k=0;k<3;k++)if(cells[cz(d[t+k*8+2])*w+cx(d[t+k*8])])return true;
             return cells[cz((d[t+2]+d[t+10]+d[t+18])/3)*w+cx((d[t]+d[t+8]+d[t+16])/3)];
         }
+    }
+    /**
+     * Triangles joined through shared edges, as a union-find forest: a wing and a stabiliser that only touch
+     * at a point stay apart. With {@code only}, triangles outside it are left alone and join nothing.
+     */
+    private static int[] pieces(float[] d,boolean[] only){
+        int triangles=d.length/24;var ids=new HashMap<Long,Integer>();var edges=new HashMap<Long,Integer>();int[] parent=new int[triangles];int[] corner=new int[3];
+        for(int t=0;t<triangles;t++){
+            parent[t]=t;if(only!=null&&!only[t])continue;
+            for(int k=0;k<3;k++){
+                corner[k]=ids.computeIfAbsent(corner(d,t*24+k*8),x->ids.size());
+            }
+            for(int k=0;k<3;k++){
+                int a=corner[k],b=corner[(k+1)%3];if(a==b)continue;
+                Integer other=edges.putIfAbsent((long)Math.min(a,b)<<32|Math.max(a,b),t);if(other!=null)union(parent,other,t);
+            }
+        }
+        return parent;
     }
     private static int find(int[] parent,int i){while(parent[i]!=i){parent[i]=parent[parent[i]];i=parent[i];}return i;}
     private static void union(int[] parent,int a,int b){a=find(parent,a);b=find(parent,b);if(a!=b)parent[a]=b;}
