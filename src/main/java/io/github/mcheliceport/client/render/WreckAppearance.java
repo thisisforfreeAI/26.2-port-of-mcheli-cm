@@ -30,8 +30,16 @@ public final class WreckAppearance {
  private static java.lang.ref.WeakReference<Object> world=new java.lang.ref.WeakReference<>(null);
  public static boolean enabled(){return EffectQuality.enhanced()&&ClientConfig.get(ClientConfig.VEHICLE_DAMAGE_DETAILS);}
  public static float settling(AircraftEntity ac){int age=VehicleAtmosphere.wreckAge(ac);return io.github.mcheliceport.client.particle.WreckSequenceEffects.enabled()?io.github.mcheliceport.client.particle.DestructionTimeline.collapse(age):Math.clamp((age+1)/60F,0,1);}
- public static Matrix4f root(AircraftEntity ac){float s=settling(ac);var state=STATES.get(ac);
-  var sag=new Matrix4f().translate(0,-.10F*s,0).rotateZ(.025F*s).rotateX(-.018F*s);return state==null||!state.dead?sag:new Matrix4f(state.rest).mul(sag);}
+ private static Matrix4f sag(AircraftEntity ac){
+  if(io.github.mcheliceport.client.particle.WreckSequenceEffects.enabled()){
+   float partial=Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaPartialTick(false);
+   var p=io.github.mcheliceport.client.particle.DestructionLook.settle(VehicleAtmosphere.wreckAge(ac)+partial,
+           io.github.mcheliceport.client.particle.WreckRuptureEffects.kind(ac),ac.getUUID().hashCode());
+   return new Matrix4f().translate(0,p.drop(),0).rotateZ(p.roll()).rotateX(p.pitch());
+  }
+  float s=settling(ac);return new Matrix4f().translate(0,-.10F*s,0).rotateZ(.025F*s).rotateX(-.018F*s);
+ }
+ public static Matrix4f root(AircraftEntity ac){var state=STATES.get(ac);var sag=sag(ac);return state==null||!state.dead?sag:new Matrix4f(state.rest).mul(sag);}
  /** Seconds-and-a-half to settle once a crashed plane has stopped sliding. */
  static final int SETTLE=30;
  /** The attitude a stopped wreck settles to: level, on its belly or its back, whichever is nearer. */
@@ -100,7 +108,7 @@ public final class WreckAppearance {
   else if(!(plane&&down)||moved>.04)s.restProgress=Math.max(0,s.restProgress-step);
   float rest=s.restProgress*s.restProgress*(3-2*s.restProgress);
   s.rest=plane&&down&&s.drop>=0?restCorrection(render.yaw,render.pitch,render.roll,Math.min(1,rest),s.drop):new Matrix4f();
-  var root=new Matrix4f(s.rest).translate(0,-.10F*settle,0).rotateZ(.025F*settle).rotateX(-.018F*settle);
+  var root=new Matrix4f(s.rest).mul(sag(ac));
   var draws=new ArrayList<AircraftPartPoses.Draw>();int removed=0;
   var gear=new ArrayList<AircraftPartPoses.Draw>();WreckMesh.Parts hull=null;Matrix4f hullPose=null;
   for(var draw:render.draws)for(var group:draw.groups()){
@@ -112,7 +120,7 @@ public final class WreckAppearance {
    if(mesh==null){draws.add(new AircraftPartPoses.Draw(new Matrix4f(root).mul(draw.pose()),List.of(group)));continue;}
    boolean detach=removed<2&&(!io.github.mcheliceport.client.particle.WreckSequenceEffects.enabled()||!name.startsWith("$enginecover")&&!name.startsWith("$cover"))&&(removable(group.name())||heli&&group.name().equals("$weapon1")&&group.vertexCount()<=1200);
    if(detach){
-    removed++;PanelInteriors.add(render,new Matrix4f(root).mul(draw.pose()),group);
+    removed++;PanelInteriors.add(render,new Matrix4f(root).mul(draw.pose()),group,ac);
     boolean young=fresh||age>=0&&age<35;
     // Glass does not fly off in one piece: a plane or helicopter canopy bursts into shards.
     if((plane||heli)&&name.startsWith("$canopy")){

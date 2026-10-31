@@ -39,7 +39,12 @@ public final class CookoffEffects {
         int ammunition=conventionalAmmo(aircraft);
         if(!cooling.cookoff(aircraft.getId(),ammunition))return;
         long now=level.getGameTime();if(now!=lastTick){lastTick=now;births=0;}
-        if(births>=2||!VehicleAtmosphere.admit(level,position,.65F))return;
+        if(births>=2)return;
+        if(WreckSequenceEffects.enabled()){
+            if(WreckRuptureEffects.emit(level,aircraft,position,false)){births++;events++;sounds++;}
+            return;
+        }
+        if(!VehicleAtmosphere.admit(level,position,.65F))return;
         var engine=Minecraft.getInstance().particleEngine;
         engine.add(new ImpactCoreParticle(level,position.x,position.y+.15,position.z,.5F,3));births++;events++;
         for(int i=0;i<3;i++)if(VehicleAtmosphere.admit(level,position,.04F)){

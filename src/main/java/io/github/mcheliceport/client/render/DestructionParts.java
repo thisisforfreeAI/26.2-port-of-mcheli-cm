@@ -54,7 +54,7 @@ public final class DestructionParts {
                         scatter(ac,render,s,"turret",turret.source(),pose,96,new Vec3(.08,.48,-.04));s.turret=true;s.parts|=16;
                         var center=turret.bounds().center();center.y=turret.bounds().low().y;
                         var ringPose=new Matrix4f(WreckAppearance.root(ac)).mul(pose).translate(center);
-                        VehicleDetailLayers.add(render,ringPose,DARK,List.of(RING),0xFF252322);s.ring=world(ac,ringPose,new Vector3f(0,.1F,0));
+                        VehicleDetailLayers.add(render,ringPose,DARK,List.of(RING),0xFF252322);InteriorFirelight.add(ac,render,ringPose,RING);s.ring=world(ac,ringPose,new Vector3f(0,.1F,0));
                     }continue;
                 }
                 if(tank&&name.equals("$crawler_track"+Math.floorMod(s.seed,2))&&s.age>=20){
@@ -76,13 +76,14 @@ public final class DestructionParts {
                     if(s.cover||s.wing||s.tail){
                         var settled=new Matrix4f(WreckAppearance.root(ac)).mul(pose);
                         VehicleDetailLayers.add(render,settled,DARK,List.of(body.machinery()),0xFF514D45);
+                        InteriorFirelight.add(ac,render,settled,body.machinery());
                         Vec3 local=s.tail?new Vec3(0,(body.bounds().low().y+body.bounds().high().y)*.45,body.tailCut()+.1):body.opening();
                         if(local!=null)s.opening=world(ac,settled,new Vector3f((float)local.x,(float)local.y,(float)local.z));
                     }continue;
                 }
                 if((name.startsWith("$enginecover")||name.startsWith("$cover"))&&s.age>=36){
                     var part=BreakupMeshes.part(group);if(part!=null&&group.vertexCount()<=1200){
-                        scatter(ac,render,s,"named_cover"+name,group,pose,36,new Vec3(.1,.3,0));PanelInteriors.add(render,new Matrix4f(WreckAppearance.root(ac)).mul(pose),group);s.cover=true;s.parts|=1;continue;
+                        scatter(ac,render,s,"named_cover"+name,group,pose,36,new Vec3(.1,.3,0));PanelInteriors.add(render,new Matrix4f(WreckAppearance.root(ac)).mul(pose),group,ac);s.cover=true;s.parts|=1;continue;
                     }
                 }
                 if(plane&&body!=null&&!name.equals("$body")&&(s.wing||s.tail)){

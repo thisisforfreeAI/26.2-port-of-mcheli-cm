@@ -130,6 +130,8 @@ public final class DebrisMotion {
     }
 
     public boolean moving(){return phase==Phase.FREE||phase==Phase.SLIDE||phase==Phase.SUNK;}
+    /** Actual cosmetic fragment span, for contact dust and sound sizing. */
+    public float span(){return 2*Math.max(half.x,Math.max(half.y,half.z));}
     /** A resting fragment checks the ground under it now and then, in case it was blown away. */
     public boolean checkSupport(){return phase==Phase.REST&&age%10==0;}
     /**

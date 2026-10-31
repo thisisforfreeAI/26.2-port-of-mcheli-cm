@@ -58,6 +58,7 @@ public final class PlaneAirframeParts {
                     if(io.github.mcheliceport.config.ClientConfig.get(io.github.mcheliceport.config.ClientConfig.EFFECT_STYLE)
                             ==io.github.mcheliceport.config.ClientConfig.EffectStyle.POLISHED&&detail.vertices()>0) {
                         VehicleDetailLayers.add(render,settled,METAL,List.of(detail.ribs()),0xFF777168);
+                        InteriorFirelight.add(ac,render,settled,detail.ribs());
                         VehicleDetailLayers.add(render,settled,METAL,List.of(detail.cables()),0xFF302C27);
                     }else VehicleDetailLayers.add(render,settled,METAL,List.of(frame.ribs()),0xFF595752);
                     var root=frame.openings().get(4);
@@ -74,6 +75,7 @@ public final class PlaneAirframeParts {
                     state.cover=true;state.parts|=1;
                     scatterWreck(ac,render,state,"cover",engineBody.cover(),pose,36,new Vec3(.1,.34,-.08));
                     VehicleDetailLayers.add(render,settled,METAL,List.of(engineBody.machinery()),0xFF514D45);
+                    InteriorFirelight.add(ac,render,settled,engineBody.machinery());
                     if((actual&4)==0&&engineBody.opening()!=null){var v=engineBody.opening();var p=settled.transformPosition(new Vector3f((float)v.x,(float)v.y,(float)v.z));state.opening=ac.position().add(p.x,p.y,p.z);}
                 }
                 continue;
@@ -88,7 +90,7 @@ public final class PlaneAirframeParts {
             }
             if(nearby&&state.age>=36&&(name.startsWith("$enginecover")||name.startsWith("$cover"))&&group.vertexCount()<=1200){
                 scatterWreck(ac,render,state,"named_cover"+name,group,pose,36,new Vec3(.1,.3,0));
-                PanelInteriors.add(render,new Matrix4f(WreckAppearance.root(ac)).mul(pose),group);state.cover=true;state.parts|=1;continue;
+                PanelInteriors.add(render,new Matrix4f(WreckAppearance.root(ac)).mul(pose),group,ac);state.cover=true;state.parts|=1;continue;
             }
             output.add(new AircraftPartPoses.Draw(pose,List.of(group)));
         }

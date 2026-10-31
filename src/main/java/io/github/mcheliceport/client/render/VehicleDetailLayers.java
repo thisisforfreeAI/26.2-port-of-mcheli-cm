@@ -18,7 +18,7 @@ public final class VehicleDetailLayers {
     private static Set<Layer> shown=new HashSet<>(),drawn=new HashSet<>();
     private record Layer(McheliModel.Group group,Identifier texture){}
     private VehicleDetailLayers(){}
-    @SubscribeEvent public static void frame(RenderFrameEvent.Pre event){vertices=0;var last=shown;shown=drawn;drawn=last;drawn.clear();}
+    @SubscribeEvent public static void frame(RenderFrameEvent.Pre event){InteriorFirelight.frame();vertices=0;var last=shown;shown=drawn;drawn=last;drawn.clear();}
     public static boolean add(AircraftRenderState render,Matrix4f pose,Identifier texture,List<McheliModel.Group> groups,int color){
         if(render.far||render.thermal||!EffectQuality.enhanced())return false;
         int count=groups.stream().mapToInt(McheliModel.Group::vertexCount).sum();

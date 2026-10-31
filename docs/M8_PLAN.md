@@ -570,6 +570,11 @@ craters and gameplay intact. The separate [blood investigation](M8_VEHICLE_BLOOD
 records vehicle-only attribution and NTM gore exclusions; the implemented blood follow-up
 is described below.
 
+[Dramatic destruction refinement](M8_DRAMATIC_DESTRUCTION.md) adds short directed machinery
+ruptures, fire-lit exposed interiors, varied secondary pops, small-panel tumble, damped settling
+and terrain-colored contact fans. [Native vehicle examples](M8_DRAMATIC_DESTRUCTION_GALLERY.md).
+Main fuselages, original craters and gameplay remain unchanged; existing particle limits remain.
+
 
 ### Vehicle-kill blood (follow-up)
 
