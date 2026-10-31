@@ -14,7 +14,7 @@ import org.joml.Vector3f;
 
 /** Identical structural silhouettes while alive, wrecked, saved/reloaded, or viewed at a distance. */
 public final class PlaneAirframeParts {
-    private static final Identifier METAL=Identifier.withDefaultNamespace("textures/block/iron_block.png");
+    static final Identifier METAL=Identifier.withDefaultNamespace("textures/block/iron_block.png");
     /** Inner skin is the aircraft's own paint in shadow; bulkheads are bare scorched alloy. */
     static final int LINING=0xFF6A665F,CAP=0xFF3D3934;
     private PlaneAirframeParts() {}

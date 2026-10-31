@@ -77,6 +77,82 @@ public final class WreckAppearance {
   if(!Float.isFinite(body)||!Float.isFinite(wheels))return 0;
   return Math.clamp(body-wheels,0,2);
  }
+ /**
+  * Whether a plane's hull still has its whole left wing (it was not torn off in flight): its skin
+  * reaches out as far as the model's own left tip.
+  */
+ static boolean hasLeftWing(AircraftEntity ac,McheliModel.Group hull){
+  var models=AircraftModels.peek(ac.getAcInfo());if(models==null)return false;
+  float tip=models.body().minX;if(tip>-2.6F)return false;
+  Float low;synchronized(LOW_X){low=LOW_X.get(hull);}
+  if(low==null){float x=0;var d=hull.data();for(int i=0;i<d.length;i+=8)x=Math.min(x,d[i]);low=x;synchronized(LOW_X){LOW_X.put(hull,low);}}
+  return low<=tip*.9F;
+ }
+ private static final Map<McheliModel.Group,Float> LOW_X=new WeakHashMap<>();
+ /** Ticks the sections take to tear apart once the hull hits the ground. */
+ static final int BREAK=10;
+ /**
+  * How far a section has torn away from the hull at {@code open} (0 joined, 1 come to rest), in the hull's
+  * model space. The forward fuselage is shoved forward, slewed, rolled and nose-down into the ground;
+  * the outer left wing is pulled out at the root and swept back about its trailing edge, then drops
+  * to the belly; a flying wing's centre body comes apart in two. Angles come from the wreck's seed, so every crash breaks a little differently.
+  */
+ public static Matrix4f breakPose(WreckMesh.Section s,int seed,float open){
+  var r=new java.util.Random(seed*31L+s.kind()*7919L);float e=Math.clamp(open,0,1);e=e*e*(3-2*e);
+  var h=s.hinge();var m=new Matrix4f();
+  if(s.kind()==WreckMesh.NOSE){
+   float yaw=(8+r.nextFloat()*16)*(r.nextBoolean()?1:-1),roll=(5+r.nextFloat()*14)*(r.nextBoolean()?1:-1),pitch=3+r.nextFloat()*5,gap=.35F+r.nextFloat()*.55F;
+   m.translate(h.x,h.y,h.z+gap*e).rotateY((float)Math.toRadians(yaw*e)).rotateZ((float)Math.toRadians(roll*e)).rotateX((float)Math.toRadians(pitch*e));
+  }else if(s.kind()==WreckMesh.SPLIT){
+   // The right half of a flying wing's centre body: shoved out and back, swung back about its leading
+   // edge, and its outer edge buckled up off the ground.
+   float swing=7+r.nextFloat()*9,buckle=2+r.nextFloat()*4,gap=.5F+r.nextFloat()*.5F,back=.4F+r.nextFloat()*.8F;
+   m.translate(h.x+gap*e,h.y,h.z-back*e).rotateY((float)Math.toRadians(swing*e)).rotateZ((float)Math.toRadians(buckle*e));
+  }else{
+   float sweep=12+r.nextFloat()*18,tilt=(r.nextFloat()-.5F)*4,gap=.3F+r.nextFloat()*.5F;
+   m.translate(h.x-gap*e,h.y-s.drop()*e,h.z).rotateY((float)Math.toRadians(-sweep*e)).rotateZ((float)Math.toRadians(tilt*e));
+  }
+  return m.translate(-h.x,-h.y,-h.z);
+ }
+ /** Draws the sections a crashed hull broke into, each burnt, glowing and closed like the hull itself. */
+ private static void sections(AircraftEntity ac,AircraftRenderState render,List<AircraftPartPoses.Draw> draws,WreckMesh.Parts mesh,Matrix4f bodyPose,Matrix4f pose,
+         WreckScene.Scene scene,float burn,float glow,long now){
+  boolean down=scene!=null&&scene.impact!=null;
+  float open=!down?0:scene.late?1:Math.clamp((now-scene.impactTick)/(float)BREAK,0,1);
+  int seed=scene!=null?scene.seed:ac.getUUID().hashCode();
+  if(open>0&&!render.thermal){
+   VehicleDetailLayers.require(render,pose,render.texture,List.of(mesh.lining()),PlaneAirframeParts.LINING);
+   VehicleDetailLayers.require(render,pose,PlaneAirframeParts.METAL,List.of(mesh.cap()),PlaneAirframeParts.CAP);
+  }
+  float size=scene!=null&&scene.size()>1?scene.size():Math.max(4,ac.getBbWidth());
+  for(var s:mesh.sections()){
+   var moved=breakPose(s,seed,open);var at=new Matrix4f(pose).mul(moved);
+   draws.add(new AircraftPartPoses.Draw(at,List.of(s.shape())));
+   if(render.thermal)continue;
+   VehicleDetailLayers.add(render,at,render.texture,List.of(s.paint()),(int)(0x70*(1.15F-.55F*burn))<<24|0x7E7769);
+   if(open>0){
+    VehicleDetailLayers.require(render,at,render.texture,List.of(s.lining()),PlaneAirframeParts.LINING);
+    VehicleDetailLayers.require(render,at,PlaneAirframeParts.METAL,List.of(s.cap()),PlaneAirframeParts.CAP);
+   }
+   // The same fire as the hull, seen from the section where it now lies.
+   var back=new Matrix4f(moved).invert();var local=new ArrayList<org.joml.Vector3f>();
+   for(var p:sources(ac,bodyPose,mesh,true))local.add(back.transformPosition(new org.joml.Vector3f(p)));
+   var fire=WreckBurn.stable(s.soot(),local,WreckBurn.radius(size));
+   if(fire==null)VehicleDetailLayers.require(render,at,CHAR,List.of(s.soot()),WreckBurn.waiting(charColor(burn)));
+   else{
+    int bare=(int)(235*blister(burn));
+    if(bare>0){
+     VehicleDetailLayers.require(render,at,BARE,fire.metal().group(),bare<<24|BARE_TINT,fire.metal().weight());
+     VehicleDetailLayers.require(render,at,BARE,fire.heat().group(),(int)(bare*.7F)<<24|HEAT_TINT,fire.heat().weight());
+    }
+    VehicleDetailLayers.require(render,at,CHAR,fire.charred().group(),charColor(burn),fire.charred().weight());
+   }
+   if(glow>0){
+    int tiers=Math.min(s.embers().size(),(int)Math.ceil(glow*s.embers().size()));
+    for(int i=0;i<tiers;i++)if(s.embers().get(i).vertexCount()>0)render.emissiveDraws.add(new AircraftRenderState.EmissiveDraw(EMBERS,new Matrix4f(at),List.of(s.embers().get(i))));
+   }
+  }
+ }
  public static boolean removable(String n){return n.matches("\\$(canopy|hatch|panel|enginecover|cover)[0-9]*")||n.equals("$track_roller0");}
  public static int removed(AircraftEntity ac){var s=STATES.get(ac);return s==null?0:s.removed;}
  public static void clear(){STATES.clear();world.clear();WreckMesh.clear();WreckBurn.clear();}
@@ -108,7 +184,8 @@ public final class WreckAppearance {
    // A crashed plane's gear is sheared off on impact and lies in the debris field instead.
    if(plane&&down&&name.startsWith("$lg")){gear.add(new AircraftPartPoses.Draw(new Matrix4f(draw.pose()),List.of(group)));continue;}
    boolean supported=name.equals("$body")||name.equals("$weapon0")||name.startsWith("$lg")||removable(name)||heli&&name.equals("$weapon1");
-   var mesh=supported?WreckMesh.get(group,plane&&name.equals("$body")):null;
+   boolean planeBody=plane&&name.equals("$body");
+   var mesh=supported?WreckMesh.get(group,planeBody,planeBody&&hasLeftWing(ac,group)):null;
    if(mesh==null){draws.add(new AircraftPartPoses.Draw(new Matrix4f(root).mul(draw.pose()),List.of(group)));continue;}
    boolean detach=removed<2&&(!io.github.mcheliceport.client.particle.WreckSequenceEffects.enabled()||!name.startsWith("$enginecover")&&!name.startsWith("$cover"))&&(removable(group.name())||heli&&group.name().equals("$weapon1")&&group.vertexCount()<=1200);
    if(detach){
@@ -149,6 +226,7 @@ public final class WreckAppearance {
     int tiers=Math.min(mesh.embers().size(),(int)Math.ceil(glow*mesh.embers().size()));
     for(int i=0;i<tiers;i++)if(mesh.embers().get(i).vertexCount()>0)render.emissiveDraws.add(new AircraftRenderState.EmissiveDraw(EMBERS,new Matrix4f(pose),List.of(mesh.embers().get(i))));
    }
+   if(planeBody&&!mesh.sections().isEmpty())sections(ac,render,draws,mesh,draw.pose(),pose,scene,burn,glow,now);
    if(name.equals("$body")){hull=mesh;hullPose=new Matrix4f(draw.pose());}
    if(name.equals("$body")&&!render.thermal){
     var inverse=new Matrix4f(draw.pose()).invert();
