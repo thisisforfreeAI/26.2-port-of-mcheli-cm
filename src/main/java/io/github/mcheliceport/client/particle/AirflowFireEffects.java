@@ -10,6 +10,20 @@ import net.minecraft.world.phys.Vec3;
 /** No state, attachment scans or secondary emitters; births share VehicleAtmosphere admission. */
 final class AirflowFireEffects {
     private AirflowFireEffects() {}
+    static void light(ClientLevel level,AircraftEntity aircraft,java.util.List<Vec3> origins,float severity){
+        float strength=AirflowFireLook.strength(severity);
+        if(!supports(aircraft)||strength<=0)return;
+        var outlets=EngineExhaustLook.outlets(aircraft.getAcInfo(),aircraft instanceof PlaneEntity p?p.getNozzleRotation():0);
+        if(aircraft instanceof PlaneEntity&&outlets.isEmpty())return;
+        for(int i=0;i<Math.min(2,origins.size());i++){
+            Vec3 at=origins.get(i);
+            if(!outlets.isEmpty())at=at.add(io.github.mcheliceport.util.McheliMath.rotVec3(
+                    outlets.get(i%outlets.size()).direction(),-aircraft.getYaw(),-aircraft.getPitch(),-aircraft.getRoll()).scale(.75));
+            var block=net.minecraft.core.BlockPos.containing(at);
+            if(!level.hasChunkAt(block)||!level.getFluidState(block).isEmpty())continue;
+            io.github.mcheliceport.client.render.SceneLights.fire(level,aircraft,2+i,at.add(0,.1,0),strength*.65F,3+4*strength);
+        }
+    }
     static boolean supports(AircraftEntity aircraft) {
         return WreckEffects.refined()&&(aircraft instanceof PlaneEntity||aircraft instanceof HeliEntity);
     }
