@@ -96,7 +96,10 @@ public final class LoosePanels {
         var owner=piece.owner;var m=piece.motion;
         var rate=DebrisMotion.angularVelocity(DebrisMotion.attitude(owner.yRotO,owner.xRotO,owner.prevRoll),
                 DebrisMotion.attitude(owner.getYaw(),owner.getPitch(),owner.getRoll()));
-        m.velocity=m.velocity.add(new Vec3(rate.x,rate.y,rate.z).cross(m.position.subtract(owner.position())));m.inherit(rate);
+        m.velocity=m.velocity.add(new Vec3(rate.x,rate.y,rate.z).cross(m.position.subtract(owner.position())));
+        if(owner.isDestroyed()&&io.github.mcheliceport.client.particle.WreckSequenceEffects.enabled())
+            rate.add(io.github.mcheliceport.client.particle.DestructionLook.panelSpin(piece.seed,piece.span));
+        m.inherit(rate);
     }
     public static int airframePieces(AircraftEntity owner){return (int)PIECES.stream().filter(p->p.owner==owner&&p.airframeBit!=0).count();}
     public static boolean skinPiece(AircraftEntity owner,Identifier texture,McheliModel.Group group,

@@ -132,7 +132,7 @@ public final class WreckDebrisField {
         var n=new Vec3(hit.getDirection().getStepX(),hit.getDirection().getStepY(),hit.getDirection().getStepZ());
         Vec3 before=m.velocity;var contact=m.contact(hit.getLocation(),n,water);
         if(contact==DebrisMotion.Event.BOUNCE||contact==DebrisMotion.Event.LAND)
-            io.github.mcheliceport.client.particle.DebrisImpactEffects.strike(world,hit.getLocation(),before,m.impact,.6F,cursor);
+            io.github.mcheliceport.client.particle.DebrisImpactEffects.strike(world,hit.getLocation(),before,m.impact,m.span(),cursor);
         else if(contact==DebrisMotion.Event.SPLASH)io.github.mcheliceport.client.particle.VehicleWaterEffects.splash(world,hit.getLocation(),m.impact);
     }
     @SubscribeEvent public static void submit(SubmitCustomGeometryEvent event){

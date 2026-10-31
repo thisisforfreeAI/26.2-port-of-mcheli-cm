@@ -49,7 +49,7 @@ public final class VehicleAtmosphere {
 
     public static void clear() {
         STATES.values().forEach(State::stop); STATES.clear(); world = null;
-        lastTick = Long.MIN_VALUE;farContrails=0; CookoffEffects.clear(); WreckSequenceEffects.clear();
+        lastTick = Long.MIN_VALUE;farContrails=0; CookoffEffects.clear(); WreckSequenceEffects.clear();DebrisImpactEffects.clear();
     }
     public static int stateCount() { return STATES.size(); }
     public static int wingVaporMask(AircraftEntity aircraft){var s=STATES.get(aircraft);return s==null?0:s.vaporMask;}

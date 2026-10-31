@@ -32,6 +32,12 @@ public final class PanelInteriors {
         VehicleDetailLayers.add(render,pose,DARK,List.of(mesh.dark()),0xFF25292C);
         if(VehicleDetailLayers.add(render,pose,METAL,List.of(mesh.metal()),0xFFB8B0A0))renderedVertices=mesh.dark().vertexCount()+mesh.metal().vertexCount();
     }
+    public static void add(AircraftRenderState render,Matrix4f pose,McheliModel.Group panel,
+            io.github.mcheliceport.entity.aircraft.AircraftEntity aircraft){
+        add(render,pose,panel);var mesh=get(panel);
+        // A shattered cockpit is not an engine bay: only supported covers/hatches get reflected fire.
+        if(mesh!=null&&!panel.name().startsWith("$canopy"))InteriorFirelight.add(aircraft,render,pose,mesh.metal());
+    }
     private static void addCables(AircraftRenderState render,Matrix4f pose,McheliModel.Group panel){
         // Bounds scan occurs on the loader through the insert; the rails give a cached anchor.
         var mesh=get(panel);if(mesh==null||mesh.metal().vertexCount()==0)return;

@@ -1,0 +1,535 @@
+{
+  "feature": "M8 dramatic vehicle destruction",
+  "baselineSource": "67f76831d02f8ea3dca5430a497abd2e6b4d434c",
+  "target": {
+    "fps": 60,
+    "resolution": [
+      1920,
+      1080
+    ],
+    "gpu": "RTX 3060 8 GB",
+    "cpu": "Ryzen 7 7800X3D",
+    "hardwareVerified": false
+  },
+  "localRuntime": {
+    "java": 25,
+    "minecraft": "26.2",
+    "renderer": "Mesa software: lavapipe / llvmpipe",
+    "captureResolution": [
+      1280,
+      720
+    ],
+    "optionalDependenciesExcludedLocally": true,
+    "distributedLocalJar": false
+  },
+  "unitTests": {
+    "passed": 565,
+    "failed": 0
+  },
+  "requiredLocalGameTests": {
+    "passed": 297,
+    "failed": 0
+  },
+  "limits": {
+    "ruptureEventsPerTick": 2,
+    "impactEffectGroupsPerTick": 4,
+    "contactSoundsPerTick": 2,
+    "settlingSurgesPerTick": 2,
+    "interiorVerticesPerFrame": {
+      "low": 768,
+      "balanced": 1536,
+      "high": 3072
+    },
+    "singleInteriorVertices": 768,
+    "maximumAdditionalSagBlocks": 0.1,
+    "extraTumbleMaximumSpan": 3,
+    "existingParticleLimitsRaised": false
+  },
+  "native": [
+    {
+      "backend": "vulkan",
+      "scenesPassed": 8,
+      "checkpoints": [
+        {
+          "scene": "t90",
+          "stage": "burning",
+          "primary": 2,
+          "secondary": 5,
+          "interior_peak": 252,
+          "emitted_peak": 13,
+          "lights_peak": 3,
+          "contacts": 5,
+          "surges": 1,
+          "pieces": 4,
+          "field": 0
+        },
+        {
+          "scene": "t90",
+          "stage": "repaired",
+          "primary": 2,
+          "secondary": 7,
+          "interior_peak": 252,
+          "emitted_peak": 13,
+          "lights_peak": 3,
+          "contacts": 5,
+          "surges": 1,
+          "pieces": 0,
+          "field": 0
+        },
+        {
+          "scene": "ah64",
+          "stage": "burning",
+          "primary": 2,
+          "secondary": 4,
+          "interior_peak": 144,
+          "emitted_peak": 13,
+          "lights_peak": 4,
+          "contacts": 2,
+          "surges": 1,
+          "pieces": 2,
+          "field": 0
+        },
+        {
+          "scene": "ah64",
+          "stage": "repaired",
+          "primary": 2,
+          "secondary": 6,
+          "interior_peak": 144,
+          "emitted_peak": 13,
+          "lights_peak": 4,
+          "contacts": 2,
+          "surges": 1,
+          "pieces": 0,
+          "field": 0
+        },
+        {
+          "scene": "f35",
+          "stage": "burning",
+          "primary": 2,
+          "secondary": 4,
+          "interior_peak": 468,
+          "emitted_peak": 16,
+          "lights_peak": 5,
+          "contacts": 24,
+          "surges": 1,
+          "pieces": 4,
+          "field": 9
+        },
+        {
+          "scene": "f35",
+          "stage": "repaired",
+          "primary": 2,
+          "secondary": 6,
+          "interior_peak": 468,
+          "emitted_peak": 16,
+          "lights_peak": 5,
+          "contacts": 24,
+          "surges": 1,
+          "pieces": 0,
+          "field": 0
+        },
+        {
+          "scene": "old-wreck",
+          "stage": "burning",
+          "primary": 0,
+          "secondary": 0,
+          "interior_peak": 0,
+          "emitted_peak": 1,
+          "lights_peak": 0,
+          "contacts": 0,
+          "surges": 0,
+          "pieces": 0,
+          "field": 0
+        },
+        {
+          "scene": "old-wreck",
+          "stage": "repaired",
+          "primary": 0,
+          "secondary": 0,
+          "interior_peak": 0,
+          "emitted_peak": 1,
+          "lights_peak": 0,
+          "contacts": 0,
+          "surges": 0,
+          "pieces": 0,
+          "field": 0
+        },
+        {
+          "scene": "disabled",
+          "stage": "burning",
+          "primary": 0,
+          "secondary": 0,
+          "interior_peak": 0,
+          "emitted_peak": 12,
+          "lights_peak": 2,
+          "contacts": 1,
+          "surges": 0,
+          "pieces": 1,
+          "field": 0
+        },
+        {
+          "scene": "disabled",
+          "stage": "repaired",
+          "primary": 0,
+          "secondary": 0,
+          "interior_peak": 0,
+          "emitted_peak": 12,
+          "lights_peak": 2,
+          "contacts": 1,
+          "surges": 0,
+          "pieces": 0,
+          "field": 0
+        },
+        {
+          "scene": "shared-load",
+          "stage": "burning",
+          "primary": 16,
+          "secondary": 52,
+          "interior_peak": 1512,
+          "emitted_peak": 16,
+          "lights_peak": 22,
+          "contacts": 19,
+          "surges": 16,
+          "pieces": 7,
+          "field": 0
+        },
+        {
+          "scene": "shared-load",
+          "stage": "repaired",
+          "primary": 16,
+          "secondary": 79,
+          "interior_peak": 1512,
+          "emitted_peak": 16,
+          "lights_peak": 22,
+          "contacts": 19,
+          "surges": 16,
+          "pieces": 0,
+          "field": 0
+        },
+        {
+          "scene": "classic",
+          "stage": "burning",
+          "primary": 0,
+          "secondary": 0,
+          "interior_peak": 0,
+          "emitted_peak": 0,
+          "lights_peak": 0,
+          "contacts": 0,
+          "surges": 0,
+          "pieces": 0,
+          "field": 0
+        },
+        {
+          "scene": "classic",
+          "stage": "repaired",
+          "primary": 0,
+          "secondary": 0,
+          "interior_peak": 0,
+          "emitted_peak": 0,
+          "lights_peak": 0,
+          "contacts": 0,
+          "surges": 0,
+          "pieces": 0,
+          "field": 0
+        },
+        {
+          "scene": "airborne",
+          "stage": "burning",
+          "primary": 2,
+          "secondary": 4,
+          "interior_peak": 468,
+          "emitted_peak": 16,
+          "lights_peak": 11,
+          "contacts": 7,
+          "surges": 0,
+          "pieces": 3,
+          "field": 0
+        },
+        {
+          "scene": "airborne",
+          "stage": "repaired",
+          "primary": 2,
+          "secondary": 6,
+          "interior_peak": 468,
+          "emitted_peak": 16,
+          "lights_peak": 11,
+          "contacts": 11,
+          "surges": 0,
+          "pieces": 0,
+          "field": 0
+        }
+      ]
+    },
+    {
+      "backend": "opengl",
+      "scenesPassed": 8,
+      "checkpoints": [
+        {
+          "scene": "t90",
+          "stage": "burning",
+          "primary": 2,
+          "secondary": 5,
+          "interior_peak": 252,
+          "emitted_peak": 15,
+          "lights_peak": 3,
+          "contacts": 5,
+          "surges": 1,
+          "pieces": 4,
+          "field": 0
+        },
+        {
+          "scene": "t90",
+          "stage": "repaired",
+          "primary": 2,
+          "secondary": 7,
+          "interior_peak": 252,
+          "emitted_peak": 15,
+          "lights_peak": 3,
+          "contacts": 5,
+          "surges": 1,
+          "pieces": 0,
+          "field": 0
+        },
+        {
+          "scene": "ah64",
+          "stage": "burning",
+          "primary": 2,
+          "secondary": 4,
+          "interior_peak": 144,
+          "emitted_peak": 16,
+          "lights_peak": 4,
+          "contacts": 3,
+          "surges": 1,
+          "pieces": 2,
+          "field": 0
+        },
+        {
+          "scene": "ah64",
+          "stage": "repaired",
+          "primary": 2,
+          "secondary": 6,
+          "interior_peak": 144,
+          "emitted_peak": 16,
+          "lights_peak": 4,
+          "contacts": 3,
+          "surges": 1,
+          "pieces": 0,
+          "field": 0
+        },
+        {
+          "scene": "f35",
+          "stage": "burning",
+          "primary": 2,
+          "secondary": 4,
+          "interior_peak": 468,
+          "emitted_peak": 16,
+          "lights_peak": 5,
+          "contacts": 26,
+          "surges": 1,
+          "pieces": 3,
+          "field": 9
+        },
+        {
+          "scene": "f35",
+          "stage": "repaired",
+          "primary": 2,
+          "secondary": 6,
+          "interior_peak": 468,
+          "emitted_peak": 16,
+          "lights_peak": 5,
+          "contacts": 26,
+          "surges": 1,
+          "pieces": 0,
+          "field": 0
+        },
+        {
+          "scene": "old-wreck",
+          "stage": "burning",
+          "primary": 0,
+          "secondary": 0,
+          "interior_peak": 0,
+          "emitted_peak": 1,
+          "lights_peak": 0,
+          "contacts": 0,
+          "surges": 0,
+          "pieces": 0,
+          "field": 0
+        },
+        {
+          "scene": "old-wreck",
+          "stage": "repaired",
+          "primary": 0,
+          "secondary": 0,
+          "interior_peak": 0,
+          "emitted_peak": 1,
+          "lights_peak": 0,
+          "contacts": 0,
+          "surges": 0,
+          "pieces": 0,
+          "field": 0
+        },
+        {
+          "scene": "disabled",
+          "stage": "burning",
+          "primary": 0,
+          "secondary": 0,
+          "interior_peak": 0,
+          "emitted_peak": 10,
+          "lights_peak": 2,
+          "contacts": 1,
+          "surges": 0,
+          "pieces": 1,
+          "field": 0
+        },
+        {
+          "scene": "disabled",
+          "stage": "repaired",
+          "primary": 0,
+          "secondary": 0,
+          "interior_peak": 0,
+          "emitted_peak": 10,
+          "lights_peak": 2,
+          "contacts": 1,
+          "surges": 0,
+          "pieces": 0,
+          "field": 0
+        },
+        {
+          "scene": "shared-load",
+          "stage": "burning",
+          "primary": 22,
+          "secondary": 47,
+          "interior_peak": 1512,
+          "emitted_peak": 16,
+          "lights_peak": 25,
+          "contacts": 24,
+          "surges": 16,
+          "pieces": 7,
+          "field": 0
+        },
+        {
+          "scene": "shared-load",
+          "stage": "repaired",
+          "primary": 22,
+          "secondary": 74,
+          "interior_peak": 1512,
+          "emitted_peak": 16,
+          "lights_peak": 25,
+          "contacts": 24,
+          "surges": 16,
+          "pieces": 0,
+          "field": 0
+        },
+        {
+          "scene": "classic",
+          "stage": "burning",
+          "primary": 0,
+          "secondary": 0,
+          "interior_peak": 0,
+          "emitted_peak": 0,
+          "lights_peak": 0,
+          "contacts": 0,
+          "surges": 0,
+          "pieces": 0,
+          "field": 0
+        },
+        {
+          "scene": "classic",
+          "stage": "repaired",
+          "primary": 0,
+          "secondary": 0,
+          "interior_peak": 0,
+          "emitted_peak": 0,
+          "lights_peak": 0,
+          "contacts": 0,
+          "surges": 0,
+          "pieces": 0,
+          "field": 0
+        },
+        {
+          "scene": "airborne",
+          "stage": "burning",
+          "primary": 2,
+          "secondary": 4,
+          "interior_peak": 468,
+          "emitted_peak": 16,
+          "lights_peak": 11,
+          "contacts": 9,
+          "surges": 0,
+          "pieces": 3,
+          "field": 0
+        },
+        {
+          "scene": "airborne",
+          "stage": "repaired",
+          "primary": 2,
+          "secondary": 6,
+          "interior_peak": 468,
+          "emitted_peak": 16,
+          "lights_peak": 11,
+          "contacts": 12,
+          "surges": 0,
+          "pieces": 0,
+          "field": 0
+        }
+      ]
+    }
+  ],
+  "fixture": "Held client HP/wreck states using stock models, production emitters and real production debris contacts. Not server crash captures. T90 seed deliberately qualifies for existing rare turret ejection.",
+  "screenshots": [
+    {
+      "path": "docs/screens/m8-dramatic-destruction/m8-dramatic-ah64-cookoff.png",
+      "sha256": "5dfaf3d601b5b0430fd19d52292abc678b7549644010a5c555a0b652a9ccd90c"
+    },
+    {
+      "path": "docs/screens/m8-dramatic-destruction/m8-dramatic-ah64-interior.png",
+      "sha256": "db33a5a71cf484b37253029b23db0a025bcbccc66d6713eb2e7eb71a32067a22"
+    },
+    {
+      "path": "docs/screens/m8-dramatic-destruction/m8-dramatic-ah64-rupture.png",
+      "sha256": "1f66f785cdfb8c0b7975f9b58512a3d9798a3e04fd6e350f35b5e6aa1efddac1"
+    },
+    {
+      "path": "docs/screens/m8-dramatic-destruction/m8-dramatic-ah64-settling.png",
+      "sha256": "a5e5072b603e81c1e6eb37ba6335a5a694e6737c1dd9dda27faff20e0a4443c6"
+    },
+    {
+      "path": "docs/screens/m8-dramatic-destruction/m8-dramatic-f35-cookoff.png",
+      "sha256": "66acd0da7a8523bc1d783b2bd2cbd3ef5fdef77cba1e523e1c2d63b72bb04b9a"
+    },
+    {
+      "path": "docs/screens/m8-dramatic-destruction/m8-dramatic-f35-interior.png",
+      "sha256": "c4623b43c8ec8486763e811175e2fdb4d73eaa07f6a2ec5288a3199ad39af815"
+    },
+    {
+      "path": "docs/screens/m8-dramatic-destruction/m8-dramatic-f35-rupture.png",
+      "sha256": "28bbf9d592660e88d4320ef0d2a79cf61d4dc391f20f7a84fb107e9170e86f31"
+    },
+    {
+      "path": "docs/screens/m8-dramatic-destruction/m8-dramatic-f35-settling.png",
+      "sha256": "b65bb4dc24a22c2b0bd0a29709c43c44cde6d1c730a6162d6c7f542a004c9004"
+    },
+    {
+      "path": "docs/screens/m8-dramatic-destruction/m8-dramatic-t90-cookoff.png",
+      "sha256": "3761d9625a166587c423166029b5569feb98ea59ee84c495731f301d09ae1464"
+    },
+    {
+      "path": "docs/screens/m8-dramatic-destruction/m8-dramatic-t90-interior.png",
+      "sha256": "e27de5bc167b7b67e09ed7d0341bf0b23a23dd596c78e8843c649477f9253803"
+    },
+    {
+      "path": "docs/screens/m8-dramatic-destruction/m8-dramatic-t90-rupture.png",
+      "sha256": "913c0ace94f6544c78ce620f62d7438e277b0593d9ba5af0a5a90ba7b2d6ce2e"
+    },
+    {
+      "path": "docs/screens/m8-dramatic-destruction/m8-dramatic-t90-settling.png",
+      "sha256": "b3567358acbf5e7c391a7c56a50d5e38e1b1f2568203f77887d6be1c2e44699a"
+    }
+  ],
+  "screenshotEditing": false,
+  "limitations": [
+    "Software rendering does not measure target-PC FPS.",
+    "Busy scenes may omit short opening bursts under existing shared admission.",
+    "This reuses existing geometry and artwork; no new model-specific destroyed hull assets."
+  ]
+}
