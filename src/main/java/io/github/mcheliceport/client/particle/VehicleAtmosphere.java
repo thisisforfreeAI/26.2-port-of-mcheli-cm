@@ -119,8 +119,12 @@ public final class VehicleAtmosphere {
                 }
                 if (state.engine.startup() == 0) state.stop();
             }
-            if (emitted >= EngineExhaustLook.cap(ClientConfig.get(ClientConfig.EFFECT_BUDGET))) continue;
             List<Vec3> origins = origins(aircraft);
+            if(ClientConfig.get(ClientConfig.VEHICLE_DAMAGE_DETAILS)){
+                if(aircraft.isDestroyed())WreckEffects.light(level,wreckOrigins(aircraft),state.cooling,aircraft,now);
+                else AirflowFireEffects.light(level,aircraft,origins,VehicleAtmosphereLook.damage(aircraft.getHP(),aircraft.getMaxHP()));
+            }
+            if (emitted >= EngineExhaustLook.cap(ClientConfig.get(ClientConfig.EFFECT_BUDGET))) continue;
             if (ClientConfig.get(ClientConfig.ENGINE_STARTUP_EFFECTS) && powered && state.engine.heat() > 0
                     && Math.floorMod(now + aircraft.getId(), 2) == 0) {
                 var outlets = EngineExhaustLook.outlets(aircraft.getAcInfo(), aircraft instanceof PlaneEntity p ? p.getNozzleRotation() : 0);

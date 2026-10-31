@@ -10,6 +10,7 @@ final class WreckFlameParticle extends McheliParticle {
     WreckFlameParticle(ClientLevel level,double x,double y,double z,float radius,float opacity){
         super(level,x,y,z,0,.035,0,BlastCloudParticle.TEXTURE);
         this.radius=radius;this.opacity=opacity;lifetime=24;hasPhysics=false;
+        io.github.mcheliceport.client.render.SceneLights.flame(level,new net.minecraft.world.phys.Vec3(x,y,z),radius,opacity);
         roll=(random.nextFloat()-.5F)*.35F;oRoll=roll;
     }
     @Override public void tick(){

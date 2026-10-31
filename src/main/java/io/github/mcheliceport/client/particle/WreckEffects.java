@@ -11,6 +11,18 @@ final class WreckEffects {
     static boolean refined(){return io.github.mcheliceport.config.EffectQuality.enhanced()
             && io.github.mcheliceport.config.ClientConfig.get(io.github.mcheliceport.config.ClientConfig.EFFECT_STYLE)
             ==io.github.mcheliceport.config.ClientConfig.EffectStyle.POLISHED;}
+    /** Lighting is refreshed independently of particle admission and its per-tick cap. */
+    static void light(ClientLevel level, List<Vec3> origins, WreckCoolingLook cooling,
+            io.github.mcheliceport.entity.aircraft.AircraftEntity aircraft, long tick) {
+        WreckFuelFire.light(level, aircraft, cooling, tick);
+        float fire=cooling.fire();
+        if(fire<=0||origins.isEmpty())return;
+        var sequence=WreckSequenceEffects.get(aircraft);
+        Vec3 heart=Vec3.ZERO;
+        if(sequence!=null&&sequence.opening!=null&&(sequence.cover||sequence.tail))heart=sequence.opening;
+        else {for(Vec3 o:origins)heart=heart.add(o);heart=heart.scale(1.0/origins.size());}
+        io.github.mcheliceport.client.render.SceneLights.fire(level,aircraft,heart,fire);
+    }
     static void emit(ClientLevel level, List<Vec3> origins, WreckCoolingLook cooling, io.github.mcheliceport.entity.aircraft.AircraftEntity aircraft, long tick) {
         var sequence=WreckSequenceEffects.get(aircraft);
         if(sequence!=null&&sequence.opening!=null&&(sequence.cover||sequence.tail))origins=List.of(sequence.opening);
@@ -27,8 +39,6 @@ final class WreckEffects {
         if(sequence!=null&&sequence.turret&&sequence.ring!=null)ammunition=sequence.ring;
         CookoffEffects.emit(level,aircraft,cooling,ammunition);
         int pressure=1+EffectPerformance.pressure();
-        if(fire>0){Vec3 heart=Vec3.ZERO;for(Vec3 o:origins)heart=heart.add(o);
-            io.github.mcheliceport.client.render.SceneLights.fire(level,aircraft,heart.scale(1.0/origins.size()),fire);}
         if (fire>0 && Math.floorMod(tick+id,5*pressure)==0) {
             float radius=.4F+.5F*fire;
             if (VehicleAtmosphere.admit(level,pos,radius*1.35F)) {

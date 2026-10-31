@@ -20,11 +20,11 @@ public final class SceneLightLook {
         return rise * rest * (float) Math.sqrt(rest);
     }
 
-    /** Fires flicker by a quarter of their strength, never to darkness. */
+    /** Slow, restrained fire variation, never flickering to darkness. */
     public static float flicker(float time, int seed) {
         if (!Float.isFinite(time)) return 1;
         double t = time + (seed & 1023) * 0.37;
-        return (float) (0.82 + 0.1 * Math.sin(t * 1.7) * Math.sin(t * 2.9 + 1.3) + 0.08 * Math.sin(t * 7.3));
+        return (float) (0.86 + 0.07 * Math.sin(t * 0.21) * Math.sin(t * 0.39 + 1.3) + 0.04 * Math.sin(t * 0.67));
     }
 
     /** How much a light matters to this frame: brighter, wider and nearer lights rank first. */
@@ -51,6 +51,17 @@ public final class SceneLightLook {
     /** Light radius in blocks of a burning wreck, {@code fire} from 0 to 1. */
     public static float fireRadius(float fire) {
         return Float.isFinite(fire) && fire > 0 ? 3 + 7 * Math.min(1, fire) : 0;
+    }
+
+    /** A shrinking fire dims continuously; smoke and a cold wreck emit no light. */
+    public static float fireIntensity(float fire) {
+        return Float.isFinite(fire) && fire > 0 ? (float) Math.sqrt(Math.min(1, fire)) : 0;
+    }
+
+    /** Reach covers the burning pool as well as a short border of warm reflected light. */
+    public static float poolRadius(float radius, float fire) {
+        return Float.isFinite(radius) && radius > 0 && fireIntensity(fire) > 0
+                ? Math.clamp(radius + 3 + 3 * fireIntensity(fire), 4, 14) : 0;
     }
 
     /**

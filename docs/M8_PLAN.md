@@ -1,5 +1,8 @@
 # M8 plan: effects polish for Vulkan
 
+[Fire lighting](M8_FIRE_LIGHTING.md): warm light from fuel pools, damaged engines and detached
+fires, with lifetime-matched fades and cached terrain glow independent of particle admission.
+
 Current requested realism implementation: complete; native software validation is recorded in
 [M8_COMPLETION.md](M8_COMPLETION.md). Target-PC 60 FPS acceptance remains open.
 
