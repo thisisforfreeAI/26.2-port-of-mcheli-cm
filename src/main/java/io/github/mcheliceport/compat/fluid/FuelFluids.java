@@ -8,8 +8,6 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.material.FlowingFluid;
 import net.minecraft.world.level.material.Fluid;
-import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.transfer.access.ItemAccess;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -59,8 +57,7 @@ public final class FuelFluids {
 
     /** Upstream's fuel slot test: an item with a fluid capability. */
     public static boolean isFluidContainer(ItemStack stack) {
-        return !stack.isEmpty()
-                && ItemAccess.forStack(stack.copyWithCount(1)).getCapability(Capabilities.Fluid.ITEM) != null;
+        return !stack.isEmpty() && io.github.mcheliceport.platform.Platform.get().isFluidContainer(stack);
     }
 
     private static Fluid source(Fluid fluid) {

@@ -106,7 +106,7 @@ public final class FabricPlatform implements Platform {
             throw new IllegalStateException("Unknown registry " + registry.identifier());
         }
         ResourceKey<R> key = ResourceKey.create(registry, id);
-        Holder<R> holder = (Holder<R>) Registry.registerForHolder(target, key, factory.apply(id));
+        net.minecraft.core.Holder<R> holder = (net.minecraft.core.Holder<R>) Registry.registerForHolder(target, key, factory.apply(id));
         return new RegEntry<>(key, () -> holder);
     }
 
@@ -153,6 +153,77 @@ public final class FabricPlatform implements Platform {
         } finally {
             buf.release();
         }
+    }
+
+    @Override
+    public net.minecraft.world.item.CreativeModeTab.Builder creativeTabBuilder(Identifier after) {
+        return net.fabricmc.fabric.api.creativetab.v1.FabricCreativeModeTab.builder();
+    }
+
+    @Override
+    public net.minecraft.server.packs.repository.Pack.Metadata hiddenPackMetadata(Component title) {
+        return new net.minecraft.server.packs.repository.Pack.Metadata(title,
+                net.minecraft.server.packs.repository.PackCompatibility.COMPATIBLE,
+                net.minecraft.world.flag.FeatureFlagSet.of(), java.util.List.of());
+    }
+
+    // ---- fluid and energy items ----
+
+    /** Fabric's transfer API counts droplets: 81,000 a bucket, 81 a millibucket. */
+    private static final long DROPLETS_PER_MB = net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants.BUCKET / 1000;
+
+    @Override
+    public boolean isFluidContainer(net.minecraft.world.item.ItemStack stack) {
+        return !stack.isEmpty() && net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage.ITEM.find(stack,
+                net.fabricmc.fabric.api.transfer.v1.context.ContainerItemContext.withConstant(stack.copyWithCount(1)))
+                != null;
+    }
+
+    @Override
+    public @Nullable Drained drainContainer(net.minecraft.world.item.ItemStack input,
+            java.util.function.Predicate<net.minecraft.world.level.material.Fluid> accepts, int max,
+            java.util.function.Predicate<net.minecraft.world.item.ItemStack> canCommit) {
+        var slot = net.fabricmc.fabric.api.transfer.v1.item.ContainerStorage.of(
+                new net.minecraft.world.SimpleContainer(input.copyWithCount(1)), null).getSlot(0);
+        var context = net.fabricmc.fabric.api.transfer.v1.context.ContainerItemContext.ofSingleSlot(slot);
+        var storage = net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage.ITEM.find(input.copyWithCount(1), context);
+        if (storage == null || max <= 0) {
+            return null;
+        }
+        for (var view : storage.nonEmptyViews()) {
+            var fluid = view.getResource();
+            if (!fluid.componentsMatch(net.minecraft.core.component.DataComponentPatch.EMPTY)
+                    || !accepts.test(fluid.getFluid())) {
+                continue;
+            }
+            try (var transaction = net.fabricmc.fabric.api.transfer.v1.transaction.Transaction.openOuter()) {
+                long droplets = storage.extract(fluid, max * DROPLETS_PER_MB, transaction);
+                int drained = (int) (droplets / DROPLETS_PER_MB);
+                net.minecraft.world.item.ItemStack container = slot.getResource().toStack((int) slot.getAmount());
+                if (drained <= 0 || !canCommit.test(container)) {
+                    return null;
+                }
+                transaction.commit();
+                return new Drained(fluid.getFluid(), drained, container);
+            }
+        }
+        return null;
+    }
+
+    // Fabric API has no item energy API: batteries need Team Reborn Energy (not wired up yet).
+    @Override
+    public boolean isBattery(net.minecraft.world.item.ItemStack stack) {
+        return false;
+    }
+
+    @Override
+    public int extractItemEnergy(net.minecraft.world.item.ItemStack stack, int max) {
+        return 0;
+    }
+
+    @Override
+    public int insertItemEnergy(net.minecraft.world.item.ItemStack stack, int max) {
+        return 0;
     }
 
     // ---- networking ----

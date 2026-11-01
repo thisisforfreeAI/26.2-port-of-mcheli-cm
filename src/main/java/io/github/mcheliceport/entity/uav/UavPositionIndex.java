@@ -23,7 +23,7 @@ public final class UavPositionIndex extends SavedData {
     }
     public static final Codec<UavPositionIndex> CODEC = Entry.CODEC.listOf().xmap(UavPositionIndex::new, UavPositionIndex::entries);
     public static final SavedDataType<UavPositionIndex> TYPE = new SavedDataType<>(
-            Identifier.fromNamespaceAndPath("mcheli_ce_port", "uav_positions"), UavPositionIndex::new, CODEC);
+            Identifier.fromNamespaceAndPath("mcheli_ce_port", "uav_positions"), UavPositionIndex::new, CODEC, null);
     private final Map<UUID, BlockPos> positions = new HashMap<>();
     public UavPositionIndex() { }
     private UavPositionIndex(List<Entry> entries) { for (var e : entries) { positions.put(e.id(), e.pos()); } }

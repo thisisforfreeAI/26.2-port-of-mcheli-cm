@@ -96,7 +96,7 @@ public class LightWeaponItem extends Item {
     }
 
     /** Upstream {@code onEntitySwing}: the launcher is not swung. */
-    @Override
+    // NeoForge hook (IItemExtension); not called on Fabric, where the launcher swings.
     public boolean onEntitySwing(ItemStack stack, LivingEntity entity, InteractionHand hand) {
         return true;
     }

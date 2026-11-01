@@ -60,7 +60,7 @@ public final class GeneratedPack implements PackResources {
                 return this.openPrimary(info);
             }
         };
-        Pack.Metadata metadata = new Pack.Metadata(title, PackCompatibility.COMPATIBLE, FeatureFlagSet.of(), List.of(), true);
+        Pack.Metadata metadata = io.github.mcheliceport.platform.Platform.get().hiddenPackMetadata(title);
         return new Pack(location, supplier, metadata, new PackSelectionConfig(true, position, false));
     }
 
@@ -109,7 +109,7 @@ public final class GeneratedPack implements PackResources {
         return this.location;
     }
 
-    @Override
+    // NeoForge hook (hides the pack from the pack screen); not called on Fabric.
     public boolean isHidden() {
         return true;
     }

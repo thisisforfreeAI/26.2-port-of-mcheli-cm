@@ -16,7 +16,7 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.entity.PartEntity;
+import io.github.mcheliceport.platform.loader.PartEntityBase;
 import org.joml.Quaternionf;
 import org.jspecify.annotations.Nullable;
 
@@ -29,7 +29,7 @@ import org.jspecify.annotations.Nullable;
  * port uses the box that encloses the rotated one (upstream's own broad-phase box); the damage
  * factor of the box still applies.
  */
-public class AircraftHitBox extends PartEntity<AircraftEntity> {
+public class AircraftHitBox extends PartEntityBase<AircraftEntity> {
 
     private @Nullable BoundingBoxInfo info;
 

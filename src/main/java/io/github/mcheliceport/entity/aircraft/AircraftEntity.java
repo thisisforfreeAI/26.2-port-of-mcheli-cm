@@ -70,15 +70,8 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.scores.Team;
-import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.entity.IEntityWithComplexSpawn;
-import net.neoforged.neoforge.entity.PartEntity;
-import net.neoforged.neoforge.transfer.ResourceHandler;
-import net.neoforged.neoforge.transfer.access.ItemAccess;
-import net.neoforged.neoforge.transfer.fluid.FluidResource;
-import net.neoforged.neoforge.transfer.item.ItemResource;
-import net.neoforged.neoforge.transfer.item.VanillaContainerWrapper;
-import net.neoforged.neoforge.transfer.transaction.Transaction;
+import io.github.mcheliceport.platform.Platform;
+import io.github.mcheliceport.platform.loader.SpawnDataEntity;
 import org.joml.Quaternionf;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
@@ -90,8 +83,8 @@ import org.slf4j.Logger;
  * <p>Seat 0 (the pilot) rides this entity directly; every other seat is a {@link SeatEntity}
  * passenger. The content's bounding boxes become {@link AircraftHitBox} parts.
  */
-public abstract class AircraftEntity extends Entity
-        implements IEntityWithComplexSpawn, AircraftAttitude.Rotatable, AircraftPart.Host {
+public abstract class AircraftEntity extends SpawnDataEntity
+        implements AircraftAttitude.Rotatable, AircraftPart.Host {
 
     private static final Logger LOGGER = LogUtils.getLogger();
 
@@ -277,7 +270,6 @@ public abstract class AircraftEntity extends Entity
 
     private final AircraftWeapons weapons;
     private final AircraftSupport support;
-    private final AircraftFluidHandler fluidHandler = new AircraftFluidHandler(this);
     private final AircraftRacks racks = new AircraftRacks(this);
     private final AircraftRopes ropes = new AircraftRopes(this);
     private final AircraftFlares flares;
@@ -520,7 +512,7 @@ public abstract class AircraftEntity extends Entity
     }
 
     @Override
-    public void writeSpawnData(RegistryFriendlyByteBuf buffer) {
+    protected void writeExtraSpawnData(RegistryFriendlyByteBuf buffer) {
         buffer.writeUtf(this.getAircraftTypeName());
         buffer.writeVarInt(this.hitBoxes.length);
         for (AircraftHitBox box : this.hitBoxes) {
@@ -530,7 +522,7 @@ public abstract class AircraftEntity extends Entity
     }
 
     @Override
-    public void readSpawnData(RegistryFriendlyByteBuf buffer) {
+    protected void readExtraSpawnData(RegistryFriendlyByteBuf buffer) {
         String type = buffer.readUtf();
         int count = buffer.readVarInt();
         int[] ids = new int[count];
@@ -546,12 +538,7 @@ public abstract class AircraftEntity extends Entity
     }
 
     @Override
-    public boolean isMultipartEntity() {
-        return this.hitBoxes.length > 0;
-    }
-
-    @Override
-    public PartEntity<?>[] getParts() {
+    public AircraftHitBox[] partEntities() {
         return this.hitBoxes;
     }
 
@@ -2808,8 +2795,8 @@ public abstract class AircraftEntity extends Entity
      * A fuelled vehicle's tank for pipes and tanks (upstream {@code hasFluidTank}), or {@code null}
      * for an electric vehicle or one without a tank.
      */
-    public @Nullable ResourceHandler<FluidResource> fluidHandler() {
-        return this.info != null && !this.info.electric && this.getMaxFuel() > 0 ? this.fluidHandler : null;
+    public boolean hasFuelTank() {
+        return this.info != null && !this.info.electric && this.getMaxFuel() > 0;
     }
 
     /**
@@ -2818,34 +2805,24 @@ public abstract class AircraftEntity extends Entity
      * container goes to the output slot. Nothing moves while the output slot cannot take it.
      */
     private void refuelFromContainer(ItemStack input, int current, int max) {
-        ResourceHandler<ItemResource> slot = VanillaContainerWrapper.of(new SimpleContainer(input.copyWithCount(1)));
-        ResourceHandler<FluidResource> handler = ItemAccess.forHandlerIndexStrict(slot, 0)
-                .getCapability(Capabilities.Fluid.ITEM);
-        if (handler == null || this.info == null) {
+        if (this.info == null) {
             return;
         }
-        for (int i = 0; i < handler.size(); i++) {
-            FluidResource resource = handler.getResource(i);
-            String type = resource.isEmpty() ? null : FuelFluids.typeOf(this.info, resource.getFluid());
-            if (type == null || !this.canAcceptFuel(type)) {
-                continue;
-            }
-            try (Transaction transaction = Transaction.openRoot()) {
-                int drained = handler.extract(i, resource, max - current, transaction);
-                ItemStack container = slot.getResource(0).toStack(slot.getAmountAsInt(0));
-                if (drained <= 0 || !this.canPutFuelOut(container)) {
-                    return;
-                }
-                transaction.commit();
-                input.shrink(1);
-                this.putFuelOut(container);
-                this.setFuelType(type);
-                this.setFuel(current + drained);
-                this.inventory.setChanged();
-                io.github.mcheliceport.registry.ModCriteriaTriggers.trigger(io.github.mcheliceport.registry.ModCriteriaTriggers.SUPPLY_FUEL, this.getPilot());
-            }
+        AircraftInfo acInfo = this.info;
+        Platform.Drained drained = Platform.get().drainContainer(input, fluid -> {
+            String type = FuelFluids.typeOf(acInfo, fluid);
+            return type != null && this.canAcceptFuel(type);
+        }, max - current, this::canPutFuelOut);
+        if (drained == null) {
             return;
         }
+        String type = FuelFluids.typeOf(acInfo, drained.fluid());
+        input.shrink(1);
+        this.putFuelOut(drained.container());
+        this.setFuelType(type);
+        this.setFuel(current + drained.amount());
+        this.inventory.setChanged();
+        io.github.mcheliceport.registry.ModCriteriaTriggers.trigger(io.github.mcheliceport.registry.ModCriteriaTriggers.SUPPLY_FUEL, this.getPilot());
     }
 
     /** Upstream {@code manageOutputSlot}: whether the output slot can take this container. */

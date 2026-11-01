@@ -37,11 +37,10 @@ public final class ModCreativeTabs {
         for (ModTab tab : ModTab.values()) {
             Identifier after = previous;
             RegEntry<CreativeModeTab, CreativeModeTab> holder = ModRegistries.CREATIVE_MODE_TABS.register(
-                    tab.id, () -> CreativeModeTab.builder()
+                    tab.id, () -> io.github.mcheliceport.platform.Platform.get().creativeTabBuilder(after)
                             .title(Component.translatable(tab.translationKey()))
                             .icon(() -> icon(tab))
                             .displayItems((parameters, output) -> sortedItems(tab).forEach(output::accept))
-                            .withTabsBefore(after)
                             .build());
             TABS.put(tab, holder);
             previous = holder.getId();

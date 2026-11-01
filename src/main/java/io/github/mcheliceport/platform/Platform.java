@@ -74,6 +74,44 @@ public interface Platform {
     void openMenu(net.minecraft.server.level.ServerPlayer player, net.minecraft.world.MenuProvider menu,
             java.util.function.Consumer<net.minecraft.network.RegistryFriendlyByteBuf> data);
 
+    /**
+     * A creative tab builder placed after {@code after} (NeoForge orders tabs; Fabric pages them
+     * in registration order and ignores {@code after}).
+     */
+    net.minecraft.world.item.CreativeModeTab.Builder creativeTabBuilder(net.minecraft.resources.Identifier after);
+
+    /** Metadata of a pack the mod builds in memory; NeoForge hides it from the pack screen. */
+    net.minecraft.server.packs.repository.Pack.Metadata hiddenPackMetadata(net.minecraft.network.chat.Component title);
+
+    // ---- fluid and energy items ----
+
+    /** What {@link #drainContainer} took out of a container. */
+    record Drained(net.minecraft.world.level.material.Fluid fluid, int amount,
+            net.minecraft.world.item.ItemStack container) {
+    }
+
+    /** Whether the item holds or takes fluids (a fuel can, a bucket, another mod's tank item). */
+    boolean isFluidContainer(net.minecraft.world.item.ItemStack stack);
+
+    /**
+     * Drains up to {@code max} millibuckets of the first fluid {@code accepts} takes from one item
+     * of {@code input} (which is not changed). Nothing happens unless something was drained and
+     * {@code canCommit} accepts the emptied container; then the result holds the fluid, the amount
+     * and the container left over.
+     */
+    @org.jspecify.annotations.Nullable Drained drainContainer(net.minecraft.world.item.ItemStack input,
+            java.util.function.Predicate<net.minecraft.world.level.material.Fluid> accepts, int max,
+            java.util.function.Predicate<net.minecraft.world.item.ItemStack> canCommit);
+
+    /** Whether the item is a battery the loader's energy API knows. */
+    boolean isBattery(net.minecraft.world.item.ItemStack stack);
+
+    /** Takes up to {@code max} energy out of a battery stack, in place. */
+    int extractItemEnergy(net.minecraft.world.item.ItemStack stack, int max);
+
+    /** Puts up to {@code max} energy into a battery stack, in place. */
+    int insertItemEnergy(net.minecraft.world.item.ItemStack stack, int max);
+
     // ---- networking ----
 
     /** Whether {@code player}'s connection knows the payload (false for fake players and clients without the mod). */

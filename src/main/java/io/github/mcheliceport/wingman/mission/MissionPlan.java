@@ -33,7 +33,7 @@ public final class MissionPlan extends SavedData {
 
     public static final Codec<MissionPlan> CODEC = Route.CODEC.listOf().xmap(MissionPlan::new, MissionPlan::toList);
     public static final SavedDataType<MissionPlan> TYPE = new SavedDataType<>(
-            Identifier.fromNamespaceAndPath(McheliCePort.MOD_ID, "wingman_mission_routes"), MissionPlan::new, CODEC);
+            Identifier.fromNamespaceAndPath(McheliCePort.MOD_ID, "wingman_mission_routes"), MissionPlan::new, CODEC, null);
 
     private final Map<String, List<String>> routes = new LinkedHashMap<>();
 

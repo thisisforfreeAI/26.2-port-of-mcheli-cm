@@ -130,7 +130,8 @@ public class RappellingEntity extends Entity {
     }
     @Override public Vec3 getDismountLocationForPassenger(LivingEntity passenger) { return passenger.position(); }
     @Override protected boolean canAddPassenger(Entity passenger) { return passenger instanceof LivingEntity && this.getPassengers().isEmpty(); }
-    @Override public boolean shouldRiderSit() { return false; }
+    // NeoForge hook; on Fabric the rider sits.
+    public boolean shouldRiderSit() { return false; }
     @Override public boolean canCollideWith(Entity other) {
         return !(other instanceof LivingEntity || other instanceof SeatEntity || other instanceof AircraftHitBox)
                 && other != this.parent() && super.canCollideWith(other);

@@ -33,7 +33,7 @@ public class FuelBucketItem extends BucketItem {
         return false;
     }
 
-    @Override
+    // NeoForge's container-aware overload; Fabric only has the one above.
     public boolean emptyContents(@Nullable LivingEntity user, Level level, BlockPos pos,
             @Nullable BlockHitResult hitResult, @Nullable ItemStack container) {
         return false;

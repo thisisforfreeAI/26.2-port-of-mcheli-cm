@@ -21,11 +21,28 @@ def neoforgeOnly = file('neoforge-only.txt').readLines()
         .collect { it.trim() }
         .findAll { it && !it.startsWith('#') }
 
+// The shared sources, filtered, are copied next to the Fabric glue: an exclude on the source set
+// itself would also hide fabric/src/main's split classes, which share the shared paths.
+def sharedSources = tasks.register('sharedSources', Sync) {
+    from(sharedJava) {
+        exclude 'io/github/mcheliceport/platform/neoforge/**'
+        // Split classes: fabric/src/main has the Fabric versions (see their package-info).
+        exclude 'io/github/mcheliceport/platform/loader/**'
+        // NeoForge-only for now: its GameTests and data generators (the generated JSON ships to
+        // both builds), and the NTM Next bridge (NTM Next exists only for NeoForge; fabric/src/main
+        // has a stub NtmBridge).
+        exclude 'io/github/mcheliceport/gametest/**'
+        exclude 'io/github/mcheliceport/datagen/**'
+        exclude 'io/github/mcheliceport/compat/hbm/NtmBridge.java'
+        exclude 'io/github/mcheliceport/compat/hbm/VntProcessors.java'
+        exclude neoforgeOnly
+    }
+    into layout.buildDirectory.dir('sharedSources/java')
+}
+
 sourceSets.main {
     java {
-        srcDir sharedJava
-        exclude 'io/github/mcheliceport/platform/neoforge/**'
-        exclude neoforgeOnly
+        srcDir sharedSources
     }
     resources {
         srcDir sharedResources

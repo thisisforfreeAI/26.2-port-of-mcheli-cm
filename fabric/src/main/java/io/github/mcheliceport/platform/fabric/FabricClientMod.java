@@ -13,5 +13,9 @@ public final class FabricClientMod implements ClientModInitializer {
     public void onInitializeClient() {
         ConfigRegistry.INSTANCE.register(McheliCePort.MOD_ID, ModConfig.Type.CLIENT, ClientConfig.SPEC);
         FabricNetwork.registerClientReceivers();
+        net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientEntityEvents.ENTITY_LOAD.register(
+                (entity, level) -> FabricParts.add(entity));
+        net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientEntityEvents.ENTITY_UNLOAD.register(
+                (entity, level) -> FabricParts.remove(entity));
     }
 }
