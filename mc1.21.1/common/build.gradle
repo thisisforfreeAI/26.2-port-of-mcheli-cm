@@ -1,0 +1,26 @@
+// Loader-neutral code. Compiles against vanilla Minecraft only (NeoForm, Mojang names), so a
+// NeoForge or Fabric import here is a compile error. Loader code goes behind platform/Services.
+plugins {
+    id 'net.neoforged.moddev'
+}
+
+neoForge {
+    neoFormVersion = neo_form_version
+}
+
+dependencies {
+    compileOnly "org.yaml:snakeyaml:${snakeyaml_version}"
+    // Mixin annotations for the shared mixins (both loaders ship Mixin at runtime).
+    compileOnly 'org.spongepowered:mixin:0.8.5'
+    compileOnly 'io.github.llamalad7:mixinextras-common:0.4.1'
+}
+
+// common is never shipped on its own; each loader jar compiles its sources in.
+configurations {
+    commonJava { canBeResolved = false; canBeConsumed = true }
+    commonResources { canBeResolved = false; canBeConsumed = true }
+}
+artifacts {
+    commonJava sourceSets.main.java.sourceDirectories.singleFile
+    commonResources sourceSets.main.resources.sourceDirectories.singleFile
+}

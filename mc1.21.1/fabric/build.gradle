@@ -1,0 +1,52 @@
+plugins {
+    id 'fabric-loom'
+}
+
+loom {
+    // 1.21.1 Fabric runs on intermediary names; develop in Mojang names and let Loom remap the jar.
+    def aw = file('src/main/resources/mcheli_ce_port.accesswidener')
+    if (aw.exists()) accessWidenerPath = aw
+    mixin { defaultRefmapName = "${mod_id}.refmap.json" }
+    runs {
+        client { client(); configName = 'Fabric Client'; ideConfigGenerated true; runDir 'runs/client' }
+        server { server(); configName = 'Fabric Server'; ideConfigGenerated true; runDir 'runs/server' }
+    }
+}
+
+configurations {
+    commonJava { canBeResolved = true; canBeConsumed = false }
+    commonResources { canBeResolved = true; canBeConsumed = false }
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${minecraft_version}"
+    mappings loom.officialMojangMappings()
+    modImplementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_api_version}"
+
+    compileOnly project(':common')
+    commonJava project(path: ':common', configuration: 'commonJava')
+    commonResources project(path: ':common', configuration: 'commonResources')
+
+    // SnakeYAML parses the YAML content files; Fabric does not ship it, so it is nested (jar-in-jar).
+    implementation "org.yaml:snakeyaml:${snakeyaml_version}"
+    include "org.yaml:snakeyaml:${snakeyaml_version}"
+}
+
+tasks.named('compileJava', JavaCompile) {
+    dependsOn configurations.commonJava
+    source configurations.commonJava
+}
+tasks.named('sourcesJar', Jar) {
+    dependsOn configurations.commonJava
+    from configurations.commonJava
+}
+
+processResources {
+    dependsOn configurations.commonResources
+    from configurations.commonResources
+    from(sharedAssets) { into 'assets' }
+    inputs.properties modProperties
+    filesMatching('fabric.mod.json') { expand modProperties }
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}

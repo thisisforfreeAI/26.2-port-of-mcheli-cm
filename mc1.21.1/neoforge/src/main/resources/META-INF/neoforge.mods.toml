@@ -1,0 +1,33 @@
+modLoader="javafml"
+loaderVersion="[4,)"
+license="${mod_license}"
+issueTrackerURL="https://github.com/thisisforfreeAI/26.2-port-of-mcheli-cm/issues"
+
+[[mods]]
+modId="${mod_id}"
+version="${mod_version}"
+displayName="${mod_name}"
+displayURL="https://github.com/thisisforfreeAI/26.2-port-of-mcheli-cm"
+authors="EMB4, Murachiki27 (McHeli); RagexPrince683 (MCHEL-O-Extended); MrNorwood, MovBlock (McHeli CE); thisisforfreeAI (port)"
+credits="TV90 for reforged content, H. M. Shrub and Jumboreal for texturework help. McHeli Wingman began as a standalone addon and was merged into McHeli CE. Ported from McHeli CE 1.5.1 (commit cbaff7f)."
+description='''
+Adds realistic vehicles to Minecraft: an unofficial community port of McHeli: Community Edition (McHeli CE) to Minecraft 1.21.1 on NeoForge and Fabric.
+This port is not affiliated with or endorsed by Warfactory, the McHeli CE developers, or the original McHeli authors. Please report problems to this port's issue tracker, not to upstream.
+Work in progress: see mc1.21.1/README.md in the port's repository for what is ported so far.
+'''
+
+[[mixins]]
+config="mcheli_ce_port.mixins.json"
+
+[[dependencies.${mod_id}]]
+    modId="neoforge"
+    type="required"
+    versionRange="${neoforge_version_range}"
+    ordering="NONE"
+    side="BOTH"
+[[dependencies.${mod_id}]]
+    modId="minecraft"
+    type="required"
+    versionRange="${minecraft_version_range}"
+    ordering="NONE"
+    side="BOTH"

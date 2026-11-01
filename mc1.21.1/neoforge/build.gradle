@@ -1,0 +1,54 @@
+plugins {
+    id 'net.neoforged.moddev'
+}
+
+neoForge {
+    version = neoforge_version
+
+    runs {
+        client { client() }
+        server { server(); programArgument '--nogui' }
+        configureEach {
+            systemProperty 'forge.logging.markers', 'REGISTRIES'
+            logLevel = org.slf4j.event.Level.INFO
+        }
+    }
+
+    mods {
+        "${mod_id}" { sourceSet sourceSets.main }
+    }
+}
+
+configurations {
+    commonJava { canBeResolved = true; canBeConsumed = false }
+    commonResources { canBeResolved = true; canBeConsumed = false }
+}
+
+dependencies {
+    compileOnly project(':common')
+    commonJava project(path: ':common', configuration: 'commonJava')
+    commonResources project(path: ':common', configuration: 'commonResources')
+
+    // SnakeYAML parses the YAML content files; NeoForge does not ship it, so it rides in Jar-in-Jar.
+    jarJar(implementation("org.yaml:snakeyaml")) {
+        version { strictly '[2.5,3)'; prefer snakeyaml_version }
+    }
+}
+
+tasks.named('compileJava', JavaCompile) {
+    dependsOn configurations.commonJava
+    source configurations.commonJava
+}
+tasks.named('sourcesJar', Jar) {
+    dependsOn configurations.commonJava
+    from configurations.commonJava
+}
+
+processResources {
+    dependsOn configurations.commonResources
+    from configurations.commonResources
+    from(sharedAssets) { into 'assets' }
+    inputs.properties modProperties
+    filesMatching('META-INF/neoforge.mods.toml') { expand modProperties }
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
