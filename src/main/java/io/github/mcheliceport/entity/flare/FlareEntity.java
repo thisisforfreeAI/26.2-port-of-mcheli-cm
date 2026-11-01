@@ -14,7 +14,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.entity.IEntityWithComplexSpawn;
 
 /**
  * A decoy flare: falls slowly with a smoke trail and burns out on the ground, in water, against a
@@ -22,7 +21,7 @@ import net.neoforged.neoforge.entity.IEntityWithComplexSpawn;
  * Heat seekers will not lock on to a vehicle dispensing them. Ported from upstream
  * {@code MCH_EntityFlare}; the fuse travels with the spawn data, as upstream.
  */
-public class FlareEntity extends net.minecraft.world.entity.Entity implements IEntityWithComplexSpawn {
+public class FlareEntity extends io.github.mcheliceport.platform.loader.SpawnDataEntity {
 
     public double gravity = -0.013;
     public double airResistance = 0.992;
@@ -95,12 +94,12 @@ public class FlareEntity extends net.minecraft.world.entity.Entity implements IE
     }
 
     @Override
-    public void writeSpawnData(RegistryFriendlyByteBuf buffer) {
+    protected void writeExtraSpawnData(RegistryFriendlyByteBuf buffer) {
         buffer.writeByte(this.fuseCount);
     }
 
     @Override
-    public void readSpawnData(RegistryFriendlyByteBuf buffer) {
+    protected void readExtraSpawnData(RegistryFriendlyByteBuf buffer) {
         this.fuseCount = buffer.readByte();
     }
 

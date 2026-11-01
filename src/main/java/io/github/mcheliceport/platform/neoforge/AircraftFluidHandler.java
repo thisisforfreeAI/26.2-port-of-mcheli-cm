@@ -1,4 +1,6 @@
-package io.github.mcheliceport.entity.aircraft;
+package io.github.mcheliceport.platform.neoforge;
+
+import io.github.mcheliceport.entity.aircraft.AircraftEntity;
 
 import io.github.mcheliceport.compat.fluid.FuelFluids;
 import java.util.Objects;
@@ -15,7 +17,7 @@ import org.jspecify.annotations.Nullable;
  * {@code MCH_EntityAircraft}): pipes and tanks may fill it with a fuel the vehicle burns, without
  * mixing fuels, and drain what it holds.
  */
-final class AircraftFluidHandler extends SnapshotJournal<AircraftFluidHandler.Tank>
+public final class AircraftFluidHandler extends SnapshotJournal<AircraftFluidHandler.Tank>
         implements ResourceHandler<FluidResource> {
 
     record Tank(int fuel, String type) {
@@ -23,7 +25,7 @@ final class AircraftFluidHandler extends SnapshotJournal<AircraftFluidHandler.Ta
 
     private final AircraftEntity aircraft;
 
-    AircraftFluidHandler(AircraftEntity aircraft) {
+    public AircraftFluidHandler(AircraftEntity aircraft) {
         this.aircraft = aircraft;
     }
 

@@ -122,6 +122,48 @@ public final class NeoForgePlatform implements Platform {
     }
 
     @Override
+    public net.minecraft.world.item.CreativeModeTab.Builder creativeTabBuilder(Identifier after) {
+        return net.minecraft.world.item.CreativeModeTab.builder().withTabsBefore(after);
+    }
+
+    @Override
+    public net.minecraft.server.packs.repository.Pack.Metadata hiddenPackMetadata(
+            net.minecraft.network.chat.Component title) {
+        return new net.minecraft.server.packs.repository.Pack.Metadata(title,
+                net.minecraft.server.packs.repository.PackCompatibility.COMPATIBLE,
+                net.minecraft.world.flag.FeatureFlagSet.of(), java.util.List.of(), true);
+    }
+
+    @Override
+    public boolean isFluidContainer(net.minecraft.world.item.ItemStack stack) {
+        return NeoForgeTransfer.isFluidContainer(stack);
+    }
+
+    @Override
+    public @org.jspecify.annotations.Nullable Drained drainContainer(net.minecraft.world.item.ItemStack input,
+            java.util.function.Predicate<net.minecraft.world.level.material.Fluid> accepts, int max,
+            java.util.function.Predicate<net.minecraft.world.item.ItemStack> canCommit) {
+        return NeoForgeTransfer.drainContainer(input, accepts, max, canCommit);
+    }
+
+    @Override
+    public boolean isBattery(net.minecraft.world.item.ItemStack stack) {
+        return NeoForgeTransfer.handler(stack) != null;
+    }
+
+    @Override
+    public int extractItemEnergy(net.minecraft.world.item.ItemStack stack, int max) {
+        var handler = NeoForgeTransfer.handler(stack);
+        return handler != null ? NeoForgeTransfer.extract(handler, max) : 0;
+    }
+
+    @Override
+    public int insertItemEnergy(net.minecraft.world.item.ItemStack stack, int max) {
+        var handler = NeoForgeTransfer.handler(stack);
+        return handler != null ? NeoForgeTransfer.insert(handler, max) : 0;
+    }
+
+    @Override
     public boolean canSend(net.minecraft.server.level.ServerPlayer player,
             net.minecraft.network.protocol.common.custom.CustomPacketPayload.Type<?> type) {
         return player.connection.hasChannel(type);

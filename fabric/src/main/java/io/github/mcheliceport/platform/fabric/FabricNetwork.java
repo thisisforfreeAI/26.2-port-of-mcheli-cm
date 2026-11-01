@@ -23,7 +23,10 @@ public final class FabricNetwork {
     }
 
     public static void register() {
-        ModNetwork.registerPayloads(new Registrar());
+        Registrar registrar = new Registrar();
+        ModNetwork.registerPayloads(registrar);
+        registrar.playToClient(SpawnDataPayload.TYPE, SpawnDataPayload.CODEC,
+                (payload, context) -> payload.apply(context.player()));
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) ->
                 ModNetwork.onPlayerLoggedIn(handler.player));
     }

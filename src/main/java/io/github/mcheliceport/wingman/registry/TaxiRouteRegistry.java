@@ -20,7 +20,7 @@ public final class TaxiRouteRegistry extends SavedData {
             TaxiRoute.CODEC.listOf().xmap(TaxiRouteRegistry::new, r -> List.copyOf(r.routes.values()));
     public static final SavedDataType<TaxiRouteRegistry> TYPE = new SavedDataType<>(
             Identifier.fromNamespaceAndPath(McheliCePort.MOD_ID, "wingman_taxi_routes"), TaxiRouteRegistry::new,
-            CODEC);
+            CODEC, null);
 
     private final Map<String, TaxiRoute> routes = new LinkedHashMap<>();
 

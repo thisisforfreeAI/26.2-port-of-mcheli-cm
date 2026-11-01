@@ -101,9 +101,9 @@ final class ChargerGameTests {
         ChargerBlockEntity charger = charger(h, pos);
         EnergyHandler handler = h.getLevel().getCapability(Capabilities.Energy.BLOCK, h.absolutePos(pos), null);
         check(h, handler != null, "the charger has an energy capability");
-        check(h, EnergyCompat.insert(handler, 150000) == 100000 && charger.getEnergy() == 100000,
+        check(h, io.github.mcheliceport.platform.neoforge.NeoForgeTransfer.insert(handler, 150000) == 100000 && charger.getEnergy() == 100000,
                 "it takes energy up to its capacity: " + charger.getEnergy());
-        check(h, EnergyCompat.extract(handler, 500) == 0, "nothing takes energy out of it");
+        check(h, io.github.mcheliceport.platform.neoforge.NeoForgeTransfer.extract(handler, 500) == 0, "nothing takes energy out of it");
 
         charger.setEnergy(1000);
         var electric = fixture(h, definition(true, false), 15);
@@ -180,7 +180,7 @@ final class ChargerGameTests {
     }
 
     private static int energy(ItemStack stack) {
-        EnergyHandler handler = EnergyCompat.handler(stack);
+        EnergyHandler handler = io.github.mcheliceport.platform.neoforge.NeoForgeTransfer.handler(stack);
         return handler != null ? handler.getAmountAsInt() : -1;
     }
 }

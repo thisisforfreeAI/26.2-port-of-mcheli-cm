@@ -12,13 +12,10 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
-import net.neoforged.neoforge.transfer.energy.EnergyHandler;
-import net.neoforged.neoforge.transfer.transaction.SnapshotJournal;
-import net.neoforged.neoforge.transfer.transaction.TransactionContext;
 
 /**
  * The charger's buffer (upstream {@code MCH_TileEntityCharger}). Cables and generators push
- * energy in through NeoForge's energy capability, nothing can take it out, and every 10 ticks it
+ * energy in through the loader's energy API, nothing can take it out, and every 10 ticks it
  * feeds the electric vehicles in range: first each vehicle's own store, then a battery in its fuel
  * slot when the vehicle takes one.
  */
@@ -26,14 +23,9 @@ public class ChargerBlockEntity extends BlockEntity {
 
     private int energy;
     private int updateCounter;
-    private final Handler handler = new Handler();
 
     public ChargerBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlocks.CHARGER_ENTITY.get(), pos, state);
-    }
-
-    public EnergyHandler energyHandler() {
-        return this.handler;
     }
 
     public int getEnergy() {
@@ -105,52 +97,5 @@ public class ChargerBlockEntity extends BlockEntity {
     protected void saveAdditional(ValueOutput output) {
         super.saveAdditional(output);
         output.putInt("Energy", this.energy);
-    }
-
-    /** Upstream's Forge Energy side: a sink with no limit per call but the room left. */
-    private final class Handler extends SnapshotJournal<Integer> implements EnergyHandler {
-
-        @Override
-        public long getAmountAsLong() {
-            return ChargerBlockEntity.this.energy;
-        }
-
-        @Override
-        public long getCapacityAsLong() {
-            return ChargerBlockEntity.this.getCapacity();
-        }
-
-        @Override
-        public int insert(int amount, TransactionContext transaction) {
-            int accepted = Math.max(0, Math.min(amount, ChargerBlockEntity.this.getCapacity()
-                    - ChargerBlockEntity.this.energy));
-            if (accepted > 0) {
-                this.updateSnapshots(transaction);
-                ChargerBlockEntity.this.energy += accepted;
-            }
-            return accepted;
-        }
-
-        @Override
-        public int extract(int amount, TransactionContext transaction) {
-            return 0;
-        }
-
-        @Override
-        protected Integer createSnapshot() {
-            return ChargerBlockEntity.this.energy;
-        }
-
-        @Override
-        protected void revertToSnapshot(Integer snapshot) {
-            ChargerBlockEntity.this.energy = snapshot;
-        }
-
-        @Override
-        protected void onRootCommit(Integer originalState) {
-            if (ChargerBlockEntity.this.energy != originalState) {
-                ChargerBlockEntity.this.setChanged();
-            }
-        }
     }
 }

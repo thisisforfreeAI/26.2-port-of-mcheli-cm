@@ -15,7 +15,7 @@ import net.minecraft.world.level.storage.ValueOutput;
  * Upstream's {@code WingmanMarkerTileEntity}: the marker's ID, its base and, for a parking spot,
  * the heading to park in. The marker type itself is the block state's {@link WingmanMarkerBlock#TYPE}.
  */
-public class WingmanMarkerBlockEntity extends BlockEntity {
+public class WingmanMarkerBlockEntity extends io.github.mcheliceport.platform.loader.ModBlockEntity {
 
     private String markerId = "";
     private String baseId = "";

@@ -21,7 +21,9 @@ USE = re.compile(r'net\.neoforged\.[\w.]*[A-Z]\w*')
 excluded = []
 for path in sorted(ROOT.rglob('*.java')):
     rel = path.relative_to(ROOT).as_posix()
-    if '/platform/neoforge/' in '/' + rel:
+    if any(folder in '/' + rel for folder in ('/platform/neoforge/', '/platform/loader/', '/gametest/',
+                                               '/datagen/', '/compat/hbm/NtmBridge.java',
+                                               '/compat/hbm/VntProcessors.java')):
         continue  # excluded as a whole folder by fabric/build.gradle
     text = path.read_text(encoding='utf-8')
     used = {m.group(0) for m in USE.finditer(text)}

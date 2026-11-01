@@ -40,7 +40,7 @@ public final class MarkerRegistry extends SavedData {
     public static final Codec<MarkerRegistry> CODEC =
             MarkerInfo.CODEC.listOf().xmap(MarkerRegistry::new, r -> List.copyOf(r.markers));
     public static final SavedDataType<MarkerRegistry> TYPE = new SavedDataType<>(
-            Identifier.fromNamespaceAndPath(McheliCePort.MOD_ID, "wingman_markers"), MarkerRegistry::new, CODEC);
+            Identifier.fromNamespaceAndPath(McheliCePort.MOD_ID, "wingman_markers"), MarkerRegistry::new, CODEC, null);
 
     private final List<MarkerInfo> markers = new ArrayList<>();
 

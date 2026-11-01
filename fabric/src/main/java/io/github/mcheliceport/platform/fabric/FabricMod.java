@@ -38,6 +38,20 @@ public final class FabricMod implements ModInitializer {
 
         FabricDefaultAttributeRegistry.register(ModEntityTypes.GUNNER.get(), LivingEntity.createLivingAttributes());
         FabricNetwork.register();
+        FabricParts.register();
+        net.fabricmc.fabric.api.event.lifecycle.v1.ServerBlockEntityEvents.BLOCK_ENTITY_LOAD.register(
+                (blockEntity, level) -> {
+                    if (blockEntity instanceof io.github.mcheliceport.platform.loader.ModBlockEntity modBlockEntity) {
+                        modBlockEntity.onLoad();
+                    }
+                });
+        net.fabricmc.fabric.api.event.lifecycle.v1.ServerChunkEvents.CHUNK_UNLOAD.register((level, chunk) -> {
+            for (var blockEntity : chunk.getBlockEntities().values()) {
+                if (blockEntity instanceof io.github.mcheliceport.platform.loader.ModBlockEntity modBlockEntity) {
+                    modBlockEntity.onChunkUnloaded();
+                }
+            }
+        });
         McheliCePort.setup();
     }
 }
