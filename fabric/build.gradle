@@ -17,9 +17,12 @@ base {
 
 def sharedJava = rootProject.file('src/main/java')
 def sharedResources = rootProject.file('src/main/resources')
-def neoforgeOnly = file('neoforge-only.txt').readLines()
-        .collect { it.trim() }
-        .findAll { it && !it.startsWith('#') }
+def readList = { String name ->
+    file(name).readLines().collect { it.trim() }.findAll { it && !it.startsWith('#') }
+}
+def neoforgeOnly = readList('neoforge-only.txt')
+// Client code that calls into neoforge-only.txt files; left out until stage 4 ports the client.
+def clientPending = readList('client-pending.txt')
 
 // The shared sources, filtered, are copied next to the Fabric glue: an exclude on the source set
 // itself would also hide fabric/src/main's split classes, which share the shared paths.
@@ -36,8 +39,21 @@ def sharedSources = tasks.register('sharedSources', Sync) {
         exclude 'io/github/mcheliceport/compat/hbm/NtmBridge.java'
         exclude 'io/github/mcheliceport/compat/hbm/VntProcessors.java'
         exclude neoforgeOnly
+        exclude clientPending
     }
     into layout.buildDirectory.dir('sharedSources/java')
+}
+
+// Same for the resources: fabric/src/main/resources has its own services file under the shared path.
+def sharedResourceCopy = tasks.register('sharedResources', Sync) {
+    from(sharedResources)
+    from(rootProject.file('src/generated/resources'))
+    exclude 'META-INF/accesstransformer.cfg'
+    // The NeoForge build's Platform implementation; fabric/src/main/resources names Fabric's.
+    exclude 'META-INF/services/io.github.mcheliceport.platform.Platform'
+    exclude '**/*.bbmodel'
+    exclude '**/.cache'
+    into layout.buildDirectory.dir('sharedSources/resources')
 }
 
 sourceSets.main {
@@ -45,13 +61,7 @@ sourceSets.main {
         srcDir sharedSources
     }
     resources {
-        srcDir sharedResources
-        srcDir rootProject.file('src/generated/resources')
-        exclude 'META-INF/accesstransformer.cfg'
-        // The NeoForge build's Platform implementation; fabric/src/main/resources names Fabric's.
-        exclude 'META-INF/services/io.github.mcheliceport.platform.Platform'
-        exclude '**/*.bbmodel'
-        exclude '**/.cache'
+        srcDir sharedResourceCopy
     }
 }
 
@@ -127,5 +137,19 @@ tasks.withType(JavaCompile).configureEach {
 tasks.named('jar', Jar).configure {
     from(rootProject.file('LICENSE')) {
         rename('LICENSE', "LICENSE_${mod_id}")
+    }
+}
+
+// Headless server boot for CI and local checks: Fabric API's GameTest server loads the mod, its
+// content packs and a test world, runs the Fabric GameTests (none yet) and exits.
+loom {
+    runs {
+        gameTestServer {
+            server()
+            name 'Fabric GameTest Server'
+            vmArg '-Dfabric-api.gametest'
+            vmArg "-Dfabric-api.gametest.report-file=${layout.buildDirectory.get().asFile}/gametest/junit.xml"
+            runDir 'build/gametest'
+        }
     }
 }

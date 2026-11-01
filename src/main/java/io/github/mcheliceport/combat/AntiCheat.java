@@ -220,8 +220,7 @@ public final class AntiCheat {
     }
 
     public static void register() {
-        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(
-                (net.neoforged.neoforge.event.server.ServerStoppedEvent event) -> clear());
+        io.github.mcheliceport.platform.GameEvents.SERVER_STOPPED.add(server -> clear());
     }
 
     /** Forgets everyone (server stop). */

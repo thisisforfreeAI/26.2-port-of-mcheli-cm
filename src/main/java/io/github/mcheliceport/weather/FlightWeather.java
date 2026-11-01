@@ -15,8 +15,7 @@ import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.common.ModConfigSpec;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
+import io.github.mcheliceport.platform.GameEvents;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -61,10 +60,11 @@ public final class FlightWeather {
 
     /** Listens for lightning strikes on the server. */
     public static void register() {
-        NeoForge.EVENT_BUS.addListener((EntityJoinLevelEvent event) -> {
-            if (event.getEntity() instanceof LightningBolt bolt && !event.getLevel().isClientSide()) {
-                lightning(event.getLevel(), bolt.position());
+        GameEvents.ENTITY_JOIN.add((entity, level) -> {
+            if (entity instanceof LightningBolt bolt && !level.isClientSide()) {
+                lightning(level, bolt.position());
             }
+            return true;
         });
     }
 

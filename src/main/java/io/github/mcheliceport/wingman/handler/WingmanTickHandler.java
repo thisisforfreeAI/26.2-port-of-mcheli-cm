@@ -37,18 +37,15 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.server.ServerStartedEvent;
-import net.neoforged.neoforge.event.server.ServerStoppedEvent;
-import net.neoforged.neoforge.event.tick.LevelTickEvent;
+import io.github.mcheliceport.platform.GameEvents;
 import org.jspecify.annotations.Nullable;
 
 /**
  * Upstream's {@code WingmanTickHandler}: each server level tick steers the level's wingmen, as
  * upstream, by setting throttle, yaw, pitch and roll within rate limits before the aircraft move
- * ({@link LevelTickEvent.Pre}) and lets the aircraft's own flight model fly them, towards their
+ * (the level tick start) and lets the aircraft's own flight model fly them, towards their
  * formation slot, their attack path or the target their mission sets. After they move
- * ({@link LevelTickEvent.Post}) it fires, pushes a wingman that has fallen far behind its slot,
+ * (the level tick end) it fires, pushes a wingman that has fallen far behind its slot,
  * moves a taxiing aircraft along the ground and sets the landing gear. {@link AutonomousFlightHandler}
  * runs right after it in both phases, as upstream registered it.
  */
@@ -105,11 +102,10 @@ public final class WingmanTickHandler {
     }
 
     public static void register() {
-        NeoForge.EVENT_BUS.addListener(WingmanTickHandler::onLevelTickPre);
-        NeoForge.EVENT_BUS.addListener(WingmanTickHandler::onLevelTickPost);
-        NeoForge.EVENT_BUS.addListener((ServerStartedEvent event) ->
-                WingmanConfig.loadFromServerConfig());
-        NeoForge.EVENT_BUS.addListener((ServerStoppedEvent event) -> {
+        GameEvents.LEVEL_TICK_PRE.add(WingmanTickHandler::onLevelTickPre);
+        GameEvents.LEVEL_TICK_POST.add(WingmanTickHandler::onLevelTickPost);
+        GameEvents.SERVER_STARTED.add(server -> WingmanConfig.loadFromServerConfig());
+        GameEvents.SERVER_STOPPED.add(server -> {
             WingmanRegistry.clear();
             MissionChunkLoader.clear();
             FIRE_COOLDOWNS.clear();
@@ -121,12 +117,10 @@ public final class WingmanTickHandler {
 
     // ---- before the aircraft move ----
 
-    private static void onLevelTickPre(LevelTickEvent.Pre event) {
-        if (event.getLevel() instanceof ServerLevel level) {
-            MissionChunkLoader.tick(level);
-            tickStart(level);
-            AutonomousFlightHandler.tickStart(level);
-        }
+    private static void onLevelTickPre(ServerLevel level) {
+        MissionChunkLoader.tick(level);
+        tickStart(level);
+        AutonomousFlightHandler.tickStart(level);
     }
 
     /** Upstream {@code onWorldTickStart}: engine and attitude for each wingman in the level. */
@@ -468,11 +462,9 @@ public final class WingmanTickHandler {
 
     // ---- after the aircraft move ----
 
-    private static void onLevelTickPost(LevelTickEvent.Post event) {
-        if (event.getLevel() instanceof ServerLevel level) {
-            tickEnd(level);
-            AutonomousFlightHandler.tickEnd(level);
-        }
+    private static void onLevelTickPost(ServerLevel level) {
+        tickEnd(level);
+        AutonomousFlightHandler.tickEnd(level);
     }
 
     /** Upstream {@code onWorldTickEnd}: firing, the slot boost, the landing gear and the taxi push. */

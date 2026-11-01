@@ -16,12 +16,9 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.common.world.chunk.RegisterTicketControllersEvent;
-import net.neoforged.neoforge.common.world.chunk.TicketController;
-import net.neoforged.neoforge.event.level.LevelEvent;
-import net.neoforged.neoforge.event.tick.LevelTickEvent;
+import io.github.mcheliceport.platform.ChunkTickets;
+import io.github.mcheliceport.platform.GameEvents;
+import io.github.mcheliceport.platform.Platform;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -52,9 +49,8 @@ public final class ProjectileChunkLoader {
     /** Owns every projectile ticket: leases are shared, not per projectile. */
     private static final UUID OWNER = UUID.fromString("6d636865-6c69-5072-6f6a-436875636b73");
 
-    public static final TicketController TICKETS = new TicketController(
-            Identifier.fromNamespaceAndPath(McheliCePort.MOD_ID, "projectile"),
-            (level, helper) -> helper.getEntityTickets().keySet().forEach(helper::removeAllTickets));
+    public static final ChunkTickets TICKETS = Platform.get().chunkTickets(
+            Identifier.fromNamespaceAndPath(McheliCePort.MOD_ID, "projectile"));
 
     /** Per level: chunk (as a long) to the game time its lease runs out. */
     private static final Map<ResourceKey<Level>, Long2LongOpenHashMap> LEASES = new HashMap<>();
@@ -62,10 +58,9 @@ public final class ProjectileChunkLoader {
     private ProjectileChunkLoader() {
     }
 
-    public static void register(IEventBus modBus) {
-        modBus.addListener((RegisterTicketControllersEvent e) -> e.register(TICKETS));
-        NeoForge.EVENT_BUS.addListener(ProjectileChunkLoader::onLevelTick);
-        NeoForge.EVENT_BUS.addListener(ProjectileChunkLoader::onLevelUnload);
+    public static void register() {
+        GameEvents.LEVEL_TICK_POST.add(ProjectileChunkLoader::sweep);
+        GameEvents.LEVEL_UNLOAD.add(level -> LEASES.remove(level.dimension()));
     }
 
     /** Upstream {@code MCH_EntityBaseBullet#isChunkLoadingEnabled}. */
@@ -98,12 +93,6 @@ public final class ProjectileChunkLoader {
      * whose lease has run out. A chunk asked for this tick is kept even with a lease of 0 ticks, so
      * a projectile always has its chunk loaded when it moves next.
      */
-    private static void onLevelTick(LevelTickEvent.Post event) {
-        if (event.getLevel() instanceof ServerLevel level) {
-            sweep(level);
-        }
-    }
-
     static void sweep(ServerLevel level) {
         Long2LongOpenHashMap leases = LEASES.get(level.dimension());
         if (leases == null || leases.isEmpty()) {
@@ -119,13 +108,6 @@ public final class ProjectileChunkLoader {
             long chunk = e.getLongKey();
             it.remove();
             TICKETS.forceChunk(level, OWNER, ChunkPos.getX(chunk), ChunkPos.getZ(chunk), false, false);
-        }
-    }
-
-    /** NeoForge drops an unloading level's tickets; forget its leases. */
-    private static void onLevelUnload(LevelEvent.Unload event) {
-        if (event.getLevel() instanceof ServerLevel level) {
-            LEASES.remove(level.dimension());
         }
     }
 

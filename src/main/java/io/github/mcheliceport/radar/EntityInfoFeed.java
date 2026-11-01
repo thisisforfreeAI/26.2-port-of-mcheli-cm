@@ -16,8 +16,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.levelgen.Heightmap;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.tick.ServerTickEvent;
+import io.github.mcheliceport.platform.GameEvents;
 
 /**
  * Upstream's {@code EntityInfoManagerAsync}: every ten ticks each player is sent the players,
@@ -38,15 +37,15 @@ public final class EntityInfoFeed {
     }
 
     public static void register() {
-        NeoForge.EVENT_BUS.addListener(EntityInfoFeed::onServerTick);
+        GameEvents.SERVER_TICK_POST.add(EntityInfoFeed::onServerTick);
     }
 
-    private static void onServerTick(ServerTickEvent.Post event) {
+    private static void onServerTick(net.minecraft.server.MinecraftServer server) {
         if (++tickCounter % INTERVAL != 0) {
             return;
         }
         snapshotSeq++;
-        for (ServerLevel level : event.getServer().getAllLevels()) {
+        for (ServerLevel level : server.getAllLevels()) {
             if (level.players().isEmpty()) {
                 continue;
             }

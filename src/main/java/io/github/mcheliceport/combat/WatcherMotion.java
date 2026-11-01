@@ -5,8 +5,7 @@ import io.github.mcheliceport.net.ModNetwork;
 import io.github.mcheliceport.net.VehicleMotionPayload;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.tick.EntityTickEvent;
+import io.github.mcheliceport.platform.GameEvents;
 
 /**
  * M9 smoother sync, a port addition: the server sends watching clients the velocity of fast
@@ -33,11 +32,11 @@ public final class WatcherMotion {
     }
 
     public static void register() {
-        NeoForge.EVENT_BUS.addListener(WatcherMotion::onEntityTick);
+        GameEvents.ENTITY_TICK_POST.add(WatcherMotion::onEntityTick);
     }
 
-    private static void onEntityTick(EntityTickEvent.Post event) {
-        if (!(event.getEntity() instanceof AircraftEntity aircraft) || !(aircraft.level() instanceof ServerLevel level)
+    private static void onEntityTick(net.minecraft.world.entity.Entity entity) {
+        if (!(entity instanceof AircraftEntity aircraft) || !(aircraft.level() instanceof ServerLevel level)
                 || aircraft.isRemoved()) {
             return;
         }
@@ -49,7 +48,7 @@ public final class WatcherMotion {
         if (!payload.valid()) {
             return;
         }
-        for (var player : level.getChunkSource().chunkMap.getPlayersWatching(aircraft)) {
+        for (var player : io.github.mcheliceport.platform.Platform.get().playersTracking(aircraft)) {
             if (!aircraft.isPilot(player)) {
                 ModNetwork.sendToPlayer(player, payload);
             }

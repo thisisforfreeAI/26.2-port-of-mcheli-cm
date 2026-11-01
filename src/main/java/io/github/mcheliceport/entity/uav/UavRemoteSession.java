@@ -12,14 +12,11 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.common.world.chunk.RegisterTicketControllersEvent;
-import net.neoforged.neoforge.common.world.chunk.TicketController;
 
 /** Loaded terrain and vanilla chunk/entity delivery for one authorized remote pilot. */
 public final class UavRemoteSession {
-    public static final TicketController TICKETS = new TicketController(Identifier.fromNamespaceAndPath("mcheli_ce_port", "uav_control"),
-            (level, helper) -> helper.getEntityTickets().keySet().forEach(helper::removeAllTickets));
+    public static final io.github.mcheliceport.platform.ChunkTickets TICKETS = io.github.mcheliceport.platform.Platform.get()
+            .chunkTickets(Identifier.fromNamespaceAndPath("mcheli_ce_port", "uav_control"));
     private final UavStationEntity station;
     private final ServerPlayer player;
     private final Set<ChunkPos> tickets = new HashSet<>();
@@ -27,7 +24,8 @@ public final class UavRemoteSession {
     private UavChunkView lastView;
     private final net.minecraft.server.level.ServerLevel level;
     public UavRemoteSession(UavStationEntity station, ServerPlayer player) { this.station = station; this.player = player; this.level = player.level(); }
-    public static void register(IEventBus bus) { bus.addListener((RegisterTicketControllersEvent e) -> e.register(TICKETS)); }
+    /** Creates the tickets while the mod initialises. */
+    public static void register() { }
     public int ticketCount() { return tickets.size(); }
     public boolean belongsTo(ServerPlayer p) { return player == p; }
     public void update(AircraftEntity ac) {

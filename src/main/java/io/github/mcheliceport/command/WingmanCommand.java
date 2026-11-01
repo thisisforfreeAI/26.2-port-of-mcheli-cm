@@ -50,9 +50,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -68,7 +65,6 @@ import org.jspecify.annotations.Nullable;
  * subcommands edit the marker the player looks at within reach, as the marker screen does
  * (KNOWN_ISSUES 100).
  */
-@EventBusSubscriber(modid = McheliCePort.MOD_ID)
 public final class WingmanCommand {
 
     /** Upstream's weapon suggestions: McHeli weapon types and {@code clear}. */
@@ -111,10 +107,6 @@ public final class WingmanCommand {
     private WingmanCommand() {
     }
 
-    @SubscribeEvent
-    static void registerCommands(RegisterCommandsEvent event) {
-        register(event.getDispatcher());
-    }
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(Commands.literal("wingman")

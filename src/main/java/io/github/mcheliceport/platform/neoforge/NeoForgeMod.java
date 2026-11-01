@@ -52,20 +52,8 @@ public final class NeoForgeMod {
                     io.github.mcheliceport.registry.ModItems.FUEL_BUCKET.get());
         });
         NeoForgeNetwork.register(modBus);
-        io.github.mcheliceport.entity.uav.UavRemoteSession.register(modBus);
-        io.github.mcheliceport.wingman.handler.MissionChunkLoader.register(modBus);
-        io.github.mcheliceport.wingman.handler.ProjectileChunkLoader.register(modBus);
+        NeoForgeEvents.register(modBus);
         ModGameTests.register(modBus);
-        io.github.mcheliceport.item.ChainItem.register();
-        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(
-                (net.neoforged.neoforge.event.TagsUpdatedEvent event) -> io.github.mcheliceport.weapon.BlockList.clearCaches());
-        io.github.mcheliceport.radar.EntityInfoFeed.register();
-        io.github.mcheliceport.wingman.handler.WingmanTickHandler.register();
-        io.github.mcheliceport.combat.LagCompensation.register();
-        io.github.mcheliceport.combat.WatcherMotion.register();
-        io.github.mcheliceport.combat.AntiCheat.register();
-        io.github.mcheliceport.damage.ComponentEffects.register();
-        io.github.mcheliceport.weather.FlightWeather.register();
     }
 
     private void commonSetup(FMLCommonSetupEvent event) {

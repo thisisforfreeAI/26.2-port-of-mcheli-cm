@@ -65,7 +65,7 @@ public final class ModItems {
                                     net.minecraft.world.entity.EquipmentSlotGroup.MAINHAND)
                             .build()),
             ModTab.ITEMS);
-    public static final ItemEntry<Item> FUEL = item("fuel", p -> p.durability(600).setNoCombineRepair());
+    public static final ItemEntry<Item> FUEL = item("fuel", p -> io.github.mcheliceport.platform.Platform.get().noCombineRepair(p.durability(600)));
     /** Upstream's Forge bucket of {@code mch_fuel}; see {@link ModFluids}. */
     public static final ItemEntry<io.github.mcheliceport.item.FuelBucketItem> FUEL_BUCKET = register("fuel_bucket",
             p -> new io.github.mcheliceport.item.FuelBucketItem(ModFluids.FUEL.get(), p),

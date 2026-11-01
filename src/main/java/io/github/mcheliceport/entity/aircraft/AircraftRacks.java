@@ -59,7 +59,7 @@ public final class AircraftRacks {
             return info.rideRacks.stream().anyMatch(r -> r.name().equalsIgnoreCase(host.name)
                     && host.getNumSeat() - 1 + r.rackID() - 1 == index);
         }
-        return cargo.getPersistentData().getBooleanOr("CanMountEntity", false);
+        return io.github.mcheliceport.platform.Platform.get().persistentData(cargo).getBooleanOr("CanMountEntity", false);
     }
     /** Carrier loads every available rack in content order. */
     public int load() {

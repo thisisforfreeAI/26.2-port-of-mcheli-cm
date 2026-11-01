@@ -19,6 +19,8 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 /** The NeoForge side of {@link Platform}: entries go through one {@link DeferredRegister} per registry. */
 public final class NeoForgePlatform implements Platform {
     private static final Map<ResourceKey<?>, DeferredRegister<?>> REGISTERS = new LinkedHashMap<>();
+    private static final java.util.List<net.neoforged.neoforge.common.world.chunk.TicketController> TICKET_CONTROLLERS =
+            new java.util.concurrent.CopyOnWriteArrayList<>();
     private static IEventBus modBus;
 
     @Override
@@ -127,11 +129,80 @@ public final class NeoForgePlatform implements Platform {
     }
 
     @Override
-    public net.minecraft.server.packs.repository.Pack.Metadata hiddenPackMetadata(
-            net.minecraft.network.chat.Component title) {
-        return new net.minecraft.server.packs.repository.Pack.Metadata(title,
+    public net.minecraft.server.packs.repository.Pack.Metadata packMetadata(
+            net.minecraft.network.chat.Component description, boolean hidden) {
+        return new net.minecraft.server.packs.repository.Pack.Metadata(description,
                 net.minecraft.server.packs.repository.PackCompatibility.COMPATIBLE,
-                net.minecraft.world.flag.FeatureFlagSet.of(), java.util.List.of(), true);
+                net.minecraft.world.flag.FeatureFlagSet.of(), java.util.List.of(), hidden);
+    }
+
+    @Override
+    public net.minecraft.world.item.Item.Properties noCombineRepair(net.minecraft.world.item.Item.Properties properties) {
+        return properties.setNoCombineRepair();
+    }
+
+    @Override
+    public <T extends net.minecraft.world.entity.Entity> net.minecraft.world.entity.EntityType.Builder<T> trackDeltas(
+            net.minecraft.world.entity.EntityType.Builder<T> builder) {
+        return builder.setShouldReceiveVelocityUpdates(true);
+    }
+
+    @Override
+    public io.github.mcheliceport.platform.ChunkTickets chunkTickets(Identifier id) {
+        var controller = new net.neoforged.neoforge.common.world.chunk.TicketController(id,
+                (level, helper) -> helper.getEntityTickets().keySet().forEach(helper::removeAllTickets));
+        TICKET_CONTROLLERS.add(controller);
+        return controller::forceChunk;
+    }
+
+    @Override
+    public net.minecraft.nbt.CompoundTag persistentData(net.minecraft.world.entity.Entity entity) {
+        return entity.getPersistentData();
+    }
+
+    @Override
+    public net.minecraft.server.level.ServerPlayer fakePlayer(net.minecraft.server.level.ServerLevel level,
+            com.mojang.authlib.GameProfile profile) {
+        return net.neoforged.neoforge.common.util.FakePlayerFactory.get(level, profile);
+    }
+
+    @Override
+    public net.minecraft.world.level.block.state.BlockState fluidPlaceBlock(net.minecraft.world.level.LevelAccessor level,
+            net.minecraft.core.BlockPos pos, net.minecraft.core.BlockPos liquidPos,
+            net.minecraft.world.level.block.state.BlockState state) {
+        return net.neoforged.neoforge.event.EventHooks.fireFluidPlaceBlockEvent(level, pos, liquidPos, state);
+    }
+
+    @Override
+    public java.util.Collection<net.minecraft.server.level.ServerPlayer> playersTracking(
+            net.minecraft.world.entity.Entity entity) {
+        return entity.level() instanceof net.minecraft.server.level.ServerLevel level
+                ? level.getChunkSource().chunkMap.getPlayersWatching(entity) : java.util.List.of();
+    }
+
+    @Override
+    @SuppressWarnings("DataFlowIssue") // vanilla blocks ignore the explosion; modded ones get none on the client
+    public float explosionResistance(net.minecraft.world.level.Level level, net.minecraft.core.BlockPos pos,
+            net.minecraft.world.level.block.state.BlockState state, net.minecraft.world.level.material.FluidState fluid) {
+        return Math.max(state.getExplosionResistance(level, pos, null), fluid.getExplosionResistance(level, pos, null));
+    }
+
+    @Override
+    public net.minecraft.world.InteractionResult useItemFirst(net.minecraft.world.item.ItemStack stack,
+            net.minecraft.world.item.context.UseOnContext context) {
+        return stack.onItemUseFirst(context);
+    }
+
+    @Override
+    public boolean explosionCancelled(net.minecraft.world.level.Level level,
+            net.minecraft.world.level.ServerExplosion explosion) {
+        return net.neoforged.neoforge.event.EventHooks.onExplosionStart(level, explosion);
+    }
+
+    @Override
+    public void explosionDetonate(net.minecraft.world.level.Level level, net.minecraft.world.level.ServerExplosion explosion,
+            java.util.List<net.minecraft.world.entity.Entity> entities, java.util.List<net.minecraft.core.BlockPos> blocks) {
+        net.neoforged.neoforge.event.EventHooks.onExplosionDetonate(level, explosion, entities, blocks);
     }
 
     @Override
@@ -200,5 +271,7 @@ public final class NeoForgePlatform implements Platform {
             modBus = bus;
             REGISTERS.values().forEach(register -> register.register(bus));
         }
+        bus.addListener((net.neoforged.neoforge.common.world.chunk.RegisterTicketControllersEvent event) ->
+                TICKET_CONTROLLERS.forEach(event::register));
     }
 }

@@ -42,7 +42,7 @@ public final class VehicleImpactEmitter {
         var payload=new VehicleImpactPayload(ac.getId(),ac.getUUID(),point.x,point.y,point.z,
                 direction.x,direction.y,direction.z,VehicleImpactLook.radius(cannon,bullet.getPower()),cannon,bullet.getId());
         if(!payload.valid())return;
-        for(var player:level.getChunkSource().chunkMap.getPlayersWatching(ac)) {
+        for(var player:io.github.mcheliceport.platform.Platform.get().playersTracking(ac)) {
             if(player.distanceToSqr(ac)<96*96)ModNetwork.sendToPlayer(player,payload);
         }
     }

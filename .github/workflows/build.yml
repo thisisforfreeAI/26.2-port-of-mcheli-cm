@@ -15,6 +15,20 @@ jobs:
       - name: Run GameTests with NTM Next 1.0.3
         run: ./gradlew runGameTestServer -PwithHbm
 
+  fabric:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '25'
+          distribution: 'temurin'
+      - uses: gradle/actions/setup-gradle@v4
+      # Work in progress (docs/FABRIC_PLAN.md): the Fabric jar builds and its server passes the
+      # Fabric GameTests; the client is not ported yet.
+      - name: Build the Fabric jar and run its server GameTests
+        run: ./gradlew -PwithFabric :fabric:build :fabric:runGameTestServer
+
   build:
     runs-on: ubuntu-latest
     steps:

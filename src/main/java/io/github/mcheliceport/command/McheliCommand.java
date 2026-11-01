@@ -51,9 +51,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -84,7 +81,6 @@ import org.jspecify.annotations.Nullable;
  * config's {@code commands.permissions} entry for it, and {@code commands.enabled} turns the whole
  * command off.
  */
-@EventBusSubscriber(modid = McheliCePort.MOD_ID)
 public final class McheliCommand {
 
     public static final String DEFAULT_DUMP_FOLDER = "mcheli_yaml_dump";
@@ -106,10 +102,6 @@ public final class McheliCommand {
     private McheliCommand() {
     }
 
-    @SubscribeEvent
-    static void registerCommands(RegisterCommandsEvent event) {
-        register(event.getDispatcher(), event.getBuildContext());
-    }
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher, CommandBuildContext context) {
         dispatcher.register(Commands.literal("mcheli")

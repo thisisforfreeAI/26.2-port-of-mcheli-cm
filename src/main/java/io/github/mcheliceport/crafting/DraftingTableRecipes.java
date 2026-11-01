@@ -110,7 +110,7 @@ public final class DraftingTableRecipes {
                         ? ingredients.get(x + y * shaped.getWidth()) : Optional.empty());
             }
             result = shaped.assemble(CraftingInput.EMPTY);
-        } else if (recipe instanceof ShapelessRecipe shapeless && shapeless.result() != null) {
+        } else if (recipe instanceof ShapelessRecipe shapeless) {
             List<Ingredient> ingredients = shapeless.placementInfo().ingredients();
             if (ingredients.size() > 9) {
                 return null;

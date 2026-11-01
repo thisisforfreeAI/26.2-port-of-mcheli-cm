@@ -81,8 +81,8 @@ public final class ModEntityTypes {
                     builder -> builder.sized(1.5F, 0.6F).clientTrackingRange(toChunks(200)).updateInterval(10)));
     public static final RegEntry<EntityType<?>, EntityType<CargoContainerEntity>> CONTAINER = register("container",
             ModRegistries.ENTITY_TYPES.registerEntityType("container", CargoContainerEntity::new,
-                    MobCategory.MISC, builder -> builder.sized(2, 1).fireImmune().clientTrackingRange(toChunks(200))
-                            .updateInterval(10).setShouldReceiveVelocityUpdates(true)));
+                    MobCategory.MISC, builder -> io.github.mcheliceport.platform.Platform.get().trackDeltas(builder.sized(2, 1).fireImmune()
+                            .clientTrackingRange(toChunks(200)).updateInterval(10))));
     public static final RegEntry<EntityType<?>, EntityType<VehicleEntity>> VEHICLE = register("vehicle",
             ModRegistries.ENTITY_TYPES.registerEntityType("vehicle", VehicleEntity::new, MobCategory.MISC,
                     builder -> builder.sized(2, 0.7F).clientTrackingRange(toChunks(600)).updateInterval(2)));
@@ -122,8 +122,8 @@ public final class ModEntityTypes {
     /** Upstream's {@code MCH_EntityGunner}, the NPC gunner. */
     public static final RegEntry<EntityType<?>, EntityType<GunnerEntity>> GUNNER = register("gunner",
             ModRegistries.ENTITY_TYPES.registerEntityType("gunner", GunnerEntity::new, MobCategory.MISC,
-                    builder -> builder.sized(0.6F, 1.8F).clientTrackingRange(toChunks(530)).updateInterval(5)
-                            .setShouldReceiveVelocityUpdates(true)));
+                    builder -> io.github.mcheliceport.platform.Platform.get().trackDeltas(builder.sized(0.6F, 1.8F)
+                            .clientTrackingRange(toChunks(530)).updateInterval(5))));
     public static final RegEntry<EntityType<?>, EntityType<ChaffEntity>> CHAFF = weapon("chaff",
             ChaffEntity::new, 1.0f, 1.0f, 330, 10);
 
@@ -155,11 +155,10 @@ public final class ModEntityTypes {
             String name, EntityType.EntityFactory<T> factory, float width, float height, int trackingRangeBlocks,
             int updateInterval) {
         RegEntry<EntityType<?>, EntityType<T>> holder = ModRegistries.ENTITY_TYPES
-                .registerEntityType(name, factory, MobCategory.MISC, builder -> builder
+                .registerEntityType(name, factory, MobCategory.MISC, builder -> io.github.mcheliceport.platform.Platform.get().trackDeltas(builder
                         .sized(width, height)
                         .clientTrackingRange(toChunks(trackingRangeBlocks))
-                        .updateInterval(updateInterval)
-                        .setShouldReceiveVelocityUpdates(true));
+                        .updateInterval(updateInterval)));
         ALL.add(holder);
         return holder;
     }

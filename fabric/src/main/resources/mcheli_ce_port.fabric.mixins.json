@@ -3,7 +3,17 @@
   "minVersion": "0.8",
   "package": "io.github.mcheliceport.fabricmixin",
   "compatibilityLevel": "JAVA_21",
-  "mixins": ["LevelPartsMixin", "SavedDataStorageMixin", "ServerEntitySpawnDataMixin", "ServerLevelPartsMixin"],
+  "mixins": [
+    "BuiltInPackSourceAccessor",
+    "LevelPartsMixin",
+    "PackRepositoryMixin",
+    "SavedDataStorageMixin",
+    "ServerEntitySpawnDataMixin",
+    "ServerLevelEntityTickMixin",
+    "ServerLevelPartsMixin"
+  ],
   "client": [],
-  "injectors": {"defaultRequire": 1}
+  "injectors": {
+    "defaultRequire": 1
+  }
 }

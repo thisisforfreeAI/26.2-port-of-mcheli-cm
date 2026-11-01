@@ -26,12 +26,8 @@ import net.minecraft.server.packs.PackSelectionConfig;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.PathPackResources;
 import net.minecraft.server.packs.repository.Pack;
-import net.minecraft.server.packs.repository.PackCompatibility;
 import net.minecraft.server.packs.repository.PackSource;
-import net.minecraft.world.flag.FeatureFlagSet;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.event.AddPackFindersEvent;
+import net.minecraft.server.packs.repository.RepositorySource;
 import org.slf4j.Logger;
 
 /**
@@ -47,7 +43,6 @@ import org.slf4j.Logger;
  *       root of a pack are seen as resources.</li>
  * </ul>
  */
-@EventBusSubscriber(modid = McheliCePort.MOD_ID)
 public final class ModPackFinders {
 
     private static final Logger LOGGER = LogUtils.getLogger();
@@ -58,20 +53,22 @@ public final class ModPackFinders {
     private ModPackFinders() {
     }
 
-    @SubscribeEvent
-    static void addPackFinders(AddPackFindersEvent event) {
-        PackType type = event.getPackType();
+    public static void register() {
+        io.github.mcheliceport.platform.GameEvents.ADD_PACK_FINDERS.add(ModPackFinders::addPackFinders);
+    }
+
+    static void addPackFinders(PackType type, boolean trusted, Consumer<RepositorySource> sources) {
         if (type == PackType.CLIENT_RESOURCES) {
-            event.addRepositorySource(packs -> {
+            sources.accept(packs -> {
                 packs.accept(GeneratedPack.create(McheliCePort.MOD_ID + "/generated",
                         Component.literal("McHeli CE content"), type, Pack.Position.BOTTOM,
                         () -> ContentAssets.build(ModItems.contentItems(), ContentRegistries.get(),
                                 soundFileCheck())));
                 addAddonPacks(packs, type);
             });
-        } else if (type == PackType.SERVER_DATA && !event.isTrusted()) {
+        } else if (type == PackType.SERVER_DATA && !trusted) {
             // The trusted repository only lists packs the client may already know; ours are not among them.
-            event.addRepositorySource(packs -> {
+            sources.accept(packs -> {
                 packs.accept(GeneratedPack.create(McheliCePort.MOD_ID + "/content_recipes",
                         Component.literal("McHeli CE content recipes"), type, Pack.Position.TOP,
                         () -> ContentRecipes.build(ModItems.contentItems(), ContentRegistries.get(),
@@ -97,7 +94,7 @@ public final class ModPackFinders {
             Component description = Component.literal(addon.getDescription().isEmpty()
                     ? addon.getDomain() + " " + addon.getVersion() : addon.getDescription());
             packs.accept(new Pack(new PackLocationInfo(id, title, ADDON_SOURCE, Optional.empty()), resources,
-                    new Pack.Metadata(description, PackCompatibility.COMPATIBLE, FeatureFlagSet.of(), List.of(), false),
+                    io.github.mcheliceport.platform.Platform.get().packMetadata(description, false),
                     new PackSelectionConfig(true, Pack.Position.TOP, false)));
         }
     }

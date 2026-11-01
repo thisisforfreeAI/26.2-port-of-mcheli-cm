@@ -22,19 +22,18 @@ import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
+import io.github.mcheliceport.platform.GameEvents;
 import org.jspecify.annotations.Nullable;
 
 /** Reusable chain: first click selects the trailer, second selects the tug; click a link end to disconnect. */
 public class ChainItem extends Item {
     public ChainItem(Properties properties) { super(properties); }
     public static void register() {
-        NeoForge.EVENT_BUS.addListener(PlayerInteractEvent.EntityInteract.class, event -> {
-            if (event.getItemStack().getItem() instanceof ChainItem) {
-                interact(event.getEntity(), event.getItemStack(), event.getTarget());
-                event.setCancellationResult(InteractionResult.SUCCESS); event.setCanceled(true);
-            }
+        GameEvents.ENTITY_INTERACT.add((player, target, hand) -> {
+            var stack = player.getItemInHand(hand);
+            if (!(stack.getItem() instanceof ChainItem)) { return null; }
+            interact(player, stack, target);
+            return InteractionResult.SUCCESS;
         });
     }
     public static boolean eligible(Entity entity) {
