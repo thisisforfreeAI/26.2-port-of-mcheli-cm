@@ -29,6 +29,33 @@ class WreckSectionsTest {
   assertTrue(BreakupMeshes.bounds(half.shape()).low().x()>=half.hinge().x()-1e-3F);
   assertTrue(parts.cap().vertexCount()>0&&half.cap().vertexCount()>0);
  }
+ private static McheliModel.Group stock(String name)throws Exception{
+  var file=io.github.mcheliceport.content.ContentTestSupport.projectDir().resolve("src/main/resources/assets/mcheli/models/planes/"+name+".mqo");
+  McheliModel model;try(var in=java.nio.file.Files.newInputStream(file)){model=MqoParser.parse(name+".mqo",in);}
+  return model.groups.stream().filter(g->g.name().equals("$body")).findFirst().orElseThrow();
+ }
+ @Test void bombersAndAirlinersLoseTheirNoseAndOnlyTheB2SplitsDownTheMiddle()throws Exception{
+  // Their fuselages are wider than 1.6 blocks, and they used to split lengthwise through the fuselage instead.
+  for(String name:java.util.List.of("b29","c5","e767","md90","ac-130","cessna172","b-2a")){
+   var kept=BreakupMeshes.airframeBuild(stock(name),6).kept();var parts=WreckMesh.build(kept,true,true,true,true);
+   boolean b2=name.equals("b-2a");
+   assertEquals(!b2,find(parts,WreckMesh.NOSE)!=null,name+" nose");
+   assertEquals(b2,find(parts,WreckMesh.SPLIT)!=null,name+" split");
+  }
+ }
+ @Test void aPropellerOnABrokenOffSectionGoesWithIt(){
+  var parts=WreckMesh.build(fighter(),true,true,true,true);var wing=find(parts,WreckMesh.WING);var nose=find(parts,WreckMesh.NOSE);
+  assertTrue(wing.holds(new Vector3f(-7,.7F,0))&&!wing.holds(new Vector3f(-1,.7F,0)));
+  assertTrue(nose.holds(new Vector3f(0,.7F,7.5F))&&!nose.holds(new Vector3f(0,.7F,0)));
+ }
+ @Test void aB29KeepsItsTailConeClosedWhenTheFinComesOff()throws Exception{
+  var body=stock("b29");var b=BreakupMeshes.bounds(body);
+  var aft=BreakupMeshes.split(body,2,b.low().z+(b.high().z-b.low().z)*.27F);var tail=BreakupMeshes.empennage(aft[0]);
+  var patch=BreakupMeshes.rootPatch(tail[0],tail[1]);
+  assertTrue(BreakupMeshes.area(patch)>.5,"the slot the fin left is closed: "+BreakupMeshes.area(patch));
+  var frame=BreakupMeshes.airframeBuild(body,4);
+  assertTrue(BreakupMeshes.area(frame.kept())>BreakupMeshes.area(aft[1])+BreakupMeshes.area(tail[0]),"the kept airframe carries the patch");
+ }
  @Test void sectionsStayJoinedUntilImpactThenTearAway(){
   var parts=WreckMesh.build(fighter(),true,true,true,true);
   for(var s:parts.sections()){

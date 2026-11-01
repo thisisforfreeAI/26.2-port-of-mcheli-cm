@@ -16,6 +16,18 @@ class WreckCrumpleTest {
   assertTrue(noseAfter<noseBefore-.8F,"nose pushed back: "+noseAfter);
   assertTrue(lowAfter<lowBefore-.3F,"nose droops: "+lowAfter);
  }
+ @Test void aBombersCrushedNoseIsDentedNotSpiked(){
+  // A 38-block hull: wrinkles scaled by the whole length used to throw corners a block out.
+  var boxes=new DetailBoxes();for(int i=0;i<40;i++)boxes.box(-1.6F,0,-19+i*.95F,1.6F,3.2F,-19+(i+1)*.95F);
+  var source=boxes.group("$body");var w=WreckMesh.build(source,false,true).shape().data();var d=source.data();
+  for(int t=0;t+23<d.length;t+=24)for(int k=0;k<3;k++){
+   int i=t+k*8,j=t+(k+1)%3*8;
+   float before=new Vector3f(d[i]-d[j],d[i+1]-d[j+1],d[i+2]-d[j+2]).length(),after=new Vector3f(w[i]-w[j],w[i+1]-w[j+1],w[i+2]-w[j+2]).length();
+   // Neighbouring corners move together: no edge is torn out into a spike.
+   assertTrue(Math.abs(after-before)<=2*WreckMesh.WRINKLE+.3F*before,"edge at z="+d[i+2]+" went from "+before+" to "+after);
+  }
+  for(int i=0;i+7<d.length;i+=8)assertTrue(d[i+2]-w[i+2]<=WreckMesh.CRUSH+.01F,"crushed back "+(d[i+2]-w[i+2]));
+ }
  @Test void sharedCornersStayTogetherSoTheCrushedSkinHasNoCracks(){
   var source=fuselage();var w=WreckMesh.build(source,true,true).shape().data();var d=source.data();
   var moved=new java.util.HashMap<String,String>();

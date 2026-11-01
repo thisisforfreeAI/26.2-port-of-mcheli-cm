@@ -17,7 +17,13 @@ public final class WreckMesh {
   * The lining and cap close its own side of the cut.
   */
  public record Section(int kind,McheliModel.Group shape,McheliModel.Group paint,McheliModel.Group soot,List<McheliModel.Group> embers,
-         McheliModel.Group lining,McheliModel.Group cap,Vector3f hinge,float drop){}
+         McheliModel.Group lining,McheliModel.Group cap,Vector3f hinge,float drop){
+  /**
+   * Whether a point in the hull's model space lies on this section's side of its cut, so that a part
+   * mounted there (a propeller, a turret, a gun) goes with the section instead of hanging in the air.
+   */
+  public boolean holds(Vector3f p){return kind==NOSE?p.z>hinge.z:kind==WING?p.x<hinge.x:p.x>hinge.x;}
+ }
  public static final int NOSE=0,WING=1,SPLIT=2;
  /**
   * {@code shape} is what stays of the hull; when it broke into {@code sections}, {@code lining} and
@@ -40,6 +46,8 @@ public final class WreckMesh {
  public static final int EMBER_TIERS=3,MAX_CHUNKS=14;
  /** Longest triangle edge that may carry a burnt-paint or bare-metal patch, in blocks. */
  static final float PATCH_EDGE=1.5F;
+ /** Deepest wrinkle, furthest the nose is crushed back and furthest the front fuselage droops, in blocks. */
+ static final float WRINKLE=.16F,CRUSH=1.3F,DROOP=.6F;
  /** Most vertices a broken-off section may have; a bigger one stays on the hull. */
  static final int SECTION_LIMIT=12000;
  public static Parts get(McheliModel.Group source,boolean wing){return get(source,wing,false);}
@@ -72,8 +80,8 @@ public final class WreckMesh {
   for(int i=0;i+7<d.length;i+=8){var v=new Vector3f(d[i],d[i+1],d[i+2]);lo.min(v);hi.max(v);}
   var shape=new ArrayList<Float>();float extent=Math.max(Math.abs(lo.x),Math.abs(hi.x));
   for(int t=0;t+23<d.length;t+=24){
-   float cx=(d[t]+d[t+8]+d[t+16])/3;
-   if(wing&&extent>3&&cx>extent*.95F&&t/24%3==0)continue;
+   // Every triangle is kept: dropping every third one at a wing tip, to look torn, punched holes through
+   // the skin there that read as a see-through, glassy edge.
    float[][] tri=new float[3][];boolean crushed=false;
    for(int k=0;k<3;k++){int i=t+k*8;float[] v=Arrays.copyOfRange(d,i,i+8);
     if(wing&&extent>3){float w=Math.clamp((Math.abs(v[0])/extent-.65F)/.35F,0,1);v[1]-=w*w*.55F;}
@@ -112,7 +120,9 @@ public final class WreckMesh {
    // A flying wing (or anything else too wide to shed its nose) splits through the centre body instead,
    // just to the right of the cockpit, so it does not lie there as one huge slab.
    var core=BreakupMeshes.bounds(hull);
-   if(cuts.stream().noneMatch(c->c[0]==2)&&core.high().x-core.low().x>8){
+   // Only a real flying wing or delta: a conventional plane whose nose did not come
+   // off stays in one piece here, instead of losing half its fuselage with the engines on that side.
+   if(cuts.stream().noneMatch(c->c[0]==2)&&core.high().x-core.low().x>8&&flyingWing(hull,lo,hi)){
     float split=Math.max(.6F,core.high().x*.12F);var halves=BreakupMeshes.split(hull,0,split);
     if(halves[1].vertexCount()>=12&&halves[1].vertexCount()<=SECTION_LIMIT&&halves[0].vertexCount()>=12){
      var foot=foot(halves[1],0,split);
@@ -141,19 +151,35 @@ public final class WreckMesh {
   return new float[]{y,z,front};
  }
  /**
-  * Where a crashed hull's forward fuselage snaps off: the furthest-aft station, 18% to 34% of the length
-  * back from the nose, where the hull is still a narrow tube (no wider than twice the nose, at most 1.6
-  * blocks either side). On a flying wing or a delta the leading edges are already wide there, and the
+  * Where a crashed hull's forward fuselage snaps off: the furthest-aft station, 16% to 34% of the length
+  * back from the nose, where the hull is still a narrow tube (no wider than twice the nose and at most
+  * 1.6 blocks or 7.5% of the length either side, or no wider than the nose itself and a third). On a flying wing or a delta the leading edges are already wide there, and the
   * nose stays on: NaN.
   */
  static float noseCut(McheliModel.Group hull,Vector3f lo,Vector3f hi){
   float length=hi.z-lo.z;if(length<5)return Float.NaN;
   float nose=Math.max(.35F,halfWidth(hull,hi.z-length*.08F));
-  for(float f=.34F;f>=.18F;f-=.02F){
-   float z=hi.z-length*f,w=halfWidth(hull,z);
-   if(w>0&&w<=Math.min(1.6F,nose*2))return z;
+  // A bomber's or an airliner's fuselage is wider than a fighter's, and may be no wider than its own
+  // nose: a fixed 1.6-block limit missed all of them, and they split down the middle like a flying wing.
+  float tube=Math.max(Math.min(Math.max(1.6F,length*.075F),nose*2),nose*1.3F);
+  for(int i=0;i<=9;i++){
+   float z=hi.z-length*(.34F-i*.02F),w=halfWidth(hull,z);
+   if(w>0&&w<=tube)return z;
   }
   return Float.NaN;
+ }
+ /**
+  * Whether a hull is a flying wing or a delta: from 17% to 34% of its length back from the nose its leading
+  * edges sweep outward all the way, never narrowing, and over each half of that stretch by at least 0.3
+  * blocks per block. A conventional plane has a fuselage tube there, or a straight wing that is just as
+  * wide all along its chord.
+  */
+ static boolean flyingWing(McheliModel.Group hull,Vector3f lo,Vector3f hi){
+  float length=hi.z-lo.z;if(length<5)return false;
+  float[] w=new float[9];for(int i=0;i<9;i++)w[i]=halfWidth(hull,hi.z-length*(.17F+i*.02125F));
+  for(int i=1;i<9;i++)if(w[i]<w[i-1]-.05F)return false;
+  float sweep=.3F*length*.085F;
+  return w[4]-w[0]>=sweep&&w[8]-w[4]>=sweep;
  }
  /** Widest |x| of the hull's cross-section at {@code z}: where its triangle edges cross that station. */
  static float halfWidth(McheliModel.Group hull,float z){
@@ -197,12 +223,30 @@ public final class WreckMesh {
   float t=(v[2]-bend)/(hi.z-bend),s=Math.clamp((t-.55F)/.45F,0,1);
   float cy=(lo.y+hi.y)*.5F,height=Math.max(.2F,hi.y-lo.y);
   float x=v[0],y=v[1],z=v[2];
-  y-=(z-bend)*.07F*t;
-  z-=s*s*.07F*length;y-=s*s*.03F*length;y=cy+(y-cy)*(1-.22F*s);x*=1+.16F*s;
+  y-=Math.min((z-bend)*.07F*t,DROOP);
+  z-=s*s*Math.min(.07F*length,CRUSH);y-=s*s*Math.min(.03F*length,CRUSH*.45F);y=cy+(y-cy)*(1-.22F*s);x*=1+.16F*s;
   float rx=v[0],ry=v[1]-cy;float r=(float)Math.sqrt(rx*rx+ry*ry);
-  float wrinkle=(noise(v[0]*2.3F,v[1]*2.3F,v[2]*2.3F)*(.006F+.022F*s))*length;
+  // Wrinkles are dents in sheet metal, a few hands deep at most: scaled by the whole airframe's length
+  // they reached a block on a bomber, and neighbouring corners shot apart into spikes.
+  float wrinkle=noise(v[0]*2.3F,v[1]*2.3F,v[2]*2.3F)*Math.min((.006F+.022F*s)*length,Math.min(WRINKLE,r*.12F));
   if(r>1e-3F){x+=rx/r*wrinkle*Math.min(1,height);y+=ry/r*wrinkle*Math.min(1,height);}
   v[0]=x;v[1]=y;v[2]=z;return s>0;
+ }
+ private static final Map<McheliModel.Group,Vector3f[]> BOUNDS=new WeakHashMap<>();
+ /**
+  * Where a point on a crashed plane's hull ends up once the hull is wrecked ({@link #get} with {@code wing}):
+  * outer wings droop and the nose is crushed. Parts mounted there (turrets, guns, propellers) move with it,
+  * instead of floating above the crushed skin.
+  */
+ public static Vector3f wrecked(McheliModel.Group hull,Vector3f p){
+  Vector3f[] b;synchronized(BOUNDS){b=BOUNDS.get(hull);if(b==null){
+   var lo=new Vector3f(Float.POSITIVE_INFINITY);var hi=new Vector3f(Float.NEGATIVE_INFINITY);var d=hull.data();
+   for(int i=0;i+7<d.length;i+=8){var v=new Vector3f(d[i],d[i+1],d[i+2]);lo.min(v);hi.max(v);}
+   b=new Vector3f[]{lo,hi};if(BOUNDS.size()>=64)BOUNDS.clear();BOUNDS.put(hull,b);}}
+  if(!b[0].isFinite())return new Vector3f(p);
+  float[] v={p.x,p.y,p.z,0,0,0,1,0};float extent=Math.max(Math.abs(b[0].x),Math.abs(b[1].x));
+  if(extent>3){float w=Math.clamp((Math.abs(v[0])/extent-.65F)/.35F,0,1);v[1]-=w*w*.55F;}
+  crumple(v,b[0],b[1]);return new Vector3f(v[0],v[1],v[2]);
  }
  /** Smooth value noise in -1..1 from a position. */
  static float noise(float x,float y,float z){
@@ -341,5 +385,5 @@ public final class WreckMesh {
   return out;
  }
  private static McheliModel.Group group(String name,List<Float> v){float[] d=new float[v.size()];for(int i=0;i<d.length;i++)d[i]=v.get(i);return new McheliModel.Group(name,d);}
- public static void clear(){synchronized(CACHE){CACHE.clear();}synchronized(SOOT){SOOT.clear();}}
+ public static void clear(){synchronized(CACHE){CACHE.clear();}synchronized(SOOT){SOOT.clear();}synchronized(BOUNDS){BOUNDS.clear();}}
 }

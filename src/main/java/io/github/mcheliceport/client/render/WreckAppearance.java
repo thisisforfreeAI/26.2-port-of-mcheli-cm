@@ -8,6 +8,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
+import org.joml.Vector3f;
 /**
  * Render-only breakup, restrained settling and burn. The paint chars over the first fire (a charred skin
  * layer thickens and the hull darkens), embers glow in its seams and fade as it cools, a crashed plane's
@@ -97,6 +98,11 @@ public final class WreckAppearance {
   return low<=tip*.9F;
  }
  private static final Map<McheliModel.Group,Float> LOW_X=new WeakHashMap<>();
+ private static final Map<McheliModel.Group,Vector3f> CENTERS=new WeakHashMap<>();
+ /** The middle of a part's bounds in its own model space, cached. */
+ private static Vector3f center(McheliModel.Group group){
+  synchronized(CENTERS){var c=CENTERS.get(group);if(c==null){c=BreakupMeshes.bounds(group).center();CENTERS.put(group,c);}return c;}
+ }
  /** Ticks the sections take to tear apart once the hull hits the ground. */
  static final int BREAK=10;
  /**
@@ -122,12 +128,29 @@ public final class WreckAppearance {
   }
   return m.translate(-h.x,-h.y,-h.z);
  }
+ /** How far the sections have torn away: 0 until the hull hits the ground, 1 once they are at rest. */
+ private static float open(WreckScene.Scene scene,long now){
+  boolean down=scene!=null&&scene.impact!=null;
+  return !down?0:scene.late?1:Math.clamp((now-scene.impactTick)/(float)BREAK,0,1);
+ }
+ private static int seed(AircraftEntity ac,WreckScene.Scene scene){return scene!=null?scene.seed:ac.getUUID().hashCode();}
+ /**
+  * The pose of a part mounted on a crashed plane's hull (a propeller, a gunner's turret, a gun): moved as
+  * the skin under it was drooped and crushed, and with the section it sits on when that broke off.
+  * {@code body} is the hull's own draw pose and {@code source} its unwrecked shape, so the part is placed
+  * in the hull's model space where the wreck was shaped and its sections cut.
+  */
+ static Matrix4f follow(McheliModel.Group source,WreckMesh.Parts mesh,Matrix4f body,Matrix4f pose,Vector3f center,int seed,float open){
+  var inverse=new Matrix4f(body).invert();var local=new Matrix4f(inverse).mul(pose).transformPosition(new Vector3f(center));
+  if(!local.isFinite())return pose;
+  var wrecked=WreckMesh.wrecked(source,local);var shift=new Vector3f(wrecked).sub(local);var out=new Matrix4f(body);
+  if(mesh!=null&&open>0)for(var s:mesh.sections())if(s.holds(wrecked)){out.mul(breakPose(s,seed,open));break;}
+  return out.translate(shift).mul(inverse).mul(pose);
+ }
  /** Draws the sections a crashed hull broke into, each burnt, glowing and closed like the hull itself. */
  private static void sections(AircraftEntity ac,AircraftRenderState render,List<AircraftPartPoses.Draw> draws,WreckMesh.Parts mesh,Matrix4f bodyPose,Matrix4f pose,
          WreckScene.Scene scene,float burn,float glow,long now){
-  boolean down=scene!=null&&scene.impact!=null;
-  float open=!down?0:scene.late?1:Math.clamp((now-scene.impactTick)/(float)BREAK,0,1);
-  int seed=scene!=null?scene.seed:ac.getUUID().hashCode();
+  float open=open(scene,now);int seed=seed(ac,scene);
   if(open>0&&!render.thermal){
    VehicleDetailLayers.require(render,pose,render.texture,List.of(mesh.lining()),PlaneAirframeParts.LINING);
    VehicleDetailLayers.require(render,pose,PlaneAirframeParts.METAL,List.of(mesh.cap()),PlaneAirframeParts.CAP);
@@ -163,25 +186,6 @@ public final class WreckAppearance {
    }
   }
  }
- /**
-  * The pose of a part that is not itself wrecked (a propeller, an engine, a pylon) on a hull that broke
-  * into sections: one that sat on a torn-off section moves with it instead of hanging where it was.
-  */
- static Matrix4f mounted(WreckMesh.Parts hull,Matrix4f hullPose,Matrix4f pose,McheliModel.Group group,WreckScene.Scene scene,AircraftEntity ac,long now){
-  if(hull==null||hullPose==null||group.name().startsWith("$lg"))return pose;
-  var part=io.github.mcheliceport.client.model.BreakupMeshes.part(group);if(part==null)return pose;
-  var inverse=new Matrix4f(hullPose).invert();var c=new Matrix4f(inverse).mul(pose).transformPosition(part.bounds().center());
-  for(var s:hull.sections()){
-   var h=s.hinge();
-   boolean on=s.kind()==WreckMesh.NOSE?c.z>h.z:s.kind()==WreckMesh.WING?c.x<h.x:c.x>h.x;
-   if(!on)continue;
-   boolean down=scene!=null&&scene.impact!=null;
-   float open=!down?0:scene.late?1:Math.clamp((now-scene.impactTick)/(float)BREAK,0,1);
-   int seed=scene!=null?scene.seed:ac.getUUID().hashCode();
-   return new Matrix4f(hullPose).mul(breakPose(s,seed,open)).mul(inverse).mul(pose);
-  }
-  return pose;
- }
  public static boolean removable(String n){return n.matches("\\$(canopy|hatch|panel|enginecover|cover)[0-9]*")||n.equals("$track_roller0");}
  public static int removed(AircraftEntity ac){var s=STATES.get(ac);return s==null?0:s.removed;}
  public static void clear(){STATES.clear();world.clear();WreckMesh.clear();WreckBurn.clear();}
@@ -208,11 +212,12 @@ public final class WreckAppearance {
   var root=new Matrix4f(s.rest).mul(sag(ac));
   var draws=new ArrayList<AircraftPartPoses.Draw>();int removed=0;
   var gear=new ArrayList<AircraftPartPoses.Draw>();WreckMesh.Parts hull=null;Matrix4f hullPose=null;
-  // The hull's sections, found first so the parts mounted on them (propellers, engines, pylons) go with them.
-  WreckMesh.Parts broken=null;Matrix4f brokenPose=null;
-  if(plane)for(var draw:render.draws)for(var group:draw.groups())if(broken==null&&group.name().equals("$body")){
-   var m=WreckMesh.get(group,true,hasLeftWing(ac,group));if(m!=null&&!m.sections().isEmpty()){broken=m;brokenPose=new Matrix4f(draw.pose());}
+  // The broken hull first, so the parts mounted on its sections can go with them.
+  WreckMesh.Parts broken=null;Matrix4f brokenPose=null;McheliModel.Group brokenSource=null;
+  if(plane)for(var draw:render.draws)for(var group:draw.groups())if(brokenSource==null&&group.name().equals("$body")){
+   broken=WreckMesh.get(group,true,hasLeftWing(ac,group));brokenPose=draw.pose();brokenSource=group;
   }
+  float open=open(scene,now);int seed=seed(ac,scene);
   for(var draw:render.draws)for(var group:draw.groups()){
    String name=group.name();
    // A crashed plane's gear is sheared off on impact and lies in the debris field instead.
@@ -220,7 +225,9 @@ public final class WreckAppearance {
    boolean supported=name.equals("$body")||name.equals("$weapon0")||name.startsWith("$lg")||removable(name)||heli&&name.equals("$weapon1");
    boolean planeBody=plane&&name.equals("$body");
    var mesh=supported?WreckMesh.get(group,planeBody,planeBody&&hasLeftWing(ac,group)):null;
-   if(mesh==null){draws.add(new AircraftPartPoses.Draw(new Matrix4f(root).mul(mounted(broken,brokenPose,draw.pose(),group,scene,ac,now)),List.of(group)));continue;}
+   // Until the wrecked hull is built it is drawn as it was, and so are the parts on it.
+   var mounted=broken==null||planeBody?draw.pose():follow(brokenSource,broken,brokenPose,draw.pose(),center(group),seed,open);
+   if(mesh==null){draws.add(new AircraftPartPoses.Draw(new Matrix4f(root).mul(mounted),List.of(group)));continue;}
    boolean detach=removed<2&&(!io.github.mcheliceport.client.particle.WreckSequenceEffects.enabled()||!name.startsWith("$enginecover")&&!name.startsWith("$cover"))&&(removable(group.name())||heli&&group.name().equals("$weapon1")&&group.vertexCount()<=1200);
    if(detach){
     removed++;PanelInteriors.add(render,new Matrix4f(root).mul(draw.pose()),group,ac);
@@ -236,7 +243,7 @@ public final class WreckAppearance {
     if(young&&s.scattered.add(group))LoosePanels.wreckPiece(ac,render.texture,group,draw.pose(),mesh.center());
     continue;
    }
-   var pose=new Matrix4f(root).mul(draw.pose());
+   var pose=new Matrix4f(root).mul(mounted);
    if(group.name().startsWith("$lg"))pose.translate(0,-.35F*settle,0).rotateZ(.16F*settle);
    if(group.name().equals("$weapon0")&&ac instanceof io.github.mcheliceport.entity.tank.TankEntity){var c=mesh.center();pose.translate(c).rotateZ(-.045F*settle).translate(-c.x,-c.y,-c.z);}
    draws.add(new AircraftPartPoses.Draw(pose,List.of(mesh.shape())));
@@ -266,7 +273,9 @@ public final class WreckAppearance {
     var inverse=new Matrix4f(draw.pose()).invert();
     for(var origin:VehicleAtmosphere.wreckOrigins(ac)){
      var relative=origin.subtract(ac.position());var local=inverse.transformPosition(new org.joml.Vector3f((float)relative.x,(float)relative.y,(float)relative.z));
-     var soot=VehicleSkinMeshes.region(group,new Vec3(local.x,local.y,local.z),1.65F);
+     // On the wrecked shape, not the airframe as built: the outer wings droop and the nose is crushed,
+     // so a patch cut from the original skin hung in the air beside them as a dark see-through ghost.
+     var soot=VehicleSkinMeshes.region(mesh.shape(),new Vec3(local.x,local.y,local.z),1.65F);
      if(soot!=null)VehicleDetailLayers.add(render,pose,SOOT,List.of(soot),0xEE171511);
     }
    }

@@ -52,6 +52,17 @@ class DebrisMotionTest {
         assertEquals(64+.15,m.position.y,.03);
         var y=new Quaternionf().rotateZ(1.1F).transform(new Vector3f(0,1,0));var thin=m.rotated(new Vec3(y.x,y.y,y.z));assertTrue(Math.abs(thin.y)>.99,thin.toString());
     }
+    @Test void aTornTailRestsOnItsStabilisersNotOnTheTipOfItsFin(){
+        // Stabilisers across the bottom of the box, the fin above: the skin's middle is low. It lands upside down.
+        var tail=new Vector3f(8,3.5F,4.5F);
+        for(var start:new Quaternionf[]{new Quaternionf().rotateZ((float)Math.PI),new Quaternionf().rotateZ(.3F)}){
+            var m=new DebrisMotion(new Vec3(0,70,0),new Vec3(.3,-.3,0),new Vector3f(),start,tail,7);m.keel(new Vector3f(0,-1.2F,0));
+            land(m,600);
+            assertEquals(DebrisMotion.Phase.REST,m.phase);
+            var low=m.rotated(new Vec3(start.transform(new Vector3f(0,-1,0)).x,start.transform(new Vector3f(0,-1,0)).y,start.transform(new Vector3f(0,-1,0)).z));
+            assertTrue(low.y<-.98,"the stabiliser side ends up down: "+low);
+        }
+    }
     @Test void waterSinksInsteadOfBouncing(){
         var m=free(CHUNK,new Vec3(0,-1,0));m.step();
         assertEquals(DebrisMotion.Event.SPLASH,m.contact(new Vec3(0,98,0),new Vec3(0,1,0),true));

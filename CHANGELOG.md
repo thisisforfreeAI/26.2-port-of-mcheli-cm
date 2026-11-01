@@ -116,6 +116,16 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
   See `docs/M6B_PLAN.md`.
 
 ### Fixed
+- Glitchy plane wrecks. A crashed bomber's nose was covered in spikes: its skin wrinkles were scaled by
+  the whole airframe's length and reached a block deep. They are now dents a few hands deep at most, and
+  the crushed nose moves back and droops a bounded amount. A B-29, C-5, 767 and other planes with a
+  fuselage wider than 1.6 blocks no longer split lengthwise through the fuselage as if they were a flying
+  wing, which also left their inboard engines and wing hanging beside the hull: their nose breaks off
+  instead, and only a real flying wing (the B-2) splits. Propellers, turrets and guns on a section that
+  breaks off now go with it. A plane that loses its tail no longer shows a see-through tail cone where the
+  fin stood in the fuselage skin, a torn-off tail comes to rest on its stabilisers instead of balancing on
+  its fin tip in mid-air, the wing tips are no longer punched with holes, and the fire's soot patch follows
+  the drooped, crushed wreck instead of floating where the undamaged skin was.
 - A crashed or destroyed vehicle's wreck no longer sinks into the ground. Its own blast dug a crater
   right under it and the hulk dropped into the hole, so most of the airframe ended up hidden below the
   surface. The blast now breaks only what stands above the ground the wreck lies on (trees, fences,
