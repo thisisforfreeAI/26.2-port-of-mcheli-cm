@@ -9,7 +9,21 @@ import net.neoforged.fml.common.Mod;
 @Mod(McheliCePort.MOD_ID)
 public final class McheliCePortNeoForge {
 
+    static IEventBus modBus;
+    static ModContainer container;
+
     public McheliCePortNeoForge(IEventBus modBus, ModContainer container) {
+        McheliCePortNeoForge.modBus = modBus;
+        McheliCePortNeoForge.container = container;
+        NeoForgeEvents.register(modBus);
         McheliCePort.init();
+        NeoForgeCapabilities.register(modBus);
+    }
+
+    static IEventBus modBus() {
+        if (modBus == null) {
+            throw new IllegalStateException("The NeoForge entry point has not run yet");
+        }
+        return modBus;
     }
 }

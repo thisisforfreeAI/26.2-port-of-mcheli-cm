@@ -70,6 +70,30 @@ public final class NeoForgePlatform implements Platform {
         return net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer();
     }
 
+    @Override
+    public void addPackSource(net.minecraft.server.packs.PackType type,
+            java.util.function.Consumer<java.util.function.Consumer<net.minecraft.server.packs.repository.Pack>> source) {
+        NeoForgeEvents.PACK_SOURCES.add(new NeoForgeEvents.Source(type, source));
+    }
+
+    @Override
+    public net.minecraft.server.level.ServerPlayer fakePlayer(net.minecraft.server.level.ServerLevel level,
+            com.mojang.authlib.GameProfile profile) {
+        return net.neoforged.neoforge.common.util.FakePlayerFactory.get(level, profile);
+    }
+
+    @Override
+    public boolean explosionStart(net.minecraft.world.level.Level level, net.minecraft.world.level.Explosion explosion) {
+        return net.neoforged.neoforge.event.EventHooks.onExplosionStart(level, explosion);
+    }
+
+    @Override
+    public void explosionDetonate(net.minecraft.world.level.Level level, net.minecraft.world.level.Explosion explosion,
+            java.util.List<net.minecraft.world.entity.Entity> entities, java.util.List<net.minecraft.core.BlockPos> blocks) {
+        net.neoforged.neoforge.event.EventHooks.onExplosionDetonate(level, explosion, entities,
+                explosion.radius() * 2.0);
+    }
+
     static void walk(String folder, Path root, ModFileVisitor visitor) throws IOException {
         if (!Files.isDirectory(root)) {
             return;

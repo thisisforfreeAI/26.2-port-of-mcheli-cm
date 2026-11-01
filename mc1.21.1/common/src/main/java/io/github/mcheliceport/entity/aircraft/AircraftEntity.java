@@ -538,12 +538,12 @@ public abstract class AircraftEntity extends Entity
     }
 
     @Override
-    public boolean isMultipartEntity() {
+    public boolean hasParts() {
         return this.hitBoxes.length > 0;
     }
 
     @Override
-    public PartEntity<?>[] getParts() {
+    public PartEntity<?>[] parts() {
         return this.hitBoxes;
     }
 

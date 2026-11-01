@@ -33,6 +33,8 @@ dependencies {
     jarJar(implementation("org.yaml:snakeyaml")) {
         version { strictly '[2.5,3)'; prefer snakeyaml_version }
     }
+    // Jar-in-Jar only applies to the built jar; dev runs need it on the classpath directly.
+    additionalRuntimeClasspath "org.yaml:snakeyaml:${snakeyaml_version}"
 }
 
 tasks.named('compileJava', JavaCompile) {

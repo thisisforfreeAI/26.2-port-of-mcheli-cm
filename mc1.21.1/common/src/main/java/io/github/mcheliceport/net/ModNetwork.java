@@ -55,6 +55,7 @@ public final class ModNetwork {
     }
 
     private static void registerPayloads(PayloadRegistrar registrar) {
+        registrar.playToClient(SpawnDataPayload.TYPE, SpawnDataPayload.CODEC, SpawnDataPayload::handle);
         registrar.optional().playToClient(VehicleBloodPayload.TYPE, VehicleBloodPayload.CODEC,
                 (p, context) -> { var hooks = WeaponClientHooks.get(); if (hooks != null) hooks.vehicleBlood(p); });
         // Optional addition: older clients keep the existing protocol and simply receive no marks.

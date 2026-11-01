@@ -41,4 +41,11 @@ public interface Registrar {
             java.util.function.Supplier<net.minecraft.world.item.ItemStack> icon,
             net.minecraft.world.item.CreativeModeTab.DisplayItemsGenerator items,
             net.minecraft.resources.ResourceLocation after);
+
+    /** Default attributes for a living entity type (NeoForge's EntityAttributeCreationEvent). */
+    void entityAttributes(java.util.function.Supplier<? extends EntityType<? extends net.minecraft.world.entity.LivingEntity>> type,
+            java.util.function.Supplier<net.minecraft.world.entity.ai.attributes.AttributeSupplier> attributes);
+
+    /** Runs {@code task} once every registry is filled (NeoForge's common setup, on the main thread). */
+    void afterRegistration(Runnable task);
 }
