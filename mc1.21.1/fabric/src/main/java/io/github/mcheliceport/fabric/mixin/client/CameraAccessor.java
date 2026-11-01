@@ -2,7 +2,6 @@ package io.github.mcheliceport.fabric.mixin.client;
 
 import net.minecraft.client.Camera;
 import org.joml.Quaternionf;
-import org.joml.Vector3f;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 import org.spongepowered.asm.mixin.gen.Invoker;
@@ -15,13 +14,4 @@ public interface CameraAccessor {
 
     @Accessor("rotation")
     Quaternionf mcheli$rotation();
-
-    @Accessor("forwards")
-    Vector3f mcheli$forwards();
-
-    @Accessor("up")
-    Vector3f mcheli$up();
-
-    @Accessor("left")
-    Vector3f mcheli$left();
 }

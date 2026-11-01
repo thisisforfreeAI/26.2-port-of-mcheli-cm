@@ -38,14 +38,21 @@ public abstract class PackRepositoryMixin {
                 type = ((FolderRepositorySourceAccessor) folder).mcheli$packType();
             }
         }
-        List<Consumer<Consumer<Pack>>> extra = type == null ? null : FabricPlatform.PACK_SOURCES.get(type);
-        if (extra == null || extra.isEmpty()) {
+        if (type == null) {
             return;
         }
+        // Read the sources when packs are discovered, not now: the client's repository is built
+        // before the mod initializers that register them have run.
+        PackType packType = type;
         Set<RepositorySource> all = new LinkedHashSet<>(this.sources);
-        for (Consumer<Consumer<Pack>> source : extra) {
-            all.add(source::accept);
-        }
+        all.add(packs -> {
+            List<Consumer<Consumer<Pack>>> extra = FabricPlatform.PACK_SOURCES.get(packType);
+            if (extra != null) {
+                for (Consumer<Consumer<Pack>> source : extra) {
+                    source.accept(packs);
+                }
+            }
+        });
         this.sources = Set.copyOf(all);
     }
 }

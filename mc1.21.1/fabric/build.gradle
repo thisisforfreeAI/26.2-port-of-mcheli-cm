@@ -8,7 +8,11 @@ loom {
     if (aw.exists()) accessWidenerPath = aw
     mixin { defaultRefmapName = "${mod_id}.refmap.json" }
     runs {
-        client { client(); configName = 'Fabric Client'; ideConfigGenerated true; runDir 'runs/client' }
+        client {
+            client(); configName = 'Fabric Client'; ideConfigGenerated true; runDir 'runs/client'
+            // Dev testing: -PquickJoin=localhost joins a running dev server straight away.
+            if (project.hasProperty('quickJoin')) programArgs '--quickPlayMultiplayer', project.property('quickJoin')
+        }
         server { server(); configName = 'Fabric Server'; ideConfigGenerated true; runDir 'runs/server' }
     }
 }

@@ -16,9 +16,9 @@ abstract class ParticleEngineMixin {
 
     @Redirect(method = "render", at = @At(value = "FIELD",
             target = "Lnet/minecraft/client/particle/ParticleEngine;RENDER_ORDER:Ljava/util/List;"))
-    private List<ParticleRenderType> mcheli$renderOrder(List<ParticleRenderType> order) {
+    private List<ParticleRenderType> mcheli$renderOrder() {
         if (mcheli$order == null) {
-            List<ParticleRenderType> all = new ArrayList<>(order);
+            List<ParticleRenderType> all = new ArrayList<>(ParticleEngineAccessor.mcheli$renderOrder());
             all.addAll(ParticleLayers.TYPES);
             mcheli$order = List.copyOf(all);
         }

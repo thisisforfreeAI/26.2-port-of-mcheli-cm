@@ -60,9 +60,9 @@ abstract class GameRendererMixin {
             // NeoForge's three-angle Camera#setRotation.
             access.mcheli$rotation().rotationYXZ((float) Math.PI - yaw * Mth.DEG_TO_RAD, -pitch * Mth.DEG_TO_RAD,
                     -roll * Mth.DEG_TO_RAD);
-            new Vector3f(0.0F, 0.0F, -1.0F).rotate(access.mcheli$rotation(), access.mcheli$forwards());
-            new Vector3f(0.0F, 1.0F, 0.0F).rotate(access.mcheli$rotation(), access.mcheli$up());
-            new Vector3f(-1.0F, 0.0F, 0.0F).rotate(access.mcheli$rotation(), access.mcheli$left());
+            new Vector3f(0.0F, 0.0F, -1.0F).rotate(access.mcheli$rotation(), camera.getLookVector());
+            new Vector3f(0.0F, 1.0F, 0.0F).rotate(access.mcheli$rotation(), camera.getUpVector());
+            new Vector3f(-1.0F, 0.0F, 0.0F).rotate(access.mcheli$rotation(), camera.getLeftVector());
         }
     }
 
