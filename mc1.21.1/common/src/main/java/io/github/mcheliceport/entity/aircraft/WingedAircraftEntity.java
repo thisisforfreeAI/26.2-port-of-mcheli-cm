@@ -449,7 +449,7 @@ public abstract class WingedAircraftEntity extends AircraftEntity implements Pla
 
     @Override
     protected void addAdditionalSaveData(net.minecraft.nbt.CompoundTag output$tag) { ValueOutput output = ValueOutput.of(output$tag, this.registryAccess());
-        super.addAdditionalSaveData(output);
+        super.addAdditionalSaveData(output$tag);
         output.putDouble(this.savePrefix() + "Throttle", this.getCurrentThrottle());
         output.putFloat(this.savePrefix() + "Rotor", this.rotationRotor);
     }
@@ -458,7 +458,7 @@ public abstract class WingedAircraftEntity extends AircraftEntity implements Pla
     protected void readAdditionalSaveData(net.minecraft.nbt.CompoundTag input$tag) { ValueInput input = ValueInput.of(input$tag, this.registryAccess());
         this.loading = true;
         try {
-            super.readAdditionalSaveData(input);
+            super.readAdditionalSaveData(input$tag);
         } finally {
             this.loading = false;
         }

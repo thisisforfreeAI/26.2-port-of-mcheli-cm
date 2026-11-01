@@ -216,7 +216,7 @@ public final class McheliCommand {
         int asked = 0;
         for (ServerPlayer player : players) {
             String name = player.getGameProfile().getName();
-            if (player.connection == null || !player.connection.hasChannel(CommandRequestPayload.TYPE)) {
+            if (player.connection == null || !io.github.mcheliceport.platform.Services.NETWORK.canSend(player, CommandRequestPayload.TYPE)) {
                 source.sendFailure(Component.literal(name + " does not have the mod"));
                 continue;
             }
@@ -300,8 +300,13 @@ public final class McheliCommand {
 
     private static int statusTiles(CommandContext<CommandSourceStack> c, int min) {
         List<Object> tiles = new ArrayList<>();
-        c.getSource().getLevel().getChunkSource().chunkMap.forEachReadyToSendChunk(
-                chunk -> tiles.addAll(chunk.getBlockEntities().values()));
+        for (var holder : ((io.github.mcheliceport.mixin.ChunkMapAccessor) c.getSource().getLevel().getChunkSource().chunkMap)
+                .mcheli$getChunks()) {
+            var chunk = holder.getTickingChunk();
+            if (chunk != null) {
+                tiles.addAll(chunk.getBlockEntities().values());
+            }
+        }
         return status(c.getSource(), "Server loaded Tile Entity List", tiles, min);
     }
 
@@ -427,11 +432,11 @@ public final class McheliCommand {
     static DamageSource damageSource(DamageSources sources, String name, @Nullable ServerPlayer sender) {
         return switch (name.toLowerCase(Locale.ROOT)) {
             case "player" -> sender != null ? sources.playerAttack(sender) : sources.generic();
-            case "anvil" -> sources.source(DamageTypes.FALLING_ANVIL);
+            case "anvil" -> sources.anvil(null);
             case "cactus" -> sources.cactus();
             case "drown" -> sources.drown();
             case "fall" -> sources.fall();
-            case "fallingblock" -> sources.source(DamageTypes.FALLING_BLOCK);
+            case "fallingblock" -> sources.fallingBlock(null);
             case "infire" -> sources.inFire();
             case "inwall" -> sources.inWall();
             case "lava" -> sources.lava();
@@ -496,7 +501,7 @@ public final class McheliCommand {
     private static int title(CommandContext<CommandSourceStack> c) throws CommandSyntaxException {
         int seconds = Math.clamp(IntegerArgumentType.getInteger(c, "seconds"), 1, 180);
         int position = Math.clamp(IntegerArgumentType.getInteger(c, "position"), 0, 5);
-        Component message = ComponentArgument.getResolvedComponent(c, "message");
+        Component message = ComponentArgument.getComponent(c, "message");
         ModNetwork.sendToAllPlayers(c.getSource().getServer(), new TitlePayload(message, 20 * seconds, position));
         return 1;
     }
@@ -546,7 +551,7 @@ public final class McheliCommand {
                     + DEFAULT_DUMP_FOLDER));
             return 0;
         }
-        Path base = FMLPaths.GAMEDIR.get().resolve(folder);
+        Path base = io.github.mcheliceport.platform.Services.PLATFORM.gameDir().resolve(folder);
         try {
             YamlDump.Result result = YamlDump.dump(ContentRegistries.get(), base);
             String message = "Dumped " + result.written() + " YAML files to " + base.toAbsolutePath()

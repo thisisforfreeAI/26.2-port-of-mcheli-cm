@@ -119,7 +119,7 @@ public final class ProjectileChunkLoader {
 
     public static boolean isLeased(ServerLevel level, ChunkPos pos) {
         Long2LongOpenHashMap leases = LEASES.get(level.dimension());
-        return leases != null && leases.containsKey(pos.pack());
+        return leases != null && leases.containsKey(pos.toLong());
     }
 
     /**
@@ -129,7 +129,7 @@ public final class ProjectileChunkLoader {
      */
     static long[] pathChunks(double x, double z, Vec3 motion) {
         it.unimi.dsi.fastutil.longs.LongLinkedOpenHashSet chunks = new it.unimi.dsi.fastutil.longs.LongLinkedOpenHashSet();
-        chunks.add(ChunkPos.pack(floorChunk(x), floorChunk(z)));
+        chunks.add(ChunkPos.asLong(floorChunk(x), floorChunk(z)));
         double speed = Math.sqrt(motion.x * motion.x + motion.z * motion.z);
         if (speed >= 1.0e-4) {
             double lead = BASE_LINE_CHUNKS * 16.0 + Math.min(MAX_VELOCITY_EXTRA_CHUNKS * 16.0,
@@ -137,7 +137,7 @@ public final class ProjectileChunkLoader {
             double ux = motion.x / speed;
             double uz = motion.z / speed;
             for (double d = SAMPLE_STEP; d <= lead; d += SAMPLE_STEP) {
-                chunks.add(ChunkPos.pack(floorChunk(x + ux * d), floorChunk(z + uz * d)));
+                chunks.add(ChunkPos.asLong(floorChunk(x + ux * d), floorChunk(z + uz * d)));
             }
         }
         return chunks.toLongArray();

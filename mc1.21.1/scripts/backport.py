@@ -50,6 +50,19 @@ RULES = [
     (r'\.getMinY\(\)', '.getMinBuildHeight()'),
     (r'((?:this\.)?\w+(?:\(\))?)\.getMaxY\(\)', r'(\1.getMaxBuildHeight() - 1)'),
     (r'\.getNonEquipmentItems\(\)', '.items'),
+    (r'\bnet\.minecraft\.advancements\.triggers\.CriterionTrigger\b', 'net.minecraft.advancements.CriterionTrigger'),
+    (r'\bnet\.minecraft\.advancements\.triggers\.', 'net.minecraft.advancements.critereon.'),
+    (r'\bnet\.minecraft\.world\.level\.gamerules\.GameRules\b', 'net.minecraft.world.level.GameRules'),
+    # 26.2 passes the reason to EntityType#create and a "send event" flag to startRiding.
+    (r'\.create\(([^,()]+(?:\(\))?), (?:net\.minecraft\.world\.entity\.)?MobSpawnType\.\w+\)', r'.create(\1)'),
+    (r'\bstartRiding\(((?:[^,()\[\]]|\([^()]*\)|\[[^\]]*\])+), (true|false), (?:true|false)\)', r'startRiding(\1, \2)'),
+    (r'\bspawnAtLocation\((?:\(ServerLevel\) )?[\w.]+(?:\(\))?, ', 'spawnAtLocation('),
+    (r'\bContainerHelper\.(loadAllItems|saveAllItems)\(', r'io.github.mcheliceport.shim.Compat.\1('),
+    (r'import net\.minecraft\.world\.level\.portal\.TeleportTransition;', 'import io.github.mcheliceport.shim.TeleportTransition;'),
+    (r'\bnet\.minecraft\.world\.level\.portal\.TeleportTransition\b', 'io.github.mcheliceport.shim.TeleportTransition'),
+    (r'((?:this\.)?[\w]+(?:\(\))?(?:\.\w+(?:\(\))?)*)\.teleport\(new ', r'io.github.mcheliceport.shim.TeleportTransition.teleport(\1, new '),
+    (r'\bCommands\.hasPermission\((Commands\.\w+)\)', r'source$ -> source$.hasPermission(\1)'),
+    (r'\.get\((\w+)\)\.map\(h -> h\.value\(\)\)', r'.getOptional(\1)'),
 ]
 
 SAVE_SIGS = [
@@ -101,6 +114,16 @@ OVERRIDES = [
 ]
 
 
+def _super_save(text):
+    # super.readAdditionalSaveData(input) where input is the shim wrapper: pass the raw tag on.
+    for name in set(re.findall(r'(\w+)\$tag', text)):
+        text = re.sub(r'super\.(addAdditionalSaveData|readAdditionalSaveData|saveAsPassenger)\(' + name + r'\)',
+                      r'super.\1(' + name + r'$tag)', text)
+        text = re.sub(r'super\.(loadAdditional|saveAdditional)\(' + name + r'\)',
+                      r'super.\1(' + name + r'$tag, ' + name + r'$registries)', text)
+    return text
+
+
 def convert(text: str) -> str:
     for pattern, repl in RULES:
         text = re.sub(pattern, repl, text)
@@ -108,6 +131,7 @@ def convert(text: str) -> str:
         text = re.sub(pattern, repl, text)
     for pattern, repl in OVERRIDES:
         text = re.sub(pattern, repl, text)
+    text = _super_save(text)
     return text
 
 
@@ -116,6 +140,8 @@ def main(args):
         root = Path(arg)
         files = [root] if root.is_file() else sorted(root.rglob('*.java'))
         for f in files:
+            if '/shim/' in f.as_posix() or '/platform/' in f.as_posix():
+                continue
             old = f.read_text(encoding='utf-8')
             new = convert(old)
             if new != old:

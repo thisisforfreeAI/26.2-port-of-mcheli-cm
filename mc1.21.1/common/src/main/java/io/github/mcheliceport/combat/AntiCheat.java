@@ -209,7 +209,7 @@ public final class AntiCheat {
         MinecraftServer server = player.level().getServer();
         if (action != Action.LOG && server != null) {
             for (ServerPlayer op : server.getPlayerList().getPlayers()) {
-                if (op != player && op.hasPermission(Commands.LEVEL_GAMEMASTERS)) {
+                if (op != player && op.hasPermissions(Commands.LEVEL_GAMEMASTERS)) {
                     op.sendSystemMessage(Component.literal(message));
                 }
             }

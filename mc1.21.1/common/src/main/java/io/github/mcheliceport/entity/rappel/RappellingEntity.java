@@ -17,7 +17,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.portal.TeleportTransition;
+import io.github.mcheliceport.shim.TeleportTransition;
 import io.github.mcheliceport.shim.ValueInput;
 import io.github.mcheliceport.shim.ValueOutput;
 import net.minecraft.world.phys.AABB;
@@ -53,9 +53,9 @@ public class RappellingEntity extends Entity {
         Entity previous = user.getVehicle(); Vec3 previousPos = user.position();
         user.stopRiding();
         if (user.isPassenger()) { helper.discard(); return null; }
-        if (!user.startRiding(helper, true, true)) {
+        if (!user.startRiding(helper, true)) {
             helper.discard(); user.setPos(previousPos);
-            if (previous != null && !previous.isRemoved()) { user.startRiding(previous, true, true); previous.positionRider(user); }
+            if (previous != null && !previous.isRemoved()) { user.startRiding(previous, true); previous.positionRider(user); }
             return null;
         }
         user.setDeltaMovement(Vec3.ZERO); user.resetFallDistance(); helper.positionRider(user); return helper;
@@ -128,8 +128,8 @@ public class RappellingEntity extends Entity {
         rider.stopRiding();
         if (rider.isPassenger()) { this.setDeltaMovement(Vec3.ZERO); return false; }
         rider.resetFallDistance();
-        if (rider.teleport(new TeleportTransition(level, target, Vec3.ZERO, rider.getYRot(), rider.getXRot(), TeleportTransition.DO_NOTHING)) == null) {
-            rider.startRiding(this, true, true); this.positionRider(rider); return false;
+        if (io.github.mcheliceport.shim.TeleportTransition.teleport(rider, new TeleportTransition(level, target, Vec3.ZERO, rider.getYRot(), rider.getXRot(), TeleportTransition.DO_NOTHING)) == null) {
+            rider.startRiding(this, true); this.positionRider(rider); return false;
         }
         this.discard(); return true;
     }

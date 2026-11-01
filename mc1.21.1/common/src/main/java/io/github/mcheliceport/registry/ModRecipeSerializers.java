@@ -14,14 +14,29 @@ import io.github.mcheliceport.platform.registry.DeferredHolder;
 public final class ModRecipeSerializers {
 
     public static final DeferredHolder<RecipeSerializer<?>, RecipeSerializer<FuelRefillRecipe>> CHARGE_FUEL =
-            ModRegistries.RECIPE_SERIALIZERS.register("charge_fuel", () -> new RecipeSerializer<>(
-                    MapCodec.unit(FuelRefillRecipe.INSTANCE), StreamCodec.unit(FuelRefillRecipe.INSTANCE)));
+            ModRegistries.RECIPE_SERIALIZERS.register("charge_fuel", () -> serializer(FuelRefillRecipe.INSTANCE));
     public static final DeferredHolder<RecipeSerializer<?>, RecipeSerializer<RangeFinderRechargeRecipe>>
             CHARGE_POWER_RANGE_FINDER = ModRegistries.RECIPE_SERIALIZERS.register("charge_power_range_finder",
-                    () -> new RecipeSerializer<>(MapCodec.unit(RangeFinderRechargeRecipe.INSTANCE),
-                            StreamCodec.unit(RangeFinderRechargeRecipe.INSTANCE)));
+                    () -> serializer(RangeFinderRechargeRecipe.INSTANCE));
 
     private ModRecipeSerializers() {
+    }
+
+    /** A serializer for a recipe with no fields (26.2's {@code new RecipeSerializer<>(codec, streamCodec)}). */
+    private static <R extends net.minecraft.world.item.crafting.Recipe<?>> RecipeSerializer<R> serializer(R instance) {
+        MapCodec<R> codec = MapCodec.unit(instance);
+        StreamCodec<net.minecraft.network.RegistryFriendlyByteBuf, R> stream = StreamCodec.unit(instance);
+        return new RecipeSerializer<>() {
+            @Override
+            public MapCodec<R> codec() {
+                return codec;
+            }
+
+            @Override
+            public StreamCodec<net.minecraft.network.RegistryFriendlyByteBuf, R> streamCodec() {
+                return stream;
+            }
+        };
     }
 
     static void init() {

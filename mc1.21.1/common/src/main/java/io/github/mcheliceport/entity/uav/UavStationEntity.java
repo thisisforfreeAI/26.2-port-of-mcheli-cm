@@ -1,5 +1,7 @@
 package io.github.mcheliceport.entity.uav;
 
+import io.github.mcheliceport.shim.InterpolationHandler;
+
 import io.github.mcheliceport.entity.aircraft.AircraftEntity;
 import io.github.mcheliceport.item.AircraftItem;
 import io.github.mcheliceport.menu.UavStationMenu;
@@ -225,7 +227,7 @@ public class UavStationEntity extends Entity {
             if (!sl.getWorldBorder().isWithinBounds(pos)) { return fail(player, "UAV is outside the world border."); }
             cancelLoading(); loadingChunk = new net.minecraft.world.level.ChunkPos(pos.getX() >> 4, pos.getZ() >> 4); loadingLevel = sl;
             loadingUav = id; loadingPlayer = player.getUUID(); loadingTicks = 100;
-            UavRemoteSession.TICKETS.forceChunk(sl, getUUID(), loadingChunk.x(), loadingChunk.z(), true, false);
+            UavRemoteSession.TICKETS.forceChunk(sl, getUUID(), loadingChunk.x, loadingChunk.z, true, false);
             entityData.set(FEEDBACK, "Loading selected UAV..."); return false;
         }
         cancelLoading();
@@ -245,7 +247,7 @@ public class UavStationEntity extends Entity {
         return true;
     }
     private void cancelLoading() {
-        if (loadingLevel != null && loadingChunk != null) { UavRemoteSession.TICKETS.forceChunk(loadingLevel, getUUID(), loadingChunk.x(), loadingChunk.z(), false, false); }
+        if (loadingLevel != null && loadingChunk != null) { UavRemoteSession.TICKETS.forceChunk(loadingLevel, getUUID(), loadingChunk.x, loadingChunk.z, false, false); }
         loadingUav = loadingPlayer = null; loadingChunk = null; loadingLevel = null; loadingTicks = 0;
     }
     public void disconnect() {
@@ -359,7 +361,7 @@ public class UavStationEntity extends Entity {
         if (getFirstPassenger() instanceof Player player && !exit(player)) { return false; }
         disconnect(); dropContents();
         if (!(source.getEntity() instanceof Player player && player.isCreative())) {
-            spawnAtLocation(level, new ItemStack(small() ? ModItems.UAV_STATION2.get() : ModItems.UAV_STATION.get()));
+            spawnAtLocation(new ItemStack(small() ? ModItems.UAV_STATION2.get() : ModItems.UAV_STATION.get()));
         }
         discard(); return true;
     }
@@ -383,13 +385,13 @@ public class UavStationEntity extends Entity {
     @Override public boolean shouldBeSaved() { return !handheld() && super.shouldBeSaved(); }
     /** ServerPlayer otherwise writes an empty RootVehicle wrapper for this unsaved temporary seat. */
     @Override public boolean hasExactlyOnePlayerPassenger() { return !handheld() && super.hasExactlyOnePlayerPassenger(); }
-    @Override public boolean saveAsPassenger(net.minecraft.nbt.CompoundTag output$tag) { ValueOutput output = ValueOutput.of(output$tag, this.registryAccess()); return !handheld() && super.saveAsPassenger(output); }
+    @Override public boolean saveAsPassenger(net.minecraft.nbt.CompoundTag output$tag) { ValueOutput output = ValueOutput.of(output$tag, this.registryAccess()); return !handheld() && super.saveAsPassenger(output$tag); }
     @Override protected void addAdditionalSaveData(net.minecraft.nbt.CompoundTag output$tag) { ValueOutput output = ValueOutput.of(output$tag, this.registryAccess());
         output.store("PairedUavs", UUIDUtil.CODEC.listOf(), pairedUavs());
         output.putBoolean("Small", small()); output.putBoolean("Open", open());
         output.putInt("OffsetX", offset(0)); output.putInt("OffsetY", offset(1)); output.putInt("OffsetZ", offset(2));
         if (lastUav != null) { output.store("LastUav", UUIDUtil.CODEC, lastUav); }
-        var items = NonNullList.withSize(1, inventory.getItem(0)); ContainerHelper.saveAllItems(output, items);
+        var items = NonNullList.withSize(1, inventory.getItem(0)); io.github.mcheliceport.shim.Compat.saveAllItems(output, items);
     }
     @Override protected void readAdditionalSaveData(net.minecraft.nbt.CompoundTag input$tag) { ValueInput input = ValueInput.of(input$tag, this.registryAccess());
         setSmall(input.getBooleanOr("Small", false)); entityData.set(OPEN, input.getBooleanOr("Open", true));
@@ -399,7 +401,7 @@ public class UavStationEntity extends Entity {
         lastUav = input.read("LastUav", UUIDUtil.CODEC).orElse(null);
         var savedPairs = input.read("PairedUavs", UUIDUtil.CODEC.sizeLimitedListOf(UavTabletData.MAX));
         paired.clear(); paired.addAll(savedPairs.orElse(List.of())); legacyPairing = savedPairs.isEmpty() && lastUav != null;
-        var items = NonNullList.withSize(1, ItemStack.EMPTY); ContainerHelper.loadAllItems(input, items); inventory.setItem(0, items.getFirst());
+        var items = NonNullList.withSize(1, ItemStack.EMPTY); io.github.mcheliceport.shim.Compat.loadAllItems(input, items); inventory.setItem(0, items.getFirst());
         entityData.set(CONTROLLED, 0);
     }
 }

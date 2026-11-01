@@ -74,7 +74,7 @@ public class DraftingTableMenu extends AbstractContainerMenu {
     public static void open(ServerPlayer player, BlockPos pos) {
         List<DraftingTableRecipes.Entry> recipes = DraftingTableRecipes.collect(player.level().getServer()
                 .getRecipeManager());
-        player.openMenu(new SimpleMenuProvider((id, inventory, p) -> new DraftingTableMenu(id, inventory, pos, recipes),
+        io.github.mcheliceport.platform.Services.REGISTRAR.openMenu(player, new SimpleMenuProvider((id, inventory, p) -> new DraftingTableMenu(id, inventory, pos, recipes),
                 Component.translatable("block.mcheli_ce_port.drafting_table")), buf -> buf.writeBlockPos(pos));
         if (player.containerMenu instanceof DraftingTableMenu menu) {
             PacketDistributor.sendToPlayer(player, new DraftingTableRecipesPayload(menu.containerId, recipes));
@@ -115,7 +115,7 @@ public class DraftingTableMenu extends AbstractContainerMenu {
         }
         var server = this.player.level().getServer();
         RecipeHolder<?> holder = server.getRecipeManager()
-                .byKey(ResourceKey.create(Registries.RECIPE, recipeId)).orElse(null);
+                .byKey(recipeId).orElse(null);
         DraftingTableRecipes.Entry entry = holder != null ? DraftingTableRecipes.entry(holder) : null;
         if (entry == null) {
             return false;

@@ -83,7 +83,7 @@ public final class ModEntityTypes {
     public static final DeferredHolder<EntityType<?>, EntityType<CargoContainerEntity>> CONTAINER = register("container",
             ModRegistries.ENTITY_TYPES.registerEntityType("container", CargoContainerEntity::new,
                     MobCategory.MISC, builder -> builder.sized(2, 1).fireImmune().clientTrackingRange(toChunks(200))
-                            .updateInterval(10).setShouldReceiveVelocityUpdates(true)));
+                            .updateInterval(10), true));
     public static final DeferredHolder<EntityType<?>, EntityType<VehicleEntity>> VEHICLE = register("vehicle",
             ModRegistries.ENTITY_TYPES.registerEntityType("vehicle", VehicleEntity::new, MobCategory.MISC,
                     builder -> builder.sized(2, 0.7F).clientTrackingRange(toChunks(600)).updateInterval(2)));
@@ -123,8 +123,7 @@ public final class ModEntityTypes {
     /** Upstream's {@code MCH_EntityGunner}, the NPC gunner. */
     public static final DeferredHolder<EntityType<?>, EntityType<GunnerEntity>> GUNNER = register("gunner",
             ModRegistries.ENTITY_TYPES.registerEntityType("gunner", GunnerEntity::new, MobCategory.MISC,
-                    builder -> builder.sized(0.6F, 1.8F).clientTrackingRange(toChunks(530)).updateInterval(5)
-                            .setShouldReceiveVelocityUpdates(true)));
+                    builder -> builder.sized(0.6F, 1.8F).clientTrackingRange(toChunks(530)).updateInterval(5), true));
     public static final DeferredHolder<EntityType<?>, EntityType<ChaffEntity>> CHAFF = weapon("chaff",
             ChaffEntity::new, 1.0f, 1.0f, 330, 10);
 
@@ -159,8 +158,7 @@ public final class ModEntityTypes {
                 .registerEntityType(name, factory, MobCategory.MISC, builder -> builder
                         .sized(width, height)
                         .clientTrackingRange(toChunks(trackingRangeBlocks))
-                        .updateInterval(updateInterval)
-                        .setShouldReceiveVelocityUpdates(true));
+                        .updateInterval(updateInterval), true);
         ALL.add(holder);
         return holder;
     }

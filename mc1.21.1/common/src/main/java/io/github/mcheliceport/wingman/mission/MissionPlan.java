@@ -10,7 +10,7 @@ import java.util.Map;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.saveddata.SavedData;
-import net.minecraft.world.level.saveddata.SavedDataType;
+import io.github.mcheliceport.shim.SavedDataType;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -35,6 +35,12 @@ public final class MissionPlan extends SavedData {
     public static final SavedDataType<MissionPlan> TYPE = new SavedDataType<>(
             ResourceLocation.fromNamespaceAndPath(McheliCePort.MOD_ID, "wingman_mission_routes"), MissionPlan::new, CODEC);
 
+    @Override
+    public net.minecraft.nbt.CompoundTag save(net.minecraft.nbt.CompoundTag tag,
+            net.minecraft.core.HolderLookup.Provider registries) {
+        return TYPE.save(this, tag, registries);
+    }
+
     private final Map<String, List<String>> routes = new LinkedHashMap<>();
 
     public MissionPlan() {
@@ -53,7 +59,7 @@ public final class MissionPlan extends SavedData {
     }
 
     private static MissionPlan get(ServerLevel level) {
-        return level.getDataStorage().computeIfAbsent(TYPE);
+        return level.getDataStorage().computeIfAbsent(TYPE.factory(), TYPE.fileName());
     }
 
     /** Saves the route, replacing any route of that name. */

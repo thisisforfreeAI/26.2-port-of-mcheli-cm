@@ -23,7 +23,7 @@ public final class UavRemoteSession {
     private ChunkPos center;
     private UavChunkView lastView;
     private final net.minecraft.server.level.ServerLevel level;
-    public UavRemoteSession(UavStationEntity station, ServerPlayer player) { this.station = station; this.player = player; this.level = player.level(); }
+    public UavRemoteSession(UavStationEntity station, ServerPlayer player) { this.station = station; this.player = player; this.level = player.serverLevel(); }
     public int ticketCount() { return tickets.size(); }
     public boolean belongsTo(ServerPlayer p) { return player == p; }
     public void update(AircraftEntity ac) {
@@ -35,32 +35,33 @@ public final class UavRemoteSession {
         Set<ChunkPos> nextTickets = new HashSet<>(); view.camera().forEach(nextTickets::add);
         // Load the next camera area before releasing the old one, so crossing an edge keeps ticking.
         for (var pos : nextTickets) {
-            if (!tickets.contains(pos)) { TICKETS.forceChunk(level, station.getUUID(), pos.x(), pos.z(), true, false); }
+            if (!tickets.contains(pos)) { TICKETS.forceChunk(level, station.getUUID(), pos.x, pos.z, true, false); }
         }
         for (var pos : tickets) {
-            if (!nextTickets.contains(pos)) { TICKETS.forceChunk(level, station.getUUID(), pos.x(), pos.z(), false, false); }
+            if (!nextTickets.contains(pos)) { TICKETS.forceChunk(level, station.getUUID(), pos.x, pos.z, false, false); }
         }
         tickets.clear(); tickets.addAll(nextTickets);
         var previous = player.getChunkTrackingView();
         if (!ac.chunkPosition().equals(center) || !(previous instanceof UavChunkView)) {
-            center = ac.chunkPosition(); player.connection.send(new ClientboundSetChunkCacheCenterPacket(center.x(), center.z()));
+            center = ac.chunkPosition(); player.connection.send(new ClientboundSetChunkCacheCenterPacket(center.x, center.z));
         }
         if (!view.equals(previous)) {
             var map = level.getChunkSource().chunkMap;
-            view.difference(previous, pos -> map.markChunkPendingToSend(player, pos), pos -> net.minecraft.server.level.ChunkMap.dropChunk(player, pos));
+            var access = (io.github.mcheliceport.mixin.ChunkMapAccessor) map;
+            view.difference(previous, pos -> access.mcheli$markChunkPendingToSend(player, pos), pos -> io.github.mcheliceport.mixin.ChunkMapAccessor.mcheli$dropChunk(player, pos));
             player.setChunkTrackingView(view);
         }
         lastView = (UavChunkView) player.getChunkTrackingView();
     }
     public void close() {
-        for (var pos : tickets) { TICKETS.forceChunk(level, station.getUUID(), pos.x(), pos.z(), false, false); }
+        for (var pos : tickets) { TICKETS.forceChunk(level, station.getUUID(), pos.x, pos.z, false, false); }
         tickets.clear();
         if (player.connection != null && player.level() == level && player.getChunkTrackingView() == lastView) {
-            var map = player.level().getChunkSource().chunkMap;
+            var map = player.serverLevel().getChunkSource().chunkMap;
             // The client cache was centered on the drone. Resend the body area even if it overlaps the old union.
-            map.applyChunkTrackingView(player, ChunkTrackingView.EMPTY);
+            ((io.github.mcheliceport.mixin.ChunkMapAccessor) map).mcheli$applyChunkTrackingView(player, ChunkTrackingView.EMPTY);
             int radius = Math.min(player.level().getServer().getPlayerList().getViewDistance(), player.requestedViewDistance());
-            map.applyChunkTrackingView(player, ChunkTrackingView.of(player.chunkPosition(), radius));
+            ((io.github.mcheliceport.mixin.ChunkMapAccessor) map).mcheli$applyChunkTrackingView(player, ChunkTrackingView.of(player.chunkPosition(), radius));
         }
     }
     /** Extend entity tracking around the active camera without moving the physical player. */

@@ -138,7 +138,7 @@ public class LightWeaponItem extends Item {
         if (target == null || !target.isAlive() || target == player || target.distanceToSqr(player) > range * range) {
             return;
         }
-        ServerLevel level = player.level();
+        ServerLevel level = player.serverLevel();
         WeaponBase weapon = WeaponCreator.createWeapon(level, weaponName(held), Vec3.ZERO, 0.0F, 0.0F, null, false);
         if (weapon == null) {
             return;

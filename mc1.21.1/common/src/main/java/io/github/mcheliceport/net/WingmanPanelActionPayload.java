@@ -29,7 +29,7 @@ public record WingmanPanelActionPayload(int action, Optional<UUID> uuid, String 
     public static final Type<WingmanPanelActionPayload> TYPE =
             new Type<>(ResourceLocation.fromNamespaceAndPath(McheliCePort.MOD_ID, "wingman_panel_action"));
 
-    public static final StreamCodec<ByteBuf, WingmanPanelActionPayload> CODEC = StreamCodec.composite(
+    public static final StreamCodec<ByteBuf, WingmanPanelActionPayload> CODEC = io.github.mcheliceport.shim.StreamCodecs.composite(
             ByteBufCodecs.VAR_INT, WingmanPanelActionPayload::action,
             ByteBufCodecs.optional(UUIDUtil.STREAM_CODEC), WingmanPanelActionPayload::uuid,
             ByteBufCodecs.stringUtf8(32), WingmanPanelActionPayload::extra,

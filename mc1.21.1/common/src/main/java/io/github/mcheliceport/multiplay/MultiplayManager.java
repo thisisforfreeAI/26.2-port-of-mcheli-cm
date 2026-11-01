@@ -14,8 +14,8 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.level.gamerules.GameRules;
-import net.minecraft.world.level.portal.TeleportTransition;
+import net.minecraft.world.level.GameRules;
+import io.github.mcheliceport.shim.TeleportTransition;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.world.scores.Scoreboard;
@@ -52,7 +52,7 @@ public final class MultiplayManager {
     }
 
     public static boolean canManage(ServerPlayer player) {
-        return player.hasPermissions(Commands.LEVEL_GAMEMASTERS);
+        return player.hasPermissions(net.minecraft.commands.Commands.LEVEL_GAMEMASTERS);
     }
 
     /** Whether {@code player} may join and leave teams with the manager's team buttons. */
@@ -83,7 +83,7 @@ public final class MultiplayManager {
             }
             case SET_PVP -> {
                 if (canManage(player)) {
-                    server.getGameRules().set(GameRules.PVP, !isPvp(server), server);
+                    server.setPvpAllowed(!isPvp(server));
                     boolean pvp = isPvp(server);
                     server.getPlayerList().getPlayers().forEach(p -> ModNetwork.sendToPlayer(p,
                             new MultiplayStatePayload(pvp, canChooseTeam(p))));
@@ -91,7 +91,7 @@ public final class MultiplayManager {
             }
             case DESTROY_AIRCRAFT -> {
                 if (canManage(player)) {
-                    destroyAllAircraft(player.level());
+                    destroyAllAircraft(player.serverLevel());
                 }
             }
             case JOIN_TEAM -> joinTeam(player, team);
@@ -127,7 +127,7 @@ public final class MultiplayManager {
     }
 
     public static boolean isPvp(MinecraftServer server) {
-        return server.getGameRules().get(GameRules.PVP);
+        return server.isPvpAllowed();
     }
 
     /**
@@ -155,23 +155,23 @@ public final class MultiplayManager {
      * @return how many players were moved
      */
     public static int jumpSpawnPoint(ServerPlayer sender, List<ServerPlayer> players) {
-        ServerLevel level = sender.level();
+        ServerLevel level = sender.serverLevel();
         int moved = 0;
         for (ServerPlayer player : List.copyOf(players)) {
             if (player.level() != level) {
                 continue;
             }
-            TeleportTransition respawn = player.findRespawnPositionAndUseSpawnBlock(false,
-                    TeleportTransition.DO_NOTHING);
+            net.minecraft.world.level.portal.DimensionTransition respawn = player.findRespawnPositionAndUseSpawnBlock(false,
+                    net.minecraft.world.level.portal.DimensionTransition.DO_NOTHING);
             Vec3 pos;
             if (respawn.newLevel() == level && !respawn.missingRespawnBlock()) {
-                pos = respawn.position();
+                pos = respawn.pos();
             } else {
-                BlockPos spawn = player.adjustSpawnLocation(level, level.getRespawnData().pos());
+                BlockPos spawn = player.adjustSpawnLocation(level, level.getSharedSpawnPos());
                 pos = new Vec3(spawn.getX() + 0.5, spawn.getY() + 0.1, spawn.getZ() + 0.5);
             }
             player.stopRiding();
-            player.teleportTo(level, pos.x, pos.y, pos.z, Set.of(), player.getYRot(), player.getXRot(), true);
+            player.teleportTo(level, pos.x, pos.y, pos.z, Set.of(), player.getYRot(), player.getXRot());
             moved++;
         }
         return moved;

@@ -21,7 +21,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
@@ -132,9 +131,9 @@ public class WrenchItem extends Item {
     private void hurtEnemy$26(ItemStack stack, LivingEntity target, LivingEntity attacker) {
         if (attacker.level() instanceof ServerLevel server) {
             if (server.getRandom().nextInt(40) == 0) {
-                target.spawnAtLocation(server, new ItemStack(Items.IRON_INGOT), 0.0F);
+                target.spawnAtLocation(new ItemStack(Items.IRON_INGOT), 0.0F);
             } else if (server.getRandom().nextInt(20) == 0) {
-                target.spawnAtLocation(server, new ItemStack(Items.GUNPOWDER), 0.0F);
+                target.spawnAtLocation(new ItemStack(Items.GUNPOWDER), 0.0F);
             }
         }
     }

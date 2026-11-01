@@ -140,7 +140,7 @@ public final class WingmanCommand {
                 .then(maxAlt())
                 .then(altClear())
                 .then(Commands.literal("spawnuav")
-                        .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
+                        .requires(source$ -> source$.hasPermission(Commands.LEVEL_GAMEMASTERS))
                         .executes(WingmanCommand::listUavs)
                         .then(Commands.argument("type", StringArgumentType.word()).suggests(UAVS)
                                 .executes(c -> spawnUav(c, StringArgumentType.getString(c, "type")))))
@@ -168,7 +168,7 @@ public final class WingmanCommand {
             if (uid == null) {
                 return 0;
             }
-            if (!(player.level().getEntity(uid) instanceof AircraftEntity ac)) {
+            if (!(player.serverLevel().getEntity(uid) instanceof AircraftEntity ac)) {
                 return fail(c, "No McHeli aircraft found: " + uuid);
             }
             if (ac == leader) {
@@ -438,7 +438,7 @@ public final class WingmanCommand {
 
     private static int markerList(CommandContext<CommandSourceStack> c) throws CommandSyntaxException {
         ServerPlayer player = c.getSource().getPlayerOrException();
-        List<MarkerRegistry.MarkerInfo> markers = MarkerRegistry.snapshot(player.level());
+        List<MarkerRegistry.MarkerInfo> markers = MarkerRegistry.snapshot(player.serverLevel());
         if (markers.isEmpty()) {
             return info(c, "§7No markers registered.");
         }
@@ -490,7 +490,7 @@ public final class WingmanCommand {
         if (marker == null) {
             return 0;
         }
-        String id = WingmanMarkerBlock.idForType(player.level(), marker.getBlockPos(), marker.getMarkerId(), type);
+        String id = WingmanMarkerBlock.idForType(player.serverLevel(), marker.getBlockPos(), marker.getMarkerId(), type);
         marker.apply(type, id, marker.getBaseId(), marker.getParkingHeading());
         return ok(c, "§aMarker type set to " + type.displayName() + " §7id=§e" + id);
     }
@@ -521,7 +521,7 @@ public final class WingmanCommand {
                         .then(Commands.argument("name", StringArgumentType.word()).suggests(ROUTES)
                                 .executes(c -> {
                                     ServerPlayer player = c.getSource().getPlayerOrException();
-                                    return send(c, MissionPlanner.deleteRoute(player.level(),
+                                    return send(c, MissionPlanner.deleteRoute(player.serverLevel(),
                                             StringArgumentType.getString(c, "name")));
                                 })))
                 .then(Commands.literal("show")
@@ -533,11 +533,11 @@ public final class WingmanCommand {
         ServerPlayer player = c.getSource().getPlayerOrException();
         List<String> tokens = Arrays.stream(StringArgumentType.getString(c, "nodes").trim().split("\\s+"))
                 .filter(s -> !s.isEmpty()).toList();
-        return send(c, MissionPlanner.createRoute(player.level(), StringArgumentType.getString(c, "name"), tokens));
+        return send(c, MissionPlanner.createRoute(player.serverLevel(), StringArgumentType.getString(c, "name"), tokens));
     }
 
     private static int routeList(CommandContext<CommandSourceStack> c) throws CommandSyntaxException {
-        List<String> names = MissionPlan.names(c.getSource().getPlayerOrException().level());
+        List<String> names = MissionPlan.names(c.getSource().getPlayerOrException().serverLevel());
         if (names.isEmpty()) {
             return info(c, "§7No routes defined.");
         }
@@ -548,7 +548,7 @@ public final class WingmanCommand {
 
     private static int routeShow(CommandContext<CommandSourceStack> c) throws CommandSyntaxException {
         String name = StringArgumentType.getString(c, "name");
-        List<MissionNode> nodes = MissionPlan.get(c.getSource().getPlayerOrException().level(), name);
+        List<MissionNode> nodes = MissionPlan.get(c.getSource().getPlayerOrException().serverLevel(), name);
         if (nodes == null) {
             return fail(c, "Route not found: " + name);
         }
@@ -593,7 +593,7 @@ public final class WingmanCommand {
         if (uid == null) {
             return 0;
         }
-        return send(c, MissionPlanner.assign(player.level(), uid, StringArgumentType.getString(c, "route"),
+        return send(c, MissionPlanner.assign(player.serverLevel(), uid, StringArgumentType.getString(c, "route"),
                 io.github.mcheliceport.entity.NpcBattles.teamName(player)));
     }
 
@@ -669,7 +669,7 @@ public final class WingmanCommand {
      */
     private static int dispatch(CommandContext<CommandSourceStack> c, int extras) throws CommandSyntaxException {
         ServerPlayer player = c.getSource().getPlayerOrException();
-        ServerLevel level = player.level();
+        ServerLevel level = player.serverLevel();
         UUID uid = parseUuid(c, StringArgumentType.getString(c, "aircraft"));
         if (uid == null) {
             return 0;
@@ -743,7 +743,7 @@ public final class WingmanCommand {
      */
     private static int orderRtb(CommandContext<CommandSourceStack> c, @Nullable String arg) throws CommandSyntaxException {
         ServerPlayer player = c.getSource().getPlayerOrException();
-        ServerLevel level = player.level();
+        ServerLevel level = player.serverLevel();
         if (arg != null) {
             UUID uid = parseUuid(c, arg);
             if (uid == null) {
@@ -786,7 +786,7 @@ public final class WingmanCommand {
      */
     private static int orderPark(CommandContext<CommandSourceStack> c) throws CommandSyntaxException {
         ServerPlayer player = c.getSource().getPlayerOrException();
-        ServerLevel level = player.level();
+        ServerLevel level = player.serverLevel();
         String arg = StringArgumentType.getString(c, "aircraft");
         UUID uid = parseUuid(c, arg);
         if (uid == null) {

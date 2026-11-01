@@ -140,13 +140,13 @@ public abstract class GroundVehicleEntity extends AircraftEntity implements Plan
     }
 
     @Override protected void addAdditionalSaveData(net.minecraft.nbt.CompoundTag out$tag) { ValueOutput out = ValueOutput.of(out$tag, this.registryAccess());
-        super.addAdditionalSaveData(out);
+        super.addAdditionalSaveData(out$tag);
         out.putDouble("GroundThrottle", this.getCurrentThrottle());
         out.putFloat("GroundReverse", this.throttleBack);
         out.putBoolean("GroundBrake", this.getBrake());
     }
     @Override protected void readAdditionalSaveData(net.minecraft.nbt.CompoundTag in$tag) { ValueInput in = ValueInput.of(in$tag, this.registryAccess());
-        super.readAdditionalSaveData(in);
+        super.readAdditionalSaveData(in$tag);
         this.setCurrentThrottle(Math.clamp(in.getDoubleOr("GroundThrottle", 0), 0, 1));
         this.throttleBack = Math.max(0, in.getFloatOr("GroundReverse", 0));
         this.setBrake(in.getBooleanOr("GroundBrake", false));

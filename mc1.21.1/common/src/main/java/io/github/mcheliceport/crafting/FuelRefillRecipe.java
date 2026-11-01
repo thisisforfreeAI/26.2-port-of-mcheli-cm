@@ -30,6 +30,7 @@ public final class FuelRefillRecipe extends CustomRecipe {
     public static final int CHARCOAL_FUEL = 75;
 
     private FuelRefillRecipe() {
+        super(net.minecraft.world.item.crafting.CraftingBookCategory.MISC);
     }
 
     /** The fuel one slot of {@code stack} restores, or 0 if it is not coal or charcoal. */
@@ -67,7 +68,7 @@ public final class FuelRefillRecipe extends CustomRecipe {
     }
 
     @Override
-    public ItemStack assemble(CraftingInput input) {
+    public ItemStack assemble(CraftingInput input, net.minecraft.core.HolderLookup.Provider registries) {
         return assemble(input.items());
     }
 
@@ -113,5 +114,10 @@ public final class FuelRefillRecipe extends CustomRecipe {
     @Override
     public RecipeSerializer<FuelRefillRecipe> getSerializer() {
         return ModRecipeSerializers.CHARGE_FUEL.get();
+    }
+
+    @Override
+    public boolean canCraftInDimensions(int width, int height) {
+        return width * height >= 2;
     }
 }

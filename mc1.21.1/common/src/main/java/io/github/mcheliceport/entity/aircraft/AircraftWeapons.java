@@ -1078,7 +1078,7 @@ public final class AircraftWeapons {
         if (id == null) {
             return null;
         }
-        return BuiltInRegistries.ITEM.get(id).map(h -> h.value()).filter(i -> i != Items.AIR).orElse(null);
+        return BuiltInRegistries.ITEM.getOptional(id).filter(i -> i != Items.AIR).orElse(null);
     }
 
     /** Upstream {@code supplyAmmoToOtherAircraft}: a supply vehicle tops up the reserves of vehicles nearby. */

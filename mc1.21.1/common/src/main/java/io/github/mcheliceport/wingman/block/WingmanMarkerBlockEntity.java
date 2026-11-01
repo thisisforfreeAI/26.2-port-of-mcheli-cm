@@ -72,7 +72,6 @@ public class WingmanMarkerBlockEntity extends BlockEntity {
      */
     
     public void onLoad() {
-        super.onLoad();
         if (!(this.level instanceof ServerLevel level)) {
             return;
         }
@@ -96,7 +95,6 @@ public class WingmanMarkerBlockEntity extends BlockEntity {
 
     
     public void onChunkUnloaded() {
-        super.onChunkUnloaded();
         this.unloading = true;
     }
 
@@ -114,7 +112,7 @@ public class WingmanMarkerBlockEntity extends BlockEntity {
 
     @Override
     protected void loadAdditional(net.minecraft.nbt.CompoundTag input$tag, net.minecraft.core.HolderLookup.Provider input$registries) { ValueInput input = ValueInput.of(input$tag, input$registries);
-        super.loadAdditional(input);
+        super.loadAdditional(input$tag, input$registries);
         this.markerId = input.getStringOr("markerId", "");
         this.baseId = input.getStringOr("baseId", "");
         this.parkingHeading = input.getIntOr("parkingHeading", -1);
@@ -122,7 +120,7 @@ public class WingmanMarkerBlockEntity extends BlockEntity {
 
     @Override
     protected void saveAdditional(net.minecraft.nbt.CompoundTag output$tag, net.minecraft.core.HolderLookup.Provider output$registries) { ValueOutput output = ValueOutput.of(output$tag, output$registries);
-        super.saveAdditional(output);
+        super.saveAdditional(output$tag, output$registries);
         output.putString("markerId", this.markerId);
         output.putString("baseId", this.baseId);
         output.putInt("parkingHeading", this.parkingHeading);

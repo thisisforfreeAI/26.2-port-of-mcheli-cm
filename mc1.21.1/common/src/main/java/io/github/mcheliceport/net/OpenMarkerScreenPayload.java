@@ -27,7 +27,7 @@ public record OpenMarkerScreenPayload(BlockPos pos, MarkerType markerType, Strin
 
     private static final StreamCodec<FriendlyByteBuf, String> IDS = ByteBufCodecs.stringUtf8(64).cast();
 
-    public static final StreamCodec<FriendlyByteBuf, OpenMarkerScreenPayload> CODEC = StreamCodec.composite(
+    public static final StreamCodec<FriendlyByteBuf, OpenMarkerScreenPayload> CODEC = io.github.mcheliceport.shim.StreamCodecs.composite(
             BlockPos.STREAM_CODEC, OpenMarkerScreenPayload::pos, MARKER_TYPE, OpenMarkerScreenPayload::markerType,
             ByteBufCodecs.stringUtf8(64), OpenMarkerScreenPayload::id, ByteBufCodecs.stringUtf8(64), OpenMarkerScreenPayload::baseId,
             ByteBufCodecs.VAR_INT, OpenMarkerScreenPayload::parkingHeading, IDS.apply(ByteBufCodecs.list(64)),

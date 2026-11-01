@@ -550,7 +550,7 @@ public class HeliEntity extends AircraftEntity implements HeliFlightModel.Body {
 
     @Override
     protected void addAdditionalSaveData(net.minecraft.nbt.CompoundTag output$tag) { ValueOutput output = ValueOutput.of(output$tag, this.registryAccess());
-        super.addAdditionalSaveData(output);
+        super.addAdditionalSaveData(output$tag);
         output.putDouble("RotorSpeed", this.getCurrentThrottle());
         output.putDouble("rotetionRotor", this.rotationRotor);
         output.putBoolean("FoldBlade", this.getFoldBladeStat() == BLADES_FOLDED);
@@ -559,7 +559,7 @@ public class HeliEntity extends AircraftEntity implements HeliFlightModel.Body {
     @Override
     protected void readAdditionalSaveData(net.minecraft.nbt.CompoundTag input$tag) { ValueInput input = ValueInput.of(input$tag, this.registryAccess());
         boolean beforeFoldBlade = this.getFoldBladeStat() == BLADES_FOLDED;
-        super.readAdditionalSaveData(input);
+        super.readAdditionalSaveData(input$tag);
         this.setCurrentThrottle(input.getDoubleOr("RotorSpeed", 0.0));
         this.rotationRotor = input.getDoubleOr("rotetionRotor", 0.0);
         this.setFoldBladeStat(input.getBooleanOr("FoldBlade", false) ? BLADES_FOLDED : BLADES_UNFOLDED);

@@ -55,7 +55,7 @@ public class ChainItem extends Item {
         if (target instanceof io.github.mcheliceport.entity.aircraft.AircraftHitBox box) { target = box.getParent(); }
         if (!(player.level() instanceof ServerLevel level) || !(stack.getItem() instanceof ChainItem)
                 || player.isSpectator() || !player.isAlive() || target.level() != level || !eligible(target)
-                || !player.isWithinEntityInteractionRange(hit.getBoundingBox(), 1) || !player.hasLineOfSight(hit)) { return; }
+                || !player.canInteractWithEntity(hit.getBoundingBox(), 1) || !player.hasLineOfSight(hit)) { return; }
         var existing = ChainEntity.attached(target);
         if (existing != null) {
             existing.discard(); select(stack, null); message(player, "disconnected"); return;
@@ -81,8 +81,8 @@ public class ChainItem extends Item {
     }
     public static @Nullable Entity selected(ItemStack stack, ServerLevel level) {
         var tag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
-        if (!tag.getStringOr("TowedEntityDimension", "").equals(level.dimension().location().toString())) { return null; }
-        try { return level.getEntity(UUID.fromString(tag.getStringOr("TowedEntityUUID", ""))); }
+        if (!tag.getString("TowedEntityDimension").equals(level.dimension().location().toString())) { return null; }
+        try { return level.getEntity(UUID.fromString(tag.getString("TowedEntityUUID"))); }
         catch (IllegalArgumentException ignored) { return null; }
     }
     public static void select(ItemStack stack, @Nullable Entity entity) {

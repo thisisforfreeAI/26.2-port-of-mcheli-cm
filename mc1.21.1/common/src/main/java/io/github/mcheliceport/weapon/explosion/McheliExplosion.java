@@ -25,24 +25,22 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.item.FallingBlockEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.projectile.throwableitemprojectile.ThrownExperienceBottle;
+import net.minecraft.world.entity.projectile.ThrownExperienceBottle;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.EntityBasedExplosionDamageCalculator;
 import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.ExplosionDamageCalculator;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.ServerExplosion;
 import net.minecraft.world.level.block.BaseFireBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
-import net.minecraft.world.level.gamerules.GameRules;
+import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.event.EventHooks;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -64,8 +62,11 @@ import org.jspecify.annotations.Nullable;
  * client ran the entity part of the explosion again); players hit get their knockback through the
  * server's velocity update instead. The explosion events let protection mods cancel or filter it.
  */
-public class McheliExplosion extends ServerExplosion {
+public class McheliExplosion extends Explosion {
     private final io.github.mcheliceport.effect.BlastTerrainSample terrainSample = new io.github.mcheliceport.effect.BlastTerrainSample();
+
+    /** 1.21.1 keeps the explosion's damage source private. */
+    private final DamageSource damageSource;
 
     public final @Nullable Entity exploder;
     public final double x;
@@ -116,10 +117,20 @@ public class McheliExplosion extends ServerExplosion {
 
     public McheliExplosion(ServerLevel level, @Nullable Entity exploder, @Nullable Entity player, double x, double y,
             double z, float size, float sizeBlock, boolean flaming, boolean damagesTerrain) {
-        super(level, exploder, level.damageSources().explosion(exploder, player instanceof Player ? player : null),
-                null, new Vec3(x, y, z), sizeBlock, flaming, Explosion.BlockInteraction.DESTROY_WITH_DECAY);
+        this(level, exploder, level.damageSources().explosion(exploder, player instanceof Player ? player : null),
+                player, x, y, z, size, sizeBlock, flaming, damagesTerrain);
+    }
+
+    private McheliExplosion(ServerLevel level, @Nullable Entity exploder, DamageSource damageSource,
+            @Nullable Entity player, double x, double y, double z, float size, float sizeBlock, boolean flaming,
+            boolean damagesTerrain) {
+        super(level, exploder, damageSource,
+                null, x, y, z, sizeBlock, flaming, Explosion.BlockInteraction.DESTROY_WITH_DECAY,
+                net.minecraft.core.particles.ParticleTypes.EXPLOSION, net.minecraft.core.particles.ParticleTypes.EXPLOSION_EMITTER,
+                net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE);
         this.world = level;
         this.exploder = exploder;
+        this.damageSource = damageSource;
         this.explodedPlayer = player instanceof Player p ? p : null;
         this.x = x;
         this.y = y;
@@ -189,7 +200,7 @@ public class McheliExplosion extends ServerExplosion {
             return null;
         }
         McheliExplosion exp = new McheliExplosion(serverLevel, p.exploder(), p.player(), p.x(), p.y(), p.z(),
-                p.size(), p.sizeBlock(), p.isFlaming(), serverLevel.getGameRules().get(GameRules.MOB_GRIEFING));
+                p.size(), p.sizeBlock(), p.isFlaming(), serverLevel.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING));
         exp.isDestroyBlock = p.isDestroyBlock();
         exp.explosionBlockPower = p.blockPower();
         exp.explosionDamagePower = p.damagePower();
@@ -200,7 +211,7 @@ public class McheliExplosion extends ServerExplosion {
         exp.fireBlocks = fireBlocks;
         exp.keepGroundBelow = keepGroundBelow;
         exp.damageFactor = p.damageFactor();
-        if (EventHooks.onExplosionStart(serverLevel, exp)) {
+        if (io.github.mcheliceport.platform.Services.PLATFORM.explosionStart(serverLevel, exp)) {
             return exp.result;
         }
         // Capture before damage/knockback callbacks; presentation never changes projectile physics.
@@ -213,7 +224,7 @@ public class McheliExplosion extends ServerExplosion {
         BlastStyle style = BlastStyle.forWeapon(visualWeapon, p.isFlaming());
         ModNetwork.sendToPlayersNear(serverLevel, null, p.x(), p.y(), p.z(), ExplosionEffectPayload.RANGE,
                 new ExplosionEffectPayload(p.x(), p.y(), p.z(), p.size(), inWater, exp.affectedBlocks, style, direction,
-                        exp.terrainSample.snapshot(pos -> !serverLevel.getBlockState(pos).isSolidRender())));
+                        exp.terrainSample.snapshot(pos -> !serverLevel.getBlockState(pos).isSolidRender(serverLevel, pos))));
         return exp.result;
     }
 
@@ -274,8 +285,7 @@ public class McheliExplosion extends ServerExplosion {
     @SuppressWarnings("DataFlowIssue") // vanilla blocks ignore the explosion; modded ones get none on the client
     private static Optional<Float> plainResistance(Level level, BlockPos pos, BlockState state, FluidState fluid) {
         return state.isAir() && fluid.isEmpty() ? Optional.empty()
-                : Optional.of(Math.max(state.getExplosionResistance(level, pos, null),
-                        fluid.getExplosionResistance(level, pos, null)));
+                : Optional.of(Math.max(state.getBlock().getExplosionResistance(), fluid.getExplosionResistance()));
     }
 
     /**
@@ -311,9 +321,9 @@ public class McheliExplosion extends ServerExplosion {
         int i2 = Mth.floor(this.z - f - 1.0);
         int j2 = Mth.floor(this.z + f + 1.0);
         List<Entity> list = this.world.getEntities(this.exploder, new AABB(i, k, i2, j, l1, j2));
-        EventHooks.onExplosionDetonate(this.world, this, list, this.affectedBlocks);
+        io.github.mcheliceport.platform.Services.PLATFORM.explosionDetonate(this.world, this, list, this.affectedBlocks);
         Vec3 center = new Vec3(this.x, this.y, this.z);
-        DamageSource ds = this.getDamageSource();
+        DamageSource ds = this.damageSource;
         for (Entity entity : list) {
             double d7 = Math.sqrt(entity.distanceToSqr(this.x, this.y, this.z)) / f;
             if (d7 > 1.0) {
@@ -346,7 +356,7 @@ public class McheliExplosion extends ServerExplosion {
                     : 1.0F;
             var blood = io.github.mcheliceport.effect.VehicleBlood.projectile(entity, this.exploder, ds,
                     io.github.mcheliceport.effect.VehicleBloodRules.BLAST, entity.position().subtract(center));
-            boolean applied = entity.hurtServer(this.world, ds, damage);
+            boolean applied = entity.hurt(ds, damage);
             io.github.mcheliceport.effect.VehicleBlood.finish(blood, applied);
             double d11 = d10;
             if (entity instanceof LivingEntity living) {
@@ -412,7 +422,7 @@ public class McheliExplosion extends ServerExplosion {
                 BlockState state = this.world.getBlockState(pos);
                 if (!state.isAir()) {
                     // Reuse this existing read; only surviving ground removal affects cosmetic sizing.
-                    if (state.isSolidRender()) this.terrainSample.offer(pos);
+                    if (state.isSolidRender(this.world, pos)) this.terrainSample.offer(pos);
                     // Vanilla drops with a survival chance of 1 / radius, which is sizeBlock here, as upstream.
                     state.onExplosionHit(this.world, pos, this, (stack, at) -> StackCollector.add(stacks, stack, at));
                 }
@@ -423,7 +433,7 @@ public class McheliExplosion extends ServerExplosion {
         }
         if (this.causesFire && this.fireBlocks && CommonConfig.get(CommonConfig.EXPLOSION_FLAMING_BLOCK)) {
             for (BlockPos pos : this.affectedBlocks) {
-                if (this.world.getBlockState(pos).isAir() && this.world.getBlockState(pos.below()).isSolidRender()
+                if (this.world.getBlockState(pos).isAir() && this.world.getBlockState(pos.below()).isSolidRender(this.world, pos.below())
                         && rand.nextInt(3) == 0) {
                     this.world.setBlockAndUpdate(pos, BaseFireBlock.getState(this.world, pos));
                 }

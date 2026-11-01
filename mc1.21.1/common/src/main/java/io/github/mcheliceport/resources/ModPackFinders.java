@@ -29,9 +29,6 @@ import net.minecraft.server.packs.repository.Pack;
 import net.minecraft.server.packs.repository.PackCompatibility;
 import net.minecraft.server.packs.repository.PackSource;
 import net.minecraft.world.flag.FeatureFlagSet;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.event.AddPackFindersEvent;
 import org.slf4j.Logger;
 
 /**
@@ -47,7 +44,6 @@ import org.slf4j.Logger;
  *       root of a pack are seen as resources.</li>
  * </ul>
  */
-@EventBusSubscriber(modid = McheliCePort.MOD_ID)
 public final class ModPackFinders {
 
     private static final Logger LOGGER = LogUtils.getLogger();
@@ -58,27 +54,26 @@ public final class ModPackFinders {
     private ModPackFinders() {
     }
 
-    @SubscribeEvent
-    static void addPackFinders(AddPackFindersEvent event) {
-        PackType type = event.getPackType();
-        if (type == PackType.CLIENT_RESOURCES) {
-            event.addRepositorySource(packs -> {
-                packs.accept(GeneratedPack.create(McheliCePort.MOD_ID + "/generated",
-                        Component.literal("McHeli CE content"), type, Pack.Position.BOTTOM,
-                        () -> ContentAssets.build(ModItems.contentItems(), ContentRegistries.get(),
-                                soundFileCheck())));
-                addAddonPacks(packs, type);
-            });
-        } else if (type == PackType.SERVER_DATA && !event.isTrusted()) {
-            // The trusted repository only lists packs the client may already know; ours are not among them.
-            event.addRepositorySource(packs -> {
-                packs.accept(GeneratedPack.create(McheliCePort.MOD_ID + "/content_recipes",
-                        Component.literal("McHeli CE content recipes"), type, Pack.Position.TOP,
-                        () -> ContentRecipes.build(ModItems.contentItems(), ContentRegistries.get(),
-                                REGISTRY_LOOKUP)));
-                addAddonPacks(packs, type);
-            });
-        }
+    /**
+     * Adds the pack sources through the loader (NeoForge's AddPackFindersEvent, a mixin on Fabric).
+     * Data packs go only to the untrusted repository: the trusted one only lists packs the client
+     * may already know, and ours are not among them.
+     */
+    public static void register() {
+        io.github.mcheliceport.platform.Services.PLATFORM.addPackSource(PackType.CLIENT_RESOURCES, packs -> {
+            packs.accept(GeneratedPack.create(McheliCePort.MOD_ID + "/generated",
+                    Component.literal("McHeli CE content"), PackType.CLIENT_RESOURCES, Pack.Position.BOTTOM,
+                    () -> ContentAssets.build(ModItems.contentItems(), ContentRegistries.get(),
+                            soundFileCheck())));
+            addAddonPacks(packs, PackType.CLIENT_RESOURCES);
+        });
+        io.github.mcheliceport.platform.Services.PLATFORM.addPackSource(PackType.SERVER_DATA, packs -> {
+            packs.accept(GeneratedPack.create(McheliCePort.MOD_ID + "/content_recipes",
+                    Component.literal("McHeli CE content recipes"), PackType.SERVER_DATA, Pack.Position.TOP,
+                    () -> ContentRecipes.build(ModItems.contentItems(), ContentRegistries.get(),
+                            REGISTRY_LOOKUP)));
+            addAddonPacks(packs, PackType.SERVER_DATA);
+        });
     }
 
     private static void addAddonPacks(Consumer<Pack> packs, PackType type) {
@@ -97,7 +92,7 @@ public final class ModPackFinders {
             Component description = Component.literal(addon.getDescription().isEmpty()
                     ? addon.getDomain() + " " + addon.getVersion() : addon.getDescription());
             packs.accept(new Pack(new PackLocationInfo(id, title, ADDON_SOURCE, Optional.empty()), resources,
-                    new Pack.Metadata(description, PackCompatibility.COMPATIBLE, FeatureFlagSet.of(), List.of(), false),
+                    new Pack.Metadata(description, PackCompatibility.COMPATIBLE, FeatureFlagSet.of(), List.of()),
                     new PackSelectionConfig(true, Pack.Position.TOP, false)));
         }
     }
@@ -134,7 +129,7 @@ public final class ModPackFinders {
         }
         return name -> {
             String path = prefix + name + ".ogg";
-            return addonFiles.contains(path) || ModContentLoader.modContents().containsFile(path);
+            return addonFiles.contains(path) || ModContentLoader.modFileExists(path);
         };
     }
 }

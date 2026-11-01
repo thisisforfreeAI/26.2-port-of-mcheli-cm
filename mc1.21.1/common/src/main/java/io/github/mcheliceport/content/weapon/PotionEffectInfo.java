@@ -44,7 +44,7 @@ public record PotionEffectInfo(String effectId, int duration, int amplifier, int
         if (id == null) {
             return Optional.empty();
         }
-        return BuiltInRegistries.MOB_EFFECT.get(id)
+        return BuiltInRegistries.MOB_EFFECT.getHolder(id)
                 .map(effect -> new MobEffectInstance(effect, this.duration, this.amplifier, false, true));
     }
 }

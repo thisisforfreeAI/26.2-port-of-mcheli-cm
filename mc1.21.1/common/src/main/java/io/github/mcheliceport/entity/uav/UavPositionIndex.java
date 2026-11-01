@@ -12,7 +12,7 @@ import net.minecraft.core.UUIDUtil;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.saveddata.SavedData;
-import net.minecraft.world.level.saveddata.SavedDataType;
+import io.github.mcheliceport.shim.SavedDataType;
 import org.jspecify.annotations.Nullable;
 
 /** Last known positions permit a bounded reconnect after a paired UAV's chunk unloads. */
@@ -24,11 +24,17 @@ public final class UavPositionIndex extends SavedData {
     public static final Codec<UavPositionIndex> CODEC = Entry.CODEC.listOf().xmap(UavPositionIndex::new, UavPositionIndex::entries);
     public static final SavedDataType<UavPositionIndex> TYPE = new SavedDataType<>(
             ResourceLocation.fromNamespaceAndPath("mcheli_ce_port", "uav_positions"), UavPositionIndex::new, CODEC);
+
+    @Override
+    public net.minecraft.nbt.CompoundTag save(net.minecraft.nbt.CompoundTag tag,
+            net.minecraft.core.HolderLookup.Provider registries) {
+        return TYPE.save(this, tag, registries);
+    }
     private final Map<UUID, BlockPos> positions = new HashMap<>();
     public UavPositionIndex() { }
     private UavPositionIndex(List<Entry> entries) { for (var e : entries) { positions.put(e.id(), e.pos()); } }
     private List<Entry> entries() { return positions.entrySet().stream().map(e -> new Entry(e.getKey(), e.getValue())).toList(); }
-    public static UavPositionIndex get(ServerLevel level) { return level.getDataStorage().computeIfAbsent(TYPE); }
+    public static UavPositionIndex get(ServerLevel level) { return level.getDataStorage().computeIfAbsent(TYPE.factory(), TYPE.fileName()); }
     public @Nullable BlockPos position(UUID id) { return positions.get(id); }
     public void record(UUID id, BlockPos pos) {
         if (!pos.equals(positions.put(id, pos.immutable()))) { setDirty(); }

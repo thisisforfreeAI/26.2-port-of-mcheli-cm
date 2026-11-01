@@ -2,7 +2,6 @@ package io.github.mcheliceport.entity.weapon;
 
 import io.github.mcheliceport.config.CommonConfig;
 import io.github.mcheliceport.content.ContentRegistries;
-import io.github.mcheliceport.compat.hbm.NtmPayloads;
 import io.github.mcheliceport.content.weapon.WeaponInfo;
 import io.github.mcheliceport.effect.McheliEffects;
 import io.github.mcheliceport.effect.ParticleParam;
@@ -47,7 +46,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.VegetationBlock;
+import net.minecraft.world.level.block.BushBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import io.github.mcheliceport.shim.ValueInput;
 import io.github.mcheliceport.shim.ValueOutput;
@@ -1204,7 +1203,7 @@ public abstract class BaseBulletEntity extends Entity implements WeaponTargets.P
         }
         if (hitBlock != null) {
             BlockState state = this.level().getBlockState(hitBlock);
-            if (state.is(BlockTags.LEAVES) || state.getBlock() instanceof VegetationBlock
+            if (state.is(BlockTags.LEAVES) || state.getBlock() instanceof BushBlock
                     || state.is(Blocks.IRON_BARS)) {
                 return;
             }
@@ -1260,7 +1259,7 @@ public abstract class BaseBulletEntity extends Entity implements WeaponTargets.P
                     io.github.mcheliceport.effect.VehicleBloodRules.DIRECT, this.getDeltaMovement());
             boolean applied = hitBox != null ? hitBox.hurt(ds, damage) : entity.hurt(ds, damage);
             io.github.mcheliceport.effect.VehicleBlood.finish(blood, applied);
-            if (this instanceof BulletEntity && entity instanceof net.minecraft.world.entity.npc.villager.Villager
+            if (this instanceof BulletEntity && entity instanceof net.minecraft.world.entity.npc.Villager
                     && this.shootingEntity != null
                     && this.shootingEntity.getVehicle() instanceof io.github.mcheliceport.entity.seat.SeatEntity) {
                 io.github.mcheliceport.registry.ModCriteriaTriggers.trigger(io.github.mcheliceport.registry.ModCriteriaTriggers.VILLAGER_HURT_BULLET, this.shootingEntity);
@@ -1312,9 +1311,7 @@ public abstract class BaseBulletEntity extends Entity implements WeaponTargets.P
     private void explode(double x, double y, double z, float size, float sizeBlock, float damagePower,
             float blockPower, boolean inWater) {
         WeaponInfo info = this.getInfo();
-        if (this.level() instanceof ServerLevel server) {
-            NtmPayloads.detonate(server, this, info, x, y, z, blockPower);
-        }
+        // NTM payloads (compat.hbm) are 26.2 only: HBM's NTM has no 1.21.1 build to bridge to.
         if (info != null && info.effectOnly) {
             return;
         }

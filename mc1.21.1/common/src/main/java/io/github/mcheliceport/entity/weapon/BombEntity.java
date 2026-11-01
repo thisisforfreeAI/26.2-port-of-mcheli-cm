@@ -218,7 +218,7 @@ public class BombEntity extends BaseBulletEntity {
                 return InteractionResult.SUCCESS;
             }
         }
-        return super.interact(player, hand, location);
+        return super.interact(player, hand);
     }
 
     /** Mines are kept with the world; other bombs are not saved. */
@@ -230,7 +230,7 @@ public class BombEntity extends BaseBulletEntity {
 
     @Override
     protected void addAdditionalSaveData(net.minecraft.nbt.CompoundTag output$tag) { ValueOutput output = ValueOutput.of(output$tag, this.registryAccess());
-        super.addAdditionalSaveData(output);
+        super.addAdditionalSaveData(output$tag);
         WeaponInfo info = this.getInfo();
         if (info != null && info.isMine()) {
             output.putBoolean("MchMine", true);
@@ -258,7 +258,7 @@ public class BombEntity extends BaseBulletEntity {
             this.setDeltaMovement(Vec3.ZERO);
             return;
         }
-        super.readAdditionalSaveData(input);
+        super.readAdditionalSaveData(input$tag);
     }
 
     @Override

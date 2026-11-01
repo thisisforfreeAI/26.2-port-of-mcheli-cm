@@ -10,6 +10,7 @@ public final class Services {
     public static final io.github.mcheliceport.platform.network.Network NETWORK =
             load(io.github.mcheliceport.platform.network.Network.class);
     public static final Configs CONFIGS = load(Configs.class);
+    public static final Transfer TRANSFER = load(Transfer.class);
 
     private Services() {
     }

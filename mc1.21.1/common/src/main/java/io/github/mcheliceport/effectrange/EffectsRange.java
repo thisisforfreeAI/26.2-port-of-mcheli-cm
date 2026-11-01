@@ -15,7 +15,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.server.players.NameAndId;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.BlockItem;
@@ -39,7 +38,7 @@ public final class EffectsRange {
     }
     private EffectsRange(){}
     public static boolean inRange(Level level){return level.dimension().equals(LEVEL);}
-    public static boolean allowed(ServerPlayer player){return AircraftEntity.canSetCommand(player)||player.level().getServer().isSingleplayerOwner(new NameAndId(player.getGameProfile()));}
+    public static boolean allowed(ServerPlayer player){return AircraftEntity.canSetCommand(player)||player.level().getServer().isSingleplayerOwner(player.getGameProfile());}
     public static int sessions(){return SESSIONS.size();}
     public static int blocksLastTick(){return blocksLastTick;}
     public static boolean ready(ServerPlayer player){var s=SESSIONS.get(player.getUUID());return s!=null&&s.cursor>=RangeOptions.TOTAL;}
@@ -74,38 +73,37 @@ public final class EffectsRange {
         data.putBoolean("Flying",abilities.flying);data.putBoolean("MayFly",abilities.mayfly);data.putBoolean("Invulnerable",abilities.invulnerable);data.putBoolean("InstantBuild",abilities.instabuild);data.putBoolean("MayBuild",abilities.mayBuild);
         data.putFloat("FlySpeed",abilities.getFlyingSpeed());data.putFloat("WalkSpeed",abilities.getWalkingSpeed());
         data.putString("Dimension",player.level().dimension().location().toString());
-        data.putDouble("X",player.getX());data.putDouble("Y",player.getY());data.putDouble("Z",player.getZ());data.putFloat("Yaw",player.getYRot());data.putFloat("Pitch",player.getXRot());data.putInt("Mode",player.gameMode().getId());
+        data.putDouble("X",player.getX());data.putDouble("Y",player.getY());data.putDouble("Z",player.getZ());data.putFloat("Yaw",player.getYRot());data.putFloat("Pitch",player.getXRot());data.putInt("Mode",player.gameMode.getGameModeForPlayer().getId());
         io.github.mcheliceport.platform.Services.PLATFORM.persistentData(player).put(RETURN,data);var s=new Session(slot,level,options);
         player.closeContainer();player.setGameMode(GameType.SPECTATOR);
-        if(!player.teleportTo(level,s.origin+28,9,34,Set.of(),140,12,true)){restoreMode(player,data);io.github.mcheliceport.platform.Services.PLATFORM.persistentData(player).remove(RETURN);return false;}
+        if(!player.teleportTo(level,s.origin+28,9,34,Set.of(),140,12)){restoreMode(player,data);io.github.mcheliceport.platform.Services.PLATFORM.persistentData(player).remove(RETURN);return false;}
         player.setDeltaMovement(Vec3.ZERO);SESSIONS.put(player.getUUID(),s);lighting(level,options);reset(player,s);
         tell(player,"Effects range: spectator viewing, real weapon impacts. ESC > MC Heli Effects > Test range. Return restores your location and mode.");return true;
     }
     public static boolean leave(ServerPlayer player){
         var saved=io.github.mcheliceport.platform.Services.PLATFORM.persistentData(player).getCompound(RETURN);if(saved.isEmpty())return false;
-        var data=saved.get();var server=player.level().getServer();var id=ResourceLocation.tryParse(data.getStringOr("Dimension","minecraft:overworld"));
+        var data=saved;var server=player.level().getServer();var id=ResourceLocation.tryParse(io.github.mcheliceport.shim.Compat.getStringOr(data,"Dimension","minecraft:overworld"));
         ServerLevel target=id==null?null:server.getLevel(ResourceKey.create(Registries.DIMENSION,id));
         boolean fallback=target==null||inRange(target);if(fallback)target=server.overworld();
-        double x=data.getDoubleOr("X",.5),y=data.getDoubleOr("Y",80),z=data.getDoubleOr("Z",.5);
-        if(fallback||!Double.isFinite(x+y+z)||Math.abs(x)>29999984||Math.abs(z)>29999984){var spawn=target.getRespawnData().pos();x=spawn.getX()+.5;y=spawn.getY()+1;z=spawn.getZ()+.5;}
+        double x=io.github.mcheliceport.shim.Compat.getDoubleOr(data,"X",.5),y=io.github.mcheliceport.shim.Compat.getDoubleOr(data,"Y",80),z=io.github.mcheliceport.shim.Compat.getDoubleOr(data,"Z",.5);
+        if(fallback||!Double.isFinite(x+y+z)||Math.abs(x)>29999984||Math.abs(z)>29999984){var spawn=target.getSharedSpawnPos();x=spawn.getX()+.5;y=spawn.getY()+1;z=spawn.getZ()+.5;}
         var s=SESSIONS.get(player.getUUID());if(s!=null)cleanProjectiles((ServerLevel)s.launcher.level(),s);
         player.closeContainer();
-        if(!player.teleportTo(target,x,y,z,Set.of(),data.getFloatOr("Yaw",0),data.getFloatOr("Pitch",0),true))return false;
+        if(!player.teleportTo(target,x,y,z,Set.of(),io.github.mcheliceport.shim.Compat.getFloatOr(data,"Yaw",0),io.github.mcheliceport.shim.Compat.getFloatOr(data,"Pitch",0)))return false;
         player.setDeltaMovement(Vec3.ZERO);restoreMode(player,data);
         io.github.mcheliceport.platform.Services.PLATFORM.persistentData(player).remove(RETURN);SESSIONS.remove(player.getUUID());return true;
     }
     private static void restoreMode(ServerPlayer player,CompoundTag data){
-        player.setGameMode(GameType.byId(data.getIntOr("Mode",0)));
-        var abilities=player.getAbilities();abilities.flying=data.getBooleanOr("Flying",abilities.flying);abilities.mayfly=data.getBooleanOr("MayFly",abilities.mayfly);abilities.invulnerable=data.getBooleanOr("Invulnerable",abilities.invulnerable);abilities.instabuild=data.getBooleanOr("InstantBuild",abilities.instabuild);abilities.mayBuild=data.getBooleanOr("MayBuild",abilities.mayBuild);
-        abilities.setFlyingSpeed(data.getFloatOr("FlySpeed",abilities.getFlyingSpeed()));abilities.setWalkingSpeed(data.getFloatOr("WalkSpeed",abilities.getWalkingSpeed()));player.onUpdateAbilities();
+        player.setGameMode(GameType.byId(io.github.mcheliceport.shim.Compat.getIntOr(data,"Mode",0)));
+        var abilities=player.getAbilities();abilities.flying=io.github.mcheliceport.shim.Compat.getBooleanOr(data,"Flying",abilities.flying);abilities.mayfly=io.github.mcheliceport.shim.Compat.getBooleanOr(data,"MayFly",abilities.mayfly);abilities.invulnerable=io.github.mcheliceport.shim.Compat.getBooleanOr(data,"Invulnerable",abilities.invulnerable);abilities.instabuild=io.github.mcheliceport.shim.Compat.getBooleanOr(data,"InstantBuild",abilities.instabuild);abilities.mayBuild=io.github.mcheliceport.shim.Compat.getBooleanOr(data,"MayBuild",abilities.mayBuild);
+        abilities.setFlyingSpeed(io.github.mcheliceport.shim.Compat.getFloatOr(data,"FlySpeed",abilities.getFlyingSpeed()));abilities.setWalkingSpeed(io.github.mcheliceport.shim.Compat.getFloatOr(data,"WalkSpeed",abilities.getWalkingSpeed()));player.onUpdateAbilities();
     }
     private static void lighting(Level world,RangeOptions options){
         if(!(world instanceof ServerLevel level)||!inRange(level))return;
-        level.dimensionType().defaultClock().filter(clock->clock.is(ResourceKey.create(Registries.WORLD_CLOCK,ID))).ifPresent(clock->{
-            var manager=level.clockManager();manager.setTotalTicks(clock,options.time());manager.setPaused(clock,true);
-            for(var player:level.players())player.connection.send(manager.createFullSyncPacket());
-        });
-        var weather=level.getWeatherData();weather.setClearWeatherTime(24000);weather.setRainTime(0);weather.setThunderTime(0);weather.setRaining(false);weather.setThundering(false);
+        // 1.21.1 has no per-dimension world clocks: the range's dimension type has a fixed time
+        // instead, and the chosen time is set as the level's day time.
+        level.setDayTime(options.time());
+        level.setWeatherParameters(24000,0,false,false);
     }
     private static void reset(ServerPlayer player,Session s){
         cleanProjectiles((ServerLevel)s.launcher.level(),s);s.cursor=0;notice(player,s,1);tell(player,"Preparing the target pad...");

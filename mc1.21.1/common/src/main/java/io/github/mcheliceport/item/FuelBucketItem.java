@@ -29,13 +29,13 @@ public class FuelBucketItem extends BucketItem {
     }
 
     @Override
-    public boolean emptyContents(@Nullable LivingEntity user, Level level, BlockPos pos,
+    public boolean emptyContents(@Nullable Player user, Level level, BlockPos pos,
             @Nullable BlockHitResult hitResult) {
         return false;
     }
 
-    @Override
-    public boolean emptyContents(@Nullable LivingEntity user, Level level, BlockPos pos,
+    /** NeoForge's overload with the container. */
+    public boolean emptyContents(@Nullable Player user, Level level, BlockPos pos,
             @Nullable BlockHitResult hitResult, @Nullable ItemStack container) {
         return false;
     }

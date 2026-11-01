@@ -29,15 +29,13 @@ public final class ModBlocks {
             p -> draftingTable(p).lightLevel(state -> 15));
     /** Upstream {@code MCH_DraftingTableTileEntity}, on both tables: it draws the 3D model. */
     public static final Supplier<BlockEntityType<DraftingTableBlockEntity>> DRAFTING_TABLE_ENTITY =
-            ModRegistries.BLOCK_ENTITY_TYPES.register("drafting_table", () -> new BlockEntityType<>(
-                    DraftingTableBlockEntity::new, DRAFTING_TABLE.get(), LIT_DRAFTING_TABLE.get()));
+            ModRegistries.BLOCK_ENTITY_TYPES.register("drafting_table", () -> io.github.mcheliceport.platform.Services.REGISTRAR.blockEntityType(DraftingTableBlockEntity::new, DRAFTING_TABLE.get(), LIT_DRAFTING_TABLE.get()));
     public static final DeferredBlock<ChargerBlock> CHARGER = ModRegistries.BLOCKS.registerBlock("charger",
             ChargerBlock::new, p -> p.mapColor(MapColor.METAL).sound(SoundType.METAL).strength(1.5f, 6.0f)
                     .requiresCorrectToolForDrops());
     /** Upstream {@code MCH_TileEntityCharger}: the charger's energy buffer. */
     public static final Supplier<BlockEntityType<ChargerBlockEntity>> CHARGER_ENTITY =
-            ModRegistries.BLOCK_ENTITY_TYPES.register("charger", () -> new BlockEntityType<>(
-                    ChargerBlockEntity::new, CHARGER.get()));
+            ModRegistries.BLOCK_ENTITY_TYPES.register("charger", () -> io.github.mcheliceport.platform.Services.REGISTRAR.blockEntityType(ChargerBlockEntity::new, CHARGER.get()));
     /** M10c: a repair pad tile; a 3x3 of them services a vehicle standing on it. */
     public static final DeferredBlock<io.github.mcheliceport.block.RepairPadBlock> REPAIR_PAD =
             ModRegistries.BLOCKS.registerBlock("repair_pad", io.github.mcheliceport.block.RepairPadBlock::new,
@@ -48,8 +46,7 @@ public final class ModBlocks {
             p -> p.mapColor(MapColor.METAL).strength(2.0f, 6.0f).requiresCorrectToolForDrops());
     /** Upstream {@code WingmanMarkerTileEntity}: the marker's ID, base and parking heading. */
     public static final Supplier<BlockEntityType<WingmanMarkerBlockEntity>> WINGMAN_MARKER_ENTITY =
-            ModRegistries.BLOCK_ENTITY_TYPES.register("wingman_marker", () -> new BlockEntityType<>(
-                    WingmanMarkerBlockEntity::new, WINGMAN_MARKER.get()));
+            ModRegistries.BLOCK_ENTITY_TYPES.register("wingman_marker", () -> io.github.mcheliceport.platform.Services.REGISTRAR.blockEntityType(WingmanMarkerBlockEntity::new, WINGMAN_MARKER.get()));
 
     private ModBlocks() {
     }

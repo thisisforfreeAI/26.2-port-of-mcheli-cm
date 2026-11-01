@@ -151,7 +151,7 @@ public class SeatEntity extends Entity {
         }
         ItemStack stack = player.getItemInHand(hand);
         if (AircraftEntity.isParentInteractItem(stack)) {
-            return parent.interact(player, hand, location);
+            return parent.interact(player, hand);
         }
         if (this.getRider() != null || player.getVehicle() != null || !this.canRideMob()) {
             return InteractionResult.PASS;

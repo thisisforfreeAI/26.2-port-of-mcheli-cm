@@ -15,12 +15,11 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.EntityTypes;
 import io.github.mcheliceport.shim.InterpolationHandler;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.MoverType;
-import net.minecraft.world.entity.vehicle.boat.Boat;
+import net.minecraft.world.entity.vehicle.Boat;
 import net.minecraft.world.level.Level;
 import io.github.mcheliceport.shim.ValueInput;
 import io.github.mcheliceport.shim.ValueOutput;
@@ -59,11 +58,11 @@ public class ParachuteEntity extends Entity {
         Vec3 previousPosition = user.position();
         user.stopRiding();
         if (user.isPassenger()) { chute.discard(); return null; }
-        if (!user.startRiding(chute, true, true)) {
+        if (!user.startRiding(chute, true)) {
             chute.discard();
             user.setPos(previousPosition);
             if (previousVehicle != null && !previousVehicle.isRemoved()) {
-                user.startRiding(previousVehicle, true, true);
+                user.startRiding(previousVehicle, true);
             }
             return null;
         }
@@ -127,8 +126,8 @@ public class ParachuteEntity extends Entity {
             this.discard();
             return;
         }
-        boolean forward = rider instanceof ServerPlayer player ? player.getLastClientInput().forward()
-                && !player.getLastClientInput().backward() : rider instanceof LivingEntity living && living.zza > 0;
+        boolean forward = rider instanceof ServerPlayer player ? player.zza > 0
+                && !(player.zza < 0) : rider instanceof LivingEntity living && living.zza > 0;
         ParachuteMotion.Step step = ParachuteMotion.accelerate(this.getModelType(), this.tickCount,
                 this.onGround(), this.getDeltaMovement(), this.speedMultiplier, forward,
                 rider != null ? rider.getYRot() : this.getYRot());
@@ -159,15 +158,15 @@ public class ParachuteEntity extends Entity {
                 e -> e instanceof ParachuteEntity && e.isPushable())) {
             entity.push(this);
         }
-        this.applyEffectsFromBlocks();
+        this.checkInsideBlocks();
     }
 
     /** Returning control to a loaded vehicle also synchronizes its driver and crew positions. */
     private void syncReleasedAircraft(@Nullable Entity rider) {
         if (rider instanceof io.github.mcheliceport.entity.aircraft.AircraftEntity cargo && !cargo.isPassenger()
                 && this.level() instanceof ServerLevel server) {
-            cargo.teleport(new net.minecraft.world.level.portal.TeleportTransition(server, cargo.position(), Vec3.ZERO,
-                    cargo.getYRot(), cargo.getXRot(), net.minecraft.world.level.portal.TeleportTransition.DO_NOTHING));
+            io.github.mcheliceport.shim.TeleportTransition.teleport(cargo, new io.github.mcheliceport.shim.TeleportTransition(server, cargo.position(), Vec3.ZERO,
+                    cargo.getYRot(), cargo.getXRot(), io.github.mcheliceport.shim.TeleportTransition.DO_NOTHING));
         }
     }
 
@@ -216,11 +215,11 @@ public class ParachuteEntity extends Entity {
             long water = BlockPos.betweenClosedStream(surface.offset(-2, -2, -2), surface.offset(2, 0, 2))
                     .filter(p -> level.getFluidState(p).is(FluidTags.WATER)).count();
             if (water > 37) {
-                Boat boat = EntityTypes.OAK_BOAT.create(level);
+                Boat boat = net.minecraft.world.entity.EntityType.BOAT.create(level);
                 if (boat != null) {
                     boat.moveTo(surface.getX(), surface.getY() + 1, surface.getZ(), this.getYRot() - 90, 0);
                     if (level.addFreshEntity(boat)) {
-                        rider.startRiding(boat, true, true);
+                        rider.startRiding(boat, true);
                     }
                 }
             }

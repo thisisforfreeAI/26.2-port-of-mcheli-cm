@@ -10,7 +10,7 @@ import java.util.Map;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.saveddata.SavedData;
-import net.minecraft.world.level.saveddata.SavedDataType;
+import io.github.mcheliceport.shim.SavedDataType;
 import org.jspecify.annotations.Nullable;
 
 /** Upstream's {@code TaxiRouteRegistry}: a dimension's taxi routes by route ID, in the order they were saved. */
@@ -21,6 +21,12 @@ public final class TaxiRouteRegistry extends SavedData {
     public static final SavedDataType<TaxiRouteRegistry> TYPE = new SavedDataType<>(
             ResourceLocation.fromNamespaceAndPath(McheliCePort.MOD_ID, "wingman_taxi_routes"), TaxiRouteRegistry::new,
             CODEC);
+
+    @Override
+    public net.minecraft.nbt.CompoundTag save(net.minecraft.nbt.CompoundTag tag,
+            net.minecraft.core.HolderLookup.Provider registries) {
+        return TYPE.save(this, tag, registries);
+    }
 
     private final Map<String, TaxiRoute> routes = new LinkedHashMap<>();
 
@@ -34,7 +40,7 @@ public final class TaxiRouteRegistry extends SavedData {
     }
 
     private static TaxiRouteRegistry get(ServerLevel level) {
-        return level.getDataStorage().computeIfAbsent(TYPE);
+        return level.getDataStorage().computeIfAbsent(TYPE.factory(), TYPE.fileName());
     }
 
     /** Saves the route, replacing any route with its ID. */

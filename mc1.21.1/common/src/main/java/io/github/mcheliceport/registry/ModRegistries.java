@@ -11,7 +11,6 @@ import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.neoforged.bus.api.IEventBus;
 import io.github.mcheliceport.platform.registry.DeferredRegister;
 
 /**
@@ -38,15 +37,15 @@ public final class ModRegistries {
     public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS =
             DeferredRegister.create(Registries.CREATIVE_MODE_TAB, McheliCePort.MOD_ID);
 
+    /** In dependency order: Fabric registers each register's entries straight away. */
     private static final List<DeferredRegister<?>> ALL = List.of(
-            ITEMS, BLOCKS, ModFluids.FLUID_TYPES, ModFluids.FLUIDS, BLOCK_ENTITY_TYPES, ENTITY_TYPES, MENU_TYPES,
-            DATA_COMPONENT_TYPES, SOUND_EVENTS, PARTICLE_TYPES, RECIPE_SERIALIZERS, CREATIVE_MODE_TABS,
-            ModCriteriaTriggers.TRIGGERS);
+            DATA_COMPONENT_TYPES, SOUND_EVENTS, PARTICLE_TYPES, BLOCKS, ModFluids.FLUIDS, ITEMS, BLOCK_ENTITY_TYPES,
+            ENTITY_TYPES, MENU_TYPES, RECIPE_SERIALIZERS, CREATIVE_MODE_TABS, ModCriteriaTriggers.TRIGGERS);
 
     private ModRegistries() {}
 
     /** Adds all entries, including one item per vehicle and throwable of {@code content}, and registers. */
-    public static void register(IEventBus modBus, ContentRegistries.Snapshot content) {
+    public static void register(ContentRegistries.Snapshot content) {
         ModBlocks.init();
         ModItems.init();
         ModFluids.init();
@@ -56,7 +55,7 @@ public final class ModRegistries {
         ModMenuTypes.init();
         ModRecipeSerializers.init();
         ModCreativeTabs.init();
-        ALL.forEach(register -> register.register(modBus));
+        ALL.forEach(DeferredRegister::register);
     }
 
     /** Logs how many entries each register holds, e.g. {@code item=0, block=0, ...}. */

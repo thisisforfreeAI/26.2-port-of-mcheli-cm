@@ -61,7 +61,7 @@ public final class DraftingTableRecipes {
         public static final StreamCodec<RegistryFriendlyByteBuf, Entry> STREAM_CODEC = StreamCodec.composite(
                 ResourceLocation.STREAM_CODEC, Entry::id,
                 ByteBufCodecs.VAR_INT, Entry::list,
-                Ingredient.OPTIONAL_CONTENTS_STREAM_CODEC.apply(ByteBufCodecs.list(9)), Entry::grid,
+                Ingredient.CONTENTS_STREAM_CODEC.<Optional<Ingredient>>map(i -> i.isEmpty() ? Optional.empty() : Optional.of(i), o -> o.orElse(Ingredient.EMPTY)).apply(ByteBufCodecs.list(9)), Entry::grid,
                 ItemStack.STREAM_CODEC, Entry::result,
                 Entry::new);
 
@@ -102,30 +102,30 @@ public final class DraftingTableRecipes {
             if (shaped.getWidth() > 3 || shaped.getHeight() > 3) {
                 return null;
             }
-            List<Optional<Ingredient>> ingredients = shaped.getIngredients();
+            List<Optional<Ingredient>> ingredients = shaped.getIngredients().stream().map(i -> i.isEmpty() ? Optional.<Ingredient>empty() : Optional.of(i)).toList();
             for (int i = 0; i < 9; i++) {
                 int x = i % 3;
                 int y = i / 3;
                 grid.add(x < shaped.getWidth() && y < shaped.getHeight()
                         ? ingredients.get(x + y * shaped.getWidth()) : Optional.empty());
             }
-            result = shaped.assemble(CraftingInput.EMPTY);
-        } else if (recipe instanceof ShapelessRecipe shapeless && shapeless.result() != null) {
-            List<Ingredient> ingredients = shapeless.placementInfo().ingredients();
+            result = shaped.getResultItem(net.minecraft.core.RegistryAccess.EMPTY).copy();
+        } else if (recipe instanceof ShapelessRecipe shapeless) {
+            List<Ingredient> ingredients = shapeless.getIngredients();
             if (ingredients.size() > 9) {
                 return null;
             }
             for (int i = 0; i < 9; i++) {
                 grid.add(i < ingredients.size() ? Optional.of(ingredients.get(i)) : Optional.empty());
             }
-            result = shapeless.assemble(CraftingInput.EMPTY);
+            result = shapeless.getResultItem(net.minecraft.core.RegistryAccess.EMPTY).copy();
         } else {
             return null;
         }
         if (result.isEmpty() || !McheliCePort.MOD_ID.equals(BuiltInRegistries.ITEM.getKey(result.getItem()).getNamespace())) {
             return null;
         }
-        return new Entry(holder.id().location(), list(result), List.copyOf(grid), result);
+        return new Entry(holder.id(), list(result), List.copyOf(grid), result);
     }
 
     private static int list(ItemStack result) {

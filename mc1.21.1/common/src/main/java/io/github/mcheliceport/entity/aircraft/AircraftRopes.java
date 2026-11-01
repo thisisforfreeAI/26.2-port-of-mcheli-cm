@@ -7,7 +7,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.portal.TeleportTransition;
+import io.github.mcheliceport.shim.TeleportTransition;
 import io.github.mcheliceport.shim.ValueInput;
 import io.github.mcheliceport.shim.ValueOutput;
 import net.minecraft.world.phys.Vec3;
@@ -37,7 +37,7 @@ public final class AircraftRopes {
         boolean wasActive = this.active();
         this.ac.setCommonStatus(AircraftEntity.STATUS_REPELLING, false); this.ac.setRopeState(0, 0);
         if (wasActive && !this.ac.isRemoved() && !this.ac.isPassenger()) {
-            this.ac.teleport(new TeleportTransition((ServerLevel) this.ac.level(), this.ac.position(),
+            io.github.mcheliceport.shim.TeleportTransition.teleport(this.ac, new TeleportTransition((ServerLevel) this.ac.level(), this.ac.position(),
                     this.ac.getDeltaMovement(), this.ac.getYaw(), this.ac.getPitch(), TeleportTransition.DO_NOTHING));
         }
     }
@@ -98,7 +98,7 @@ public final class AircraftRopes {
         output.putBoolean("RopesDeployed", this.active()); output.putFloat("RopeLength", this.ac.ropeLength());
         output.putInt("RopeTicks", this.ac.ropeTicks()); output.putInt("LastRopeHook", this.lastHook);
     }
-    public void load(net.minecraft.nbt.CompoundTag input$tag) { ValueInput input = ValueInput.of(input$tag, this.registryAccess());
+    public void load(ValueInput input) {
         boolean active = input.getBooleanOr("RopesDeployed", false) && this.supported() && !this.ac.isDestroyed();
         this.ac.setCommonStatus(AircraftEntity.STATUS_REPELLING, active);
         float length = input.getFloatOr("RopeLength", 0);

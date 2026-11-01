@@ -40,7 +40,7 @@ public final class MissionPlanner {
 
     /** Upstream {@code executeGui}: every aircraft loaded in the dimension, nearest first, and the routes and markers. */
     public static PlannerDataPayload buildData(ServerPlayer player) {
-        ServerLevel level = player.level();
+        ServerLevel level = player.serverLevel();
         List<AircraftEntity> aircraft = new ArrayList<>();
         for (Entity e : level.getAllEntities()) {
             if (e instanceof AircraftEntity ac && !ac.isRemoved()) {

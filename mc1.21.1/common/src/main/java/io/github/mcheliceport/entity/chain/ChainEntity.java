@@ -14,7 +14,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.portal.TeleportTransition;
+import io.github.mcheliceport.shim.TeleportTransition;
 import io.github.mcheliceport.shim.ValueInput;
 import io.github.mcheliceport.shim.ValueOutput;
 import net.minecraft.world.phys.Vec3;
@@ -114,7 +114,7 @@ public class ChainEntity extends Entity {
             if (first instanceof AircraftEntity aircraft) {
                 aircraft.setTowed(false);
                 if (!aircraft.isRemoved() && !aircraft.isPassenger() && reason.shouldDestroy()) {
-                    aircraft.teleport(new TeleportTransition((ServerLevel) this.level(), aircraft.position(),
+                    io.github.mcheliceport.shim.TeleportTransition.teleport(aircraft, new TeleportTransition((ServerLevel) this.level(), aircraft.position(),
                             aircraft.getDeltaMovement(), aircraft.getYaw(), aircraft.getPitch(), TeleportTransition.DO_NOTHING));
                 }
             }

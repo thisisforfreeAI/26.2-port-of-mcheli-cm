@@ -71,7 +71,7 @@ public final class AircraftRacks {
             if (!(this.ac.getSeatInfo(i + 1) instanceof SeatRackInfo rack)) { continue; }
             Vec3 entry = this.ac.getTransformedPosition(rack.getEntryPos());
             for (var cargo : this.ac.level().getEntities(this.ac, new AABB(entry, entry).inflate(rack.range))) {
-                if (accepts(this.ac, i, cargo) && cargo.startRiding(this.ac.getSeats()[i], false, true)) {
+                if (accepts(this.ac, i, cargo) && cargo.startRiding(this.ac.getSeats()[i], false)) {
                     this.ac.getSeats()[i].positionCargo(); loaded++; break;
                 }
             }
@@ -103,7 +103,7 @@ public final class AircraftRacks {
     public boolean ride() {
         if (this.ac.level().isClientSide()) { return false; }
         SeatEntity seat = this.nearbyRack();
-        if (seat == null || !this.ac.startRiding(seat, false, true)) { return false; }
+        if (seat == null || !this.ac.startRiding(seat, false)) { return false; }
         seat.positionCargo(); this.click(); return true;
     }
     public boolean unload() {
@@ -119,9 +119,9 @@ public final class AircraftRacks {
             Vec3 pos = this.ac.position(), velocity = chute.getDeltaMovement();
             this.ac.stopRiding();
             if (this.ac.isPassenger()) { return false; }
-            if (this.ac.teleport(new net.minecraft.world.level.portal.TeleportTransition((ServerLevel) this.ac.level(), pos, velocity,
-                    this.ac.getYaw(), this.ac.getPitch(), net.minecraft.world.level.portal.TeleportTransition.DO_NOTHING)) == null) {
-                this.ac.startRiding(chute, true, true); chute.positionRider(this.ac); return false;
+            if (io.github.mcheliceport.shim.TeleportTransition.teleport(this.ac, new io.github.mcheliceport.shim.TeleportTransition((ServerLevel) this.ac.level(), pos, velocity,
+                    this.ac.getYaw(), this.ac.getPitch(), io.github.mcheliceport.shim.TeleportTransition.DO_NOTHING)) == null) {
+                this.ac.startRiding(chute, true); chute.positionRider(this.ac); return false;
             }
             this.ac.hurtMarked = true;
             return true;
@@ -145,9 +145,9 @@ public final class AircraftRacks {
         } else {
             cargo.stopRiding();
             if (cargo.isPassenger()) { return false; }
-            if (cargo.teleport(new net.minecraft.world.level.portal.TeleportTransition(level, pos, carrier.getDeltaMovement(),
-                    cargo.getYRot(), cargo.getXRot(), net.minecraft.world.level.portal.TeleportTransition.DO_NOTHING)) == null) {
-                cargo.startRiding(seat, true, true); seat.positionCargo(); return false;
+            if (io.github.mcheliceport.shim.TeleportTransition.teleport(cargo, new io.github.mcheliceport.shim.TeleportTransition(level, pos, carrier.getDeltaMovement(),
+                    cargo.getYRot(), cargo.getXRot(), io.github.mcheliceport.shim.TeleportTransition.DO_NOTHING)) == null) {
+                cargo.startRiding(seat, true); seat.positionCargo(); return false;
             }
             cargo.fallDistance = carrier.fallDistance; cargo.hurtMarked = true;
         }

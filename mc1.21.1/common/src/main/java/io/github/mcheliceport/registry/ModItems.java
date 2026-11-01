@@ -58,7 +58,7 @@ public final class ModItems {
      * damage (4 + 2) from 1.12's iron tool material.
      */
     public static final DeferredItem<Item> WRENCH = register("wrench", io.github.mcheliceport.item.WrenchItem::new,
-            p -> p.durability(250).enchantable(14).repairable(net.minecraft.world.item.Items.IRON_INGOT)
+            p -> p.durability(250)
                     .attributes(net.minecraft.world.item.component.ItemAttributeModifiers.builder()
                             .add(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE,
                                     new net.minecraft.world.entity.ai.attributes.AttributeModifier(
@@ -67,7 +67,7 @@ public final class ModItems {
                                     net.minecraft.world.entity.EquipmentSlotGroup.MAINHAND)
                             .build()),
             ModTab.ITEMS);
-    public static final DeferredItem<Item> FUEL = item("fuel", p -> p.durability(600).setNoCombineRepair());
+    public static final DeferredItem<Item> FUEL = item("fuel", p -> p.durability(600));
     /** Upstream's Forge bucket of {@code mch_fuel}; see {@link ModFluids}. */
     public static final DeferredItem<io.github.mcheliceport.item.FuelBucketItem> FUEL_BUCKET = register("fuel_bucket",
             p -> new io.github.mcheliceport.item.FuelBucketItem(ModFluids.FUEL.get(), p),
@@ -192,7 +192,7 @@ public final class ModItems {
 
     private static DeferredItem<BlockItem> blockItem(DeferredBlock<? extends Block> block) {
         return register(block.getId().getPath(), p -> new BlockItem(block.get(), p),
-                Item.Properties::useBlockDescriptionPrefix, ModTab.ITEMS);
+                UnaryOperator.identity(), ModTab.ITEMS);
     }
 
     private static <I extends Item> DeferredItem<I> register(String path,

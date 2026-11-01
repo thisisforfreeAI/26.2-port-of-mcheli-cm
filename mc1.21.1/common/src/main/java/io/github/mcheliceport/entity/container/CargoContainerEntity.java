@@ -61,7 +61,7 @@ public class CargoContainerEntity extends Entity implements Container, MenuProvi
     @Override public boolean isPushable() { return true; }
     @Override public boolean canBeCollidedWith() { Entity other = null; return !this.isRemoved(); }
     @Override public boolean canCollideWith(Entity other) {
-        return (other.isPushable() || other.canBeCollidedWith(this)) && !this.isPassengerOfSameVehicle(other);
+        return (other.isPushable() || other.canBeCollidedWith()) && !this.isPassengerOfSameVehicle(other);
     }
     @Override public Component getName() {
         return this.hasCustomName() ? super.getName() : Component.translatable("item.mcheli_ce_port.container");
@@ -156,7 +156,7 @@ public class CargoContainerEntity extends Entity implements Container, MenuProvi
         this.entityData.set(FORWARD, -this.entityData.get(FORWARD)); this.entityData.set(HIT_TIME, 10);
         this.hurtMarked = true;
         if (player.isCreative() || this.getDamageTaken() > 40) {
-            if (!player.isCreative()) { this.spawnAtLocation(level, ModItems.CONTAINER.get()); }
+            if (!player.isCreative()) { this.spawnAtLocation(ModItems.CONTAINER.get()); }
             this.discard();
         }
         return true;
@@ -190,10 +190,10 @@ public class CargoContainerEntity extends Entity implements Container, MenuProvi
     @Override public void setChanged() { }
     @Override public void clearContent() { this.items.clear(); }
     @Override public boolean stillValid(Player player) {
-        return !this.isRemoved() && player.level() == this.level() && player.isWithinEntityInteractionRange(this.getBoundingBox(), 4);
+        return !this.isRemoved() && player.level() == this.level() && player.canInteractWithEntity(this.getBoundingBox(), 4);
     }
     @Override protected void readAdditionalSaveData(net.minecraft.nbt.CompoundTag input$tag) { ValueInput input = ValueInput.of(input$tag, this.registryAccess());
-        this.clearContent(); ContainerHelper.loadAllItems(input, this.items);
+        this.clearContent(); io.github.mcheliceport.shim.Compat.loadAllItems(input, this.items);
     }
-    @Override protected void addAdditionalSaveData(net.minecraft.nbt.CompoundTag output$tag) { ValueOutput output = ValueOutput.of(output$tag, this.registryAccess()); ContainerHelper.saveAllItems(output, this.items); }
+    @Override protected void addAdditionalSaveData(net.minecraft.nbt.CompoundTag output$tag) { ValueOutput output = ValueOutput.of(output$tag, this.registryAccess()); io.github.mcheliceport.shim.Compat.saveAllItems(output, this.items); }
 }

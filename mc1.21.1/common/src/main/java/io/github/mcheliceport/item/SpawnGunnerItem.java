@@ -90,7 +90,7 @@ public class SpawnGunnerItem extends Item {
         ItemStack stack = player.getItemInHand(hand);
         Entity target = findTarget(player);
         if (target instanceof GunnerEntity gunner) {
-            gunner.interact(player, hand, Vec3.ZERO);
+            gunner.interact(player, hand);
             return InteractionResult.SUCCESS;
         }
         if (target == null) {

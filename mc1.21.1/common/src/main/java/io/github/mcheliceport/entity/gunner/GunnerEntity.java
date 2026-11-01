@@ -118,9 +118,24 @@ public class GunnerEntity extends LivingEntity {
      * upstream's 1.12 command applied without damage).
      */
     @Override
-    public boolean isInvulnerableTo(ServerLevel level, DamageSource source) {
+    public boolean isInvulnerableTo(DamageSource source) {
         return this.isCreative && !source.is(DamageTypes.FELL_OUT_OF_WORLD)
-                && !source.is(DamageTypeTags.BYPASSES_INVULNERABILITY) || super.isInvulnerableTo(level, source);
+                && !source.is(DamageTypeTags.BYPASSES_INVULNERABILITY) || super.isInvulnerableTo(source);
+    }
+
+    // 1.21.1's LivingEntity still asks every subclass for its equipment; the gunner wears none.
+    @Override
+    public Iterable<net.minecraft.world.item.ItemStack> getArmorSlots() {
+        return java.util.List.of();
+    }
+
+    @Override
+    public net.minecraft.world.item.ItemStack getItemBySlot(net.minecraft.world.entity.EquipmentSlot slot) {
+        return net.minecraft.world.item.ItemStack.EMPTY;
+    }
+
+    @Override
+    public void setItemSlot(net.minecraft.world.entity.EquipmentSlot slot, net.minecraft.world.item.ItemStack stack) {
     }
 
     @Override
@@ -184,7 +199,7 @@ public class GunnerEntity extends LivingEntity {
         if (!this.droppedItem && !this.isCreative && this.level() instanceof ServerLevel level
                 && (reason == Entity.RemovalReason.KILLED || reason == Entity.RemovalReason.DISCARDED)) {
             this.droppedItem = true;
-            this.spawnAtLocation(level, this.targetType == VS_MONSTER ? ModItems.SPAWN_GUNNER_VS_MONSTER.get()
+            this.spawnAtLocation(this.targetType == VS_MONSTER ? ModItems.SPAWN_GUNNER_VS_MONSTER.get()
                     : ModItems.SPAWN_GUNNER_VS_PLAYER.get());
         }
         super.remove(reason);
@@ -461,8 +476,8 @@ public class GunnerEntity extends LivingEntity {
     }
 
     @Override
-    protected void addAdditionalSaveData(net.minecraft.nbt.CompoundTag output$tag) { ValueOutput output = ValueOutput.of(output$tag, this.registryAccess());
-        super.addAdditionalSaveData(output);
+    public void addAdditionalSaveData(net.minecraft.nbt.CompoundTag output$tag) { ValueOutput output = ValueOutput.of(output$tag, this.registryAccess());
+        super.addAdditionalSaveData(output$tag);
         output.putBoolean("Creative", this.isCreative);
         output.putString("OwnerUUID", this.ownerUUID);
         output.putString("TeamName", this.getTeamName());
@@ -470,8 +485,8 @@ public class GunnerEntity extends LivingEntity {
     }
 
     @Override
-    protected void readAdditionalSaveData(net.minecraft.nbt.CompoundTag input$tag) { ValueInput input = ValueInput.of(input$tag, this.registryAccess());
-        super.readAdditionalSaveData(input);
+    public void readAdditionalSaveData(net.minecraft.nbt.CompoundTag input$tag) { ValueInput input = ValueInput.of(input$tag, this.registryAccess());
+        super.readAdditionalSaveData(input$tag);
         this.isCreative = input.getBooleanOr("Creative", false);
         this.ownerUUID = input.getStringOr("OwnerUUID", "");
         this.setTeamName(input.getStringOr("TeamName", ""));

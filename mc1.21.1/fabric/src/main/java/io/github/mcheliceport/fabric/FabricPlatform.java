@@ -49,6 +49,22 @@ public final class FabricPlatform implements Platform {
     }
 
     @Override
+    public boolean modFileExists(String path) {
+        return FabricLoader.getInstance().getModContainer(McheliCePort.MOD_ID).flatMap(c -> c.findPath(path))
+                .map(Files::isRegularFile).orElse(false);
+    }
+
+    @Override
+    public net.minecraft.nbt.CompoundTag persistentData(net.minecraft.world.entity.Entity entity) {
+        return FabricAttachments.persistentData(entity);
+    }
+
+    @Override
+    public net.minecraft.server.MinecraftServer currentServer() {
+        return FabricEvents.server;
+    }
+
+    @Override
     public void visitModFiles(String folder, ModFileVisitor visitor) throws IOException {
         Optional<Path> root = FabricLoader.getInstance().getModContainer(McheliCePort.MOD_ID)
                 .flatMap(c -> c.findPath(folder));
@@ -57,7 +73,7 @@ public final class FabricPlatform implements Platform {
         }
         try (Stream<Path> files = Files.walk(root.get())) {
             for (Path file : (Iterable<Path>) files.filter(Files::isRegularFile)::iterator) {
-                String relative = root.get().relativize(file).toString()
+                String relative = folder + "/" + root.get().relativize(file).toString()
                         .replace(file.getFileSystem().getSeparator(), "/");
                 visitor.visit(relative, () -> Files.newInputStream(file));
             }

@@ -35,16 +35,13 @@ public final class ModCreativeTabs {
             new EnumMap<>(ModTab.class);
 
     static {
-        ResourceLocation previous = CreativeModeTabs.SPAWN_EGGS.location();
+        ResourceLocation previous = ResourceLocation.withDefaultNamespace("spawn_eggs");
         for (ModTab tab : ModTab.values()) {
             ResourceLocation after = previous;
             DeferredHolder<CreativeModeTab, CreativeModeTab> holder = ModRegistries.CREATIVE_MODE_TABS.register(
-                    tab.id, () -> CreativeModeTab.builder()
-                            .title(Component.translatable(tab.translationKey()))
-                            .icon(() -> icon(tab))
-                            .displayItems((parameters, output) -> sortedItems(tab).forEach(output::accept))
-                            .withTabsBefore(after)
-                            .build());
+                    tab.id, () -> io.github.mcheliceport.platform.Services.REGISTRAR.creativeTab(
+                            Component.translatable(tab.translationKey()), () -> icon(tab),
+                            (parameters, output) -> sortedItems(tab).forEach(output::accept), after));
             TABS.put(tab, holder);
             previous = holder.getId();
         }

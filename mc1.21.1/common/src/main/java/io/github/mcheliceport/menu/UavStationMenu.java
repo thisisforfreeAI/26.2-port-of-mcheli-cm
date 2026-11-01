@@ -77,7 +77,7 @@ public class UavStationMenu extends AbstractContainerMenu {
         if (!p.equals(previousRoster) && viewer instanceof ServerPlayer sp) { io.github.mcheliceport.platform.network.PacketDistributor.sendToPlayer(sp, p); previousRoster = p; }
     }
     public static void open(ServerPlayer player, UavStationEntity station) {
-        player.openMenu(new SimpleMenuProvider((id, inventory, p) -> new UavStationMenu(id, inventory, station),
+        io.github.mcheliceport.platform.Services.REGISTRAR.openMenu(player, new SimpleMenuProvider((id, inventory, p) -> new UavStationMenu(id, inventory, station),
                 Component.literal(station.handheld() ? "UAV Tablet" : station.small() ? "Portable UAV Controller" : "UAV Station")), b -> b.writeVarInt(station.getId()));
     }
     @Override public boolean stillValid(Player player) { return station != null && station.usableBy(player); }

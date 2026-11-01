@@ -21,7 +21,7 @@ public final class TicketController {
 
     public TicketController(ResourceLocation id) {
         this.id = id;
-        this.type = TicketType.create(id.toString(), Comparator.naturalOrder());
+        this.type = TicketType.create(id.toString(), Comparator.<UUID>naturalOrder());
     }
 
     public ResourceLocation id() {

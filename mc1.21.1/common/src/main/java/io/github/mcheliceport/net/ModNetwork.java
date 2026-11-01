@@ -358,7 +358,7 @@ public final class ModNetwork {
     /** The marker at the position, when the player can reach and edit it, as vanilla's sign editing. */
     private static io.github.mcheliceport.wingman.block.@Nullable WingmanMarkerBlockEntity editableMarker(
             Player player, net.minecraft.core.BlockPos pos) {
-        if (player.isSpectator() || !player.isWithinBlockInteractionRange(pos, 4.0)
+        if (player.isSpectator() || !player.canInteractWithBlock(pos, 4.0)
                 || !player.level().mayInteract(player, pos)
                 || !(player.level().getBlockEntity(pos)
                         instanceof io.github.mcheliceport.wingman.block.WingmanMarkerBlockEntity marker)) {

@@ -69,15 +69,8 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.scores.Team;
-import net.neoforged.neoforge.capabilities.Capabilities;
 import io.github.mcheliceport.shim.ComplexSpawn;
 import io.github.mcheliceport.shim.PartEntity;
-import net.neoforged.neoforge.transfer.ResourceHandler;
-import net.neoforged.neoforge.transfer.access.ItemAccess;
-import net.neoforged.neoforge.transfer.fluid.FluidResource;
-import net.neoforged.neoforge.transfer.item.ItemResource;
-import net.neoforged.neoforge.transfer.item.VanillaContainerWrapper;
-import net.neoforged.neoforge.transfer.transaction.Transaction;
 import org.joml.Quaternionf;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
@@ -425,7 +418,7 @@ public abstract class AircraftEntity extends Entity
         for (int i = size; i < this.inventory.getContainerSize(); i++) {
             ItemStack lost = this.inventory.getItem(i);
             if (!lost.isEmpty() && !this.level().isClientSide()) {
-                this.spawnAtLocation((ServerLevel) this.level(), lost);
+                this.spawnAtLocation(lost);
             }
         }
         this.inventory = resized;
@@ -997,7 +990,7 @@ public abstract class AircraftEntity extends Entity
     }
 
     public static boolean canSetCommand(Player player) {
-        return player.hasPermissions(Commands.LEVEL_GAMEMASTERS);
+        return player.hasPermissions(net.minecraft.commands.Commands.LEVEL_GAMEMASTERS);
     }
 
     public void setCommandForce(String command) {
@@ -1363,14 +1356,14 @@ public abstract class AircraftEntity extends Entity
         }
         for (int i = 0; i < this.seats.length; i++) {
             if (this.seats[i] == null || this.seats[i].isRemoved()) {
-                SeatEntity seat = ModEntityTypes.SEAT.get().create(this.level(), net.minecraft.world.entity.MobSpawnType.LOAD);
+                SeatEntity seat = ModEntityTypes.SEAT.get().create(this.level());
                 if (seat == null) {
                     return;
                 }
                 seat.setSeatIndex(i);
                 seat.setPos(this.getX(), this.getY() + 1.0, this.getZ());
                 if (this.level().addFreshEntity(seat)) {
-                    seat.startRiding(this, true, false);
+                    seat.startRiding(this, true);
                     this.seats[i] = seat;
                 }
             }
@@ -1554,7 +1547,7 @@ public abstract class AircraftEntity extends Entity
                     if (this.getSeatInfo(sid) instanceof SeatRackInfo) {
                         break;
                     }
-                    entity.startRiding(seat, true, true);
+                    entity.startRiding(seat, true);
                 }
                 sid++;
             }
@@ -1675,7 +1668,7 @@ public abstract class AircraftEntity extends Entity
                 if (seat.getRider() == entity) {
                     found = true;
                 } else if (found && seat.getRider() == null && this.canRideSeatOrRack(sid, entity)) {
-                    entity.startRiding(seat, true, true);
+                    entity.startRiding(seat, true);
                     return;
                 }
                 sid++;
@@ -1686,7 +1679,7 @@ public abstract class AircraftEntity extends Entity
             if (seat != null && seat.getRider() == null) {
                 if (!(this.getSeatInfo(sid) instanceof SeatRackInfo)) {
                     if (this.canRideSeatOrRack(sid, entity)) {
-                        entity.startRiding(seat, true, true);
+                        entity.startRiding(seat, true);
                         return;
                     }
                 } else {
@@ -1709,7 +1702,7 @@ public abstract class AircraftEntity extends Entity
                 if (seat.getRider() == entity) {
                     found = true;
                 } else if (found && seat.getRider() == null && this.canRideSeatOrRack(i + 1, entity)) {
-                    entity.startRiding(seat, true, true);
+                    entity.startRiding(seat, true);
                     return;
                 }
             }
@@ -1718,7 +1711,7 @@ public abstract class AircraftEntity extends Entity
             SeatEntity seat = this.seats[i];
             if (!(this.getSeatInfo(i + 1) instanceof SeatRackInfo) && seat != null && seat.getRider() == null
                     && this.canRideSeatOrRack(i + 1, entity)) {
-                entity.startRiding(seat, true, true);
+                entity.startRiding(seat, true);
                 return;
             }
         }
@@ -1750,7 +1743,7 @@ public abstract class AircraftEntity extends Entity
         // Upstream: a rider moving to the pilot seat keeps their view and brings no mobs aboard.
         this.keepOnRideRotation = true;
         try {
-            return this.interact(player, hand, Vec3.ZERO);
+            return this.interact(player, hand);
         } finally {
             this.switchSeat = false;
             if (this.getPilot() != player) {
@@ -2002,7 +1995,7 @@ public abstract class AircraftEntity extends Entity
         if (now - this.lastRejectLogTime >= 1200 || this.lastRejectLogTime == 0) {
             this.lastRejectLogTime = now;
             LOGGER.info("Vehicle {} of {} moved faster than it can fly; it was moved back", this.getAircraftTypeName(),
-                    this.getPilot() != null ? this.getPilot().getPlainTextName() : "nobody");
+                    this.getPilot() != null ? this.getPilot().getName().getString() : "nobody");
         }
     }
 
@@ -2825,7 +2818,7 @@ public abstract class AircraftEntity extends Entity
      * A fuelled vehicle's tank for pipes and tanks (upstream {@code hasFluidTank}), or {@code null}
      * for an electric vehicle or one without a tank.
      */
-    public @Nullable ResourceHandler<FluidResource> fluidHandler() {
+    public @Nullable AircraftFluidHandler fluidHandler() {
         return this.info != null && !this.info.electric && this.getMaxFuel() > 0 ? this.fluidHandler : null;
     }
 
@@ -2835,34 +2828,23 @@ public abstract class AircraftEntity extends Entity
      * container goes to the output slot. Nothing moves while the output slot cannot take it.
      */
     private void refuelFromContainer(ItemStack input, int current, int max) {
-        ResourceHandler<ItemResource> slot = VanillaContainerWrapper.of(new SimpleContainer(input.copyWithCount(1)));
-        ResourceHandler<FluidResource> handler = ItemAccess.forHandlerIndexStrict(slot, 0)
-                .getCapability(Capabilities.Fluid.ITEM);
-        if (handler == null || this.info == null) {
+        if (this.info == null) {
             return;
         }
-        for (int i = 0; i < handler.size(); i++) {
-            FluidResource resource = handler.getResource(i);
-            String type = resource.isEmpty() ? null : FuelFluids.typeOf(this.info, resource.getFluid());
-            if (type == null || !this.canAcceptFuel(type)) {
-                continue;
-            }
-            try (Transaction transaction = Transaction.openRoot()) {
-                int drained = handler.extract(i, resource, max - current, transaction);
-                ItemStack container = slot.getResource(0).toStack(slot.getAmountAsInt(0));
-                if (drained <= 0 || !this.canPutFuelOut(container)) {
-                    return;
-                }
-                transaction.commit();
-                input.shrink(1);
-                this.putFuelOut(container);
-                this.setFuelType(type);
-                this.setFuel(current + drained);
-                this.inventory.setChanged();
-                io.github.mcheliceport.registry.ModCriteriaTriggers.trigger(io.github.mcheliceport.registry.ModCriteriaTriggers.SUPPLY_FUEL, this.getPilot());
-            }
+        var drained = io.github.mcheliceport.platform.Services.TRANSFER.drain(input, fluid -> {
+            String type = FuelFluids.typeOf(this.info, fluid);
+            return type != null && this.canAcceptFuel(type);
+        }, max - current);
+        if (drained == null || drained.amount() <= 0 || !this.canPutFuelOut(drained.container())) {
             return;
         }
+        String type = FuelFluids.typeOf(this.info, drained.fluid());
+        input.shrink(1);
+        this.putFuelOut(drained.container());
+        this.setFuelType(type);
+        this.setFuel(current + drained.amount());
+        this.inventory.setChanged();
+        io.github.mcheliceport.registry.ModCriteriaTriggers.trigger(io.github.mcheliceport.registry.ModCriteriaTriggers.SUPPLY_FUEL, this.getPilot());
     }
 
     /** Upstream {@code manageOutputSlot}: whether the output slot can take this container. */
@@ -3102,7 +3084,7 @@ public abstract class AircraftEntity extends Entity
                 CommonConfig.DROP_ITEM_IN_CREATIVE_MODE.get()) && this.level() instanceof ServerLevel serverLevel) {
             ItemStack stack = new ItemStack(item);
             this.writeDataToItem(stack);
-            this.spawnAtLocation(serverLevel, stack);
+            this.spawnAtLocation(stack);
         }
         this.removeVehicle(true);
     }
@@ -3819,11 +3801,11 @@ public abstract class AircraftEntity extends Entity
     }
     public float searchLightYaw(float partial) {
         Entity operator = this.searchLightOperator();
-        return operator != null ? operator.getYRot(partial) : this.entityData.get(DATA_LIGHT_YAW);
+        return operator != null ? operator.getViewYRot(partial) : this.entityData.get(DATA_LIGHT_YAW);
     }
     public float searchLightPitch(float partial) {
         Entity operator = this.searchLightOperator();
-        return operator != null ? operator.getXRot(partial) : this.entityData.get(DATA_LIGHT_PITCH);
+        return operator != null ? operator.getViewXRot(partial) : this.entityData.get(DATA_LIGHT_PITCH);
     }
     private void updateSearchLight() {
         boolean enabled = this.isSearchLightOn();
@@ -3855,12 +3837,12 @@ public abstract class AircraftEntity extends Entity
         this.setAircraftTypeName(input.getStringOr("TypeName", ""));
         this.entityData.set(DATA_ERA, input.getStringOr("AcERAState", ""));
         NonNullList<ItemStack> items = NonNullList.withSize(this.inventory.getContainerSize(), ItemStack.EMPTY);
-        ContainerHelper.loadAllItems(input.childOrEmpty("ItemsAC"), items);
+        io.github.mcheliceport.shim.Compat.loadAllItems(input.childOrEmpty("ItemsAC"), items);
         for (int i = 0; i < items.size(); i++) {
             this.inventory.setItem(i, items.get(i));
         }
         NonNullList<ItemStack> chutes = NonNullList.withSize(2, ItemStack.EMPTY);
-        ContainerHelper.loadAllItems(input.childOrEmpty("ParachutesAC"), chutes);
+        io.github.mcheliceport.shim.Compat.loadAllItems(input.childOrEmpty("ParachutesAC"), chutes);
         for (int i = 0; i < chutes.size(); i++) {
             this.parachutes.setItem(i, chutes.get(i));
         }
@@ -3914,12 +3896,12 @@ public abstract class AircraftEntity extends Entity
         for (int i = 0; i < items.size(); i++) {
             items.set(i, this.inventory.getItem(i));
         }
-        ContainerHelper.saveAllItems(output.child("ItemsAC"), items);
+        io.github.mcheliceport.shim.Compat.saveAllItems(output.child("ItemsAC"), items);
         NonNullList<ItemStack> chutes = NonNullList.withSize(2, ItemStack.EMPTY);
         for (int i = 0; i < chutes.size(); i++) {
             chutes.set(i, this.parachutes.getItem(i));
         }
-        ContainerHelper.saveAllItems(output.child("ParachutesAC"), chutes);
+        io.github.mcheliceport.shim.Compat.saveAllItems(output.child("ParachutesAC"), chutes);
         output.putIntArray("AcWeaponsAmmo", this.weapons.saveAmmo());
         output.putInt("AcDamage", this.getDamageTaken());
         output.putLong("AcComponents", this.getComponentHealth());

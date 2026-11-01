@@ -60,7 +60,7 @@ public final class GeneratedPack implements PackResources {
                 return this.openPrimary(info);
             }
         };
-        Pack.Metadata metadata = new Pack.Metadata(title, PackCompatibility.COMPATIBLE, FeatureFlagSet.of(), List.of(), true);
+        Pack.Metadata metadata = new Pack.Metadata(title, PackCompatibility.COMPATIBLE, FeatureFlagSet.of(), List.of());
         return new Pack(location, supplier, metadata, new PackSelectionConfig(true, position, false));
     }
 
@@ -100,7 +100,7 @@ public final class GeneratedPack implements PackResources {
     }
 
     @Override
-    public <T> @Nullable T getMetadataSection(MetadataSectionType<T> type) {
+    public <T> @Nullable T getMetadataSection(net.minecraft.server.packs.metadata.MetadataSectionSerializer<T> type) {
         return null;
     }
 
@@ -109,7 +109,7 @@ public final class GeneratedPack implements PackResources {
         return this.location;
     }
 
-    @Override
+    /** NeoForge's {@code PackResources#isHidden}. */
     public boolean isHidden() {
         return true;
     }

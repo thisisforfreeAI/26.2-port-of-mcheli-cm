@@ -172,7 +172,7 @@ public final class ContentRegistries {
     }
 
     private static boolean modLoaded(String modId) {
-        return net.neoforged.fml.ModList.get() != null && net.neoforged.fml.ModList.get().isLoaded(modId);
+        return io.github.mcheliceport.platform.Services.PLATFORM.isModLoaded(modId);
     }
 
     /**

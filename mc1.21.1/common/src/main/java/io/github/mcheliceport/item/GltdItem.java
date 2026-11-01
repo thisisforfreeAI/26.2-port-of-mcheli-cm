@@ -45,7 +45,7 @@ public class GltdItem extends Item {
             }
         }
         BlockPos pos = hit.getBlockPos();
-        GltdEntity gltd = ModEntityTypes.GLTD.get().create(level, net.minecraft.world.entity.MobSpawnType.SPAWN_EGG);
+        GltdEntity gltd = ModEntityTypes.GLTD.get().create(level);
         if (gltd == null) {
             return InteractionResult.FAIL;
         }

@@ -126,7 +126,7 @@ public class AircraftHitBox extends PartEntity<AircraftEntity> {
 
     @Override
     public InteractionResult interact(Player player, InteractionHand hand) { Vec3 location = player.position().subtract(this.position());
-        return this.getParent().interact(player, hand, location);
+        return this.getParent().interact(player, hand);
     }
 
     @Override

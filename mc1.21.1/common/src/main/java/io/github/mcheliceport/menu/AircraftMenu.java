@@ -111,7 +111,7 @@ public class AircraftMenu extends AbstractContainerMenu {
     /** Opens the menu for a player (upstream {@code openContainer}/{@code openGui}). */
     public static void open(ServerPlayer player, AircraftEntity aircraft) {
         int trunkSize = aircraft.getInventory().getContainerSize() - AircraftEntity.FIXED_SLOTS;
-        player.openMenu(new SimpleMenuProvider((id, inventory, p) -> new AircraftMenu(id, inventory, aircraft),
+        io.github.mcheliceport.platform.Services.REGISTRAR.openMenu(player, new SimpleMenuProvider((id, inventory, p) -> new AircraftMenu(id, inventory, aircraft),
                 aircraft.getDisplayName()), buf -> {
                     buf.writeVarInt(aircraft.getId());
                     buf.writeVarInt(trunkSize);

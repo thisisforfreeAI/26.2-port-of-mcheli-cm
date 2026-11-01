@@ -47,7 +47,7 @@ public final class WatcherMotion {
         if (!payload.valid()) {
             return;
         }
-        for (var player : level.getChunkSource().chunkMap.getPlayersWatching(aircraft)) {
+        for (var player : level.getChunkSource().chunkMap.getPlayers(aircraft.chunkPosition(), false)) {
             if (!aircraft.isPilot(player)) {
                 ModNetwork.sendToPlayer(player, payload);
             }

@@ -36,7 +36,7 @@ public record WingmanPanelDataPayload(List<Aircraft> nearby, List<Wingman> wingm
     public static final Type<WingmanPanelDataPayload> TYPE =
             new Type<>(ResourceLocation.fromNamespaceAndPath(McheliCePort.MOD_ID, "wingman_panel_data"));
 
-    public static final StreamCodec<ByteBuf, WingmanPanelDataPayload> CODEC = StreamCodec.composite(
+    public static final StreamCodec<ByteBuf, WingmanPanelDataPayload> CODEC = io.github.mcheliceport.shim.StreamCodecs.composite(
             Aircraft.CODEC.apply(ByteBufCodecs.list(MAX_LIST)), WingmanPanelDataPayload::nearby,
             Wingman.CODEC.apply(ByteBufCodecs.list(MAX_LIST)), WingmanPanelDataPayload::wingmen,
             ByteBufCodecs.DOUBLE, WingmanPanelDataPayload::sideDist,

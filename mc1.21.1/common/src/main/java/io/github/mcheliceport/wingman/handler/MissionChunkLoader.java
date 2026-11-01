@@ -86,7 +86,7 @@ public final class MissionChunkLoader {
     private static void force(ServerLevel level, UUID owner, ChunkPos center, boolean add) {
         for (int dx = -CHUNK_RADIUS; dx <= CHUNK_RADIUS; dx++) {
             for (int dz = -CHUNK_RADIUS; dz <= CHUNK_RADIUS; dz++) {
-                TICKETS.forceChunk(level, owner, center.x() + dx, center.z() + dz, add, true);
+                TICKETS.forceChunk(level, owner, center.x + dx, center.z + dz, add, true);
             }
         }
     }
@@ -95,9 +95,9 @@ public final class MissionChunkLoader {
     private static void release(ServerLevel level, UUID owner, ChunkPos old, ChunkPos now) {
         for (int dx = -CHUNK_RADIUS; dx <= CHUNK_RADIUS; dx++) {
             for (int dz = -CHUNK_RADIUS; dz <= CHUNK_RADIUS; dz++) {
-                int x = old.x() + dx;
-                int z = old.z() + dz;
-                if (Math.abs(x - now.x()) > CHUNK_RADIUS || Math.abs(z - now.z()) > CHUNK_RADIUS) {
+                int x = old.x + dx;
+                int z = old.z + dz;
+                if (Math.abs(x - now.x) > CHUNK_RADIUS || Math.abs(z - now.z) > CHUNK_RADIUS) {
                     TICKETS.forceChunk(level, owner, x, z, false, true);
                 }
             }

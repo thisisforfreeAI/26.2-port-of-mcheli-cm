@@ -21,6 +21,7 @@ public final class RangeFinderRechargeRecipe extends CustomRecipe {
     public static final RangeFinderRechargeRecipe INSTANCE = new RangeFinderRechargeRecipe();
 
     private RangeFinderRechargeRecipe() {
+        super(net.minecraft.world.item.crafting.CraftingBookCategory.MISC);
     }
 
     @Override
@@ -48,7 +49,7 @@ public final class RangeFinderRechargeRecipe extends CustomRecipe {
     }
 
     @Override
-    public ItemStack assemble(CraftingInput input) {
+    public ItemStack assemble(CraftingInput input, net.minecraft.core.HolderLookup.Provider registries) {
         return new ItemStack(ModItems.RANGEFINDER.get());
     }
 
@@ -63,5 +64,10 @@ public final class RangeFinderRechargeRecipe extends CustomRecipe {
     @Override
     public RecipeSerializer<RangeFinderRechargeRecipe> getSerializer() {
         return ModRecipeSerializers.CHARGE_POWER_RANGE_FINDER.get();
+    }
+
+    @Override
+    public boolean canCraftInDimensions(int width, int height) {
+        return width * height >= 2;
     }
 }

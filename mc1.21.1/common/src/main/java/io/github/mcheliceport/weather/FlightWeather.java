@@ -1,5 +1,7 @@
 package io.github.mcheliceport.weather;
 
+import net.neoforged.neoforge.common.ModConfigSpec;
+
 import io.github.mcheliceport.config.ServerConfig;
 import io.github.mcheliceport.entity.aircraft.AircraftCamera;
 import io.github.mcheliceport.entity.aircraft.AircraftEntity;
@@ -80,9 +82,9 @@ public final class FlightWeather {
             return Conditions.CLEAR;
         }
         BlockPos at = BlockPos.containing(pos);
-        Biome.Precipitation p = level.hasChunkAt(at) ? level.precipitationAt(at) : Biome.Precipitation.NONE;
+        Biome.Precipitation p = level.hasChunkAt(at) ? level.getBiome(at).value().getPrecipitationAt(at) : Biome.Precipitation.NONE;
         boolean rain = p != Biome.Precipitation.NONE;
-        return new Conditions(rain, rain && level.isThundering(), p == Biome.Precipitation.SNOW, level.isDarkOutside());
+        return new Conditions(rain, rain && level.isThundering(), p == Biome.Precipitation.SNOW, level.isNight());
     }
 
     /**

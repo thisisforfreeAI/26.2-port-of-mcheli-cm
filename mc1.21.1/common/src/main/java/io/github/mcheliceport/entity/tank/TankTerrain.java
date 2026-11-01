@@ -138,7 +138,6 @@ public final class TankTerrain {
         @Override protected void defineSynchedData(SynchedEntityData.Builder builder) { }
         @Override protected void readAdditionalSaveData(net.minecraft.nbt.CompoundTag in$tag) { ValueInput in = ValueInput.of(in$tag, this.registryAccess()); }
         @Override protected void addAdditionalSaveData(net.minecraft.nbt.CompoundTag out$tag) { ValueOutput out = ValueOutput.of(out$tag, this.registryAccess()); }
-        @Override public boolean hurtServer(net.minecraft.server.level.ServerLevel level,
-                net.minecraft.world.damagesource.DamageSource source, float damage) { return false; }
+        @Override public boolean hurt(net.minecraft.world.damagesource.DamageSource source, float damage) { return false; }
     }
 }

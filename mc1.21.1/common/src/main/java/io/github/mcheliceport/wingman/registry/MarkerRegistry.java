@@ -12,7 +12,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.saveddata.SavedData;
-import net.minecraft.world.level.saveddata.SavedDataType;
+import io.github.mcheliceport.shim.SavedDataType;
 import net.minecraft.world.phys.AABB;
 import org.jspecify.annotations.Nullable;
 
@@ -42,6 +42,12 @@ public final class MarkerRegistry extends SavedData {
     public static final SavedDataType<MarkerRegistry> TYPE = new SavedDataType<>(
             ResourceLocation.fromNamespaceAndPath(McheliCePort.MOD_ID, "wingman_markers"), MarkerRegistry::new, CODEC);
 
+    @Override
+    public net.minecraft.nbt.CompoundTag save(net.minecraft.nbt.CompoundTag tag,
+            net.minecraft.core.HolderLookup.Provider registries) {
+        return TYPE.save(this, tag, registries);
+    }
+
     private final List<MarkerInfo> markers = new ArrayList<>();
 
     public MarkerRegistry() {
@@ -52,7 +58,7 @@ public final class MarkerRegistry extends SavedData {
     }
 
     public static MarkerRegistry get(ServerLevel level) {
-        return level.getDataStorage().computeIfAbsent(TYPE);
+        return level.getDataStorage().computeIfAbsent(TYPE.factory(), TYPE.fileName());
     }
 
     /** Records the marker at its position, replacing what was recorded there. */

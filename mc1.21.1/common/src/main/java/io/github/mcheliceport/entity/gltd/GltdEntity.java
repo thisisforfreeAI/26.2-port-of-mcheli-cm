@@ -312,7 +312,7 @@ public class GltdEntity extends Entity {
             this.camera.initCamera(0, rider);
             this.ejectPassengers();
             if (!creative) {
-                this.spawnAtLocation(level, new ItemStack(ModItems.GLTD.get()));
+                this.spawnAtLocation(new ItemStack(ModItems.GLTD.get()));
             }
             McheliSounds.play(level, this.getX(), this.getY(), this.getZ(), "hit", 1.0F, 1.0F);
             this.discard();

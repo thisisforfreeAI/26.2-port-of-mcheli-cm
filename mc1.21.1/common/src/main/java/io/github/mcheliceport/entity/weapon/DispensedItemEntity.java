@@ -27,9 +27,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.common.util.FakePlayer;
-import net.neoforged.neoforge.common.util.FakePlayerFactory;
-import net.neoforged.neoforge.event.EventHooks;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -87,7 +84,7 @@ public class DispensedItemEntity extends BaseBulletEntity {
         if (id == null) {
             return null;
         }
-        return BuiltInRegistries.ITEM.get(id).map(h -> h.value()).filter(item -> item != Items.AIR).orElse(null);
+        return BuiltInRegistries.ITEM.getOptional(id).filter(item -> item != Items.AIR).orElse(null);
     }
 
     @Override
@@ -111,7 +108,7 @@ public class DispensedItemEntity extends BaseBulletEntity {
         if (player != null && player.isAlive() && item != null) {
             BlockPos center = m instanceof BlockHitResult b && m.getType() == HitResult.Type.BLOCK ? b.getBlockPos()
                     : BlockPos.containing(m.getLocation());
-            FakePlayer dummyPlayer = FakePlayerFactory.get(server, DISPENSER_PROFILE);
+            net.minecraft.server.level.ServerPlayer dummyPlayer = io.github.mcheliceport.platform.Services.PLATFORM.fakePlayer(server, DISPENSER_PROFILE);
             dummyPlayer.setXRot(90.0F);
             int rng = info.dispenseRange - 1;
             for (int x = -rng; x <= rng; x++) {
@@ -119,7 +116,7 @@ public class DispensedItemEntity extends BaseBulletEntity {
                     for (int z = -rng; z <= rng; z++) {
                         int dist = x * x + y * y + z * z;
                         BlockPos pos = center.offset(x, y, z);
-                        if (dist <= rng * rng && server.isInValidBounds(pos)
+                        if (dist <= rng * rng && server.isInWorldBounds(pos)
                                 && (dist <= 0.5 * rng * rng || this.random.nextInt(2) == 0)) {
                             this.useItemToBlock(server, pos, item, dummyPlayer);
                         }
@@ -130,7 +127,7 @@ public class DispensedItemEntity extends BaseBulletEntity {
         this.discard();
     }
 
-    private void useItemToBlock(ServerLevel level, BlockPos blockpos, Item item, FakePlayer dummyPlayer) {
+    private void useItemToBlock(ServerLevel level, BlockPos blockpos, Item item, net.minecraft.server.level.ServerPlayer dummyPlayer) {
         dummyPlayer.moveTo(blockpos.getX() + 0.5, blockpos.getY() + 2.5, blockpos.getZ() + 0.5,
                 this.random.nextInt(360), 90.0F);
         BlockState state = level.getBlockState(blockpos);
@@ -144,11 +141,9 @@ public class DispensedItemEntity extends BaseBulletEntity {
                 } else if (state.getFluidState().is(FluidTags.LAVA) && state.hasProperty(LiquidBlock.LEVEL)) {
                     int lavaLevel = state.getValue(LiquidBlock.LEVEL);
                     if (lavaLevel == 0) {
-                        level.setBlockAndUpdate(blockpos, EventHooks.fireFluidPlaceBlockEvent(level, blockpos, blockpos,
-                                Blocks.OBSIDIAN.defaultBlockState()));
+                        level.setBlockAndUpdate(blockpos, Blocks.OBSIDIAN.defaultBlockState());
                     } else if (lavaLevel <= 4) {
-                        level.setBlockAndUpdate(blockpos, EventHooks.fireFluidPlaceBlockEvent(level, blockpos, blockpos,
-                                Blocks.COBBLESTONE.defaultBlockState()));
+                        level.setBlockAndUpdate(blockpos, Blocks.COBBLESTONE.defaultBlockState());
                     }
                 }
             }
@@ -158,7 +153,7 @@ public class DispensedItemEntity extends BaseBulletEntity {
         dummyPlayer.setItemInHand(InteractionHand.MAIN_HAND, stack);
         BlockHitResult hit = new BlockHitResult(Vec3.atLowerCornerOf(blockpos), Direction.UP, blockpos, false);
         UseOnContext context = new UseOnContext(dummyPlayer, InteractionHand.MAIN_HAND, hit);
-        if (stack.onItemUseFirst(context) == InteractionResult.PASS && stack.useOn(context) == InteractionResult.PASS) {
+        if (stack.useOn(context) == InteractionResult.PASS) {
             stack.use(level, dummyPlayer, InteractionHand.MAIN_HAND);
         }
         dummyPlayer.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);

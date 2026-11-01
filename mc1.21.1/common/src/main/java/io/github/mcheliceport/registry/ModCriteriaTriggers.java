@@ -1,8 +1,8 @@
 package io.github.mcheliceport.registry;
 
 import io.github.mcheliceport.McheliCePort;
-import net.minecraft.advancements.triggers.CriterionTrigger;
-import net.minecraft.advancements.triggers.PlayerTrigger;
+import net.minecraft.advancements.CriterionTrigger;
+import net.minecraft.advancements.critereon.PlayerTrigger;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
