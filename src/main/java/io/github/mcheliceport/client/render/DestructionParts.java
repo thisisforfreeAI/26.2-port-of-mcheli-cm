@@ -19,8 +19,6 @@ import org.joml.Vector3f;
 /** Named parts and cached clipped sections. All movement is presentation-only. */
 public final class DestructionParts {
     private static final Identifier DARK=Identifier.withDefaultNamespace("textures/block/polished_deepslate.png");
-    private static final McheliModel.Group RING;
-    static {var b=new DetailBoxes();b.box(-.8F,0,-.8F,.8F,.035F,.8F);b.box(-.82F,.03F,-.82F,-.73F,.12F,.82F);b.box(.73F,.03F,-.82F,.82F,.12F,.82F);RING=b.group("$open_turret_ring");}
     private DestructionParts(){}
     public static void apply(AircraftEntity ac,AircraftRenderState render,float partial){
         boolean plane=ac instanceof PlaneEntity,tank=ac instanceof TankEntity;
@@ -35,10 +33,8 @@ public final class DestructionParts {
         var outlets=EngineExhaustLook.outlets(ac.getAcInfo(),0);Vec3 anchor=outlets.isEmpty()?new Vec3(0,1.8,-2):outlets.getFirst().position();
         BreakupMeshes.Body body=null;if(distance<=40*40)for(var draw:render.draws)for(var group:draw.groups())if(group.name().equals("$body")){body=BreakupMeshes.body(group,plane,anchor);break;}
         if(plane){PlaneAirframeParts.apply((PlaneEntity)ac,render,s,body);DamagedControlSurfaces.apply((PlaneEntity)ac,render,s,partial);return;}
-        boolean eject=tank&&DestructionTimeline.turret(ac.getAcInfo().name,s.seed,s.heavyAmmo);
-        var turretGroups=models.body().groups.stream().filter(g->g.name().startsWith("$weapon")).toList();
-        var turret=eject?BreakupMeshes.merge(turretGroups):null;
         if(s.age<0)return; // Prewarm sections while alive; never alter live geometry.
+        if(tank)TankCookoffParts.apply((TankEntity)ac,render,s,partial);
         var trackTotals=new HashMap<String,Integer>();var trackIndices=new HashMap<String,Integer>();
         for(var draw:render.draws)for(var group:draw.groups())if(group.name().startsWith("$crawler_track"))trackTotals.merge(group.name(),1,Integer::sum);
         var output=new ArrayList<AircraftPartPoses.Draw>();int index=0;
@@ -49,14 +45,6 @@ public final class DestructionParts {
             }
             for(var group:draw.groups()){
                 String name=group.name();
-                if(eject&&turret!=null&&s.age>=96&&name.startsWith("$weapon")){
-                    if(name.equals("$weapon0")){
-                        scatter(ac,render,s,"turret",turret.source(),pose,96,new Vec3(.08,.48,-.04));s.turret=true;s.parts|=16;
-                        var center=turret.bounds().center();center.y=turret.bounds().low().y;
-                        var ringPose=new Matrix4f(WreckAppearance.root(ac)).mul(pose).translate(center);
-                        VehicleDetailLayers.add(render,ringPose,DARK,List.of(RING),0xFF252322);InteriorFirelight.add(ac,render,ringPose,RING);s.ring=world(ac,ringPose,new Vector3f(0,.1F,0));
-                    }continue;
-                }
                 if(tank&&name.equals("$crawler_track"+Math.floorMod(s.seed,2))&&s.age>=20){
                     int tooth=trackIndices.merge(name,1,Integer::sum)-1,total=trackTotals.getOrDefault(name,1),gap=Math.max(1,total/3);
                     s.track=true;s.parts|=2;

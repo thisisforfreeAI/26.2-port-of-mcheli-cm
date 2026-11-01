@@ -3107,6 +3107,8 @@ public abstract class AircraftEntity extends Entity
 
     /** Upstream {@code destroyAircraft}. */
     public void destroyAircraft() {
+        if(this instanceof io.github.mcheliceport.entity.tank.TankEntity&&this.level() instanceof ServerLevel)
+            this.weapons().notifyWreckAmmo();
         this.setCameraId(0);
         this.ropes.stop();
         this.switchHoveringMode(false);
