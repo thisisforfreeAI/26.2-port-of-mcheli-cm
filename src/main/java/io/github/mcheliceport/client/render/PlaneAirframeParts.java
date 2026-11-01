@@ -28,7 +28,8 @@ public final class PlaneAirframeParts {
         state.liveMask=missing;
         int requested=missing|(state.age>=56?AirframeDamage.RIGHT:0)|(state.age>=110?AirframeDamage.TAIL:0);
         double distance=Minecraft.getInstance().gameRenderer.mainCamera().position().distanceToSqr(ac.position());
-        boolean nearby=distance<=40*40,solid=distance<=96*96;
+        // Close-up detail stays near; the torn sections themselves break away out to combat range.
+        boolean nearby=distance<=DebrisRange.DETAIL*DebrisRange.DETAIL,solid=distance<=96*96,breakaway=distance<=DebrisRange.squared();
         var output=new ArrayList<AircraftPartPoses.Draw>();BreakupMeshes.Airframe frame=null;
         // Resolve the body once, so attachments use the exact mask whose geometry is ready this frame.
         for(var draw:render.draws)for(var group:draw.groups())if(group.name().equals("$body")){
@@ -66,10 +67,11 @@ public final class PlaneAirframeParts {
                         var at=settled.transformPosition(new Vector3f((float)root.x,(float)root.y,(float)root.z));
                         state.opening=ac.position().add(at.x,at.y,at.z);
                     }
-                    for(int i=0;i<3;i++)if((actual&(1<<i))!=0){
-                        detach(ac,render,state,frame,pose,i,now,missing);
-                        shed(ac,render,state,frame,pose,i,now,missing);
-                    }
+                }
+                if(breakaway&&frame!=null&&actual!=0)for(int i=0;i<3;i++)if((actual&(1<<i))!=0){
+                    detach(ac,render,state,frame,pose,i,now,missing);
+                    // Skin chips are a few pixels across past the detail radius: not worth their cost.
+                    if(nearby)shed(ac,render,state,frame,pose,i,now,missing);
                 }
                 if(nearby&&state.age>=36&&engineBody!=null&&engineBody.cover().vertexCount()>0){
                     state.cover=true;state.parts|=1;

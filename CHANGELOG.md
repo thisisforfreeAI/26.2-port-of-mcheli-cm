@@ -116,6 +116,12 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
   See `docs/M6B_PLAN.md`.
 
 ### Fixed
+- Wings, tails and control surfaces shot off a plane now visibly break away and fall from combat range.
+  Before, a section torn off a plane more than about 40 blocks away simply vanished from it, and a
+  falling section disappeared once it was 40 blocks from the camera. Sections now break away, fall
+  and trail smoke out to `effects.breakawayDebrisDistance` (256 blocks by default, never past the
+  render distance); sparks, chips and the fine torn-edge detail stay close-range only, and the existing
+  cap of eight falling pieces is unchanged.
 - WW2 propeller planes crawling along the runway and never taking off. The Zero, P-51D, An-2, Fi 167,
   PZL M-18 and BQM-74E were held nose-down on the ground because YAML `OnGroundPitch` was negated
   twice, so their thrust pointed into the runway. They now sit tail-down and lift off; stock

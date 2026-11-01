@@ -56,6 +56,7 @@ public final class ClientConfig {
     public static final ModConfigSpec.BooleanValue AIRCRAFT_CUSTOMIZATION;
     public static final ModConfigSpec.BooleanValue VEHICLE_BLOOD;
     public static final ModConfigSpec.BooleanValue VEHICLE_DESTRUCTION_SEQUENCES;
+    public static final ModConfigSpec.IntValue BREAKAWAY_DEBRIS_DISTANCE;
     public static final ModConfigSpec.BooleanValue VEHICLE_DAMAGE_DETAILS;
     public static final ModConfigSpec.BooleanValue WEAPON_HEAT;
     public static final ModConfigSpec.BooleanValue VEHICLE_SMALL_MOTION;
@@ -212,6 +213,9 @@ public final class ClientConfig {
         VEHICLE_BLOOD = builder.comment("Restrained blood on confirmed MC Heli vehicle kills of tagged mobs. Excludes NTM weapons/payloads and NTM mobs.")
                 .define("vehicleBlood", true);
         VEHICLE_DESTRUCTION_SEQUENCES = builder.comment("Cosmetic staged turret/track/cover/airframe breakup, rotor strikes and smoldering interiors. Supported models only.").define("vehicleDestructionSequences",true);
+        BREAKAWAY_DEBRIS_DISTANCE = builder.comment("Blocks from the camera within which a plane's torn-off wings, tail and control surfaces break away, fall and",
+                        "trail smoke. Never farther than the render distance. Lower it if dogfights with many planes run slowly.")
+                .defineInRange("breakawayDebrisDistance", 256, 40, 512);
         VEHICLE_DAMAGE_DETAILS = builder.comment("Cosmetic impact/blast scars, progressive glass cracks, fluid leaks, damaged lamps, loose panels and cooling wrecks.")
                 .define("vehicleDamageDetails", true);
         WEAPON_GROUND_EFFECTS = builder.comment("Brief muzzle illumination and ground dust beneath large guns.")

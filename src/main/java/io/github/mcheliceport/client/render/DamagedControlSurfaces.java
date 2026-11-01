@@ -53,7 +53,7 @@ public final class DamagedControlSurfaces {
         double distance=Minecraft.getInstance().gameRenderer.mainCamera().position().distanceToSqr(ac.position());
         if(state.controlMask>=0)for(int slot=0;slot<6;slot++) {
             int bit=1<<slot;
-            if((lost&bit)!=0&&(state.controlMask&bit)==0&&!render.far&&distance<40*40)state.controlLossAt.put(slot,now);
+            if((lost&bit)!=0&&(state.controlMask&bit)==0&&!render.far&&distance<=DebrisRange.squared())state.controlLossAt.put(slot,now);
             if((lost&bit)==0){state.controlLossAt.remove(slot);state.scattered.remove("control"+slot);}
         }
         state.controlMask=lost;
@@ -72,7 +72,7 @@ public final class DamagedControlSurfaces {
                 int slot=panel.slot();
                 if((lost&(1<<slot))!=0) {
                     Long born=state.controlLossAt.get(slot);String key="control"+slot;
-                    if(born!=null&&now>=born&&now-born<=28&&!render.far&&fade>0&&!state.scattered.contains(key)) {
+                    if(born!=null&&now>=born&&now-born<=28&&!render.far&&!state.scattered.contains(key)) {
                         Vec3 p=panel.pivot();
                         if(LoosePanels.controlPiece(ac,render.texture,panel.group(),draw.pose(),new Vector3f((float)p.x,(float)p.y,(float)p.z),slot))state.scattered.add(key);
                     }
