@@ -44,7 +44,9 @@ abstract class McheliParticle extends SingleQuadParticle {
     }
 
     static TextureAtlasSprite sprite(ResourceLocation id) {
-        return Minecraft.getInstance().getTextureAtlas(net.minecraft.client.renderer.texture.TextureAtlas.LOCATION_PARTICLES).apply(id);
+        // The particle atlas belongs to the texture manager, not the model manager.
+        return ((net.minecraft.client.renderer.texture.TextureAtlas) Minecraft.getInstance().getTextureManager()
+                .getTexture(net.minecraft.client.renderer.texture.TextureAtlas.LOCATION_PARTICLES)).getSprite(id);
     }
 
     public void setAlphaF(float a) {

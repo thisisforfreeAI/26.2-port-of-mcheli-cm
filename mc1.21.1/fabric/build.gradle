@@ -50,6 +50,7 @@ processResources {
     dependsOn configurations.commonResources
     from configurations.commonResources
     from(sharedAssets) { into 'assets' }
+    from(generatedResources)
     inputs.properties modProperties
     filesMatching('fabric.mod.json') { expand modProperties }
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE

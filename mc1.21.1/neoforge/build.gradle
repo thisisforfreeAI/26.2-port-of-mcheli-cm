@@ -6,7 +6,11 @@ neoForge {
     version = neoforge_version
 
     runs {
-        client { client() }
+        client {
+            client()
+            // Dev testing: -PquickJoin=localhost joins a running dev server straight away.
+            if (project.hasProperty('quickJoin')) programArguments.addAll('--quickPlayMultiplayer', project.property('quickJoin'))
+        }
         server { server(); programArgument '--nogui' }
         configureEach {
             systemProperty 'forge.logging.markers', 'REGISTRIES'
@@ -50,6 +54,7 @@ processResources {
     dependsOn configurations.commonResources
     from configurations.commonResources
     from(sharedAssets) { into 'assets' }
+    from(generatedResources)
     inputs.properties modProperties
     filesMatching('META-INF/neoforge.mods.toml') { expand modProperties }
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE

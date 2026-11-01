@@ -39,6 +39,8 @@ subprojects {
     // The shared art and sound assets are not duplicated: they are read straight from the
     // 26.2 port's resource tree one level up. Only the 1.21.1-specific data lives here.
     ext.sharedAssets = rootProject.file('../src/main/resources/assets')
+    // 26.2's data-generated resources in 1.21.1 form (scripts/backport_resources.py).
+    ext.generatedResources = rootProject.file('common/src/generated/resources')
 
     // GPLv3 requires the licence text to travel with the binary.
     tasks.withType(Jar).configureEach {

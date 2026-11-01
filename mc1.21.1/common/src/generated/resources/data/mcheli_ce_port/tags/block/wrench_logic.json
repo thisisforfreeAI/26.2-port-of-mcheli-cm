@@ -1,0 +1,21 @@
+{
+  "values": [
+    "minecraft:redstone_wire",
+    "minecraft:repeater",
+    "minecraft:comparator",
+    "minecraft:lever",
+    "minecraft:torch",
+    "minecraft:wall_torch",
+    "minecraft:redstone_torch",
+    "minecraft:redstone_wall_torch",
+    "minecraft:tripwire",
+    "minecraft:tripwire_hook",
+    "minecraft:flower_pot",
+    "minecraft:vine",
+    "minecraft:snow",
+    "#minecraft:buttons",
+    "#minecraft:rails",
+    "#minecraft:wool_carpets",
+    "#minecraft:small_flowers"
+  ]
+}

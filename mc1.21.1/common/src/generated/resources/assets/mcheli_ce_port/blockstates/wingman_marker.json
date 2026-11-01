@@ -1,0 +1,25 @@
+{
+  "variants": {
+    "type=base": {
+      "model": "mcheli_ce_port:block/wingman_marker_base"
+    },
+    "type=helipad": {
+      "model": "mcheli_ce_port:block/wingman_marker_helipad"
+    },
+    "type=helipad_b": {
+      "model": "mcheli_ce_port:block/wingman_marker_helipad_b"
+    },
+    "type=parking": {
+      "model": "mcheli_ce_port:block/wingman_marker_parking"
+    },
+    "type=runway_a": {
+      "model": "mcheli_ce_port:block/wingman_marker_runway_a"
+    },
+    "type=runway_b": {
+      "model": "mcheli_ce_port:block/wingman_marker_runway_b"
+    },
+    "type=waypoint": {
+      "model": "mcheli_ce_port:block/wingman_marker_waypoint"
+    }
+  }
+}

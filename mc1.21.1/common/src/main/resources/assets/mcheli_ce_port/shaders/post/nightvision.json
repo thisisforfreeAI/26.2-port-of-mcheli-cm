@@ -1,0 +1,7 @@
+{
+    "targets": [ "swap" ],
+    "passes": [
+        { "name": "mcheli_ce_port_nightvision", "intarget": "minecraft:main", "outtarget": "swap" },
+        { "name": "blit", "intarget": "swap", "outtarget": "minecraft:main" }
+    ]
+}

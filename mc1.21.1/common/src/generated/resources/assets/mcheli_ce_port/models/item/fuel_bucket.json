@@ -1,0 +1,12 @@
+{
+  "loader": "neoforge:fluid_container",
+  "fluid": "mcheli_ce_port:mch_fuel",
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "minecraft:item/bucket",
+    "particle": "minecraft:item/bucket",
+    "base": "minecraft:item/bucket",
+    "fluid": "neoforge:item/mask/bucket_fluid",
+    "cover": "neoforge:item/mask/bucket_fluid_cover"
+  }
+}

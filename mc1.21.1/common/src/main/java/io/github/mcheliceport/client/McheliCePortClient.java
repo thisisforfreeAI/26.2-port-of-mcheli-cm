@@ -52,8 +52,13 @@ public final class McheliCePortClient {
             io.github.mcheliceport.shim.client.event.ClientBus.subscribe(subscriber);
         }
         registerFluidModels();
+        io.github.mcheliceport.platform.event.ModEvents.ENTITY_TICK_POST.register(entity -> {
+            if (entity.level().isClientSide) {
+                io.github.mcheliceport.shim.client.event.ClientBus.post(
+                        new io.github.mcheliceport.shim.client.event.EntityTickEvent.Post(entity));
+            }
+        });
         io.github.mcheliceport.shim.client.event.ClientBus.listen(McheliCePortClient.class, "registerRenderers");
-        io.github.mcheliceport.shim.client.event.ClientBus.listen(McheliCePortClient.class, "registerFluidModels");
         io.github.mcheliceport.shim.client.event.ClientBus.listen(ModKeyMappings.class, "register");
         io.github.mcheliceport.shim.client.event.ClientBus.listen(McheliCePortClient.class, "registerScreens");
         RiderTilt.registerModifiers();
@@ -82,10 +87,6 @@ public final class McheliCePortClient {
         io.github.mcheliceport.shim.client.event.ClientBus.listen(io.github.mcheliceport.client.hud.GltdHudLayer.class, "register");
         io.github.mcheliceport.shim.client.event.ClientBus.listen(io.github.mcheliceport.client.hud.LightWeaponHudLayer.class, "register");
         io.github.mcheliceport.shim.client.event.ClientBus.listen(io.github.mcheliceport.client.hud.TitleOverlay.class, "register");
-        io.github.mcheliceport.shim.client.event.ClientBus.listen(io.github.mcheliceport.client.particle.BlastDustWedges.class, "register");
-        io.github.mcheliceport.shim.client.event.ClientBus.listen(io.github.mcheliceport.client.particle.AirflowFireParticle.class, "register");
-        io.github.mcheliceport.shim.client.event.ClientBus.listen(io.github.mcheliceport.client.particle.CondensationParticle.class, "register");
-        io.github.mcheliceport.shim.client.event.ClientBus.listen(io.github.mcheliceport.client.particle.SupersonicConeParticle.class, "register");
         io.github.mcheliceport.shim.client.event.ClientBus.addListener(AddClientReloadListenersEvent.class, (AddClientReloadListenersEvent event) -> {
             event.addListener(ResourceLocation.fromNamespaceAndPath(McheliCePort.MOD_ID, "aircraft_models"),
                     new AircraftModels.ReloadListener());

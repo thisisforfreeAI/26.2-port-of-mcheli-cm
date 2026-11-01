@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "mcheli:items/spawn_gunner_vs_player",
+    "layer1": "mcheli:items/spawn_gunner_vs_player_overlay"
+  }
+}

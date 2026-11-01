@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "key": {
+    "S": {
+      "tag": "c:strings"
+    },
+    "W": {
+      "tag": "minecraft:wool"
+    }
+  },
+  "pattern": [
+    "WWW",
+    "S S",
+    " W "
+  ],
+  "result": {
+    "id": "mcheli_ce_port:parachute"
+  }
+}
