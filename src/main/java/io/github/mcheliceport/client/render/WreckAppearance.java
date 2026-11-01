@@ -137,7 +137,9 @@ public final class WreckAppearance {
    var moved=breakPose(s,seed,open);var at=new Matrix4f(pose).mul(moved);
    draws.add(new AircraftPartPoses.Draw(at,List.of(s.shape())));
    if(render.thermal)continue;
-   VehicleDetailLayers.add(render,at,render.texture,List.of(s.paint()),(int)(0x70*(1.15F-.55F*burn))<<24|0x7E7769);
+   // Torn off and dragged through the fire, a section's paint is smoked dark end to end, not left factory
+   // clean beside a blackened hull; the fire's own char goes over it.
+   VehicleDetailLayers.add(render,at,render.texture,List.of(s.paint()),(int)(0xB8*(1.1F-.3F*burn))<<24|0x3A3632);
    if(open>0){
     VehicleDetailLayers.require(render,at,render.texture,List.of(s.lining()),PlaneAirframeParts.LINING);
     VehicleDetailLayers.require(render,at,PlaneAirframeParts.METAL,List.of(s.cap()),PlaneAirframeParts.CAP);
@@ -160,6 +162,25 @@ public final class WreckAppearance {
     for(int i=0;i<tiers;i++)if(s.embers().get(i).vertexCount()>0)render.emissiveDraws.add(new AircraftRenderState.EmissiveDraw(EMBERS,new Matrix4f(at),List.of(s.embers().get(i))));
    }
   }
+ }
+ /**
+  * The pose of a part that is not itself wrecked (a propeller, an engine, a pylon) on a hull that broke
+  * into sections: one that sat on a torn-off section moves with it instead of hanging where it was.
+  */
+ static Matrix4f mounted(WreckMesh.Parts hull,Matrix4f hullPose,Matrix4f pose,McheliModel.Group group,WreckScene.Scene scene,AircraftEntity ac,long now){
+  if(hull==null||hullPose==null||group.name().startsWith("$lg"))return pose;
+  var part=io.github.mcheliceport.client.model.BreakupMeshes.part(group);if(part==null)return pose;
+  var inverse=new Matrix4f(hullPose).invert();var c=new Matrix4f(inverse).mul(pose).transformPosition(part.bounds().center());
+  for(var s:hull.sections()){
+   var h=s.hinge();
+   boolean on=s.kind()==WreckMesh.NOSE?c.z>h.z:s.kind()==WreckMesh.WING?c.x<h.x:c.x>h.x;
+   if(!on)continue;
+   boolean down=scene!=null&&scene.impact!=null;
+   float open=!down?0:scene.late?1:Math.clamp((now-scene.impactTick)/(float)BREAK,0,1);
+   int seed=scene!=null?scene.seed:ac.getUUID().hashCode();
+   return new Matrix4f(hullPose).mul(breakPose(s,seed,open)).mul(inverse).mul(pose);
+  }
+  return pose;
  }
  public static boolean removable(String n){return n.matches("\\$(canopy|hatch|panel|enginecover|cover)[0-9]*")||n.equals("$track_roller0");}
  public static int removed(AircraftEntity ac){var s=STATES.get(ac);return s==null?0:s.removed;}
@@ -187,6 +208,11 @@ public final class WreckAppearance {
   var root=new Matrix4f(s.rest).mul(sag(ac));
   var draws=new ArrayList<AircraftPartPoses.Draw>();int removed=0;
   var gear=new ArrayList<AircraftPartPoses.Draw>();WreckMesh.Parts hull=null;Matrix4f hullPose=null;
+  // The hull's sections, found first so the parts mounted on them (propellers, engines, pylons) go with them.
+  WreckMesh.Parts broken=null;Matrix4f brokenPose=null;
+  if(plane)for(var draw:render.draws)for(var group:draw.groups())if(broken==null&&group.name().equals("$body")){
+   var m=WreckMesh.get(group,true,hasLeftWing(ac,group));if(m!=null&&!m.sections().isEmpty()){broken=m;brokenPose=new Matrix4f(draw.pose());}
+  }
   for(var draw:render.draws)for(var group:draw.groups()){
    String name=group.name();
    // A crashed plane's gear is sheared off on impact and lies in the debris field instead.
@@ -194,7 +220,7 @@ public final class WreckAppearance {
    boolean supported=name.equals("$body")||name.equals("$weapon0")||name.startsWith("$lg")||removable(name)||heli&&name.equals("$weapon1");
    boolean planeBody=plane&&name.equals("$body");
    var mesh=supported?WreckMesh.get(group,planeBody,planeBody&&hasLeftWing(ac,group)):null;
-   if(mesh==null){draws.add(new AircraftPartPoses.Draw(new Matrix4f(root).mul(draw.pose()),List.of(group)));continue;}
+   if(mesh==null){draws.add(new AircraftPartPoses.Draw(new Matrix4f(root).mul(mounted(broken,brokenPose,draw.pose(),group,scene,ac,now)),List.of(group)));continue;}
    boolean detach=removed<2&&(!io.github.mcheliceport.client.particle.WreckSequenceEffects.enabled()||!name.startsWith("$enginecover")&&!name.startsWith("$cover"))&&(removable(group.name())||heli&&group.name().equals("$weapon1")&&group.vertexCount()<=1200);
    if(detach){
     removed++;PanelInteriors.add(render,new Matrix4f(root).mul(draw.pose()),group,ac);
