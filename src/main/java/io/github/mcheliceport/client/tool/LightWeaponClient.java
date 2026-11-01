@@ -22,7 +22,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.client.event.RenderHandEvent;
 import net.neoforged.neoforge.client.event.ViewportEvent;
-import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -166,7 +165,7 @@ public final class LightWeaponClient {
                     if (reloadCount < RELOAD_TICKS) {
                         reloadCount++;
                         if (reloadCount == RELOAD_TICKS) {
-                            ClientPacketDistributor.sendToServer(
+                            io.github.mcheliceport.platform.Platform.get().sendToServer(
                                     new LightWeaponControlPayload(false, 0, 0, true, (byte) 0));
                         }
                     }
@@ -188,7 +187,7 @@ public final class LightWeaponClient {
             // Upstream: putting the weapon down switches off the night vision it gave.
             MobEffectInstance nv = player.getEffect(MobEffects.NIGHT_VISION);
             if (nv == null || nv.getDuration() < 250) {
-                ClientPacketDistributor.sendToServer(new LightWeaponControlPayload(false, 0, 0, false,
+                io.github.mcheliceport.platform.Platform.get().sendToServer(new LightWeaponControlPayload(false, 0, 0, false,
                         LightWeaponControlPayload.NIGHT_VISION_OFF));
                 player.removeEffect(MobEffects.NIGHT_VISION);
             }
@@ -249,7 +248,7 @@ public final class LightWeaponClient {
             }
         }
         if (useWeapon || cameraMode != 0) {
-            ClientPacketDistributor.sendToServer(new LightWeaponControlPayload(useWeapon, targetId, weaponMode,
+            io.github.mcheliceport.platform.Platform.get().sendToServer(new LightWeaponControlPayload(useWeapon, targetId, weaponMode,
                     false, cameraMode));
         }
     }

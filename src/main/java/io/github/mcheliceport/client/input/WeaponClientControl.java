@@ -14,7 +14,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.neoforged.neoforge.client.event.InputEvent;
-import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 
 /**
  * A rider's weapon keys, read once per client tick: upstream
@@ -45,7 +44,7 @@ public final class WeaponClientControl {
         }
         WeaponControlPayload pc = handleCombatSystems(player, ac);
         if (pc != null && !pc.isEmpty()) {
-            ClientPacketDistributor.sendToServer(pc);
+            io.github.mcheliceport.platform.Platform.get().sendToServer(pc);
         }
     }
 
@@ -58,7 +57,7 @@ public final class WeaponClientControl {
         CrewRole role = CrewRoles.roleOf(ac, player);
         if (ModKeyMappings.MARK_TARGET.consumeClick()) {
             if (role == CrewRole.COMMANDER) {
-                ClientPacketDistributor.sendToServer(new CrewMarkPayload(ac.getId()));
+                io.github.mcheliceport.platform.Platform.get().sendToServer(new CrewMarkPayload(ac.getId()));
             } else {
                 playSoundNg();
             }
@@ -136,7 +135,7 @@ public final class WeaponClientControl {
             if (ws.getInfo() != null && ws.getInfo().canAirburst) {
                 int dist = ac.weapons().resetAirburstDistance(player, ws.getCurrentWeapon());
                 if (dist >= 0) {
-                    ClientPacketDistributor.sendToServer(new AirburstDistPayload(ac.getId(), dist));
+                    io.github.mcheliceport.platform.Platform.get().sendToServer(new AirburstDistPayload(ac.getId(), dist));
                 }
             }
         }

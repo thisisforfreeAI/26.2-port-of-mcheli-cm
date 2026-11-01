@@ -26,7 +26,7 @@ import java.util.stream.Stream;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
-import net.neoforged.neoforge.registries.DeferredHolder;
+import io.github.mcheliceport.registry.RegEntry;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -105,7 +105,7 @@ class ContentAssetsTest {
         JsonObject english = json(Files.readAllBytes(GENERATED.resolve("assets/mcheli_ce_port/lang/en_us.json")))
                 .getAsJsonObject();
         List<Identifier> fixed = new ArrayList<>();
-        for (DeferredHolder<Item, ? extends Item> holder : ModRegistries.ITEMS.getEntries()) {
+        for (RegEntry<Item, ?> holder : ModRegistries.ITEMS.getEntries()) {
             Item item = holder.get();
             if (item instanceof AircraftItem || item instanceof ThrowableItem) {
                 continue;

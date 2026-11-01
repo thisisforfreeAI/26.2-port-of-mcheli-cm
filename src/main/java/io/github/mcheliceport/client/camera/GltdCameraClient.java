@@ -16,7 +16,6 @@ import net.neoforged.neoforge.client.event.InputEvent;
 import net.neoforged.neoforge.client.event.RenderHandEvent;
 import net.neoforged.neoforge.client.event.RenderNameTagEvent;
 import net.neoforged.neoforge.client.event.ViewportEvent;
-import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -145,7 +144,7 @@ public final class GltdCameraClient {
             }
         }
         if (unmount || useWeapon || cameraMode >= 0) {
-            ClientPacketDistributor.sendToServer(new GltdControlPayload(cameraMode, useWeapon, unmount));
+            io.github.mcheliceport.platform.Platform.get().sendToServer(new GltdControlPayload(cameraMode, useWeapon, unmount));
         }
     }
 

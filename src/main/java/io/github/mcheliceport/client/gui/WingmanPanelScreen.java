@@ -13,7 +13,6 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.network.chat.Component;
-import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import org.lwjgl.glfw.GLFW;
 
 /**
@@ -92,7 +91,7 @@ public class WingmanPanelScreen extends Screen {
             }
         }).bounds(cx + 2, ty - 14, 80, 16).build());
         this.addRenderableWidget(Button.builder(Component.literal("Refresh"),
-                b -> ClientPacketDistributor.sendToServer(WingmanPanelOpenPayload.INSTANCE))
+                b -> io.github.mcheliceport.platform.Platform.get().sendToServer(WingmanPanelOpenPayload.INSTANCE))
                 .bounds(cx - 82, this.height - 28, 55, 14).build());
         this.addRenderableWidget(Button.builder(Component.literal("Close"), b -> this.onClose())
                 .bounds(cx + 30, this.height - 28, 52, 14).build());
@@ -173,20 +172,20 @@ public class WingmanPanelScreen extends Screen {
         if (idx >= this.nearby.size()) {
             return;
         }
-        ClientPacketDistributor.sendToServer(WingmanPanelActionPayload.of(WingmanPanelActionPayload.FOLLOW,
+        io.github.mcheliceport.platform.Platform.get().sendToServer(WingmanPanelActionPayload.of(WingmanPanelActionPayload.FOLLOW,
                 this.nearby.get(idx).uuid(), ""));
         this.nearby.remove(idx);
         this.rebuildWidgets();
     }
 
     private void attack(int idx, int action, int mode) {
-        ClientPacketDistributor.sendToServer(WingmanPanelActionPayload.of(action, this.wingmen.get(idx).uuid(), ""));
+        io.github.mcheliceport.platform.Platform.get().sendToServer(WingmanPanelActionPayload.of(action, this.wingmen.get(idx).uuid(), ""));
         this.attackModes.set(idx, mode);
         this.rebuildWidgets();
     }
 
     private void stop(int idx) {
-        ClientPacketDistributor.sendToServer(WingmanPanelActionPayload.of(WingmanPanelActionPayload.STOP,
+        io.github.mcheliceport.platform.Platform.get().sendToServer(WingmanPanelActionPayload.of(WingmanPanelActionPayload.STOP,
                 this.wingmen.get(idx).uuid(), ""));
         this.wingmen.remove(idx);
         this.weaponIdx.remove(idx);
@@ -197,12 +196,12 @@ public class WingmanPanelScreen extends Screen {
     private void cycleWeapon(int idx, int dir) {
         int next = Math.floorMod(this.weaponIdx.get(idx) + dir, WEAPON_TYPES.length);
         this.weaponIdx.set(idx, next);
-        ClientPacketDistributor.sendToServer(WingmanPanelActionPayload.of(WingmanPanelActionPayload.WEAPON,
+        io.github.mcheliceport.platform.Platform.get().sendToServer(WingmanPanelActionPayload.of(WingmanPanelActionPayload.WEAPON,
                 this.wingmen.get(idx).uuid(), WEAPON_TYPES[next]));
     }
 
     private void sendFormation() {
-        ClientPacketDistributor.sendToServer(new WingmanPanelActionPayload(WingmanPanelActionPayload.FORMATION,
+        io.github.mcheliceport.platform.Platform.get().sendToServer(new WingmanPanelActionPayload(WingmanPanelActionPayload.FORMATION,
                 Optional.empty(), "", this.fSideDist, this.fAltOffset, this.fRearDist, this.fMaxWings, this.fMinAlt,
                 this.fMaxAlt));
     }

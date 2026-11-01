@@ -11,7 +11,6 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 
 /** An explicit apply/cancel selection; changing a button does not send packets or repaint the vehicle. */
 public final class AircraftAppearanceScreen extends Screen {
@@ -40,7 +39,7 @@ public final class AircraftAppearanceScreen extends Screen {
         var apply=addRenderableWidget(Button.builder(Component.literal("Apply"),b->{
             if(!digits.matches("[0-9]{0,3}"))return;
             int id=digits.isEmpty()?-1:Integer.parseInt(digits);
-            ClientPacketDistributor.sendToServer(new AircraftAppearancePayload(aircraft.getId(),textures.get(texture),new AircraftAppearance(id,symbol,wear,ink).packed()));onClose();
+            io.github.mcheliceport.platform.Platform.get().sendToServer(new AircraftAppearancePayload(aircraft.getId(),textures.get(texture),new AircraftAppearance(id,symbol,wear,ink).packed()));onClose();
         }).bounds(x,y+124,108,20).build());apply.active=!aircraft.isDestroyed()&&aircraft.getCurrentThrottle()<=.05&&aircraft.getDeltaMovement().lengthSqr()<=.04;
         addRenderableWidget(Button.builder(Component.translatable("gui.cancel"),b->onClose()).bounds(x+112,y+124,108,20).build());
     }

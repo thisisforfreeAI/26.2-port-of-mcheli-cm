@@ -1,0 +1,114 @@
+// Fabric build of McHeli CE (26.2 Port).
+//
+// The NeoForge build in the root project owns src/main. This project compiles the same mod
+// sources and resources, leaves out the files that still use NeoForge APIs (listed in
+// neoforge-only.txt, which shrinks as the glue moves behind the platform seam), and adds the
+// Fabric glue from fabric/src/main. See docs/FABRIC_PLAN.md.
+plugins {
+    id 'net.fabricmc.fabric-loom' version "${fabric_loom_version}"
+}
+
+version = "${mod_version}+fabric"
+group = mod_group_id
+
+base {
+    archivesName = "${mod_id}-fabric"
+}
+
+def sharedJava = rootProject.file('src/main/java')
+def sharedResources = rootProject.file('src/main/resources')
+def neoforgeOnly = file('neoforge-only.txt').readLines()
+        .collect { it.trim() }
+        .findAll { it && !it.startsWith('#') }
+
+sourceSets.main {
+    java {
+        srcDir sharedJava
+        exclude 'io/github/mcheliceport/platform/neoforge/**'
+        exclude neoforgeOnly
+    }
+    resources {
+        srcDir sharedResources
+        srcDir rootProject.file('src/generated/resources')
+        exclude 'META-INF/accesstransformer.cfg'
+        // The NeoForge build's Platform implementation; fabric/src/main/resources names Fabric's.
+        exclude 'META-INF/services/io.github.mcheliceport.platform.Platform'
+        exclude '**/*.bbmodel'
+        exclude '**/.cache'
+    }
+}
+
+loom {
+    accessWidenerPath = file('src/main/resources/mcheli_ce_port.classtweaker')
+    mods {
+        "${mod_id}" {
+            sourceSet sourceSets.main
+        }
+    }
+}
+
+repositories {
+    // Forge Config API Port: NeoForge's ModConfigSpec and config screen on Fabric.
+    exclusiveContent {
+        forRepository { maven { url = 'https://api.modrinth.com/maven' } }
+        filter { includeGroup 'maven.modrinth' }
+    }
+    maven {
+        url = 'https://maven.blamejared.com'
+        content {
+            includeGroup 'mezz.jei'
+            includeGroup 'net.mezzdev.config'
+        }
+    }
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${minecraft_version}"
+    implementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
+    implementation "net.fabricmc.fabric-api:fabric-api:${fabric_api_version}"
+
+    // SnakeYAML parses the YAML content files; bundled the same way as on NeoForge.
+    implementation('org.yaml:snakeyaml') {
+        version {
+            strictly '[2.5,3)'
+            prefer '2.5'
+        }
+    }
+    include 'org.yaml:snakeyaml:2.5'
+
+    // Forge Config API Port 26.2.1 (Modrinth version rSd3GiG8), so the configs stay ModConfigSpec.
+    implementation "maven.modrinth:forge-config-api-port:${fabric_forge_config_api_port_version}"
+
+    compileOnly "mezz.jei:jei-${minecraft_version}-common-api:${jei_version}"
+}
+
+processResources {
+    def props = [
+            mod_id                 : mod_id,
+            mod_name               : mod_name,
+            mod_license            : mod_license,
+            mod_version            : project.version,
+            minecraft_version      : minecraft_version,
+            fabric_loader_version  : fabric_loader_version,
+            fabric_api_version     : fabric_api_version,
+    ]
+    inputs.properties props
+    filesMatching('fabric.mod.json') {
+        expand props
+    }
+}
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(25)
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.release = 25
+    // Show every error, not javac's default first 100, while the port is in progress.
+    options.compilerArgs += ['-Xmaxerrs', '100000']
+}
+
+tasks.named('jar', Jar).configure {
+    from(rootProject.file('LICENSE')) {
+        rename('LICENSE', "LICENSE_${mod_id}")
+    }
+}

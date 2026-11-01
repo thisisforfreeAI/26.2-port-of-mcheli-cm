@@ -18,8 +18,6 @@ import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.neoforged.neoforge.registries.DeferredHolder;
-import net.neoforged.neoforge.registries.DeferredItem;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -31,14 +29,14 @@ import org.jspecify.annotations.Nullable;
  */
 public final class ModCreativeTabs {
 
-    private static final Map<ModTab, DeferredHolder<CreativeModeTab, CreativeModeTab>> TABS =
+    private static final Map<ModTab, RegEntry<CreativeModeTab, CreativeModeTab>> TABS =
             new EnumMap<>(ModTab.class);
 
     static {
         Identifier previous = CreativeModeTabs.SPAWN_EGGS.identifier();
         for (ModTab tab : ModTab.values()) {
             Identifier after = previous;
-            DeferredHolder<CreativeModeTab, CreativeModeTab> holder = ModRegistries.CREATIVE_MODE_TABS.register(
+            RegEntry<CreativeModeTab, CreativeModeTab> holder = ModRegistries.CREATIVE_MODE_TABS.register(
                     tab.id, () -> CreativeModeTab.builder()
                             .title(Component.translatable(tab.translationKey()))
                             .icon(() -> icon(tab))
@@ -53,14 +51,14 @@ public final class ModCreativeTabs {
     private ModCreativeTabs() {
     }
 
-    public static DeferredHolder<CreativeModeTab, CreativeModeTab> get(ModTab tab) {
+    public static RegEntry<CreativeModeTab, CreativeModeTab> get(ModTab tab) {
         return TABS.get(tab);
     }
 
     /** The items of a tab, sorted as upstream sorted them. */
     public static List<ItemStack> sortedItems(ModTab tab) {
         List<Item> items = new ArrayList<>();
-        for (DeferredItem<? extends Item> item : ModItems.tabItems(tab)) {
+        for (ItemEntry<? extends Item> item : ModItems.tabItems(tab)) {
             items.add(item.get());
         }
         // Upstream compared two vehicles by "category.name" and anything else by translation key.

@@ -15,7 +15,6 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 
 /**
@@ -79,7 +78,7 @@ public final class BvrHudLayer {
                 alpha = 1.0F;
                 lock = true;
                 if (mc.level.getGameTime() % 10 == 0) {
-                    ClientPacketDistributor.sendToServer(new BvrLockPayload(entity.entityId()));
+                    io.github.mcheliceport.platform.Platform.get().sendToServer(new BvrLockPayload(entity.entityId()));
                 }
             } else if (distScreen < sq(0.076 * h)) {
                 alpha = 1.0F;

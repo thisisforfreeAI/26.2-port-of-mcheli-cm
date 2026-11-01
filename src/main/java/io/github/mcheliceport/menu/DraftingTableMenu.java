@@ -21,7 +21,6 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import io.github.mcheliceport.net.DraftingTableRecipesPayload;
-import net.neoforged.neoforge.network.PacketDistributor;
 
 /**
  * The drafting table's menu (upstream {@code MCH_DraftingTableGuiContainer}): the player's
@@ -74,10 +73,10 @@ public class DraftingTableMenu extends AbstractContainerMenu {
     public static void open(ServerPlayer player, BlockPos pos) {
         List<DraftingTableRecipes.Entry> recipes = DraftingTableRecipes.collect(player.level().getServer()
                 .getRecipeManager());
-        player.openMenu(new SimpleMenuProvider((id, inventory, p) -> new DraftingTableMenu(id, inventory, pos, recipes),
+        io.github.mcheliceport.platform.Platform.get().openMenu(player, new SimpleMenuProvider((id, inventory, p) -> new DraftingTableMenu(id, inventory, pos, recipes),
                 Component.translatable("block.mcheli_ce_port.drafting_table")), buf -> buf.writeBlockPos(pos));
         if (player.containerMenu instanceof DraftingTableMenu menu) {
-            PacketDistributor.sendToPlayer(player, new DraftingTableRecipesPayload(menu.containerId, recipes));
+            io.github.mcheliceport.net.ModNetwork.sendToPlayer(player, new DraftingTableRecipesPayload(menu.containerId, recipes));
         }
     }
 

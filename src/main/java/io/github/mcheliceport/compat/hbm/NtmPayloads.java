@@ -6,7 +6,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
-import net.neoforged.fml.ModList;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -25,7 +24,7 @@ public final class NtmPayloads {
     }
 
     public static boolean available() {
-        return ModList.get() != null && ModList.get().isLoaded(MOD_ID);
+        return io.github.mcheliceport.platform.Platform.get().isModLoaded(MOD_ID);
     }
 
     /**

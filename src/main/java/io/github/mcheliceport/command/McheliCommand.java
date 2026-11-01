@@ -53,7 +53,6 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.fml.loading.FMLPaths;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import org.jspecify.annotations.Nullable;
 
@@ -222,7 +221,7 @@ public final class McheliCommand {
         int asked = 0;
         for (ServerPlayer player : players) {
             String name = player.getGameProfile().name();
-            if (player.connection == null || !player.connection.hasChannel(CommandRequestPayload.TYPE)) {
+            if (player.connection == null || !io.github.mcheliceport.platform.Platform.get().canSend(player, CommandRequestPayload.TYPE)) {
                 source.sendFailure(Component.literal(name + " does not have the mod"));
                 continue;
             }
@@ -552,7 +551,7 @@ public final class McheliCommand {
                     + DEFAULT_DUMP_FOLDER));
             return 0;
         }
-        Path base = FMLPaths.GAMEDIR.get().resolve(folder);
+        Path base = io.github.mcheliceport.platform.Platform.get().gameDir().resolve(folder);
         try {
             YamlDump.Result result = YamlDump.dump(ContentRegistries.get(), base);
             String message = "Dumped " + result.written() + " YAML files to " + base.toAbsolutePath()

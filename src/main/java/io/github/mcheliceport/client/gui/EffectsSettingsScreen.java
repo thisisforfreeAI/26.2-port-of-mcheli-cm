@@ -9,8 +9,6 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-import net.neoforged.fml.ModList;
-import net.neoforged.neoforge.client.gui.ConfigurationScreen;
 
 /** Changes affect newly spawned effects; particles already in flight keep their birth art. */
 public final class EffectsSettingsScreen extends Screen {
@@ -41,8 +39,8 @@ public final class EffectsSettingsScreen extends Screen {
         }).bounds(x,y+96,220,20).build());
         blood.setTooltip(Tooltip.create(Component.translatable("mcheli.effects.blood.tip")));
         addRenderableWidget(Button.builder(Component.translatable("mcheli.effects.full"),b->{
-            ModList.get().getModContainerById(McheliCePort.MOD_ID).ifPresent(container->
-                    minecraft.gui.setScreen(new ConfigurationScreen(container,this)));
+            var config=io.github.mcheliceport.platform.Platform.get().createConfigScreen(this);
+            if(config!=null)minecraft.gui.setScreen(config);
         }).bounds(x,y+122,220,20).build());
         addRenderableWidget(Button.builder(Component.literal("Test range"),b->minecraft.gui.setScreen(new EffectsRangeScreen(this))).bounds(x,y+146,220,20).build());
         addRenderableWidget(Button.builder(Component.translatable("gui.done"),b->onClose()).bounds(x,y+170,220,20).build());

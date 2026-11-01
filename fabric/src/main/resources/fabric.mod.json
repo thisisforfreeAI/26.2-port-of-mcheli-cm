@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "id": "${mod_id}",
+  "version": "${mod_version}",
+  "name": "${mod_name}",
+  "description": "Adds realistic vehicles to Minecraft: an unofficial community port of McHeli: Community Edition (McHeli CE) to Minecraft 26.2. This port is not affiliated with or endorsed by Warfactory, the McHeli CE developers, or the original McHeli authors. Please report problems to this port's issue tracker, not to upstream. Work in progress: the Fabric build is not feature-complete, see docs/FABRIC_PLAN.md.",
+  "authors": [
+    "EMB4, Murachiki27 (McHeli)",
+    "RagexPrince683 (MCHEL-O-Extended)",
+    "MrNorwood, MovBlock (McHeli CE)",
+    "thisisforfreeAI (26.2 port)"
+  ],
+  "contributors": [
+    "TV90 (reforged content)",
+    "H. M. Shrub, Jumboreal (texture work)"
+  ],
+  "contact": {
+    "homepage": "https://github.com/thisisforfreeAI/26.2-port-of-mcheli-cm",
+    "sources": "https://github.com/thisisforfreeAI/26.2-port-of-mcheli-cm",
+    "issues": "https://github.com/thisisforfreeAI/26.2-port-of-mcheli-cm/issues"
+  },
+  "license": "${mod_license}",
+  "environment": "*",
+  "entrypoints": {
+    "main": ["io.github.mcheliceport.platform.fabric.FabricMod"],
+    "client": ["io.github.mcheliceport.platform.fabric.FabricClientMod"]
+  },
+  "mixins": ["mcheli_ce_port.mixins.json"],
+  "accessWidener": "mcheli_ce_port.classtweaker",
+  "depends": {
+    "fabricloader": ">=${fabric_loader_version}",
+    "minecraft": "~26.2",
+    "java": ">=25",
+    "fabric-api": "*",
+    "forgeconfigapiport": ">=26.2.1"
+  },
+  "suggests": {
+    "jei": "*"
+  }
+}

@@ -74,10 +74,10 @@ public class UavStationMenu extends AbstractContainerMenu {
                     (int) (ac.getFuelPercentage() * 100), ac.getHP(), ac.getMaxHP(), (int) station.distanceTo(ac));
         }).toList();
         var p = new UavRosterPayload(containerId, station.getId(), rows, selected);
-        if (!p.equals(previousRoster) && viewer instanceof ServerPlayer sp) { net.neoforged.neoforge.network.PacketDistributor.sendToPlayer(sp, p); previousRoster = p; }
+        if (!p.equals(previousRoster) && viewer instanceof ServerPlayer sp) { io.github.mcheliceport.net.ModNetwork.sendToPlayer(sp, p); previousRoster = p; }
     }
     public static void open(ServerPlayer player, UavStationEntity station) {
-        player.openMenu(new SimpleMenuProvider((id, inventory, p) -> new UavStationMenu(id, inventory, station),
+        io.github.mcheliceport.platform.Platform.get().openMenu(player, new SimpleMenuProvider((id, inventory, p) -> new UavStationMenu(id, inventory, station),
                 Component.literal(station.handheld() ? "UAV Tablet" : station.small() ? "Portable UAV Controller" : "UAV Station")), b -> b.writeVarInt(station.getId()));
     }
     @Override public boolean stillValid(Player player) { return station != null && station.usableBy(player); }

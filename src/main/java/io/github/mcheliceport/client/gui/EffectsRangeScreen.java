@@ -8,7 +8,6 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 
 /** A small comparison panel; demonstrations run in the dedicated server-owned dimension. */
 public final class EffectsRangeScreen extends Screen {
@@ -19,7 +18,7 @@ public final class EffectsRangeScreen extends Screen {
     private static Component surface(){return Component.literal("Surface: "+RangeOptions.SURFACES.get(EffectsRangeClient.options.surface()));}
     private static Component lighting(){return Component.literal("Lighting: "+RangeOptions.LIGHTING.get(EffectsRangeClient.options.lighting()));}
     private void configure(){if(inside())send(EffectsRange.CONFIGURE);}
-    private void send(int action){var o=EffectsRangeClient.options;ClientPacketDistributor.sendToServer(new EffectsRangePayload(action,o.weapon(),o.surface(),o.lighting()));}
+    private void send(int action){var o=EffectsRangeClient.options;io.github.mcheliceport.platform.Platform.get().sendToServer(new EffectsRangePayload(action,o.weapon(),o.surface(),o.lighting()));}
     private static void save(){if(ClientConfig.SPEC.isLoaded())ClientConfig.SPEC.save();}
     @Override protected void init(){
         int x=width/2-110,y=Math.max(38,height/2-82);

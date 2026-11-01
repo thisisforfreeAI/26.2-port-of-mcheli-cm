@@ -22,9 +22,6 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.fml.ModList;
-import net.neoforged.neoforge.client.gui.ConfigurationScreen;
-import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import org.lwjgl.glfw.GLFW;
 
 /**
@@ -143,10 +140,11 @@ public class AircraftScreen extends AbstractContainerScreen<AircraftMenu> {
      * port's settings are NeoForge's config screen.
      */
     private void openOptions() {
-        ModList.get().getModContainerById(McheliCePort.MOD_ID).ifPresent(container -> {
+        var config = io.github.mcheliceport.platform.Platform.get().createConfigScreen(null);
+        if (config != null) {
             this.onClose();
-            this.minecraft.setScreenAndShow(new ConfigurationScreen(container, null));
-        });
+            this.minecraft.setScreenAndShow(config);
+        }
     }
 
     /** Upstream sends the field's text as a command on Enter (CE built the packet but never sent it). */
@@ -187,7 +185,7 @@ public class AircraftScreen extends AbstractContainerScreen<AircraftMenu> {
         AircraftEntity aircraft = this.menu.getAircraft();
         if (aircraft != null && this.commandField != null && this.commandEditable
                 && !this.commandField.getValue().equals(aircraft.getCommand())) {
-            ClientPacketDistributor.sendToServer(new AircraftCommandPayload(aircraft.getId(),
+            io.github.mcheliceport.platform.Platform.get().sendToServer(new AircraftCommandPayload(aircraft.getId(),
                     this.commandField.getValue()));
         }
     }
@@ -196,7 +194,7 @@ public class AircraftScreen extends AbstractContainerScreen<AircraftMenu> {
         AircraftEntity aircraft = this.menu.getAircraft();
         if (aircraft != null && this.minecraft != null && this.minecraft.player != null
                 && aircraft.weapons().canResupply(this.minecraft.player, aircraft.getWeapon(weaponId))) {
-            ClientPacketDistributor.sendToServer(new ResupplyPayload(aircraft.getId(), weaponId));
+            io.github.mcheliceport.platform.Platform.get().sendToServer(new ResupplyPayload(aircraft.getId(), weaponId));
             aircraft.weapons().supplyAmmo(weaponId, this.minecraft.player);
         }
     }
