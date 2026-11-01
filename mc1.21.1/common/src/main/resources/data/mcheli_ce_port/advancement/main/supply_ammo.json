@@ -1,0 +1,24 @@
+{
+  "parent": "mcheli_ce_port:main/root",
+  "criteria": {
+    "supply_ammo": {
+      "trigger": "mcheli_ce_port:supply_ammo"
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "minecraft:gunpowder"
+    },
+    "title": {
+      "translate": "advancements.mcheli_ce_port.supply_ammo.title"
+    },
+    "description": {
+      "translate": "advancements.mcheli_ce_port.supply_ammo.description"
+    }
+  },
+  "requirements": [
+    [
+      "supply_ammo"
+    ]
+  ]
+}

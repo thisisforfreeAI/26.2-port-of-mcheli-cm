@@ -8,6 +8,9 @@ public final class McheliCePortFabric implements ModInitializer {
 
     @Override
     public void onInitialize() {
+        FabricAttachments.init();
+        FabricEvents.register();
         McheliCePort.init();
+        FabricRegistrar.runAfterRegistration();
     }
 }

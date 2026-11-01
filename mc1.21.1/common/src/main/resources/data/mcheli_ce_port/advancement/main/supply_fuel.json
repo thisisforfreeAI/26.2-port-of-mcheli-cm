@@ -1,0 +1,24 @@
+{
+  "parent": "mcheli_ce_port:main/root",
+  "criteria": {
+    "supply_fuel": {
+      "trigger": "mcheli_ce_port:supply_fuel"
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "mcheli_ce_port:fuel"
+    },
+    "title": {
+      "translate": "advancements.mcheli_ce_port.supply_fuel.title"
+    },
+    "description": {
+      "translate": "advancements.mcheli_ce_port.supply_fuel.description"
+    }
+  },
+  "requirements": [
+    [
+      "supply_fuel"
+    ]
+  ]
+}

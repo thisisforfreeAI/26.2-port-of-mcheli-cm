@@ -12,12 +12,14 @@
   "license": "${mod_license}",
   "environment": "*",
   "entrypoints": {
-    "main": ["io.github.mcheliceport.fabric.McheliCePortFabric"]
+    "main": ["io.github.mcheliceport.fabric.McheliCePortFabric"],
+    "client": ["io.github.mcheliceport.fabric.McheliCePortFabricClient"]
   },
-  "mixins": ["mcheli_ce_port.mixins.json"],
+  "mixins": ["mcheli_ce_port.mixins.json", "mcheli_ce_port.fabric.mixins.json"],
   "depends": {
     "fabricloader": ">=${fabric_loader_version}",
     "fabric-api": "*",
+    "forgeconfigapiport": "*",
     "minecraft": "~${minecraft_version}",
     "java": ">=${java_version}"
   }

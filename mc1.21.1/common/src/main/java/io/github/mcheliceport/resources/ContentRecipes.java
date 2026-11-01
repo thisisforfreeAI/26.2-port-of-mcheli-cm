@@ -151,7 +151,7 @@ public final class ContentRecipes {
                 if (id == null) {
                     return Conversion.fail("no item for '" + describe(entry.getValue()) + "'");
                 }
-                key.addProperty(String.valueOf(entry.getKey()), id);
+                key.add(String.valueOf(entry.getKey()), ingredient(id));
             }
             json.add("key", key);
             JsonArray pattern = new JsonArray();
@@ -166,7 +166,7 @@ public final class ContentRecipes {
                 if (id == null) {
                     return Conversion.fail("no item for '" + describe(ingredient) + "'");
                 }
-                ingredients.add(id);
+                ingredients.add(ingredient(id));
             }
             json.add("ingredients", ingredients);
         }
@@ -298,5 +298,16 @@ public final class ContentRecipes {
             }
         }
         return true;
+    }
+
+    /** 1.21.1 ingredients are objects ({@code {"item": ...}} or {@code {"tag": ...}}), not 26.2's bare ids. */
+    private static JsonObject ingredient(String id) {
+        JsonObject json = new JsonObject();
+        if (id.startsWith("#")) {
+            json.addProperty("tag", id.substring(1));
+        } else {
+            json.addProperty("item", id);
+        }
+        return json;
     }
 }

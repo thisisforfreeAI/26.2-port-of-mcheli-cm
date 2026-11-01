@@ -79,4 +79,30 @@ public final class FabricPlatform implements Platform {
             }
         }
     }
+
+    public static final java.util.Map<net.minecraft.server.packs.PackType,
+            java.util.List<java.util.function.Consumer<java.util.function.Consumer<net.minecraft.server.packs.repository.Pack>>>>
+            PACK_SOURCES = new java.util.EnumMap<>(net.minecraft.server.packs.PackType.class);
+
+    @Override
+    public void addPackSource(net.minecraft.server.packs.PackType type,
+            java.util.function.Consumer<java.util.function.Consumer<net.minecraft.server.packs.repository.Pack>> source) {
+        PACK_SOURCES.computeIfAbsent(type, t -> new java.util.ArrayList<>()).add(source);
+    }
+
+    @Override
+    public net.minecraft.server.level.ServerPlayer fakePlayer(net.minecraft.server.level.ServerLevel level,
+            com.mojang.authlib.GameProfile profile) {
+        return net.fabricmc.fabric.api.entity.FakePlayer.get(level, profile);
+    }
+
+    @Override
+    public boolean explosionStart(net.minecraft.world.level.Level level, net.minecraft.world.level.Explosion explosion) {
+        return false;
+    }
+
+    @Override
+    public void explosionDetonate(net.minecraft.world.level.Level level, net.minecraft.world.level.Explosion explosion,
+            java.util.List<net.minecraft.world.entity.Entity> entities, java.util.List<net.minecraft.core.BlockPos> blocks) {
+    }
 }
