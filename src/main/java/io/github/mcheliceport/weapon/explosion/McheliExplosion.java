@@ -42,7 +42,6 @@ import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.event.EventHooks;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -200,7 +199,7 @@ public class McheliExplosion extends ServerExplosion {
         exp.fireBlocks = fireBlocks;
         exp.keepGroundBelow = keepGroundBelow;
         exp.damageFactor = p.damageFactor();
-        if (EventHooks.onExplosionStart(serverLevel, exp)) {
+        if (io.github.mcheliceport.platform.Platform.get().explosionCancelled(serverLevel, exp)) {
             return exp.result;
         }
         // Capture before damage/knockback callbacks; presentation never changes projectile physics.
@@ -271,11 +270,9 @@ public class McheliExplosion extends ServerExplosion {
         return new ArrayList<>(set);
     }
 
-    @SuppressWarnings("DataFlowIssue") // vanilla blocks ignore the explosion; modded ones get none on the client
     private static Optional<Float> plainResistance(Level level, BlockPos pos, BlockState state, FluidState fluid) {
         return state.isAir() && fluid.isEmpty() ? Optional.empty()
-                : Optional.of(Math.max(state.getExplosionResistance(level, pos, null),
-                        fluid.getExplosionResistance(level, pos, null)));
+                : Optional.of(io.github.mcheliceport.platform.Platform.get().explosionResistance(level, pos, state, fluid));
     }
 
     /**
@@ -311,7 +308,7 @@ public class McheliExplosion extends ServerExplosion {
         int i2 = Mth.floor(this.z - f - 1.0);
         int j2 = Mth.floor(this.z + f + 1.0);
         List<Entity> list = this.world.getEntities(this.exploder, new AABB(i, k, i2, j, l1, j2));
-        EventHooks.onExplosionDetonate(this.world, this, list, this.affectedBlocks);
+        io.github.mcheliceport.platform.Platform.get().explosionDetonate(this.world, this, list, this.affectedBlocks);
         Vec3 center = new Vec3(this.x, this.y, this.z);
         DamageSource ds = this.getDamageSource();
         for (Entity entity : list) {

@@ -80,8 +80,57 @@ public interface Platform {
      */
     net.minecraft.world.item.CreativeModeTab.Builder creativeTabBuilder(net.minecraft.resources.Identifier after);
 
-    /** Metadata of a pack the mod builds in memory; NeoForge hides it from the pack screen. */
-    net.minecraft.server.packs.repository.Pack.Metadata hiddenPackMetadata(net.minecraft.network.chat.Component title);
+    /**
+     * Metadata of a pack the mod adds, compatible with this game version. {@code hidden}: NeoForge
+     * hides it from the pack screen (Fabric cannot, and lists it).
+     */
+    net.minecraft.server.packs.repository.Pack.Metadata packMetadata(net.minecraft.network.chat.Component description,
+            boolean hidden);
+
+    /** NeoForge's {@code setNoCombineRepair}: the item cannot be repaired by combining two in a grid. No-op on Fabric. */
+    net.minecraft.world.item.Item.Properties noCombineRepair(net.minecraft.world.item.Item.Properties properties);
+
+    /** Sends the entity's velocity to clients with every position update (NeoForge {@code setShouldReceiveVelocityUpdates}). */
+    <T extends net.minecraft.world.entity.Entity> net.minecraft.world.entity.EntityType.Builder<T> trackDeltas(
+            net.minecraft.world.entity.EntityType.Builder<T> builder);
+
+    // ---- game ----
+
+    /**
+     * Chunk tickets owned by entity UUIDs, not saved with the world (NeoForge's {@code TicketController}).
+     * Create them while the mod initialises.
+     */
+    ChunkTickets chunkTickets(Identifier id);
+
+    /** A per-entity tag the mod keeps across saves (NeoForge's {@code getPersistentData}). */
+    net.minecraft.nbt.CompoundTag persistentData(net.minecraft.world.entity.Entity entity);
+
+    /** A fake player for using items on blocks without a real player. */
+    net.minecraft.server.level.ServerPlayer fakePlayer(net.minecraft.server.level.ServerLevel level,
+            com.mojang.authlib.GameProfile profile);
+
+    /** The block a fluid interaction places, after other mods had their say (NeoForge's fluid place event). */
+    net.minecraft.world.level.block.state.BlockState fluidPlaceBlock(net.minecraft.world.level.LevelAccessor level,
+            net.minecraft.core.BlockPos pos, net.minecraft.core.BlockPos liquidPos,
+            net.minecraft.world.level.block.state.BlockState state);
+
+    /** The players tracking an entity (receiving its updates). */
+    java.util.Collection<net.minecraft.server.level.ServerPlayer> playersTracking(net.minecraft.world.entity.Entity entity);
+
+    /** A block's and its fluid's explosion resistance, the higher of the two, without an explosion (modded blocks may look at the position). */
+    float explosionResistance(net.minecraft.world.level.Level level, net.minecraft.core.BlockPos pos,
+            net.minecraft.world.level.block.state.BlockState state, net.minecraft.world.level.material.FluidState fluid);
+
+    /** NeoForge's {@code onItemUseFirst}, before {@code useOn}; PASS on Fabric. */
+    net.minecraft.world.InteractionResult useItemFirst(net.minecraft.world.item.ItemStack stack,
+            net.minecraft.world.item.context.UseOnContext context);
+
+    /** Whether another mod cancelled this explosion (NeoForge's explosion start event; never on Fabric). */
+    boolean explosionCancelled(net.minecraft.world.level.Level level, net.minecraft.world.level.ServerExplosion explosion);
+
+    /** Lets other mods change the entities and blocks an explosion affects (NeoForge's detonate event). */
+    void explosionDetonate(net.minecraft.world.level.Level level, net.minecraft.world.level.ServerExplosion explosion,
+            java.util.List<net.minecraft.world.entity.Entity> entities, java.util.List<net.minecraft.core.BlockPos> blocks);
 
     // ---- fluid and energy items ----
 

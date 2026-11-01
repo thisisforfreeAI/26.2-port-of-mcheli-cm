@@ -60,7 +60,7 @@ public final class GeneratedPack implements PackResources {
                 return this.openPrimary(info);
             }
         };
-        Pack.Metadata metadata = io.github.mcheliceport.platform.Platform.get().hiddenPackMetadata(title);
+        Pack.Metadata metadata = io.github.mcheliceport.platform.Platform.get().packMetadata(title, true);
         return new Pack(location, supplier, metadata, new PackSelectionConfig(true, position, false));
     }
 

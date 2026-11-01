@@ -6,7 +6,6 @@ import io.netty.buffer.Unpooled;
 import java.nio.file.Path;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.menu.v1.ExtendedMenuProvider;
 import net.fabricmc.fabric.api.menu.v1.ExtendedMenuType;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
@@ -63,8 +62,7 @@ public final class FabricPlatform implements Platform {
     @Override
     public net.minecraft.client.gui.screens.@Nullable Screen createConfigScreen(
             net.minecraft.client.gui.screens.@Nullable Screen parent) {
-        return new net.neoforged.neoforge.client.gui.ConfigurationScreen(io.github.mcheliceport.McheliCePort.MOD_ID,
-                parent);
+        return FabricClientHooks.configScreen(parent);
     }
 
     /** The mod jar's files, through Fabric Loader. */
@@ -161,10 +159,80 @@ public final class FabricPlatform implements Platform {
     }
 
     @Override
-    public net.minecraft.server.packs.repository.Pack.Metadata hiddenPackMetadata(Component title) {
-        return new net.minecraft.server.packs.repository.Pack.Metadata(title,
+    public net.minecraft.server.packs.repository.Pack.Metadata packMetadata(Component description, boolean hidden) {
+        return new net.minecraft.server.packs.repository.Pack.Metadata(description,
                 net.minecraft.server.packs.repository.PackCompatibility.COMPATIBLE,
                 net.minecraft.world.flag.FeatureFlagSet.of(), java.util.List.of());
+    }
+
+    @Override
+    public net.minecraft.world.item.Item.Properties noCombineRepair(net.minecraft.world.item.Item.Properties properties) {
+        return properties;
+    }
+
+    @Override
+    public <T extends Entity> net.minecraft.world.entity.EntityType.Builder<T> trackDeltas(
+            net.minecraft.world.entity.EntityType.Builder<T> builder) {
+        return builder.alwaysUpdateVelocity(true);
+    }
+
+    // ---- game ----
+
+    /** NeoForge's persistent data, saved under the same name as NeoForge's tag. */
+    private static final net.fabricmc.fabric.api.attachment.v1.AttachmentType<net.minecraft.nbt.CompoundTag> PERSISTENT_DATA =
+            net.fabricmc.fabric.api.attachment.v1.AttachmentRegistry.create(
+                    Identifier.fromNamespaceAndPath(io.github.mcheliceport.McheliCePort.MOD_ID, "persistent_data"),
+                    builder -> builder.persistent(net.minecraft.nbt.CompoundTag.CODEC)
+                            .initializer(net.minecraft.nbt.CompoundTag::new));
+
+    @Override
+    public io.github.mcheliceport.platform.ChunkTickets chunkTickets(Identifier id) {
+        return new FabricChunkTickets(id);
+    }
+
+    @Override
+    public net.minecraft.nbt.CompoundTag persistentData(Entity entity) {
+        return entity.getAttachedOrCreate(PERSISTENT_DATA);
+    }
+
+    @Override
+    public ServerPlayer fakePlayer(net.minecraft.server.level.ServerLevel level, com.mojang.authlib.GameProfile profile) {
+        return net.fabricmc.fabric.api.entity.FakePlayer.get(level, profile);
+    }
+
+    @Override
+    public net.minecraft.world.level.block.state.BlockState fluidPlaceBlock(net.minecraft.world.level.LevelAccessor level,
+            net.minecraft.core.BlockPos pos, net.minecraft.core.BlockPos liquidPos,
+            net.minecraft.world.level.block.state.BlockState state) {
+        return state;
+    }
+
+    @Override
+    public java.util.Collection<ServerPlayer> playersTracking(Entity entity) {
+        return PlayerLookup.tracking(entity);
+    }
+
+    @Override
+    public float explosionResistance(net.minecraft.world.level.Level level, net.minecraft.core.BlockPos pos,
+            net.minecraft.world.level.block.state.BlockState state, net.minecraft.world.level.material.FluidState fluid) {
+        return Math.max(state.getBlock().getExplosionResistance(), fluid.getExplosionResistance());
+    }
+
+    @Override
+    public net.minecraft.world.InteractionResult useItemFirst(net.minecraft.world.item.ItemStack stack,
+            net.minecraft.world.item.context.UseOnContext context) {
+        return net.minecraft.world.InteractionResult.PASS;
+    }
+
+    @Override
+    public boolean explosionCancelled(net.minecraft.world.level.Level level,
+            net.minecraft.world.level.ServerExplosion explosion) {
+        return false;
+    }
+
+    @Override
+    public void explosionDetonate(net.minecraft.world.level.Level level, net.minecraft.world.level.ServerExplosion explosion,
+            java.util.List<Entity> entities, java.util.List<net.minecraft.core.BlockPos> blocks) {
     }
 
     // ---- fluid and energy items ----
@@ -249,6 +317,6 @@ public final class FabricPlatform implements Platform {
 
     @Override
     public void sendToServer(CustomPacketPayload payload) {
-        ClientPlayNetworking.send(payload);
+        FabricClientHooks.sendToServer(payload);
     }
 }

@@ -8,8 +8,7 @@ import java.util.WeakHashMap;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.tick.EntityTickEvent;
+import io.github.mcheliceport.platform.GameEvents;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -31,11 +30,11 @@ public final class LagCompensation {
     }
 
     public static void register() {
-        NeoForge.EVENT_BUS.addListener(LagCompensation::onEntityTick);
+        GameEvents.ENTITY_TICK_POST.add(LagCompensation::onEntityTick);
     }
 
-    private static void onEntityTick(EntityTickEvent.Post event) {
-        if (event.getEntity() instanceof AircraftEntity aircraft && !aircraft.level().isClientSide()) {
+    private static void onEntityTick(net.minecraft.world.entity.Entity entity) {
+        if (entity instanceof AircraftEntity aircraft && !aircraft.level().isClientSide()) {
             record(aircraft);
         }
     }

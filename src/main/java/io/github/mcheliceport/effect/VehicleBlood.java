@@ -57,7 +57,7 @@ public final class VehicleBlood {
                 hit.cause, mob.getUUID().hashCode());
         if (!p.valid() || !LEVELS.computeIfAbsent(level, k -> new VehicleBloodRules.Gate(8))
                 .admit(mob.getUUID(), level.getGameTime())) return null;
-        for (var player : level.getChunkSource().chunkMap.getPlayersWatching(mob)) {
+        for (var player : io.github.mcheliceport.platform.Platform.get().playersTracking(mob)) {
             if (player.distanceToSqr(hit.feet) <= 64*64) ModNetwork.sendToPlayer(player, p);
         }
         return p;

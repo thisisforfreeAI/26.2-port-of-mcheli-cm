@@ -5,8 +5,7 @@ import io.github.mcheliceport.entity.aircraft.WingedAircraftEntity;
 import io.github.mcheliceport.entity.heli.HeliEntity;
 import java.util.List;
 import net.minecraft.server.level.ServerLevel;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.tick.EntityTickEvent;
+import io.github.mcheliceport.platform.GameEvents;
 
 /**
  * What damaged components do to a vehicle (M9e), so a damaged vehicle can still limp home:
@@ -42,11 +41,11 @@ public final class ComponentEffects {
     }
 
     public static void register() {
-        NeoForge.EVENT_BUS.addListener(ComponentEffects::onEntityTick);
+        GameEvents.ENTITY_TICK_POST.add(ComponentEffects::onEntityTick);
     }
 
-    private static void onEntityTick(EntityTickEvent.Post event) {
-        if (event.getEntity() instanceof AircraftEntity ac && ac.level() instanceof ServerLevel level
+    private static void onEntityTick(net.minecraft.world.entity.Entity entity) {
+        if (entity instanceof AircraftEntity ac && ac.level() instanceof ServerLevel level
                 && !ac.isDestroyed()) {
             leak(ac, level.getGameTime());
         }

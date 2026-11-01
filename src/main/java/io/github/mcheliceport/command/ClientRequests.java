@@ -19,10 +19,6 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.event.server.ServerStoppedEvent;
-import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -33,7 +29,6 @@ import org.jspecify.annotations.Nullable;
  * expires. Saved screenshots go to {@code <server folder>/screenshots_op/<player>_<date>.png}, as
  * upstream. Server thread only.
  */
-@EventBusSubscriber(modid = McheliCePort.MOD_ID)
 public final class ClientRequests {
 
     public static final String FOLDER = "screenshots_op";
@@ -201,8 +196,12 @@ public final class ClientRequests {
         }
     }
 
-    @SubscribeEvent
-    static void onServerTick(ServerTickEvent.Post event) {
+    public static void register() {
+        io.github.mcheliceport.platform.GameEvents.SERVER_TICK_POST.add(ClientRequests::onServerTick);
+        io.github.mcheliceport.platform.GameEvents.SERVER_STOPPED.add(server -> REQUESTS.clear());
+    }
+
+    static void onServerTick(net.minecraft.server.MinecraftServer server) {
         ticks++;
         if (ticks % 20 != 0 || REQUESTS.isEmpty()) {
             return;
@@ -212,13 +211,8 @@ public final class ClientRequests {
             Request request = it.next();
             if (ticks - request.expiresAt >= 0) {
                 it.remove();
-                tell(event.getServer(), request, Component.literal(request.targetName + " did not answer").withStyle(ChatFormatting.GRAY));
+                tell(server, request, Component.literal(request.targetName + " did not answer").withStyle(ChatFormatting.GRAY));
             }
         }
-    }
-
-    @SubscribeEvent
-    static void onServerStopped(ServerStoppedEvent event) {
-        REQUESTS.clear();
     }
 }

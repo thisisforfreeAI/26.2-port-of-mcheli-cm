@@ -19,20 +19,12 @@ import net.minecraft.server.players.NameAndId;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.BlockItem;
-import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.event.RegisterCommandsEvent;
-import net.neoforged.neoforge.event.entity.player.PlayerEvent;
-import net.neoforged.neoforge.event.server.ServerStoppedEvent;
-import net.neoforged.neoforge.event.tick.ServerTickEvent;
 
 /** An operator/singleplayer-owner sandbox, with no edits to the player's ordinary dimensions. */
-@EventBusSubscriber(modid=McheliCePort.MOD_ID)
 public final class EffectsRange {
     public static final Identifier ID=Identifier.fromNamespaceAndPath(McheliCePort.MOD_ID,"effects_range");
     public static final ResourceKey<Level> LEVEL=ResourceKey.create(Registries.DIMENSION,ID);
@@ -83,14 +75,14 @@ public final class EffectsRange {
         data.putFloat("FlySpeed",abilities.getFlyingSpeed());data.putFloat("WalkSpeed",abilities.getWalkingSpeed());
         data.putString("Dimension",player.level().dimension().identifier().toString());
         data.putDouble("X",player.getX());data.putDouble("Y",player.getY());data.putDouble("Z",player.getZ());data.putFloat("Yaw",player.getYRot());data.putFloat("Pitch",player.getXRot());data.putInt("Mode",player.gameMode().getId());
-        player.getPersistentData().put(RETURN,data);var s=new Session(slot,level,options);
+        io.github.mcheliceport.platform.Platform.get().persistentData(player).put(RETURN,data);var s=new Session(slot,level,options);
         player.closeContainer();player.setGameMode(GameType.SPECTATOR);
-        if(!player.teleportTo(level,s.origin+28,9,34,Set.of(),140,12,true)){restoreMode(player,data);player.getPersistentData().remove(RETURN);return false;}
+        if(!player.teleportTo(level,s.origin+28,9,34,Set.of(),140,12,true)){restoreMode(player,data);io.github.mcheliceport.platform.Platform.get().persistentData(player).remove(RETURN);return false;}
         player.setDeltaMovement(Vec3.ZERO);SESSIONS.put(player.getUUID(),s);lighting(level,options);reset(player,s);
         tell(player,"Effects range: spectator viewing, real weapon impacts. ESC > MC Heli Effects > Test range. Return restores your location and mode.");return true;
     }
     public static boolean leave(ServerPlayer player){
-        var saved=player.getPersistentData().getCompound(RETURN);if(saved.isEmpty())return false;
+        var saved=io.github.mcheliceport.platform.Platform.get().persistentData(player).getCompound(RETURN);if(saved.isEmpty())return false;
         var data=saved.get();var server=player.level().getServer();var id=Identifier.tryParse(data.getStringOr("Dimension","minecraft:overworld"));
         ServerLevel target=id==null?null:server.getLevel(ResourceKey.create(Registries.DIMENSION,id));
         boolean fallback=target==null||inRange(target);if(fallback)target=server.overworld();
@@ -100,7 +92,7 @@ public final class EffectsRange {
         player.closeContainer();
         if(!player.teleportTo(target,x,y,z,Set.of(),data.getFloatOr("Yaw",0),data.getFloatOr("Pitch",0),true))return false;
         player.setDeltaMovement(Vec3.ZERO);restoreMode(player,data);
-        player.getPersistentData().remove(RETURN);SESSIONS.remove(player.getUUID());return true;
+        io.github.mcheliceport.platform.Platform.get().persistentData(player).remove(RETURN);SESSIONS.remove(player.getUUID());return true;
     }
     private static void restoreMode(ServerPlayer player,CompoundTag data){
         player.setGameMode(GameType.byId(data.getIntOr("Mode",0)));
@@ -126,10 +118,20 @@ public final class EffectsRange {
     }
     private static boolean insidePad(Session s,double x,double z){return Math.abs(x-s.origin)<=32&&Math.abs(z)<=32;}
     /** Temporary spectator targets do not retain terrain loot; ordinary dimensions and inventories are untouched. */
-    @SubscribeEvent public static void terrainDrop(EntityJoinLevelEvent event){
-        if(!inRange(event.getLevel())||event.getLevel().isClientSide()||!(event.getEntity() instanceof ItemEntity item)
-                ||!(item.getItem().getItem() instanceof BlockItem))return;
-        for(var s:SESSIONS.values())if(insidePad(s,item.getX(),item.getZ())){event.setCanceled(true);return;}
+    public static void register(){
+        io.github.mcheliceport.platform.GameEvents.ENTITY_JOIN.add(EffectsRange::terrainDrop);
+        io.github.mcheliceport.platform.GameEvents.SERVER_TICK_POST.add(EffectsRange::tick);
+        io.github.mcheliceport.platform.GameEvents.PLAYER_LOGGED_OUT.add(EffectsRange::leave);
+        io.github.mcheliceport.platform.GameEvents.PLAYER_LOGGED_IN.add(p->{if(io.github.mcheliceport.platform.Platform.get().persistentData(p).contains(RETURN))leave(p);});
+        io.github.mcheliceport.platform.GameEvents.SERVER_STOPPED.add(server->{SESSIONS.clear();blocksLastTick=roundRobin=0;});
+        io.github.mcheliceport.platform.GameEvents.REGISTER_COMMANDS.add((dispatcher,context)->commands(dispatcher));
+    }
+    /** Keeps terrain loot out of a range level's target pads. */
+    static boolean terrainDrop(net.minecraft.world.entity.Entity entity,net.minecraft.world.level.Level level){
+        if(!inRange(level)||level.isClientSide()||!(entity instanceof ItemEntity item)
+                ||!(item.getItem().getItem() instanceof BlockItem))return true;
+        for(var s:SESSIONS.values())if(insidePad(s,item.getX(),item.getZ()))return false;
+        return true;
     }
     private static boolean fire(ServerPlayer player,Session s,long now){
         var level=(ServerLevel)player.level();String name=RangeOptions.WEAPONS.get(s.options.weapon());var info=WeaponCreator.info(name);
@@ -142,8 +144,8 @@ public final class EffectsRange {
         s.nextShot=now+Math.max(100,Math.abs((long)info.delay));s.shots++;s.cooling=true;notice(player,s,2);
         tell(player,RangeOptions.WEAPON_LABELS.get(s.options.weapon())+" on "+RangeOptions.SURFACES.get(s.options.surface())+" — original weapon damage and crater settings.");return true;
     }
-    @SubscribeEvent public static void tick(ServerTickEvent.Post event){
-        blocksLastTick=0;if(SESSIONS.isEmpty())return;var server=event.getServer();var entries=new ArrayList<>(SESSIONS.entrySet());
+    static void tick(net.minecraft.server.MinecraftServer server){
+        blocksLastTick=0;if(SESSIONS.isEmpty())return;var entries=new ArrayList<>(SESSIONS.entrySet());
         int visited=0;while(blocksLastTick<BLOCKS_PER_TICK&&visited++<entries.size()){
             var entry=entries.get(Math.floorMod(roundRobin++,entries.size()));var s=entry.getValue();var p=server.getPlayerList().getPlayer(entry.getKey());
             if(p==null||!inRange(p.level())){if(p!=null)leave(p);else{cleanProjectiles((ServerLevel)s.launcher.level(),s);SESSIONS.remove(entry.getKey());}continue;}
@@ -159,11 +161,8 @@ public final class EffectsRange {
             if(s.cursor==RangeOptions.TOTAL){s.cursor++;notice(p,s,0);tell(p,"Target pad ready.");}
         }
     }
-    @SubscribeEvent public static void logout(PlayerEvent.PlayerLoggedOutEvent event){if(event.getEntity() instanceof ServerPlayer p)leave(p);}
-    @SubscribeEvent public static void login(PlayerEvent.PlayerLoggedInEvent event){if(event.getEntity() instanceof ServerPlayer p&&p.getPersistentData().contains(RETURN))leave(p);}
-    @SubscribeEvent public static void stopped(ServerStoppedEvent event){SESSIONS.clear();blocksLastTick=roundRobin=0;}
-    @SubscribeEvent public static void commands(RegisterCommandsEvent event){
-        event.getDispatcher().register(Commands.literal("mcheli_range")
+    static void commands(com.mojang.brigadier.CommandDispatcher<net.minecraft.commands.CommandSourceStack> dispatcher){
+        dispatcher.register(Commands.literal("mcheli_range")
             .then(Commands.literal("enter").executes(c->act(c.getSource().getPlayerOrException(),ENTER,0,0,0)?1:0))
             .then(Commands.literal("return").executes(c->leave(c.getSource().getPlayerOrException())?1:0)));
     }

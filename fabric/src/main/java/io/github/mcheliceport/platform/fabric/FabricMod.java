@@ -38,6 +38,7 @@ public final class FabricMod implements ModInitializer {
 
         FabricDefaultAttributeRegistry.register(ModEntityTypes.GUNNER.get(), LivingEntity.createLivingAttributes());
         FabricNetwork.register();
+        FabricEvents.register();
         FabricParts.register();
         net.fabricmc.fabric.api.event.lifecycle.v1.ServerBlockEntityEvents.BLOCK_ENTITY_LOAD.register(
                 (blockEntity, level) -> {

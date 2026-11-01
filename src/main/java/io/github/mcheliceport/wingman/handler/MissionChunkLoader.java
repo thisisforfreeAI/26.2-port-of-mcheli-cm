@@ -12,9 +12,8 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.common.world.chunk.RegisterTicketControllersEvent;
-import net.neoforged.neoforge.common.world.chunk.TicketController;
+import io.github.mcheliceport.platform.ChunkTickets;
+import io.github.mcheliceport.platform.Platform;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -30,9 +29,8 @@ public final class MissionChunkLoader {
     /** Upstream's radius: 5 by 5 chunks. */
     private static final int CHUNK_RADIUS = 2;
 
-    public static final TicketController TICKETS = new TicketController(
-            Identifier.fromNamespaceAndPath(McheliCePort.MOD_ID, "wingman_mission"),
-            (level, helper) -> helper.getEntityTickets().keySet().forEach(helper::removeAllTickets));
+    public static final ChunkTickets TICKETS = Platform.get().chunkTickets(
+            Identifier.fromNamespaceAndPath(McheliCePort.MOD_ID, "wingman_mission"));
 
     private record Loaded(ResourceKey<Level> dimension, ChunkPos center) {
     }
@@ -42,8 +40,8 @@ public final class MissionChunkLoader {
     private MissionChunkLoader() {
     }
 
-    public static void register(IEventBus modBus) {
-        modBus.addListener((RegisterTicketControllersEvent e) -> e.register(TICKETS));
+    /** Creates the tickets while the mod initialises. */
+    public static void register() {
     }
 
     /** Before the aircraft move, as upstream: loads the chunks around each mission aircraft in the level. */
