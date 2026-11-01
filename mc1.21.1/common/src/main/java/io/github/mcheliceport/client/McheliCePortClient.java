@@ -26,36 +26,41 @@ import net.minecraft.client.renderer.entity.NoopRenderer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.fml.ModContainer;
-import net.neoforged.fml.common.Mod;
-import net.neoforged.fml.config.ModConfig;
 import io.github.mcheliceport.shim.client.event.AddClientReloadListenersEvent;
 import io.github.mcheliceport.shim.client.event.EntityRenderersEvent;
 import io.github.mcheliceport.shim.client.event.RegisterMenuScreensEvent;
-import net.neoforged.neoforge.client.gui.ConfigurationScreen;
-import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import io.github.mcheliceport.client.render.CargoContainerRenderer;
 
-/** Client-only entry point. FML never loads this class on a dedicated server. */
-@Mod(value = McheliCePort.MOD_ID, dist = Dist.CLIENT)
+/**
+ * The shared client set-up, which each loader's client entry point calls once, before it posts
+ * the registration events. A dedicated server never loads this class.
+ */
 public final class McheliCePortClient {
-    public McheliCePortClient(IEventBus modBus, ModContainer container) {
-        container.registerConfig(ModConfig.Type.CLIENT, ClientConfig.SPEC);
-        // Adds a Config button for the mod on the Mods screen.
-        container.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
+    private static boolean initialized;
+
+    private McheliCePortClient() {
+    }
+
+    public static void init() {
+        if (initialized) {
+            return;
+        }
+        initialized = true;
+        io.github.mcheliceport.platform.Services.CONFIGS.register(
+                io.github.mcheliceport.platform.Configs.Type.CLIENT, ClientConfig.SPEC);
+        for (Class<?> subscriber : ClientSubscribers.CLASSES) {
+            io.github.mcheliceport.shim.client.event.ClientBus.subscribe(subscriber);
+        }
+        registerFluidModels();
         io.github.mcheliceport.shim.client.event.ClientBus.listen(McheliCePortClient.class, "registerRenderers");
         io.github.mcheliceport.shim.client.event.ClientBus.listen(McheliCePortClient.class, "registerFluidModels");
         io.github.mcheliceport.shim.client.event.ClientBus.listen(ModKeyMappings.class, "register");
         io.github.mcheliceport.shim.client.event.ClientBus.listen(McheliCePortClient.class, "registerScreens");
-        io.github.mcheliceport.shim.client.event.ClientBus.listen(RiderTilt.class, "registerModifiers");
+        RiderTilt.registerModifiers();
         io.github.mcheliceport.client.render.ThermalVision.register();
-        io.github.mcheliceport.shim.client.event.ClientBus.listen(io.github.mcheliceport.client.render.FarVehicles.class, "registerPipelines");
-        io.github.mcheliceport.client.render.baked.BakedVehicles.register(modBus);
         io.github.mcheliceport.shim.client.event.ClientBus.listen(io.github.mcheliceport.client.render.FarVehicles.class, "onClientTick");
-        io.github.mcheliceport.shim.client.event.ClientBus.listen(io.github.mcheliceport.client.render.SearchLightRenderer.class, "registerModifiers");
-        io.github.mcheliceport.shim.client.event.ClientBus.listen(io.github.mcheliceport.client.render.SceneLights.class, "registerModifiers");
-        io.github.mcheliceport.shim.client.event.ClientBus.listen(io.github.mcheliceport.client.render.SearchLightRenderer.class, "registerPipelines");
+        io.github.mcheliceport.client.render.SearchLightRenderer.registerModifiers();
+        io.github.mcheliceport.client.render.SceneLights.registerModifiers();
         io.github.mcheliceport.shim.client.event.ClientBus.listen(AircraftHudLayer.class, "register");
         io.github.mcheliceport.shim.client.event.ClientBus.listen(io.github.mcheliceport.client.hud.ToolHudLayer.class, "register");
         io.github.mcheliceport.shim.client.event.ClientBus.listen(io.github.mcheliceport.client.hud.SpawnGunnerHudLayer.class, "register");
@@ -77,17 +82,10 @@ public final class McheliCePortClient {
         io.github.mcheliceport.shim.client.event.ClientBus.listen(io.github.mcheliceport.client.hud.GltdHudLayer.class, "register");
         io.github.mcheliceport.shim.client.event.ClientBus.listen(io.github.mcheliceport.client.hud.LightWeaponHudLayer.class, "register");
         io.github.mcheliceport.shim.client.event.ClientBus.listen(io.github.mcheliceport.client.hud.TitleOverlay.class, "register");
-        io.github.mcheliceport.shim.client.event.ClientBus.listen(AircraftHudLayer.class, "registerPipelines");
-        io.github.mcheliceport.shim.client.event.ClientBus.listen(io.github.mcheliceport.client.particle.ParticleLayers.class, "registerPipelines");
         io.github.mcheliceport.shim.client.event.ClientBus.listen(io.github.mcheliceport.client.particle.BlastDustWedges.class, "register");
         io.github.mcheliceport.shim.client.event.ClientBus.listen(io.github.mcheliceport.client.particle.AirflowFireParticle.class, "register");
         io.github.mcheliceport.shim.client.event.ClientBus.listen(io.github.mcheliceport.client.particle.CondensationParticle.class, "register");
         io.github.mcheliceport.shim.client.event.ClientBus.listen(io.github.mcheliceport.client.particle.SupersonicConeParticle.class, "register");
-        io.github.mcheliceport.shim.client.event.ClientBus.listen(io.github.mcheliceport.client.render.EngineHeat.class, "registerPipelines");
-        io.github.mcheliceport.shim.client.event.ClientBus.listen(io.github.mcheliceport.client.render.GlowGeometry.class, "registerPipelines");
-        io.github.mcheliceport.shim.client.event.ClientBus.listen(io.github.mcheliceport.client.render.DraftingModelRenderer.class, "registerPipelines");
-        io.github.mcheliceport.shim.client.event.ClientBus.listen(io.github.mcheliceport.client.render.DraftingModelRenderer.class, "register");
-        io.github.mcheliceport.shim.client.event.ClientBus.listen(io.github.mcheliceport.client.render.ToolItemModel.class, "register");
         io.github.mcheliceport.shim.client.event.ClientBus.addListener(AddClientReloadListenersEvent.class, (AddClientReloadListenersEvent event) -> {
             event.addListener(ResourceLocation.fromNamespaceAndPath(McheliCePort.MOD_ID, "aircraft_models"),
                     new AircraftModels.ReloadListener());
@@ -169,14 +167,10 @@ public final class McheliCePortClient {
     }
 
     /** Upstream drew {@code mch_fuel} with water's textures, tinted brown. */
-    private static void registerFluidModels(net.neoforged.neoforge.client.event.RegisterFluidModelsEvent event) {
-        event.register(new net.minecraft.client.renderer.block.FluidModel.Unbaked(
-                new net.minecraft.client.resources.model.sprite.Material(
-                        net.minecraft.resources.ResourceLocation.withDefaultNamespace("block/water_still")),
-                new net.minecraft.client.resources.model.sprite.Material(
-                        net.minecraft.resources.ResourceLocation.withDefaultNamespace("block/water_flow")),
-                null,
-                (net.neoforged.neoforge.client.fluid.FluidTintSource) state -> ModFluids.FUEL_COLOR),
+    private static void registerFluidModels() {
+        io.github.mcheliceport.shim.client.ClientFluids.register(
+                ResourceLocation.withDefaultNamespace("block/water_still"),
+                ResourceLocation.withDefaultNamespace("block/water_flow"), ModFluids.FUEL_COLOR,
                 ModFluids.FUEL, ModFluids.FLOWING_FUEL);
     }
 }

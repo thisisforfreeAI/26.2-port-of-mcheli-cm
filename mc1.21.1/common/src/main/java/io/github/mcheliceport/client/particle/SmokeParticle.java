@@ -136,7 +136,7 @@ public class SmokeParticle extends McheliParticle {
 
     /** M8: fades the puff in and out and tints it with its heat for this frame only. */
     @Override
-    public void extract(net.minecraft.client.renderer.state.level.QuadParticleRenderState state,
+    public void extract(io.github.mcheliceport.shim.client.QuadParticleRenderState state,
             net.minecraft.client.Camera camera, float partialTick) {
         if (!this.enhanced) {
             super.extract(state, camera, partialTick);
@@ -182,7 +182,7 @@ public class SmokeParticle extends McheliParticle {
     @Override protected Layer getLayer(){return eroding?ParticleLayers.ERODING_SMOKE:super.getLayer();}
 
     @Override
-    protected int getLightCoords(float partialTick) {
+    protected int getLightColor(float partialTick) {
         if (!this.enhanced) return SKY_LIGHT;
         this.lightPos.set(this.x, this.y, this.z);
         long key = this.lightPos.asLong();

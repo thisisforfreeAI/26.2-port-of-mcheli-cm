@@ -1,5 +1,6 @@
 package io.github.mcheliceport.client.render;
 
+import net.minecraft.client.renderer.RenderType;
 import com.mojang.blaze3d.vertex.PoseStack;
 import io.github.mcheliceport.client.model.*;
 import io.github.mcheliceport.config.*;
@@ -40,7 +41,7 @@ public final class AircraftMarkings {
     public static void submit(AircraftRenderState render,PoseStack poses,SubmitNodeCollector collector){
         if(render.markingDraws.isEmpty())return;var draws=List.copyOf(render.markingDraws);int light=render.lightCoords;
         collector.submitCustomGeometry(poses,RenderType.entityTranslucent(TEXTURE,false),(pose,buffer)->{
-            for(var draw:draws){var local=pose.copy();local.mulPose(draw.pose());var normal=draw.mesh().normal();var mesh=draw.mesh().vertices();
+            for(var draw:draws){var local=pose.copy();io.github.mcheliceport.shim.client.Poses.mul(local, draw.pose());var normal=draw.mesh().normal();var mesh=draw.mesh().vertices();
                 for(int t=0;t+2<mesh.size();t+=3)for(int k=0;k<4;k++){
                     var v=mesh.get(t+Math.min(2,k));
                     buffer.addVertex(local,v.x(),v.y(),v.z()).setColor(draw.color())

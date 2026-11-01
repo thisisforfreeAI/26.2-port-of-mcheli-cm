@@ -41,6 +41,10 @@ public final class CameraRenderState {
         return pos;
     }
 
+    public Vec3 getPosition() {
+        return pos;
+    }
+
     public double distanceToSqr(Vec3 point) {
         return pos.distanceToSqr(point);
     }

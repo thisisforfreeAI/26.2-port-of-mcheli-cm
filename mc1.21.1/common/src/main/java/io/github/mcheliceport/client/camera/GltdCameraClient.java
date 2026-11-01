@@ -197,7 +197,7 @@ public final class GltdCameraClient {
         }
     }
 
-    public static void onNameTag(RenderNameTagEvent.CanRender event) {
+    public static void onNameTag(RenderNameTagEvent event) {
         if (viewEntity() != null && event.getEntity() == Minecraft.getInstance().player) {
             event.setCanRender(TriState.FALSE);
         }

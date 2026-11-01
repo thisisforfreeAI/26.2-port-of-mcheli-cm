@@ -9,7 +9,7 @@ import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.*;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import io.github.mcheliceport.shim.client.event.SubscribeEvent;
-import net.neoforged.neoforge.client.event.*;
+import io.github.mcheliceport.shim.client.event.*;
 
 /** Four cached surface patches, offered by the existing beam extraction. At most 19 rays/tick. */
 @io.github.mcheliceport.shim.client.event.ClientSubscriber

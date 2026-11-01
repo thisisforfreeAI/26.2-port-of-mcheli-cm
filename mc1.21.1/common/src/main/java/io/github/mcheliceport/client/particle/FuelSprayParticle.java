@@ -16,7 +16,7 @@ final class FuelSprayParticle extends McheliParticle {
         super(level,at.x,at.y,at.z,velocity.x,velocity.y,velocity.z,
                 ResourceLocation.fromNamespaceAndPath("mcheli_ce_port","m8_debris"));
         this.opacity=opacity;this.ignition=ignition;
-        hot=ignition<0?null:sprite(BlastCloudParticle.TEXTURE);ambient=super.getLightCoords(0);
+        hot=ignition<0?null:sprite(BlastCloudParticle.TEXTURE);ambient=super.getLightColor(0);
         lifetime=18;hasPhysics=false;setColor(.88F,.85F,.74F);alpha=.65F*opacity;
     }
     boolean burning(){return ignition>=0&&age>=ignition;}
@@ -27,7 +27,7 @@ final class FuelSprayParticle extends McheliParticle {
         alpha=opacity*(burning()?.8F:.65F)*Math.min(1,(lifetime-age)/5F);
     }
     @Override public float getQuadSize(float partial){return burning()?.16F+.012F*Math.min(8,age-ignition+partial):.045F;}
-    @Override protected int getLightCoords(float partial){return burning()?LightCoordsUtil.FULL_BRIGHT:ambient;}
+    @Override protected int getLightColor(float partial){return burning()?LightCoordsUtil.FULL_BRIGHT:ambient;}
     @Override protected float getU0(){return burning()?frameU(frame%4,4,false):sprite.getU0();}
     @Override protected float getU1(){return burning()?frameU(frame%4,4,true):sprite.getU1();}
     @Override protected float getV0(){return burning()?sprite.getV(frame/4*.25F):sprite.getV0();}

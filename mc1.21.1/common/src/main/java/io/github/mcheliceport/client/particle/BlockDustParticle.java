@@ -2,7 +2,7 @@ package io.github.mcheliceport.client.particle;
 
 import net.minecraft.client.multiplayer.ClientLevel;
 import java.util.Optional;
-import net.minecraft.core.particles.ParticleLimit;
+import net.minecraft.core.particles.ParticleGroup;
 import net.minecraft.client.particle.TerrainParticle;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.state.BlockState;
@@ -13,11 +13,23 @@ import net.minecraft.world.level.block.state.BlockState;
  */
 public class BlockDustParticle extends TerrainParticle {
 
-    private final Optional<ParticleLimit> particleLimit = EffectAdmission.limit(false);
+    private final Optional<ParticleGroup> particleLimit = EffectAdmission.limit(false);
 
     @Override
-    public Optional<ParticleLimit> getParticleLimit() {
+    public Optional<ParticleGroup> getParticleGroup() {
         return this.particleLimit;
+    }
+
+    /** 26.2's particle drawing entry point; by default vanilla's quad. */
+    public void extract(io.github.mcheliceport.shim.client.QuadParticleRenderState state,
+            net.minecraft.client.Camera camera, float partialTick) {
+        super.render(state.buffer(), camera, partialTick);
+    }
+
+    @Override
+    public void render(com.mojang.blaze3d.vertex.VertexConsumer buffer, net.minecraft.client.Camera camera,
+            float partialTick) {
+        this.extract(new io.github.mcheliceport.shim.client.QuadParticleRenderState(buffer), camera, partialTick);
     }
 
     public BlockDustParticle(ClientLevel level, double x, double y, double z, double mx, double my, double mz,

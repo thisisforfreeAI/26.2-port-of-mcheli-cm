@@ -2,7 +2,7 @@ package io.github.mcheliceport.client.particle;
 
 import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.state.level.QuadParticleRenderState;
+import io.github.mcheliceport.shim.client.QuadParticleRenderState;
 
 /** A connected, rising wreck plume: tight hot foot, wider wind-bent upper billows and eroding edges. */
 final class WreckSmokeParticle extends SmokeParticle {
@@ -43,8 +43,8 @@ final class WreckSmokeParticle extends SmokeParticle {
         alpha=opacity;
         super.extract(state,camera,partial);
     }
-    @Override protected int getLightCoords(float partial){
-        return EffectLook.smokeLight(super.getLightCoords(partial),
+    @Override protected int getLightColor(float partial){
+        return EffectLook.smokeLight(super.getLightColor(partial),
                 .16F*SmokeBillowLook.amber(birthFire,age+partial,(float)(y-originY)));
     }
 }

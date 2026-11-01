@@ -1,24 +1,16 @@
 package io.github.mcheliceport.client.render;
 
-import com.google.common.reflect.TypeToken;
 import com.mojang.blaze3d.vertex.PoseStack;
-import io.github.mcheliceport.McheliCePort;
 import io.github.mcheliceport.config.ClientConfig;
 import io.github.mcheliceport.client.camera.AircraftCameraClient;
 import io.github.mcheliceport.content.aircraft.AircraftInfo;
 import io.github.mcheliceport.entity.aircraft.AircraftEntity;
 import io.github.mcheliceport.entity.seat.SeatEntity;
 import io.github.mcheliceport.util.McheliMath;
-import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.Minecraft;
-import io.github.mcheliceport.shim.client.LivingEntityRenderState;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.context.ContextKey;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-import net.neoforged.neoforge.client.event.RenderLivingEvent;
-import net.neoforged.neoforge.client.renderstate.RegisterRenderStateModifiersEvent;
-import net.neoforged.neoforge.common.NeoForge;
+import io.github.mcheliceport.shim.client.event.RenderLivingEvent;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -42,23 +34,15 @@ public final class RiderTilt {
         }
     }
 
-    public static final ContextKey<Tilt> TILT =
-            new ContextKey<>(ResourceLocation.fromNamespaceAndPath(McheliCePort.MOD_ID, "rider_tilt"));
-    private static final ContextKey<Boolean> HIDDEN =
-            new ContextKey<>(ResourceLocation.fromNamespaceAndPath(McheliCePort.MOD_ID, "rider_hidden"));
+    /** The tilt pushed for each rider being drawn, popped by the post event. */
+    private static final java.util.Map<Entity, Tilt> PUSHED = new java.util.IdentityHashMap<>();
 
     private RiderTilt() {
     }
 
-    public static void registerModifiers(RegisterRenderStateModifiersEvent event) {
-        event.registerEntityModifier(new TypeToken<LivingEntityRenderer<LivingEntity, LivingEntityRenderState, ?>>() {
-        }, (LivingEntity entity, LivingEntityRenderState state) -> {
-            boolean hidden = hidden(entity);
-            state.setRenderData(HIDDEN, hidden);
-            state.setRenderData(TILT, hidden ? null : tilt(entity, state.partialTick));
-        });
-        NeoForge.EVENT_BUS.addListener(EventPriority.LOWEST, RiderTilt::onPre);
-        io.github.mcheliceport.shim.client.event.ClientBus.listen(RiderTilt.class, "onPost");
+    public static void registerModifiers() {
+        io.github.mcheliceport.shim.client.event.ClientBus.addListenerLast(RenderLivingEvent.Pre.class, RiderTilt::onPre);
+        io.github.mcheliceport.shim.client.event.ClientBus.addListener(RenderLivingEvent.Post.class, RiderTilt::onPost);
     }
 
     private static boolean hidden(Entity rider) {
@@ -95,23 +79,22 @@ public final class RiderTilt {
                 info.entityHeight);
     }
 
-    private static void onPre(RenderLivingEvent.Pre<?, ?, ?> event) {
-        if (event.isCanceled()) {
-            return;
-        }
-        if (Boolean.TRUE.equals(event.getRenderState().getRenderData(HIDDEN))) {
+    private static void onPre(RenderLivingEvent.Pre event) {
+        LivingEntity entity = event.getEntity();
+        if (hidden(entity)) {
             event.setCanceled(true);
             return;
         }
-        Tilt tilt = event.getRenderState().getRenderData(TILT);
+        Tilt tilt = tilt(entity, event.getPartialTick());
         if (tilt != null) {
             event.getPoseStack().pushPose();
             tilt.apply(event.getPoseStack());
+            PUSHED.put(entity, tilt);
         }
     }
 
-    private static void onPost(RenderLivingEvent.Post<?, ?, ?> event) {
-        if (event.getRenderState().getRenderData(TILT) != null) {
+    private static void onPost(RenderLivingEvent.Post event) {
+        if (PUSHED.remove(event.getEntity()) != null) {
             event.getPoseStack().popPose();
         }
     }

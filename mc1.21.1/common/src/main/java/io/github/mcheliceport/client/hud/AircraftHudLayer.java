@@ -1,8 +1,5 @@
 package io.github.mcheliceport.client.hud;
 
-import com.mojang.blaze3d.pipeline.BlendFunction;
-import com.mojang.blaze3d.pipeline.ColorTargetState;
-import com.mojang.blaze3d.pipeline.RenderPipeline;
 import io.github.mcheliceport.McheliCePort;
 import io.github.mcheliceport.client.AircraftClientEvents;
 import io.github.mcheliceport.client.input.ModKeyMappings;
@@ -39,8 +36,7 @@ import io.github.mcheliceport.shim.client.RenderPipelines;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.resources.ResourceLocation;
 import io.github.mcheliceport.shim.client.event.RegisterGuiLayersEvent;
-import net.neoforged.neoforge.client.event.RegisterRenderPipelinesEvent;
-import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
+import io.github.mcheliceport.shim.client.event.RenderGuiLayerEvent;
 import io.github.mcheliceport.shim.client.event.GuiLayer;
 import io.github.mcheliceport.shim.client.event.VanillaGuiLayers;
 
@@ -58,10 +54,7 @@ public final class AircraftHudLayer implements GuiLayer {
 
     public static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath(McheliCePort.MOD_ID, "aircraft_hud");
     /** Upstream's night-vision noise: {@code blendFunc(GL_ONE, GL_ONE)} over the scene. */
-    public static final RenderPipeline GUI_TEXTURED_ADDITIVE = RenderPipeline.builder(RenderPipelines.GUI_TEXTURED_SNIPPET)
-            .withLocation(ResourceLocation.fromNamespaceAndPath(McheliCePort.MOD_ID, "pipeline/gui_textured_additive"))
-            .withColorTargetState(new ColorTargetState(BlendFunction.ADDITIVE))
-            .build();
+    public static final RenderPipelines.Pipeline GUI_TEXTURED_ADDITIVE = RenderPipelines.GUI_TEXTURED_ADDITIVE;
     private static final ResourceLocation NOISE = ResourceLocation.fromNamespaceAndPath("mcheli", "textures/gui/alpha.png");
     private static final ResourceLocation TV_NOISE = ResourceLocation.fromNamespaceAndPath("mcheli", "textures/gui/noise.png");
     private static final Set<ResourceLocation> HIDDEN_WHILE_RIDING = Set.of(VanillaGuiLayers.CROSSHAIR,
@@ -78,10 +71,6 @@ public final class AircraftHudLayer implements GuiLayer {
 
     public static void register(RegisterGuiLayersEvent event) {
         event.registerAboveAll(ID, new AircraftHudLayer());
-    }
-
-    public static void registerPipelines(RegisterRenderPipelinesEvent event) {
-        event.registerPipeline(GUI_TEXTURED_ADDITIVE);
     }
 
     /** Game bus: hides vanilla's crosshair and status bars while riding a vehicle. */

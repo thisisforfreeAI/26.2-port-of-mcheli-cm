@@ -50,6 +50,13 @@ public final class NeoForgePlatform implements Platform {
     }
 
     @Override
+    public java.util.List<io.github.mcheliceport.platform.ModDescriptor> mods() {
+        return ModList.get().getMods().stream().map(m -> new io.github.mcheliceport.platform.ModDescriptor(
+                m.getModId(), m.getDisplayName(), m.getVersion().toString(),
+                m.getOwningFile().getFile().getFileName())).toList();
+    }
+
+    @Override
     public void visitModFiles(String folder, ModFileVisitor visitor) throws IOException {
         Path root = ModList.get().getModFileById(McheliCePort.MOD_ID).getFile().findResource(folder);
         walk(folder, root, visitor);

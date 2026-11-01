@@ -3,19 +3,13 @@ package io.github.mcheliceport.client.particle;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.particle.ParticleEngine;
-import net.minecraft.client.particle.ParticleGroup;
-import net.minecraft.client.particle.ParticleRenderType;
-import net.minecraft.client.renderer.culling.Frustum;
-import net.minecraft.client.renderer.state.level.QuadParticleRenderState;
+import io.github.mcheliceport.shim.client.QuadParticleRenderState;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.client.event.RegisterParticleGroupsEvent;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 /** One thin ambient-lit wisp quad, aligned with its birth flight direction. */
 public final class CondensationParticle extends SmokeParticle {
-    private static final ParticleRenderType TYPE=new ParticleRenderType("mcheli_condensation","m8cv");
     private final float radius,opacity;
     private final Vector3f axis;
     private final Quaternionf rotation=new Quaternionf();
@@ -28,8 +22,8 @@ public final class CondensationParticle extends SmokeParticle {
         axis=new Vector3f((float)direction.x,(float)direction.y,(float)direction.z);
         this.radius=radius;this.opacity=opacity;lifetime=life;hasPhysics=false;
     }
-    @Override public ParticleRenderType getGroup(){return TYPE;}
     @Override protected Layer getLayer(){return ParticleLayers.CONDENSATION;}
+    @Override protected QuadParticleRenderState createRenderState(VertexConsumer buffer){return new State(buffer);}
     @Override public void tick() {
         xo=x;yo=y;zo=z;if(++age>=lifetime){remove();return;}
         frame=billowFrames?SmokeAtlas.frame(age,lifetime):Math.min(7,age*8/lifetime);
@@ -47,16 +41,8 @@ public final class CondensationParticle extends SmokeParticle {
         extractRotatedQuad(state,camera,rotation,partial);
     }
     @Override public float getQuadSize(float partial){return radius*(.75F+.45F*Math.clamp((age+partial)/lifetime,0,1));}
-
-    public static void register(RegisterParticleGroupsEvent event){event.register(TYPE,Group::new);}
-    private static final class Group extends ParticleGroup<CondensationParticle> {
-        private final State state=new State();
-        Group(ParticleEngine engine){super(engine);}
-        @Override public State extractRenderState(Frustum frustum,Camera camera,float partial) {
-            state.clear();for(var p:particles)if(frustum.isVisible(p.getBoundingBox().inflate(p.radius*2.2)))p.extract(state,camera,partial);return state;
-        }
-    }
     private static final class State extends QuadParticleRenderState {
+        State(VertexConsumer buffer) { super(buffer); }
         private final Quaternionf rotation=new Quaternionf();
         private final Vector3f point=new Vector3f();
         @Override protected void renderRotatedQuad(VertexConsumer buffer,float x,float y,float z,

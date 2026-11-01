@@ -330,14 +330,14 @@ public class NewRouteScreen extends Screen {
     }
 
     @Override
-    public void resize(int width, int height) {
+    public void resize(net.minecraft.client.Minecraft minecraft, int width, int height) {
         this.nameText = this.nameField.getValue();
         String id = this.idField.getValue();
         String x = this.xField.getValue();
         String y = this.yField.getValue();
         String z = this.zField.getValue();
         String num = this.numField.getValue();
-        super.resize(width, height);
+        super.resize(minecraft, width, height);
         this.idField.setValue(id);
         this.xField.setValue(x);
         this.yField.setValue(y);

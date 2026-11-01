@@ -17,7 +17,7 @@ import net.minecraft.util.Mth;
 import io.github.mcheliceport.shim.client.TriState;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
-import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Marker;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.level.Level;
@@ -222,13 +222,13 @@ public final class AircraftCameraClient {
      */
     static void updatePostEffect(Minecraft mc, int cameraMode) {
         ResourceLocation wanted = postEffect(cameraMode);
-        ResourceLocation current = mc.gameRenderer.currentPostEffect();
+        ResourceLocation current = io.github.mcheliceport.shim.client.PostEffects.current(mc.gameRenderer);
         if (wanted != null) {
             if (!wanted.equals(current)) {
-                mc.gameRenderer.setPostEffect(wanted);
+                io.github.mcheliceport.shim.client.PostEffects.set(mc.gameRenderer, wanted);
             }
         } else if (NIGHT_VISION_EFFECT.equals(current) || THERMAL_EFFECT.equals(current)) {
-            mc.gameRenderer.clearPostEffect();
+            io.github.mcheliceport.shim.client.PostEffects.clear(mc.gameRenderer);
         }
     }
 
@@ -259,7 +259,7 @@ public final class AircraftCameraClient {
      * pilot's eye, since this is the first event after vanilla has positioned the camera.
      */
     public static void onComputeFov(ViewportEvent.ComputeFov event) {
-        placeCockpitEye(event.getCamera(), (float) event.getPartialTick());
+        placeCockpitEye(event.getCamera().camera(), (float) event.getPartialTick());
         Entity view = viewEntity();
         AircraftEntity aircraft = AircraftClientEvents.riddenAircraft(Minecraft.getInstance().player);
         if (view != null && aircraft != null && event.getCamera().entity() == view) {
@@ -277,8 +277,8 @@ public final class AircraftCameraClient {
     static void placeCockpitEye(Camera camera, float partialTick) {
         Minecraft mc = Minecraft.getInstance();
         LocalPlayer player = mc.player;
-        if (player == null || camera.entity() != player || camera.isDetached()
-                || camera.position().equals(lastCockpitEye)) {
+        if (player == null || camera.getEntity() != player || camera.isDetached()
+                || camera.getPosition().equals(lastCockpitEye)) {
             return;
         }
         AircraftEntity aircraft = AircraftClientEvents.riddenAircraft(player);
@@ -286,12 +286,12 @@ public final class AircraftCameraClient {
             return;
         }
         Vec3 feet = player.getPosition(partialTick);
-        double eyeHeight = camera.position().y - feet.y;
+        double eyeHeight = camera.getPosition().y - feet.y;
         float[] ypr = McheliMath.slerpOrientationYPR(aircraft.yRotO, aircraft.xRotO, aircraft.prevRoll,
                 aircraft.getYaw(), aircraft.getPitch(), aircraft.getRoll(), partialTick);
-        Vec3 eye = feet.add(cockpitEyeOffset(aircraft.isOverridePlayerPitch(), ypr, camera.yRot(), camera.xRot(),
-                camera.upVector(), eyeHeight));
-        camera.setPosition(eye);
+        Vec3 eye = feet.add(cockpitEyeOffset(aircraft.isOverridePlayerPitch(), ypr, camera.getYRot(), camera.getXRot(),
+                camera.getUpVector(), eyeHeight));
+        ((io.github.mcheliceport.mixin.client.CameraInvoker) camera).mcheli$setPosition(eye);
         lastCockpitEye = eye;
     }
 
@@ -319,7 +319,7 @@ public final class AircraftCameraClient {
     }
 
     /** The rider's own name tag would show over the cockpit seen from the camera; hide it. */
-    public static void onNameTag(RenderNameTagEvent.CanRender event) {
+    public static void onNameTag(RenderNameTagEvent event) {
         if (viewEntity() != null && event.getEntity() == Minecraft.getInstance().player) {
             event.setCanRender(TriState.FALSE);
         }
@@ -330,7 +330,7 @@ public final class AircraftCameraClient {
         private final EntityDimensions viewDimensions;
 
         ViewMarker(Level level, float eyeHeight) {
-            super(EntityTypes.MARKER, level);
+            super(EntityType.MARKER, level);
             this.viewDimensions = EntityDimensions.fixed(0.0F, 0.0F).withEyeHeight(eyeHeight);
             this.refreshDimensions();
         }

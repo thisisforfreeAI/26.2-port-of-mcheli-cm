@@ -42,7 +42,7 @@ RULES = [
 EV = 'io.github.mcheliceport.shim.client.event.'
 EVENTS = ('ClientTickEvent|RenderFrameEvent|ViewportEvent|InputEvent|ScreenEvent|ClientPlayerNetworkEvent|RenderHandEvent'
           '|RenderNameTagEvent|CalculateDetachedCameraDistanceEvent|SubmitCustomGeometryEvent|RegisterGuiLayersEvent'
-          '|RegisterKeyMappingsEvent|AddClientReloadListenersEvent|EntityRenderersEvent|RegisterMenuScreensEvent')
+          '|RegisterKeyMappingsEvent|RenderLivingEvent|AddClientReloadListenersEvent|EntityRenderersEvent|RegisterMenuScreensEvent')
 RULES += [
     (r'\bnet\.neoforged\.neoforge\.client\.event\.(' + EVENTS + r')\b', EV + r'\1'),
     (r'\bnet\.neoforged\.neoforge\.event\.tick\.EntityTickEvent\b', EV + 'EntityTickEvent'),
@@ -90,6 +90,26 @@ RULES += [
     (r'\b(\w+)\.gui\.hud\.isHidden\(\)', r'\1.options.hideGui'),
     (r'\b(\w+)\.gui\.hud\.', r'\1.gui.'),
     (r'\.getDeltaTracker\(\)', '.getTimer()'),
+]
+RULES += [
+    (r'\bnet\.minecraft\.client\.particle\.SingleQuadParticle\b', S + 'SingleQuadParticle'),
+    (r'\bnet\.minecraft\.client\.renderer\.state\.level\.QuadParticleRenderState\b', S + 'QuadParticleRenderState'),
+    (r'\bnet\.minecraft\.core\.particles\.ParticleLimit\b', 'net.minecraft.core.particles.ParticleGroup'),
+    (r'(?<![\w.])ParticleLimit\b', 'ParticleGroup'),
+    (r'Minecraft\.getInstance\(\)\.getAtlasManager\(\)\.getAtlasOrThrow\(AtlasIds\.PARTICLES\)\s*\.getSprite\(',
+     'Minecraft.getInstance().getTextureAtlas(net.minecraft.client.renderer.texture.TextureAtlas.LOCATION_PARTICLES).apply('),
+    (r'\bimport net\.minecraft\.data\.AtlasIds;\n', ''),
+]
+RULES += [
+    (r'\bimport net\.neoforged\.neoforge\.client\.event\.\*;', 'import ' + EV + '*;'),
+    (r'\b(camera|cam|mainCamera)\.position\(\)', r'\1.getPosition()'),
+    (r'\b(camera|cam)\.entity\(\)', r'\1.getEntity()'),
+    (r'\.gui\.overlay\(\)', '.getOverlay()'),
+    (r'\.getPrecipitationAt\((\w+),\s*[\w.()]+\.getSeaLevel\(\)\)', r'.getPrecipitationAt(\1)'),
+    (r'\.coldEnoughToSnow\((\w+),\s*[\w.()]+\.getSeaLevel\(\)\)', r'.coldEnoughToSnow(\1)'),
+    (r'Entity\.collideBoundingBox\(CollisionContext\.positionContext\([^)]*\), ', 'Entity.collideBoundingBox(null, '),
+    (r'\bnet\.minecraft\.server\.level\.ParticleStatus\b', 'net.minecraft.client.ParticleStatus'),
+    (r'(?<![\w.])getLightCoords\((\w+)\)', r'getLightColor(\1)'),
 ]
 
 def convert(text):

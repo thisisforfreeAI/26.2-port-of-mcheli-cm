@@ -45,8 +45,8 @@ public final class EffectsRangeScreen extends Screen {
     @Override public void tick(){if(fire!=null){int cooldown=EffectsRangeClient.cooldown();fire.active=inside()&&EffectsRangeClient.ready&&!EffectsRangeClient.cooling();fire.setMessage(Component.literal(EffectsRangeClient.cooling()?(cooldown>0?"Cooling: "+((cooldown+19)/20)+" s":"Cooling..."):"Fire demo"));}}
     @Override public boolean isPauseScreen(){return false;}
     @Override public void onClose(){minecraft.setScreen(parent);}
-    @Override public void extractRenderState(GuiGraphicsExtractor g,int mx,int my,float partial){
-        super.extractRenderState(g,mx,my,partial);int y=Math.max(38,height/2-82);g.centeredText(font,title,width/2,y-24,0xFFFFFFFF);
+    @Override public void render(net.minecraft.client.gui.GuiGraphics g$v, int mx, int my, float partial) { GuiGraphicsExtractor g = GuiGraphicsExtractor.of(g$v);
+        super.render(g.vanilla(),mx,my,partial);int y=Math.max(38,height/2-82);g.centeredText(font,title,width/2,y-24,0xFFFFFFFF);
         String line=inside()?(EffectsRangeClient.ready?"Ready · ":"Preparing pad · ")+minecraft.getFps()+" FPS now":"Singleplayer owner / operator only";
         g.centeredText(font,line,width/2,y+176,0xFFCCCCCC);
     }

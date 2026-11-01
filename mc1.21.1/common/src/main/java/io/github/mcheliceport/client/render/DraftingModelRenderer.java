@@ -1,51 +1,25 @@
 package io.github.mcheliceport.client.render;
 
-import com.mojang.blaze3d.pipeline.BlendFunction;
-import com.mojang.blaze3d.pipeline.ColorTargetState;
-import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
-import io.github.mcheliceport.McheliCePort;
 import io.github.mcheliceport.client.model.McheliModel;
-import java.util.function.Function;
-import net.minecraft.client.gui.navigation.ScreenRectangle;
-import net.minecraft.client.gui.render.pip.PictureInPictureRenderer;
-import io.github.mcheliceport.shim.client.RenderPipelines;
-import io.github.mcheliceport.shim.client.SubmitNodeCollector;
-import net.minecraft.client.renderer.rendertype.RenderSetup;
+import io.github.mcheliceport.shim.client.GuiGraphicsExtractor;
+import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.state.gui.pip.PictureInPictureRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.Util;
-import net.neoforged.neoforge.client.event.RegisterPictureInPictureRenderersEvent;
-import net.neoforged.neoforge.client.event.RegisterRenderPipelinesEvent;
-import org.jspecify.annotations.Nullable;
 
 /**
  * The drafting table's 3D vehicle page (upstream {@code MCH_DraftingTableGui#drawModel}): the
  * vehicle's whole model file, first drawn face by face as dark lines, then filled in with its
  * texture face by face while the lines go away. Upstream drew straight into the screen with
- * lighting off; here the model is drawn into a picture over the whole screen, with the same
- * transforms in GUI units.
+ * lighting off, and so does this, with the same transforms in GUI units.
  */
-public final class DraftingModelRenderer extends PictureInPictureRenderer<DraftingModelRenderer.State> {
+public final class DraftingModelRenderer {
+    private DraftingModelRenderer() {}
 
-    /** Vanilla's entity shader with no lighting or overlay, as upstream's {@code disableLighting}. */
-    private static final RenderPipeline PIPELINE = RenderPipeline.builder(RenderPipelines.ENTITY_SNIPPET)
-            .withLocation(ResourceLocation.fromNamespaceAndPath(McheliCePort.MOD_ID, "pipeline/drafting_model"))
-            .withShaderDefine("ALPHA_CUTOUT", 0.1F)
-            .withShaderDefine("NO_OVERLAY")
-            .withShaderDefine("NO_CARDINAL_LIGHTING")
-            .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
-            .build();
-    private static final Function<ResourceLocation, RenderType> TYPE = Util.memoize(texture -> RenderType.create(
-            "mcheli_ce_port_drafting_model",
-            RenderSetup.builder(PIPELINE)
-                    .withTexture("Sampler0", texture)
-                    .useLightmap()
-                    .createRenderSetup()));
     /** Upstream {@code color(0.1, 0.1, 0.1)} for the lines. */
     private static final int LINE_COLOR = 0xFF1A1A1A;
     private static final int FULL_BRIGHT = 0xF000F0;
@@ -58,45 +32,20 @@ public final class DraftingModelRenderer extends PictureInPictureRenderer<Drafti
      */
     public record State(McheliModel model, ResourceLocation texture, boolean centreXZ, float rotX, float rotY, float posX,
             float posY, float zoom, int drawFace, int originX, int originY, int x0, int y0, int x1, int y1,
-            @Nullable ScreenRectangle scissorArea, @Nullable ScreenRectangle bounds)
-            implements PictureInPictureRenderState {
-
-        public State(McheliModel model, ResourceLocation texture, boolean centreXZ, float rotX, float rotY, float posX,
-                float posY, float zoom, int drawFace, int originX, int originY, int x0, int y0, int x1, int y1,
-                @Nullable ScreenRectangle scissorArea) {
-            this(model, texture, centreXZ, rotX, rotY, posX, posY, zoom, drawFace, originX, originY, x0, y0, x1, y1,
-                    scissorArea, PictureInPictureRenderState.getBounds(x0, y0, x1, y1, scissorArea));
-        }
-
-        @Override
-        public float scale() {
-            return 1.0F;
-        }
+            Object scissorArea) {
     }
 
-    public static void registerPipelines(RegisterRenderPipelinesEvent event) {
-        event.registerPipeline(PIPELINE);
-    }
-
-    public static void register(RegisterPictureInPictureRenderersEvent event) {
-        event.register(State.class, DraftingModelRenderer::new);
-    }
-
-    @Override
-    public Class<State> getRenderStateClass() {
-        return State.class;
-    }
-
-    /** The pose starts at the top middle of the picture, in GUI units. */
-    @Override
-    protected float getTranslateY(int height, int guiScale) {
-        return 0.0F;
-    }
-
-    @Override
-    protected void renderToTexture(State state, PoseStack poseStack, SubmitNodeCollector collector) {
+    /** Draws one frame straight into the screen, over everything drawn before it. */
+    public static void draw(GuiGraphicsExtractor g, State state) {
+        g.nextStratum();
+        PoseStack poseStack = g.vanilla().pose();
+        poseStack.pushPose();
+        poseStack.mulPose(GuiGraphicsExtractor.toMatrix4f(g.pose()));
+        poseStack.translate(0.0F, 0.0F, 400.0F);
+        poseStack.scale(1.0F, 1.0F, -1.0F);
+        MultiBufferSource.BufferSource buffers = g.vanilla().bufferSource();
+        Lighting.setupForFlatItems();
         McheliModel model = state.model();
-        poseStack.translate(-state.x0() - (state.x1() - state.x0()) / 2.0F, -state.y0(), 0.0F);
         // Upstream W_ModelCustom#size: the largest extent over all three axes.
         float size = Math.max(Math.max(model.maxX, model.maxY), model.maxZ)
                 - Math.min(Math.min(model.minX, model.minY), model.minZ);
@@ -117,13 +66,15 @@ public final class DraftingModelRenderer extends PictureInPictureRenderer<Drafti
         int faces = model.vertexCount() / 3;
         int drawFace = state.drawFace();
         if (drawFace < faces * 2) {
-            collector.submitCustomGeometry(poseStack, RenderType.lines(),
-                    (pose, buffer) -> lines(buffer, pose, model, drawFace - faces, drawFace));
+            lines(buffers.getBuffer(RenderType.lines()), poseStack.last(), model, drawFace - faces, drawFace);
         }
         if (drawFace >= faces) {
-            collector.submitCustomGeometry(poseStack, TYPE.apply(state.texture()),
-                    (pose, buffer) -> faces(buffer, pose, model, 0, drawFace - faces));
+            faces(buffers.getBuffer(RenderType.entityTranslucent(state.texture())), poseStack.last(), model, 0,
+                    drawFace - faces);
         }
+        buffers.endBatch();
+        Lighting.setupFor3DItems();
+        poseStack.popPose();
     }
 
     /**
@@ -192,12 +143,7 @@ public final class DraftingModelRenderer extends PictureInPictureRenderer<Drafti
         nx /= length;
         ny /= length;
         nz /= length;
-        buffer.addVertex(pose, x0, y0, z0).setColor(LINE_COLOR).setNormal(pose, nx, ny, nz).setLineWidth(1.0F);
-        buffer.addVertex(pose, x1, y1, z1).setColor(LINE_COLOR).setNormal(pose, nx, ny, nz).setLineWidth(1.0F);
-    }
-
-    @Override
-    protected String getTextureLabel() {
-        return "drafting table model";
+        buffer.addVertex(pose, x0, y0, z0).setColor(LINE_COLOR).setNormal(pose, nx, ny, nz);
+        buffer.addVertex(pose, x1, y1, z1).setColor(LINE_COLOR).setNormal(pose, nx, ny, nz);
     }
 }

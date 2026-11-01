@@ -49,6 +49,14 @@ public final class FabricPlatform implements Platform {
     }
 
     @Override
+    public java.util.List<io.github.mcheliceport.platform.ModDescriptor> mods() {
+        return FabricLoader.getInstance().getAllMods().stream().map(c -> new io.github.mcheliceport.platform.ModDescriptor(
+                c.getMetadata().getId(), c.getMetadata().getName(), c.getMetadata().getVersion().getFriendlyString(),
+                c.getOrigin().getKind() == net.fabricmc.loader.api.metadata.ModOrigin.Kind.PATH
+                        ? c.getOrigin().getPaths().get(0).getFileName().toString() : "")).toList();
+    }
+
+    @Override
     public boolean modFileExists(String path) {
         return FabricLoader.getInstance().getModContainer(McheliCePort.MOD_ID).flatMap(c -> c.findPath(path))
                 .map(Files::isRegularFile).orElse(false);

@@ -27,7 +27,6 @@ import io.github.mcheliceport.shim.client.event.RenderFrameEvent;
 import io.github.mcheliceport.shim.client.event.RenderHandEvent;
 import io.github.mcheliceport.shim.client.event.ViewportEvent;
 import io.github.mcheliceport.platform.network.ClientPacketDistributor;
-import net.neoforged.neoforge.common.NeoForge;
 import org.jspecify.annotations.Nullable;
 
 /** The client's game-bus hooks for riding vehicles: controls, camera, camera roll and the hidden hand. */

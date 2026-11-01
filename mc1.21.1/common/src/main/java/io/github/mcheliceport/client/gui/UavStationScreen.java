@@ -12,7 +12,9 @@ public class UavStationScreen extends AbstractContainerScreen<UavStationMenu> {
     private final java.util.List<Button> rowButtons = new java.util.ArrayList<>();
     private int page;
     public UavStationScreen(UavStationMenu menu, Inventory inventory, Component title) {
-        super(menu, inventory, title, 420, 244); inventoryLabelY = 125;
+        super(menu, inventory, title);
+        this.imageWidth = 420;
+        this.imageHeight = 244; inventoryLabelY = 125;
     }
     @Override protected void init() {
         super.init();
@@ -62,7 +64,7 @@ public class UavStationScreen extends AbstractContainerScreen<UavStationMenu> {
             if (minecraft != null && minecraft.gameMode != null) { minecraft.gameMode.handleInventoryButtonClick(menu.containerId, id); }
         }).bounds(leftPos + x, topPos + y, width, 18).build());
     }
-    @Override public void extractBackground(GuiGraphicsExtractor g, int mouseX, int mouseY, float partialTick) {
+    @Override protected void renderBg(net.minecraft.client.gui.GuiGraphics g$v, float partialTick, int mouseX, int mouseY) { GuiGraphicsExtractor g = GuiGraphicsExtractor.of(g$v);
         g.fill(leftPos, topPos, leftPos + imageWidth, topPos + imageHeight, 0xFFC6C6C6);
         for (var slot : menu.slots) {
             g.fill(leftPos + slot.x - 1, topPos + slot.y - 1, leftPos + slot.x + 17, topPos + slot.y + 17, 0xFF555555);
@@ -71,7 +73,7 @@ public class UavStationScreen extends AbstractContainerScreen<UavStationMenu> {
         g.fill(leftPos + 10, topPos + 49, leftPos + 250, topPos + 86, 0xFF202820);
     }
     @Override protected void renderLabels(net.minecraft.client.gui.GuiGraphics g$v, int mouseX, int mouseY) { GuiGraphicsExtractor g = GuiGraphicsExtractor.of(g$v);
-        super.extractLabels(g, mouseX, mouseY);
+        super.renderLabels(g.vanilla(), mouseX, mouseY);
         var station = menu.station(); if (station == null) { return; }
         var row = menu.selectedRow();
         String name = row == null ? "No paired UAV selected" : row.name();

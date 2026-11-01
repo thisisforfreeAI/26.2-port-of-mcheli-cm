@@ -1,5 +1,6 @@
 package io.github.mcheliceport.client.render;
 
+import net.minecraft.client.renderer.RenderType;
 import io.github.mcheliceport.client.model.McheliModel;
 import io.github.mcheliceport.client.model.WreckMesh;
 import io.github.mcheliceport.entity.aircraft.AircraftEntity;
@@ -146,12 +147,12 @@ public final class WreckDebrisField {
                 int color=alpha|(thermal?0xFFFFFF:(p.gear?GEAR_TINT:CHUNK_TINT)&0xFFFFFF);
                 ResourceLocation texture=thermal?ThermalVision.WHITE:p.texture;
                 event.getSubmitNodeCollector().submitCustomGeometry(event.getPoseStack(),RenderType.entityTranslucent(texture,false),(pose,buffer)->{
-                    var local=pose.copy();local.mulPose(transform);ModelVertices.emit(buffer,local,List.of(p.group),color,light,false);
+                    var local=pose.copy();io.github.mcheliceport.shim.client.Poses.mul(local, transform);ModelVertices.emit(buffer,local,List.of(p.group),color,light,false);
                 });
                 if(thermal)continue;
                 int soot=((int)((SOOT_TINT>>>24)*fade)<<24)|(SOOT_TINT&0xFFFFFF);
                 event.getSubmitNodeCollector().submitCustomGeometry(event.getPoseStack(),RenderType.entityTranslucent(SOOT,false),(pose,buffer)->{
-                    var local=pose.copy();local.mulPose(transform);ModelVertices.emit(buffer,local,List.of(p.soot),soot,light,false);
+                    var local=pose.copy();io.github.mcheliceport.shim.client.Poses.mul(local, transform);ModelVertices.emit(buffer,local,List.of(p.soot),soot,light,false);
                 });
             }
         }

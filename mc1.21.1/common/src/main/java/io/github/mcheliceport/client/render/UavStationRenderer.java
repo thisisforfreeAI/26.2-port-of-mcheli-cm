@@ -46,7 +46,7 @@ public class UavStationRenderer extends io.github.mcheliceport.shim.client.State
         var draws = List.copyOf(state.draws); int light = state.lightCoords;
         collector.submitCustomGeometry(stack, AircraftRenderTypes.aircraft(state.texture), (pose, buffer) -> {
             for (var draw : draws) {
-                var p = pose.copy(); p.mulPose(draw.pose()); ModelVertices.emit(buffer, p, draw.groups(), 0xFFBFBFBF, light, false);
+                var p = pose.copy(); io.github.mcheliceport.shim.client.Poses.mul(p, draw.pose()); ModelVertices.emit(buffer, p, draw.groups(), 0xFFBFBFBF, light, false);
             }
         });
         super.submit(state, stack, collector, camera);

@@ -33,7 +33,7 @@ final class RotorWashParticle extends SmokeParticle {
         this.move(this.xd, this.yd, this.zd);
     }
 
-    @Override public void extract(net.minecraft.client.renderer.state.level.QuadParticleRenderState state,
+    @Override public void extract(io.github.mcheliceport.shim.client.QuadParticleRenderState state,
             net.minecraft.client.Camera camera, float partialTick) {
         this.frame = Math.min(3, (int) ((this.age + partialTick) * 4 / this.lifetime));
         this.alpha = this.opacity * RotorWashLook.fade(this.age + partialTick, this.lifetime);

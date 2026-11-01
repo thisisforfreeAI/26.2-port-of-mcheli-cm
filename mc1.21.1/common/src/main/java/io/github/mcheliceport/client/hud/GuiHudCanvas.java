@@ -1,17 +1,11 @@
 package io.github.mcheliceport.client.hud;
 
-import com.mojang.blaze3d.pipeline.RenderPipeline;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.textures.FilterMode;
-import com.mojang.blaze3d.textures.GpuSampler;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import io.github.mcheliceport.shim.client.GuiGraphicsExtractor;
-import net.minecraft.client.gui.navigation.ScreenRectangle;
-import net.minecraft.client.gui.render.TextureSetup;
 import io.github.mcheliceport.shim.client.RenderPipelines;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.resources.ResourceLocation;
@@ -54,7 +48,7 @@ public final class GuiHudCanvas implements HudCanvas {
     }
 
     /** As {@link #line(double[], int, int)}, blended by {@code pipeline} (upstream's own blend functions). */
-    public void line(double[] xy, int color, int mode, RenderPipeline pipeline) {
+    public void line(double[] xy, int color, int mode, RenderPipelines.Pipeline pipeline) {
         int points = xy.length / 2;
         if (points < 2) {
             return;
@@ -76,7 +70,7 @@ public final class GuiHudCanvas implements HudCanvas {
             }
             default -> throw new IllegalArgumentException("line mode " + mode);
         }
-        this.submit(pipeline, TextureSetup.noTexture(), quads, color);
+        this.submit(pipeline, null, quads, color);
     }
 
     @Override
@@ -108,7 +102,7 @@ public final class GuiHudCanvas implements HudCanvas {
                 }
             }
         }
-        this.submit(RenderPipelines.GUI, TextureSetup.noTexture(), quads, color);
+        this.submit(RenderPipelines.GUI, null, quads, color);
     }
 
     @Override
@@ -116,7 +110,7 @@ public final class GuiHudCanvas implements HudCanvas {
         QuadBuilder quads = new QuadBuilder(false);
         quads.rect((float) Math.min(x0, x1), (float) Math.min(y0, y1), (float) Math.max(x0, x1),
                 (float) Math.max(y0, y1));
-        this.submit(RenderPipelines.GUI, TextureSetup.noTexture(), quads, color);
+        this.submit(RenderPipelines.GUI, null, quads, color);
     }
 
     /** A filled triangle (upstream's {@code GL_TRIANGLES} target markers). */
@@ -124,7 +118,7 @@ public final class GuiHudCanvas implements HudCanvas {
         QuadBuilder quads = new QuadBuilder(false);
         quads.add(new float[] {(float) x0, (float) y0, (float) x1, (float) y1, (float) x2, (float) y2,
                 (float) x2, (float) y2});
-        this.submit(RenderPipelines.GUI, TextureSetup.noTexture(), quads, color);
+        this.submit(RenderPipelines.GUI, null, quads, color);
     }
 
     /** A textured rectangle of a {@code mcheli:textures/gui} texture, tinted by {@code color}, UVs 0..1. */
@@ -156,7 +150,7 @@ public final class GuiHudCanvas implements HudCanvas {
             float y = (float) xy[i + 1];
             quads.rect(x - 1.0F, y - 1.0F, x + 1.0F, y + 1.0F);
         }
-        this.submit(RenderPipelines.GUI, TextureSetup.noTexture(), quads, color);
+        this.submit(RenderPipelines.GUI, null, quads, color);
     }
 
     @Override
@@ -165,8 +159,15 @@ public final class GuiHudCanvas implements HudCanvas {
         ResourceLocation id = ResourceLocation.fromNamespaceAndPath("mcheli", "textures/gui/" + name.toLowerCase(Locale.ROOT) + ".png");
         AbstractTexture texture = Minecraft.getInstance().getTextureManager().getTexture(id);
         int[] size = TEXTURE_SIZES.computeIfAbsent(id.toString(), k -> {
-            int w = texture.getTexture().getWidth(0);
-            int h = texture.getTexture().getHeight(0);
+            int w = 0;
+            int h = 0;
+            try (var in = Minecraft.getInstance().getResourceManager().open(id);
+                    var image = com.mojang.blaze3d.platform.NativeImage.read(in)) {
+                w = image.getWidth();
+                h = image.getHeight();
+            } catch (java.io.IOException | RuntimeException e) {
+                // a missing texture draws as vanilla's missing texture at upstream's 256 default
+            }
             return new int[] {w > 0 ? w : 256, h > 0 ? h : 256};
         });
         texturedQuad(this, texture, RenderPipelines.GUI_TEXTURED, 0xFFFFFFFF, left, top, width, height,
@@ -174,7 +175,7 @@ public final class GuiHudCanvas implements HudCanvas {
     }
 
     /** A rotated textured rectangle, as upstream's {@code drawTexture}/{@code drawTexturedModalRectRotate}. */
-    static void texturedQuad(GuiHudCanvas canvas, AbstractTexture texture, RenderPipeline pipeline, int color,
+    static void texturedQuad(GuiHudCanvas canvas, AbstractTexture texture, RenderPipelines.Pipeline pipeline, int color,
             double left, double top, double width, double height, double u0, double v0, double u1, double v1,
             float rot) {
         double cx = left + width / 2.0;
@@ -194,8 +195,7 @@ public final class GuiHudCanvas implements HudCanvas {
             q[i * 4 + 3] = (float) corners[i][3];
         }
         quads.add(q);
-        GpuSampler sampler = RenderSystem.getSamplerCache().getRepeat(FilterMode.NEAREST);
-        canvas.submit(pipeline, TextureSetup.singleTexture(texture.getTextureView(), sampler), quads, color);
+        canvas.submit(pipeline, texture, quads, color);
     }
 
     @Override
@@ -221,16 +221,13 @@ public final class GuiHudCanvas implements HudCanvas {
         this.graphics.pose().popMatrix();
     }
 
-    void submit(RenderPipeline pipeline, TextureSetup textures, QuadBuilder quads, int color) {
+    void submit(RenderPipelines.Pipeline pipeline, @Nullable AbstractTexture texture, QuadBuilder quads, int color) {
         float[] vertices = quads.toArray();
         if (vertices.length == 0) {
             return;
         }
-        Matrix3x2f pose = new Matrix3x2f(this.graphics.pose());
-        @Nullable ScreenRectangle scissor = this.graphics.peekScissorStack();
-        int stride = quads.textured ? 4 : 2;
-        this.graphics.submitGuiElementRenderState(new HudShapeRenderState(pipeline, textures, pose, vertices,
-                quads.textured, color, scissor, HudShapeRenderState.bounds(vertices, stride, pose, scissor)));
+        HudShapeRenderState.draw(this.graphics, pipeline, texture, new Matrix3x2f(this.graphics.pose()), vertices,
+                quads.textured, color);
     }
 
     /** Collects quads, wound the way vanilla's GUI quads are so they survive back-face culling. */

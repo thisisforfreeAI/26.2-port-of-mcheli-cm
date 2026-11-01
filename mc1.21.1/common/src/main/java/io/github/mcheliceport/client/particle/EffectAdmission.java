@@ -6,29 +6,29 @@ import java.lang.ref.WeakReference;
 import java.util.Optional;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.core.particles.ParticleLimit;
+import net.minecraft.core.particles.ParticleGroup;
 
 /** Client-thread admission, before allocating a custom particle. The engine owns live counts. */
 final class EffectAdmission {
     private static WeakReference<ClientLevel> world = new WeakReference<>(null);
     private static EffectTuning.Budget smoke = new EffectTuning.Budget();
     private static EffectTuning.Budget flash = new EffectTuning.Budget();
-    private static final ParticleLimit[] SMOKE_LIMITS = limits(false);
-    private static final ParticleLimit[] FLASH_LIMITS = limits(true);
+    private static final ParticleGroup[] SMOKE_LIMITS = limits(false);
+    private static final ParticleGroup[] FLASH_LIMITS = limits(true);
 
     private EffectAdmission() {}
 
-    private static ParticleLimit[] limits(boolean flash) {
+    private static ParticleGroup[] limits(boolean flash) {
         EffectBudget[] qualities = EffectBudget.values();
-        ParticleLimit[] limits = new ParticleLimit[qualities.length];
+        ParticleGroup[] limits = new ParticleGroup[qualities.length];
         for (EffectBudget quality : qualities) {
-            limits[quality.ordinal()] = new ParticleLimit(flash
+            limits[quality.ordinal()] = new ParticleGroup(flash
                     ? EffectTuning.flashLimit(quality) : EffectTuning.smokeLimit(quality));
         }
         return limits;
     }
 
-    static Optional<ParticleLimit> limit(boolean flash) {
+    static Optional<ParticleGroup> limit(boolean flash) {
         return Optional.of((flash ? FLASH_LIMITS : SMOKE_LIMITS)[ClientConfig.get(ClientConfig.EFFECT_BUDGET).ordinal()]);
     }
 

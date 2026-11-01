@@ -1,22 +1,15 @@
 package io.github.mcheliceport.client.render;
 
-import com.mojang.blaze3d.PrimitiveTopology;
-import com.mojang.blaze3d.pipeline.BlendFunction;
-import com.mojang.blaze3d.pipeline.ColorTargetState;
-import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import io.github.mcheliceport.McheliCePort;
-import io.github.mcheliceport.shim.client.RenderPipelines;
 import io.github.mcheliceport.shim.client.SubmitNodeCollector;
-import net.minecraft.client.renderer.rendertype.RenderSetup;
 import net.minecraft.client.renderer.RenderType;
 import io.github.mcheliceport.shim.client.CameraRenderState;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 import java.util.List;
-import net.neoforged.neoforge.client.event.RegisterRenderPipelinesEvent;
 
 /**
  * M8 glows drawn with entities: soft camera-facing discs (flares, missile flames) and streaks
@@ -25,13 +18,7 @@ import net.neoforged.neoforge.client.event.RegisterRenderPipelinesEvent;
  * pipeline state only, so it runs on OpenGL and Vulkan. Not in upstream.
  */
 public final class GlowGeometry {
-
-    private static final RenderPipeline PIPELINE = RenderPipeline.builder(RenderPipelines.DEBUG_FILLED_SNIPPET)
-            .withLocation(ResourceLocation.fromNamespaceAndPath(McheliCePort.MOD_ID, "pipeline/glow"))
-            .withColorTargetState(new ColorTargetState(BlendFunction.LIGHTNING))
-            .withPrimitiveTopology(PrimitiveTopology.TRIANGLES).build();
-    private static final RenderType TYPE = RenderType.create("mcheli_ce_port_glow",
-            RenderSetup.builder(PIPELINE).createRenderSetup());
+    private static final RenderType TYPE = McheliRenderTypes.GLOW;
     private static final int SEGMENTS = 16;
     private static final float[] RIM_X = new float[SEGMENTS + 1];
     private static final float[] RIM_Y = new float[SEGMENTS + 1];
@@ -85,9 +72,6 @@ public final class GlowGeometry {
         });
     }
 
-    public static void registerPipelines(RegisterRenderPipelinesEvent event) {
-        event.registerPipeline(PIPELINE);
-    }
 
     /** A soft disc of {@code radius} facing the camera at the pose's origin. */
     public static void disc(PoseStack poseStack, SubmitNodeCollector collector, CameraRenderState camera,

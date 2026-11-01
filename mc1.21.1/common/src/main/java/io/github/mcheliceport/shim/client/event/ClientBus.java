@@ -16,6 +16,8 @@ public final class ClientBus {
     }
 
     private static final List<Listener> LISTENERS = new CopyOnWriteArrayList<>();
+    /** NeoForge's {@code EventPriority.LOWEST} listeners, run after all others. */
+    private static final List<Listener> LAST = new CopyOnWriteArrayList<>();
 
     private ClientBus() {
     }
@@ -23,6 +25,12 @@ public final class ClientBus {
     @SuppressWarnings("unchecked")
     public static <E extends ClientEvent> void addListener(Class<E> type, Consumer<E> handler) {
         LISTENERS.add(new Listener(type, e -> handler.accept((E) e)));
+    }
+
+    /** {@link #addListener} at NeoForge's lowest priority: runs after every other listener. */
+    @SuppressWarnings("unchecked")
+    public static <E extends ClientEvent> void addListenerLast(Class<E> type, Consumer<E> handler) {
+        LAST.add(new Listener(type, e -> handler.accept((E) e)));
     }
 
     /** NeoForge's {@code addListener(Owner::method)}: the static one-argument {@code method} of {@code owner}. */
@@ -68,16 +76,25 @@ public final class ClientBus {
 
     /** Delivers {@code event} to its listeners; returns it, so callers can read what they set. */
     public static <E extends ClientEvent> E post(E event) {
-        for (Listener l : LISTENERS) {
+        deliver(LISTENERS, event);
+        deliver(LAST, event);
+        return event;
+    }
+
+    /** As NeoForge, a cancelled event no longer reaches the listeners after the one that cancelled it. */
+    private static void deliver(List<Listener> listeners, ClientEvent event) {
+        for (Listener l : listeners) {
+            if (event.isCanceled()) {
+                return;
+            }
             if (l.type().isInstance(event)) {
                 l.handler().accept(event);
             }
         }
-        return event;
     }
 
     public static boolean hasListeners(Class<? extends ClientEvent> type) {
-        for (Listener l : LISTENERS) {
+        for (Listener l : java.util.stream.Stream.concat(LISTENERS.stream(), LAST.stream()).toList()) {
             if (l.type().isAssignableFrom(type)) {
                 return true;
             }

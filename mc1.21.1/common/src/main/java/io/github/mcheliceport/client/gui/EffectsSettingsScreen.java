@@ -9,8 +9,6 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-import net.neoforged.fml.ModList;
-import net.neoforged.neoforge.client.gui.ConfigurationScreen;
 
 /** Changes affect newly spawned effects; particles already in flight keep their birth art. */
 public final class EffectsSettingsScreen extends Screen {
@@ -41,8 +39,8 @@ public final class EffectsSettingsScreen extends Screen {
         }).bounds(x,y+96,220,20).build());
         blood.setTooltip(Tooltip.create(Component.translatable("mcheli.effects.blood.tip")));
         addRenderableWidget(Button.builder(Component.translatable("mcheli.effects.full"),b->{
-            ModList.get().getModContainerById(McheliCePort.MOD_ID).ifPresent(container->
-                    minecraft.setScreen(new ConfigurationScreen(container,this)));
+            {var config=io.github.mcheliceport.platform.ClientPlatform.INSTANCE.configScreen(this);
+                    if(config!=null)minecraft.setScreen(config);}
         }).bounds(x,y+122,220,20).build());
         addRenderableWidget(Button.builder(Component.literal("Test range"),b->minecraft.setScreen(new EffectsRangeScreen(this))).bounds(x,y+146,220,20).build());
         addRenderableWidget(Button.builder(Component.translatable("gui.done"),b->onClose()).bounds(x,y+170,220,20).build());
@@ -58,8 +56,8 @@ public final class EffectsSettingsScreen extends Screen {
     private static void save(){if(ClientConfig.SPEC.isLoaded())ClientConfig.SPEC.save();}
     @Override public void onClose(){save();minecraft.setScreen(parent);}
     @Override public boolean isPauseScreen(){return true;}
-    @Override public void extractRenderState(GuiGraphicsExtractor graphics,int mouseX,int mouseY,float partial){
-        super.extractRenderState(graphics,mouseX,mouseY,partial);
+    @Override public void render(net.minecraft.client.gui.GuiGraphics graphics$v, int mouseX, int mouseY, float partial) { GuiGraphicsExtractor graphics = GuiGraphicsExtractor.of(graphics$v);
+        super.render(graphics.vanilla(),mouseX,mouseY,partial);
         graphics.centeredText(font,title,width/2,18,0xFFFFFFFF);
         if(ClientConfig.get(ClientConfig.MODERN_EXPLOSIONS) && !ModernExplosionLook.enabled())
             graphics.centeredText(font,Component.translatable("mcheli.effects.inactive"),width/2,32,0xFFFFCC66);

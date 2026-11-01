@@ -56,7 +56,7 @@ public class FlashParticle extends McheliParticle {
     }
 
     @Override
-    public void extract(net.minecraft.client.renderer.state.level.QuadParticleRenderState state,
+    public void extract(io.github.mcheliceport.shim.client.QuadParticleRenderState state,
             net.minecraft.client.Camera camera, float partialTick) {
         this.currentFrame = this.frame(partialTick);
         if (this.currentFrame > 7) {
@@ -106,7 +106,7 @@ public class FlashParticle extends McheliParticle {
     }
 
     @Override
-    protected int getLightCoords(float partialTick) {
+    protected int getLightColor(float partialTick) {
         return FULL_BRIGHT;
     }
 

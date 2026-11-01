@@ -183,7 +183,7 @@ public final class TeamListOverlay {
                 continue;
             }
             PlayerInfo info = players.get(i);
-            String name = info.getProfile().name();
+            String name = info.getProfile().getName();
             PlayerTeam playerTeam = scoreboard.getPlayersTeam(name);
             if (playerTeam == null ? team != null : team == null || !playerTeam.getName().equals(team.getName())) {
                 continue;

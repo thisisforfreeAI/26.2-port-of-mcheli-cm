@@ -146,12 +146,12 @@ public final class RangeFinderClient {
         if (mapping == null || mapping.isUnbound()) {
             return false;
         }
-        InputConstants.Key key = mapping.getKey();
+        InputConstants.Key key = ((io.github.mcheliceport.mixin.client.KeyMappingAccessor) mapping).mcheli$key();
         var window = Minecraft.getInstance().getWindow();
         if (key.getType() == InputConstants.Type.MOUSE) {
-            return GLFW.glfwGetMouseButton(window.handle(), key.getValue()) == GLFW.GLFW_PRESS;
+            return GLFW.glfwGetMouseButton(window.getWindow(), key.getValue()) == GLFW.GLFW_PRESS;
         }
-        return key.getType() == InputConstants.Type.KEYSYM && InputConstants.isKeyDown(window, key.getValue());
+        return key.getType() == InputConstants.Type.KEYSYM && InputConstants.isKeyDown(window.getWindow(), key.getValue());
     }
 
     /** Upstream {@code MCH_Key#isKeyDown}: true on the tick a key goes down. */

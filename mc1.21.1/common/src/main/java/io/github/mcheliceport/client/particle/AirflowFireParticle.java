@@ -3,20 +3,14 @@ package io.github.mcheliceport.client.particle;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.particle.ParticleEngine;
-import net.minecraft.client.particle.ParticleGroup;
-import net.minecraft.client.particle.ParticleRenderType;
-import net.minecraft.client.renderer.culling.Frustum;
-import net.minecraft.client.renderer.state.level.QuadParticleRenderState;
+import io.github.mcheliceport.shim.client.QuadParticleRenderState;
 import io.github.mcheliceport.shim.client.LightCoordsUtil;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.client.event.RegisterParticleGroupsEvent;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 /** One tapered flame quad per admitted particle, through the vanilla atlas/depth pipeline. */
 public final class AirflowFireParticle extends McheliParticle {
-    private static final ParticleRenderType TYPE=new ParticleRenderType("mcheli_airflow_fire","m8af");
     private final float radius,opacity;
     private final Vector3f axis;
     private final Quaternionf rotation=new Quaternionf();
@@ -30,7 +24,7 @@ public final class AirflowFireParticle extends McheliParticle {
         axis=new Vector3f((float)direction.x,(float)direction.y,(float)direction.z);
         this.radius=radius;this.opacity=opacity;lifetime=AirflowFireLook.lifetime(bounded);hasPhysics=false;
     }
-    @Override public ParticleRenderType getGroup(){return TYPE;}
+    @Override protected QuadParticleRenderState createRenderState(VertexConsumer buffer){return new State(buffer);}
     @Override public void tick() {
         xo=x;yo=y;zo=z;if(++age>=lifetime){remove();return;}
         move(xd,yd,zd);xd*=.94;zd*=.94;yd=yd*.94+.004;
@@ -49,17 +43,9 @@ public final class AirflowFireParticle extends McheliParticle {
     @Override protected float getU1(){return frameU(frame%4,4,true);}
     @Override protected float getV0(){return sprite.getV(frame/4*.25F);}
     @Override protected float getV1(){return sprite.getV((frame/4+1)*.25F);}
-    @Override protected int getLightCoords(float partial){return LightCoordsUtil.FULL_BRIGHT;}
-
-    public static void register(RegisterParticleGroupsEvent event){event.register(TYPE,Group::new);}
-    private static final class Group extends ParticleGroup<AirflowFireParticle> {
-        private final State state=new State();
-        Group(ParticleEngine engine){super(engine);}
-        @Override public State extractRenderState(Frustum frustum,Camera camera,float partial) {
-            state.clear();for(var p:particles)if(frustum.isVisible(p.getBoundingBox().inflate(p.radius*1.6)))p.extract(state,camera,partial);return state;
-        }
-    }
+    @Override protected int getLightColor(float partial){return LightCoordsUtil.FULL_BRIGHT;}
     private static final class State extends QuadParticleRenderState {
+        State(VertexConsumer buffer) { super(buffer); }
         private final Quaternionf rotation=new Quaternionf();
         private final Vector3f point=new Vector3f();
         @Override protected void renderRotatedQuad(VertexConsumer buffer,float x,float y,float z,

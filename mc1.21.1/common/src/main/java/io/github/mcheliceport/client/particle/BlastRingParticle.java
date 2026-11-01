@@ -2,7 +2,7 @@ package io.github.mcheliceport.client.particle;
 
 import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.state.level.QuadParticleRenderState;
+import io.github.mcheliceport.shim.client.QuadParticleRenderState;
 import org.joml.Quaternionf;
 
 /** A short low dust wisp carried by an expanding broken pressure front. */
@@ -48,8 +48,9 @@ final class BlastRingParticle extends SmokeParticle {
             alpha=opacity;
         } else {getFacingCameraMode().setRotation(rotation,camera,partialTick);extractRotatedQuad(state,camera,rotation,partialTick);}
     }
-    @Override public net.minecraft.client.particle.ParticleRenderType getGroup() {
-        return mesh ? BlastDustWedges.TYPE : super.getGroup();
+    @Override protected io.github.mcheliceport.shim.client.QuadParticleRenderState createRenderState(
+            com.mojang.blaze3d.vertex.VertexConsumer buffer) {
+        return mesh ? new BlastDustWedges.State(buffer) : super.createRenderState(buffer);
     }
     @Override public float getQuadSize(float partialTick) { return radius * (0.65F + 0.35F * Math.min(1, (age + partialTick) / 8)); }
     @Override protected float getU0() { return frameU(frame % 2, 2, false); }

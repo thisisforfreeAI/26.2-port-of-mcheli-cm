@@ -1,5 +1,6 @@
 package io.github.mcheliceport.client.effect;
 
+import net.minecraft.client.renderer.RenderType;
 import io.github.mcheliceport.client.particle.VehicleBloodEffects;
 import java.util.ArrayDeque;
 import java.util.ArrayList;

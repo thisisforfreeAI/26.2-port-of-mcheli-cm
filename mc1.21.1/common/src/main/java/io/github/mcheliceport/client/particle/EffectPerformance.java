@@ -39,7 +39,7 @@ public final class EffectPerformance {
             lastFrame = 0;
             return;
         }
-        if (mc.level == null || mc.isPaused() || mc.screen != null || mc.gui.overlay() != null || !mc.isWindowActive()) {
+        if (mc.level == null || mc.isPaused() || mc.screen != null || mc.getOverlay() != null || !mc.isWindowActive()) {
             // Preserve detail across menus, but discard their frame intervals.
             lastFrame = 0;
             return;

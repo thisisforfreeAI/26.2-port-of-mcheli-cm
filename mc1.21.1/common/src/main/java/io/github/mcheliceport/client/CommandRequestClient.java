@@ -21,12 +21,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.Screenshot;
 import net.minecraft.network.chat.Component;
 import net.minecraft.Util;
-import net.neoforged.fml.ModList;
 import io.github.mcheliceport.shim.client.event.ClientPlayerNetworkEvent;
 import io.github.mcheliceport.shim.client.event.ClientTickEvent;
 import io.github.mcheliceport.platform.network.ClientPacketDistributor;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforgespi.language.IModInfo;
 
 /**
  * The client side of {@code /mcheli sendss} and {@code /mcheli modlist} (upstream
@@ -59,12 +56,14 @@ public final class CommandRequestClient {
         Minecraft mc = Minecraft.getInstance();
         if (!ClientConfig.ALLOW_SCREEN_CAPTURE.get()) {
             ClientPacketDistributor.sendToServer(ScreenshotChunkPayload.refused(requestId));
-            mc.gui.getChat().addClientSystemMessage(Component.literal(
+            mc.gui.getChat().addMessage(Component.literal(
                     "The server asked for a screenshot; refused because allowScreenCapture is off")
                     .withStyle(ChatFormatting.GRAY));
             return;
         }
-        Screenshot.takeScreenshot(mc.gameRenderer.mainRenderTarget(), image -> Util.ioPool().execute(() -> {
+        NativeImage shot = Screenshot.takeScreenshot(mc.getMainRenderTarget());
+        Util.ioPool().execute(() -> {
+            NativeImage image = shot;
             byte[] png;
             try (image) {
                 png = encode(image);
@@ -75,10 +74,10 @@ public final class CommandRequestClient {
             }
             mc.execute(() -> {
                 queue(requestId, png);
-                mc.gui.getChat().addClientSystemMessage(Component.literal(
+                mc.gui.getChat().addMessage(Component.literal(
                         "The server captured your screen (/mcheli sendss)").withStyle(ChatFormatting.YELLOW));
             });
-        }));
+        });
     }
 
     /** {@link NativeImage} only writes PNGs to files. */
@@ -115,11 +114,10 @@ public final class CommandRequestClient {
     static List<String> modList() {
         List<String> lines = new ArrayList<>();
         lines.add(ChatFormatting.RED + "###### " + Minecraft.getInstance().getUser().getName() + " ######");
-        lines.add(ChatFormatting.AQUA + "# Client " + SharedConstants.getCurrentVersion().name());
+        lines.add(ChatFormatting.AQUA + "# Client " + SharedConstants.getCurrentVersion().getName());
         lines.add(ChatFormatting.YELLOW + "=== ActiveModList ===");
-        for (IModInfo mod : ModList.get().getMods()) {
-            String line = "[" + mod.getModId() + "]  " + mod.getDisplayName() + "[" + mod.getVersion() + "]  "
-                    + mod.getOwningFile().getFile().getFileName();
+        for (var mod : io.github.mcheliceport.platform.Services.PLATFORM.mods()) {
+            String line = "[" + mod.id() + "]  " + mod.name() + "[" + mod.version() + "]  " + mod.file();
             lines.add(line.length() > ModListPayload.MAX_LINE_LENGTH
                     ? line.substring(0, ModListPayload.MAX_LINE_LENGTH) : line);
             if (lines.size() == ModListPayload.MAX_LINES) {

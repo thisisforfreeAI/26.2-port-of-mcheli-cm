@@ -2,7 +2,7 @@ package io.github.mcheliceport.client.particle;
 
 import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.state.level.QuadParticleRenderState;
+import io.github.mcheliceport.shim.client.QuadParticleRenderState;
 import net.minecraft.resources.ResourceLocation;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -62,12 +62,12 @@ final class BlastDirtJetParticle extends SmokeParticle {
         if (this.alpha>0) this.extractRotatedQuad(state,camera,this.rotation,partialTick);
         this.alpha=opacity*detail;
         if (detail<=0) {this.alpha=opacity;return;}
-        var pos=camera.position();
+        var pos=camera.getPosition();
         float px=(float)(net.minecraft.util.Mth.lerp(partialTick,xo,x)-pos.x);
         float py=(float)(net.minecraft.util.Mth.lerp(partialTick,yo,y)-pos.y);
         float pz=(float)(net.minecraft.util.Mth.lerp(partialTick,zo,z)-pos.z);
         float r=this.getQuadSize(partialTick);
-        int color=io.github.mcheliceport.shim.client.ARGB.colorFromFloat(alpha,rCol,gCol,bCol), light=getLightCoords(partialTick);
+        int color=io.github.mcheliceport.shim.client.ARGB.colorFromFloat(alpha,rCol,gCol,bCol), light=getLightColor(partialTick);
         for(int i=0;i<3;i++) {
             rotation.rotationY(i*(float)Math.PI/3).rotateZ(angle*.3F);
             float offset=i*.55F*r;

@@ -87,7 +87,9 @@ public class DraftingTableScreen extends AbstractContainerScreen<DraftingTableMe
     private int heldButtons;
 
     public DraftingTableScreen(DraftingTableMenu menu, Inventory inventory, Component title) {
-        super(menu, inventory, title, 400, 240);
+        super(menu, inventory, title);
+        this.imageWidth = 400;
+        this.imageHeight = 240;
     }
 
     @Override
@@ -331,10 +333,10 @@ public class DraftingTableScreen extends AbstractContainerScreen<DraftingTableMe
     public boolean keyPressed(int event$k, int event$s, int event$m) { KeyEvent event = new KeyEvent(event$k, event$s, event$m);
         int key = event.key();
         if (this.searchField.isFocused() && key != GLFW.GLFW_KEY_ESCAPE) {
-            this.searchField.keyPressed(event);
+            this.searchField.keyPressed(event.key(), event.scancode(), event.modifiers());
             return true;
         }
-        boolean inventoryKey = this.minecraft.options.keyInventory.matches(event);
+        boolean inventoryKey = this.minecraft.options.keyInventory.matches(event.key(), event.scancode());
         if (key == GLFW.GLFW_KEY_ESCAPE || inventoryKey) {
             if (this.screenId == SCREEN_MAIN) {
                 this.onClose();
@@ -431,13 +433,13 @@ public class DraftingTableScreen extends AbstractContainerScreen<DraftingTableMe
 
     /** Upstream {@code drawScreen}: the model goes over the rest of the screen. */
     @Override
-    public void extractContents(GuiGraphicsExtractor g, int mouseX, int mouseY, float partialTick) {
-        super.extractContents(g, mouseX, mouseY, partialTick);
+    public void render(net.minecraft.client.gui.GuiGraphics g$v, int mouseX, int mouseY, float partialTick) { GuiGraphicsExtractor g = GuiGraphicsExtractor.of(g$v);
+        super.render(g.vanilla(), mouseX, mouseY, partialTick);
         if (this.screenId == SCREEN_MAIN && this.current != null && this.current.isCurrentPageModel()) {
             AircraftInfo info = this.current.acInfo;
             AircraftModels.VehicleModels models = AircraftModels.get(info.getDirectoryName(), info);
             if (models != null) {
-                g.submitPictureInPictureRenderState(new DraftingModelRenderer.State(models.body(),
+                DraftingModelRenderer.draw(g, new DraftingModelRenderer.State(models.body(),
                         this.current.modelTexture, this.current.centreXZ, modelRotX, modelRotY, modelPosX, modelPosY,
                         modelZoom, this.drawFace, this.leftPos + 300, this.topPos + 110, 0, 0, this.width,
                         this.height, g.peekScissorStack()));
@@ -449,8 +451,7 @@ public class DraftingTableScreen extends AbstractContainerScreen<DraftingTableMe
     }
 
     @Override
-    public void extractBackground(GuiGraphicsExtractor g, int mouseX, int mouseY, float partialTick) {
-        super.extractBackground(g, mouseX, mouseY, partialTick);
+    protected void renderBg(net.minecraft.client.gui.GuiGraphics g$v, float partialTick, int mouseX, int mouseY) { GuiGraphicsExtractor g = GuiGraphicsExtractor.of(g$v);
         g.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos, this.topPos, 0.0F,
                 this.screenId == SCREEN_MAIN ? 0.0F : this.imageHeight, this.imageWidth, this.imageHeight, 512, 512);
     }
@@ -534,12 +535,12 @@ public class DraftingTableScreen extends AbstractContainerScreen<DraftingTableMe
 
     /** An ingredient that accepts several items shows each in turn, a second apiece. */
     private ItemStack shown(Ingredient ingredient) {
-        List<Holder<Item>> items = ingredient.items().toList();
+        List<ItemStack> items = List.of(ingredient.getItems());
         if (items.isEmpty()) {
             return ItemStack.EMPTY;
         }
         long second = this.minecraft.level != null ? this.minecraft.level.getGameTime() / 20 : 0;
-        return new ItemStack(items.get((int) (second % items.size())));
+        return items.get((int) (second % items.size())).copy();
     }
 
     /** Upstream {@code MCH_CurrentRecipe}: one recipe and its pages. */

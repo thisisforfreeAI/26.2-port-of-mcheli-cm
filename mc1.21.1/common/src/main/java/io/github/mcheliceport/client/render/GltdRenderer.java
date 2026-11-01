@@ -102,7 +102,7 @@ public class GltdRenderer extends io.github.mcheliceport.shim.client.StateEntity
         collector.submitCustomGeometry(stack, AircraftRenderTypes.aircraft(TEXTURE), (pose, buffer) -> {
             for (var draw : draws) {
                 var p = pose.copy();
-                p.mulPose(draw.pose());
+                io.github.mcheliceport.shim.client.Poses.mul(p, draw.pose());
                 ModelVertices.emit(buffer, p, draw.groups(), 0xFFBFBFBF, light, false);
             }
         });
@@ -110,7 +110,7 @@ public class GltdRenderer extends io.github.mcheliceport.shim.client.StateEntity
         int color = state.laserColor;
         collector.submitCustomGeometry(stack, SearchLightRenderer.TYPE, (pose, buffer) -> {
             var p = pose.copy();
-            p.mulPose(laser);
+            io.github.mcheliceport.shim.client.Poses.mul(p, laser);
             // Two crossed strips from (0, 0.2, 0) to (0, 0.2, 100), widening with distance so that,
             // like upstream's GL line, the beam stays about a pixel wide from the designator.
             float[][] axes = {{1.0F, 0.0F}, {0.0F, 1.0F}};

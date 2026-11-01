@@ -37,6 +37,6 @@ final class SparkParticle extends McheliParticle {
     @Override protected float getU0() { return this.frameU(0, 4, false); }
     @Override protected float getU1() { return this.frameU(0, 4, true); }
     @Override protected float getV1() { return this.sprite.getV(0.5F); }
-    @Override protected int getLightCoords(float partialTick) { return LightCoordsUtil.FULL_BRIGHT; }
+    @Override protected int getLightColor(float partialTick) { return LightCoordsUtil.FULL_BRIGHT; }
     @Override protected Layer getLayer() { return ParticleLayers.ADDITIVE; }
 }

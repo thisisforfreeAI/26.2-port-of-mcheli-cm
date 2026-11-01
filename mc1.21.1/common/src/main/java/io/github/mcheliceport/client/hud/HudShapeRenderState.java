@@ -1,59 +1,78 @@
 package io.github.mcheliceport.client.hud;
 
-import com.mojang.blaze3d.pipeline.RenderPipeline;
-import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.minecraft.client.gui.navigation.ScreenRectangle;
-import net.minecraft.client.gui.render.TextureSetup;
-import net.minecraft.client.renderer.state.gui.GuiElementRenderState;
+import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.BufferUploader;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.MeshData;
+import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.VertexFormat;
+import io.github.mcheliceport.shim.client.GuiGraphicsExtractor;
+import io.github.mcheliceport.shim.client.RenderPipelines;
+import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.texture.AbstractTexture;
+import org.joml.Matrix3x2f;
 import org.joml.Matrix3x2fc;
+import org.joml.Matrix4f;
 import org.jspecify.annotations.Nullable;
+import org.lwjgl.opengl.GL11;
 
 /**
  * Quads in GUI coordinates, of one colour, for the HUD's lines, points, rectangles and textures:
  * vanilla's GUI only draws axis-aligned rectangles, and HUD lines run at any angle. Built by
- * {@link GuiHudCanvas}; drawn with a vanilla GUI pipeline, so it works on every backend.
- *
- * @param vertices x, y (and u, v when {@code textured}) of each corner, four corners per quad,
- *                 already wound as vanilla's GUI quads
+ * {@link GuiHudCanvas}. 26.2 submits these as a GUI element; 1.21.1 draws them at once, after
+ * flushing what the GUI has batched, so they keep their place in the drawing order.
  */
-public record HudShapeRenderState(RenderPipeline pipeline, TextureSetup textureSetup, Matrix3x2fc pose,
-        float[] vertices, boolean textured, int color, @Nullable ScreenRectangle scissorArea,
-        @Nullable ScreenRectangle bounds) implements GuiElementRenderState {
+public final class HudShapeRenderState {
+    private HudShapeRenderState() {}
 
-    @Override
-    public void buildVertices(VertexConsumer consumer) {
-        int stride = this.textured ? 4 : 2;
-        for (int i = 0; i + stride <= this.vertices.length; i += stride) {
-            VertexConsumer v = consumer.addVertexWith2DPose(this.pose, this.vertices[i], this.vertices[i + 1]);
-            if (this.textured) {
-                v.setUv(this.vertices[i + 2], this.vertices[i + 3]);
+    /**
+     * @param vertices x, y (and u, v when {@code textured}) of each corner, four corners per quad,
+     *                 already wound as vanilla's GUI quads
+     */
+    public static void draw(GuiGraphicsExtractor g, RenderPipelines.Pipeline pipeline,
+            @Nullable AbstractTexture texture, Matrix3x2fc pose, float[] vertices, boolean textured, int color) {
+        int stride = textured ? 4 : 2;
+        if (vertices.length < stride * 4 || textured && texture == null) {
+            return;
+        }
+        g.nextStratum();
+        Matrix4f m = new Matrix4f(g.vanilla().pose().last().pose())
+                .mul(GuiGraphicsExtractor.toMatrix4f(new Matrix3x2f(pose)));
+        RenderSystem.enableBlend();
+        switch (pipeline) {
+            case GUI_INVERT -> RenderSystem.blendFuncSeparate(GlStateManager.SourceFactor.ONE_MINUS_DST_COLOR,
+                    GlStateManager.DestFactor.ONE_MINUS_SRC_COLOR, GlStateManager.SourceFactor.ONE,
+                    GlStateManager.DestFactor.ZERO);
+            case GUI_TEXTURED_ADDITIVE -> RenderSystem.blendFunc(GlStateManager.SourceFactor.ONE,
+                    GlStateManager.DestFactor.ONE);
+            default -> RenderSystem.defaultBlendFunc();
+        }
+        BufferBuilder buffer;
+        if (textured) {
+            RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
+            texture.bind();
+            GlStateManager._texParameter(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL11.GL_REPEAT);
+            GlStateManager._texParameter(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL11.GL_REPEAT);
+            RenderSystem.setShaderTexture(0, texture.getId());
+            buffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
+        } else {
+            RenderSystem.setShader(GameRenderer::getPositionColorShader);
+            buffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        }
+        for (int i = 0; i + stride <= vertices.length; i += stride) {
+            buffer.addVertex(m, vertices[i], vertices[i + 1], 0.0F);
+            if (textured) {
+                buffer.setUv(vertices[i + 2], vertices[i + 3]);
             }
-            v.setColor(this.color);
+            buffer.setColor(color);
         }
-    }
-
-    /** The screen area of the quads, after the pose, cut by the scissor; null for no quads. */
-    static @Nullable ScreenRectangle bounds(float[] vertices, int stride, Matrix3x2fc pose,
-            @Nullable ScreenRectangle scissorArea) {
-        if (vertices.length < stride) {
-            return null;
+        MeshData mesh = buffer.build();
+        if (mesh != null) {
+            BufferUploader.drawWithShader(mesh);
         }
-        float minX = Float.POSITIVE_INFINITY;
-        float minY = Float.POSITIVE_INFINITY;
-        float maxX = Float.NEGATIVE_INFINITY;
-        float maxY = Float.NEGATIVE_INFINITY;
-        for (int i = 0; i + 1 < vertices.length; i += stride) {
-            minX = Math.min(minX, vertices[i]);
-            maxX = Math.max(maxX, vertices[i]);
-            minY = Math.min(minY, vertices[i + 1]);
-            maxY = Math.max(maxY, vertices[i + 1]);
-        }
-        int x0 = (int) Math.floor(minX);
-        int y0 = (int) Math.floor(minY);
-        int x1 = (int) Math.ceil(maxX);
-        int y1 = (int) Math.ceil(maxY);
-        ScreenRectangle rect = new ScreenRectangle(x0, y0, Math.max(1, x1 - x0), Math.max(1, y1 - y0))
-                .transformMaxBounds(pose);
-        return scissorArea != null ? scissorArea.intersection(rect) : rect;
+        RenderSystem.defaultBlendFunc();
+        RenderSystem.disableBlend();
     }
 }

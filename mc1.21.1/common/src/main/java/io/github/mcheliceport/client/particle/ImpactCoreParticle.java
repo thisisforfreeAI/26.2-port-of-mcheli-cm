@@ -29,7 +29,7 @@ final class ImpactCoreParticle extends McheliParticle {
         if (++this.age >= this.lifetime) this.remove();
     }
 
-    @Override public void extract(net.minecraft.client.renderer.state.level.QuadParticleRenderState state,
+    @Override public void extract(io.github.mcheliceport.shim.client.QuadParticleRenderState state,
             net.minecraft.client.Camera camera, float partialTick) {
         float progress = Math.clamp((this.age + partialTick) / this.lifetime, 0, 1);
         this.frame = Math.min(7, (int) (progress * 8));
@@ -45,6 +45,6 @@ final class ImpactCoreParticle extends McheliParticle {
     @Override protected float getU1() { return this.frameU(this.frame % 4, 4, true); }
     @Override protected float getV0() { return this.sprite.getV(this.frame / 4 * 0.5F); }
     @Override protected float getV1() { return this.sprite.getV((this.frame / 4 + 1) * 0.5F); }
-    @Override protected int getLightCoords(float partialTick) { return LightCoordsUtil.FULL_BRIGHT; }
+    @Override protected int getLightColor(float partialTick) { return LightCoordsUtil.FULL_BRIGHT; }
     @Override protected Layer getLayer() { return ParticleLayers.ADDITIVE; }
 }

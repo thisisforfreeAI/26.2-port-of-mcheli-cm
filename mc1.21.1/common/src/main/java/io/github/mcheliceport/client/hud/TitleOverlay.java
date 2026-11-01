@@ -9,8 +9,6 @@ import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import io.github.mcheliceport.shim.client.GuiGraphicsExtractor;
-import net.minecraft.client.gui.components.debug.DebugScreenEntries;
-import net.minecraft.client.gui.components.debug.DebugScreenEntryStatus;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
@@ -19,7 +17,6 @@ import io.github.mcheliceport.shim.client.event.ClientPlayerNetworkEvent;
 import io.github.mcheliceport.shim.client.event.ClientTickEvent;
 import io.github.mcheliceport.shim.client.event.RegisterGuiLayersEvent;
 import io.github.mcheliceport.shim.client.event.VanillaGuiLayers;
-import net.neoforged.neoforge.common.NeoForge;
 
 /**
  * What {@code /mcheli} does on the client: upstream {@code MCH_GuiTitle}, the message
@@ -82,8 +79,8 @@ public final class TitleOverlay {
             restShowTick--;
         }
         if (!ServerSettings.client().enableDebugBoundingBox()
-                && mc.debugEntries.isCurrentlyEnabled(DebugScreenEntries.ENTITY_HITBOXES)) {
-            mc.debugEntries.setStatus(DebugScreenEntries.ENTITY_HITBOXES, DebugScreenEntryStatus.NEVER);
+                && mc.getEntityRenderDispatcher().shouldRenderHitBoxes()) {
+            mc.getEntityRenderDispatcher().setRenderHitBoxes(false);
         }
     }
 

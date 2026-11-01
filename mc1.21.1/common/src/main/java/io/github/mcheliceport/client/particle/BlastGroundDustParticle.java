@@ -2,7 +2,7 @@ package io.github.mcheliceport.client.particle;
 
 import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.state.level.QuadParticleRenderState;
+import io.github.mcheliceport.shim.client.QuadParticleRenderState;
 
 /** Fast, low dust fans with their own compact sheet; helicopter downwash is unchanged. */
 final class BlastGroundDustParticle extends SmokeParticle {

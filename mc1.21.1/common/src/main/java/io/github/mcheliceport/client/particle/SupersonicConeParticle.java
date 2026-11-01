@@ -9,16 +9,13 @@ import java.lang.ref.WeakReference;
 import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.*;
-import net.minecraft.client.renderer.culling.Frustum;
-import net.minecraft.client.renderer.state.level.QuadParticleRenderState;
+import io.github.mcheliceport.shim.client.QuadParticleRenderState;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.client.event.RegisterParticleGroupsEvent;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 /** Eight translucent wisp faces attached briefly to the moving airframe. No scene/depth reads. */
 public final class SupersonicConeParticle extends SmokeParticle {
-    private static final ParticleRenderType TYPE=new ParticleRenderType("mcheli_sonic_cone","m8sc");
     private final WeakReference<PlaneEntity> plane;
     private final Vec3 local;
     private final float radius,opacity;
@@ -38,8 +35,8 @@ public final class SupersonicConeParticle extends SmokeParticle {
         var axis=McheliMath.rotVec3(0,0,-1,-ac.getYaw(),-ac.getPitch(),-ac.getRoll());
         rotation.rotationTo(0,0,1,(float)axis.x,(float)axis.y,(float)axis.z);
     }
-    @Override public ParticleRenderType getGroup(){return TYPE;}
     @Override protected Layer getLayer(){return ParticleLayers.CONDENSATION;}
+    @Override protected QuadParticleRenderState createRenderState(VertexConsumer buffer){return new State(buffer);}
     @Override public void tick(){
         xo=x;yo=y;zo=z;var ac=plane.get();
         if(++age>=lifetime||ac==null||ac.isRemoved()||ac.level()!=level||ac.getAcInfo()==null||ac.isDestroyed()||ac.onGround()||ac.isInWater()||AirframeDamage.missing(ac)!=0
@@ -54,14 +51,8 @@ public final class SupersonicConeParticle extends SmokeParticle {
         alpha=opacity*EffectLook.smokeAlpha(age+partial,lifetime);extractRotatedQuad(state,camera,rotation,partial);
     }
     @Override public float getQuadSize(float partial){return radius*(.92F+.08F*(float)Math.sin((age+partial)*Math.PI/lifetime));}
-    public static void register(RegisterParticleGroupsEvent event){event.register(TYPE,Group::new);}
-    private static final class Group extends ParticleGroup<SupersonicConeParticle>{
-        private final State state=new State();Group(ParticleEngine engine){super(engine);}
-        @Override public State extractRenderState(Frustum frustum,Camera camera,float partial){
-            state.clear();for(var p:particles)if(frustum.isVisible(p.getBoundingBox().inflate(p.radius*1.5)))p.extract(state,camera,partial);return state;
-        }
-    }
     private static final class State extends QuadParticleRenderState {
+        State(VertexConsumer buffer) { super(buffer); }
         private final Quaternionf rotation=new Quaternionf();private final Vector3f vertex=new Vector3f();
         @Override protected void renderRotatedQuad(VertexConsumer out,float x,float y,float z,float qx,float qy,float qz,float qw,
                 float size,float u0,float u1,float v0,float v1,int color,int light){

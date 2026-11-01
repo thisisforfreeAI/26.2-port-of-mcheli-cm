@@ -6,11 +6,13 @@ package io.github.mcheliceport.shim.client;
  */
 public final class RenderPipelines {
 
-    public enum Pipeline { GUI, GUI_TEXTURED, GUI_INVERT, OTHER }
+    public enum Pipeline { GUI, GUI_TEXTURED, GUI_INVERT, GUI_TEXTURED_ADDITIVE, OTHER }
 
     public static final Pipeline GUI = Pipeline.GUI;
     public static final Pipeline GUI_TEXTURED = Pipeline.GUI_TEXTURED;
     public static final Pipeline GUI_INVERT = Pipeline.GUI_INVERT;
+    /** The port's own additive textured GUI pipeline ({@code blendFunc(GL_ONE, GL_ONE)}). */
+    public static final Pipeline GUI_TEXTURED_ADDITIVE = Pipeline.GUI_TEXTURED_ADDITIVE;
 
     private RenderPipelines() {
     }

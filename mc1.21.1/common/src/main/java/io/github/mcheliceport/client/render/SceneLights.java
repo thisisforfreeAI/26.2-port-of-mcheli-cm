@@ -18,7 +18,6 @@ import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.phys.Vec3;
 import io.github.mcheliceport.shim.client.event.SubscribeEvent;
 import io.github.mcheliceport.shim.client.event.ClientTickEvent;
-import net.neoforged.neoforge.client.renderstate.RegisterRenderStateModifiersEvent;
 import io.github.mcheliceport.shim.client.event.SubmitCustomGeometryEvent;
 import com.google.common.reflect.TypeToken;
 
@@ -281,18 +280,18 @@ public final class SceneLights {
         return Math.round(15 * Math.min(1, best));
     }
 
-    public static void registerModifiers(RegisterRenderStateModifiersEvent event) {
-        event.registerEntityModifier(new TypeToken<LivingEntityRenderer<LivingEntity, LivingEntityRenderState, ?>>() { },
-                (LivingEntity entity, LivingEntityRenderState state) -> {
+    public static void registerModifiers() {
+        io.github.mcheliceport.shim.client.LivingLightModifiers.register((entity, partialTick, light) -> {
                     if (world == null || LIGHTS.isEmpty() || entity.level() != world || !enabled()) {
-                        return;
+                        return light;
                     }
-                    int lit = blockLight(entity.getPosition(state.partialTick).add(0, entity.getBbHeight() * 0.5, 0),
-                            state.partialTick);
-                    int block = LightCoordsUtil.block(state.lightCoords);
+                    int lit = blockLight(entity.getPosition(partialTick).add(0, entity.getBbHeight() * 0.5, 0),
+                            partialTick);
+                    int block = LightCoordsUtil.block(light);
                     if (lit > block) {
-                        state.lightCoords = LightCoordsUtil.pack(lit, LightCoordsUtil.sky(state.lightCoords));
+                        light = LightCoordsUtil.pack(lit, LightCoordsUtil.sky(light));
                     }
+                    return light;
                 });
     }
 

@@ -18,7 +18,7 @@ public final class EffectsRangeClient {
     private static void notice(EffectsRangeNoticePayload p){
         var mc=Minecraft.getInstance();if(mc.level==null||!EffectsRange.inRange(mc.level)||p.state()<0||p.state()>4||!RangeOptions.valid(p.weapon(),p.surface(),p.lighting()))return;
         options=new RangeOptions(p.weapon(),p.surface(),p.lighting());READINESS.notice(p.state(),p.cooldown(),mc.level.getGameTime());ready=READINESS.ready();
-        if(p.state()==0||p.state()==1){mc.particleEngine.clearParticles();BlastMarks.clear();io.github.mcheliceport.client.weapon.WeaponEffects.clear();}
+        if(p.state()==0||p.state()==1){mc.particleEngine.setLevel(mc.level);BlastMarks.clear();io.github.mcheliceport.client.weapon.WeaponEffects.clear();}
     }
     public static void registerGui(RegisterGuiLayersEvent event){
         event.registerAboveAll(ResourceLocation.fromNamespaceAndPath(McheliCePort.MOD_ID,"effects_range"),(g,delta)->{

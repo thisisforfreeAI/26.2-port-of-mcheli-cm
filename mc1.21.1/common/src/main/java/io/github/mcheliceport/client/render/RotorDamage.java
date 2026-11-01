@@ -42,7 +42,7 @@ public final class RotorDamage {
         APPLIED.put(entity,0);
         if(!EffectQuality.enhanced()||!ClientConfig.get(ClientConfig.VEHICLE_DAMAGE_DETAILS)||entity.getMaxHP()<=0)return;
         float damage=1-(float)entity.getHP()/entity.getMaxHP();int stage=RotorDamageMesh.stage(damage);if(stage==0)return;
-        var camera=net.minecraft.client.Minecraft.getInstance().gameRenderer.getMainCamera();if(camera.position().distanceToSqr(entity.position())>48*48)return;
+        var camera=net.minecraft.client.Minecraft.getInstance().gameRenderer.getMainCamera();if(camera.getPosition().distanceToSqr(entity.position())>48*48)return;
         int applied=0;
         for(int r=0;r<Math.min(8,info.rotorList.size());r++){
             var rotor=info.rotorList.get(r);var groups=models.part(rotor.modelName);if(groups.isEmpty()||rotor.rot.lengthSqr()<.01)continue;

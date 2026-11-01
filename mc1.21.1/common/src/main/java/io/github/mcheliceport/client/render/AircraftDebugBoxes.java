@@ -1,5 +1,6 @@
 package io.github.mcheliceport.client.render;
 
+import net.minecraft.client.renderer.RenderType;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import io.github.mcheliceport.content.aircraft.BoundingBoxInfo;
@@ -79,8 +80,8 @@ public final class AircraftDebugBoxes {
         ny /= length;
         nz /= length;
         buffer.addVertex(pose, (float) a.x, (float) a.y, (float) a.z).setColor(color).setNormal(pose, nx, ny, nz)
-                .setLineWidth(width);
+                ;
         buffer.addVertex(pose, (float) b.x, (float) b.y, (float) b.z).setColor(color).setNormal(pose, nx, ny, nz)
-                .setLineWidth(width);
+                ;
     }
 }

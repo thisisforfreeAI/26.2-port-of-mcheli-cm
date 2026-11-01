@@ -17,8 +17,8 @@ import net.minecraft.core.particles.ColorParticleOption;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.core.particles.SpellParticleOption;
-import net.minecraft.server.level.ParticleStatus;
+
+import net.minecraft.client.ParticleStatus;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.RenderShape;
@@ -303,8 +303,8 @@ public final class ClientEffects implements McheliEffects.Sink {
             case "smoke" -> ParticleTypes.SMOKE;
             case "mobspell" -> ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, 1.0F, 1.0F, 1.0F);
             case "mobspellambient" -> ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, 0x26FFFFFF);
-            case "spell" -> SpellParticleOption.create(ParticleTypes.EFFECT, 0xFFFFFF, 1.0F);
-            case "instantspell" -> SpellParticleOption.create(ParticleTypes.INSTANT_EFFECT, 0xFFFFFF, 1.0F);
+            case "spell" -> ParticleTypes.EFFECT;
+            case "instantspell" -> ParticleTypes.INSTANT_EFFECT;
             case "witchmagic" -> ParticleTypes.WITCH;
             case "note" -> ParticleTypes.NOTE;
             case "portal" -> ParticleTypes.PORTAL;
@@ -316,7 +316,7 @@ public final class ClientEffects implements McheliEffects.Sink {
             case "wake" -> ParticleTypes.FISHING;
             case "largesmoke" -> ParticleTypes.LARGE_SMOKE;
             case "cloud" -> ParticleTypes.CLOUD;
-            case "reddust" -> new DustParticleOptions(0xFF0000, 1.0F);
+            case "reddust" -> new DustParticleOptions(new org.joml.Vector3f(1.0F, 0.0F, 0.0F), 1.0F);
             case "snowballpoof", "snowshovel" -> ParticleTypes.ITEM_SNOWBALL;
             case "dripwater" -> ParticleTypes.DRIPPING_WATER;
             case "driplava" -> ParticleTypes.DRIPPING_LAVA;

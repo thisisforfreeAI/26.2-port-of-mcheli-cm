@@ -1,8 +1,5 @@
 package io.github.mcheliceport.client.render;
 
-import com.mojang.blaze3d.pipeline.BlendFunction;
-import com.mojang.blaze3d.pipeline.ColorTargetState;
-import com.mojang.blaze3d.pipeline.RenderPipeline;
 import io.github.mcheliceport.McheliCePort;
 import io.github.mcheliceport.entity.aircraft.AircraftEntity;
 import java.util.ArrayList;
@@ -10,15 +7,12 @@ import java.util.List;
 import java.util.function.Function;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
-import io.github.mcheliceport.shim.client.RenderPipelines;
 import net.minecraft.client.renderer.culling.Frustum;
-import net.minecraft.client.renderer.rendertype.RenderSetup;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.Util;
 import net.minecraft.world.entity.Entity;
 import io.github.mcheliceport.shim.client.event.ClientTickEvent;
-import net.neoforged.neoforge.client.event.RegisterRenderPipelinesEvent;
 
 /**
  * The client half of upstream's long-distance patch ({@code EntityRendererHook#renderFarPass}): a
@@ -27,29 +21,11 @@ import net.neoforged.neoforge.client.event.RegisterRenderPipelinesEvent;
  * vehicles are ticked here, so they keep moving, and drawn without fog, as upstream's far pass did.
  */
 public final class FarVehicles {
-
-    private static final RenderPipeline PIPELINE = RenderPipeline.builder(RenderPipelines.ENTITY_SNIPPET)
-            .withLocation(ResourceLocation.fromNamespaceAndPath(McheliCePort.MOD_ID, "pipeline/far_vehicle"))
-            .withFragmentShader(ResourceLocation.fromNamespaceAndPath(McheliCePort.MOD_ID, "core/far_vehicle"))
-            .withShaderDefine("ALPHA_CUTOUT", 0.1F)
-            .withBindGroupLayout(net.minecraft.client.renderer.BindGroupLayouts.SAMPLER1)
-            .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
-            .build();
-    private static final Function<ResourceLocation, RenderType> FAR = Util.memoize(texture -> RenderType.create(
-            "mcheli_ce_port_far_vehicle",
-            RenderSetup.builder(PIPELINE)
-                    .withTexture("Sampler0", texture)
-                    .useLightmap()
-                    .useOverlay()
-                    .sortOnUpload()
-                    .createRenderSetup()));
+    private static final Function<ResourceLocation, RenderType> FAR = RenderType::entityTranslucentCull;
 
     private FarVehicles() {
     }
 
-    public static void registerPipelines(RegisterRenderPipelinesEvent event) {
-        event.registerPipeline(PIPELINE);
-    }
 
     /** The vehicle render type without fog. */
     public static RenderType renderType(ResourceLocation texture) {
@@ -67,7 +43,7 @@ public final class FarVehicles {
             double camZ) {
         // Vanilla ticks exactly the entities in chunks the client has loaded.
         if (!(entity instanceof AircraftEntity) || !(entity.level() instanceof ClientLevel level)
-                || level.isTickingEntity(entity)) {
+                || ((io.github.mcheliceport.mixin.client.ClientLevelAccessor) level).mcheli$tickingEntities().contains(entity)) {
             return false;
         }
         return Minecraft.getInstance().getEntityRenderDispatcher().shouldRender(entity, frustum, camX, camY, camZ);
@@ -83,7 +59,7 @@ public final class FarVehicles {
         List<AircraftEntity> idle = new ArrayList<>();
         for (Entity entity : level.entitiesForRendering()) {
             if (entity instanceof AircraftEntity vehicle && !vehicle.isRemoved() && !vehicle.isPassenger()
-                    && !level.isTickingEntity(vehicle) && !level.tickRateManager().isEntityFrozen(vehicle)) {
+                    && !((io.github.mcheliceport.mixin.client.ClientLevelAccessor) level).mcheli$tickingEntities().contains(vehicle) && !level.tickRateManager().isEntityFrozen(vehicle)) {
                 idle.add(vehicle);
             }
         }

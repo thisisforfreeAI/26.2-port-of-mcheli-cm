@@ -288,9 +288,9 @@ public abstract class AircraftRenderer<T extends AircraftEntity> extends io.gith
             collector.submitCustomGeometry(poseStack, net.minecraft.client.renderer.RenderType.lines(), (pose, buffer) -> {
                 for (var hook : hooks) {
                     buffer.addVertex(pose, (float) hook.x, (float) hook.y, (float) hook.z).setColor(0xFF000000)
-                            .setNormal(pose, 0, -1, 0).setLineWidth(width);
+                            .setNormal(pose, 0, -1, 0);
                     buffer.addVertex(pose, (float) hook.x, (float) hook.y - length, (float) hook.z).setColor(0xFF000000)
-                            .setNormal(pose, 0, -1, 0).setLineWidth(width);
+                            .setNormal(pose, 0, -1, 0);
                 }
             });
         }
@@ -312,7 +312,7 @@ public abstract class AircraftRenderer<T extends AircraftEntity> extends io.gith
             if (!baked) collector.submitCustomGeometry(poseStack, type, (pose, buffer) -> {
                 for (AircraftPartPoses.Draw draw : draws) {
                     PoseStack.Pose p = pose.copy();
-                    p.mulPose(draw.pose());
+                    io.github.mcheliceport.shim.client.Poses.mul(p, draw.pose());
                     ModelVertices.emit(buffer, p, draw.groups(), color, light, flat, surfaceShade);
                 }
             });
@@ -324,7 +324,7 @@ public abstract class AircraftRenderer<T extends AircraftEntity> extends io.gith
             for(var batch:batches.entrySet()){
                 var details=List.copyOf(batch.getValue());
                 collector.submitCustomGeometry(poseStack,net.minecraft.client.renderer.RenderType.entityTranslucent(batch.getKey(),false),(pose,buffer)->{
-                    for(var detail:details){var local=pose.copy();local.mulPose(detail.pose());
+                    for(var detail:details){var local=pose.copy();io.github.mcheliceport.shim.client.Poses.mul(local, detail.pose());
                         if(detail.weights()!=null)ModelVertices.emitWeighted(buffer,local,detail.groups().getFirst(),detail.color(),detail.weights(),detailLight);
                         else ModelVertices.emit(buffer,local,detail.groups(),detail.color(),detailLight,false);}
                 });
@@ -337,7 +337,7 @@ public abstract class AircraftRenderer<T extends AircraftEntity> extends io.gith
             collector.submitCustomGeometry(poseStack,net.minecraft.client.renderer.RenderType.entityTranslucent(VehicleImpactMarks.TEXTURE,false),
                     (pose,buffer)->{
                 for(var mark:marks){
-                    PoseStack.Pose local=pose.copy();local.mulPose(mark.pose());
+                    PoseStack.Pose local=pose.copy();io.github.mcheliceport.shim.client.Poses.mul(local, mark.pose());
                     var vertices=mark.mesh().vertices();var normal=mark.mesh().normal();
                     int color=((int)(255*mark.opacity())<<24)|0xFFFFFF;
                     for(int t=0;t+2<vertices.size();t+=3)for(int k=0;k<4;k++){
@@ -356,7 +356,7 @@ public abstract class AircraftRenderer<T extends AircraftEntity> extends io.gith
                     : net.minecraft.client.renderer.RenderType.entityTranslucentEmissive(texture),
                     (pose, buffer) -> {
                         PoseStack.Pose p = pose.copy();
-                        p.mulPose(draw.pose());
+                        io.github.mcheliceport.shim.client.Poses.mul(p, draw.pose());
                         ModelVertices.emit(buffer, p, draw.groups(), draw.color(),
                                 io.github.mcheliceport.shim.client.LightCoordsUtil.FULL_BRIGHT, false);
                     });

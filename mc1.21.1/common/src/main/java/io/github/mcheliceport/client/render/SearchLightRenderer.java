@@ -1,10 +1,6 @@
 package io.github.mcheliceport.client.render;
 
 import com.google.common.reflect.TypeToken;
-import com.mojang.blaze3d.pipeline.BlendFunction;
-import com.mojang.blaze3d.pipeline.ColorTargetState;
-import com.mojang.blaze3d.pipeline.RenderPipeline;
-import com.mojang.blaze3d.PrimitiveTopology;
 import com.mojang.blaze3d.vertex.PoseStack;
 import io.github.mcheliceport.entity.aircraft.AircraftEntity;
 import io.github.mcheliceport.entity.aircraft.SearchLightBeam;
@@ -12,39 +8,29 @@ import io.github.mcheliceport.util.McheliMath;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.client.Minecraft;
-import io.github.mcheliceport.shim.client.RenderPipelines;
 import io.github.mcheliceport.shim.client.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import io.github.mcheliceport.shim.client.LivingEntityRenderState;
-import net.minecraft.client.renderer.rendertype.RenderSetup;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.resources.ResourceLocation;
 import io.github.mcheliceport.shim.client.LightCoordsUtil;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.client.event.RegisterRenderPipelinesEvent;
-import net.neoforged.neoforge.client.renderstate.RegisterRenderStateModifiersEvent;
 
 /** Additive, two-sided stock cones; no GL calls, custom shaders or world light-engine updates. */
 public final class SearchLightRenderer {
-    private static final RenderPipeline PIPELINE = RenderPipeline.builder(RenderPipelines.DEBUG_FILLED_SNIPPET)
-            .withLocation(ResourceLocation.fromNamespaceAndPath("mcheli_ce_port", "pipeline/searchlight"))
-            .withColorTargetState(new ColorTargetState(BlendFunction.LIGHTNING))
-            .withPrimitiveTopology(PrimitiveTopology.TRIANGLES).build();
     /** Additive position-colour triangles; the laser designator's beam uses it too. */
-    static final RenderType TYPE = RenderType.create("mcheli_searchlight",
-            RenderSetup.builder(PIPELINE).createRenderSetup());
+    static final RenderType TYPE = McheliRenderTypes.GLOW;
     private SearchLightRenderer() { }
 
-    public static void registerPipelines(RegisterRenderPipelinesEvent event) { event.registerPipeline(PIPELINE); }
 
     public static void submit(List<SearchLightBeam> beams, PoseStack stack, SubmitNodeCollector collector) {
         if (beams.isEmpty()) { return; }
         List<SearchLightBeam> snapshot = List.copyOf(beams);
         collector.submitCustomGeometry(stack, TYPE, (pose, buffer) -> {
             for (var beam : snapshot) {
-                var p = pose.copy(); p.mulPose(beam.pose());
+                var p = pose.copy(); io.github.mcheliceport.shim.client.Poses.mul(p, beam.pose());
                 float radius = beam.light().width / 2;
                 for (int i = 0; i < 24; i++) {
                     buffer.addVertex(p, 0, 0, 0).setColor(dim(beam.light().colorStart, beam.strength()*beam.scatter()));
@@ -62,18 +48,18 @@ public final class SearchLightRenderer {
         return ((int) ((color >>> 24) * strength) << 24) | (color & 0xFFFFFF);
     }
 
-    public static void registerModifiers(RegisterRenderStateModifiersEvent event) {
-        event.registerEntityModifier(new TypeToken<LivingEntityRenderer<LivingEntity, LivingEntityRenderState, ?>>() { },
-                (LivingEntity entity, LivingEntityRenderState state) -> {
+    public static void registerModifiers() {
+        io.github.mcheliceport.shim.client.LivingLightModifiers.register((entity, partialTick, light) -> {
                     var mc = Minecraft.getInstance();
-                    if (mc.level == null) { return; }
-                    Vec3 target = entity.getPosition(state.partialTick);
-                    int block = LightCoordsUtil.block(state.lightCoords);
-                    for (var beam : lights(state.partialTick)) {
+                    if (mc.level == null) { return light; }
+                    Vec3 target = entity.getPosition(partialTick);
+                    int block = LightCoordsUtil.block(light);
+                    for (var beam : lights(partialTick)) {
                         block = Math.max(block, beam.beam.blockLight(target.subtract(beam.position)));
                         if (block == 15) { break; }
                     }
-                    state.lightCoords = LightCoordsUtil.pack(block, LightCoordsUtil.sky(state.lightCoords));
+                    light = LightCoordsUtil.pack(block, LightCoordsUtil.sky(light));
+                    return light;
                 });
     }
 

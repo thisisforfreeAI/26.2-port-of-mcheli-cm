@@ -6,6 +6,7 @@ import io.github.mcheliceport.entity.aircraft.AircraftEntity;
 import java.util.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
@@ -13,7 +14,7 @@ import net.minecraft.tags.FluidTags;
 import io.github.mcheliceport.shim.client.LightCoordsUtil;
 import net.minecraft.world.phys.Vec3;
 import io.github.mcheliceport.shim.client.event.SubscribeEvent;
-import net.neoforged.neoforge.client.event.*;
+import io.github.mcheliceport.shim.client.event.*;
 
 /** Detached, broken V foam and wheel spray. Fluid sampling and support maintenance are bounded. */
 @io.github.mcheliceport.shim.client.event.ClientSubscriber

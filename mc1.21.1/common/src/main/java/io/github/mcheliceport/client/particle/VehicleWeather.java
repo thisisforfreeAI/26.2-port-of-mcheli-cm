@@ -40,8 +40,8 @@ public final class VehicleWeather {
             if(samples<8&&Math.floorMod(now+ac.getId(),10)==0){
                 var pos=BlockPos.containing(ac.position().add(0,1,0));
                 if(world.hasChunkAt(pos)){
-                    samples++;var biome=world.getBiome(pos).value();var precipitation=biome.getPrecipitationAt(pos,world.getSeaLevel());
-                    state.exposed=world.canSeeSky(pos);state.cold=biome.coldEnoughToSnow(pos,world.getSeaLevel());
+                    samples++;var biome=world.getBiome(pos).value();var precipitation=biome.getPrecipitationAt(pos);
+                    state.exposed=world.canSeeSky(pos);state.cold=biome.coldEnoughToSnow(pos);
                     state.rain=world.isRaining()&&precipitation==Biome.Precipitation.RAIN;state.snow=world.isRaining()&&precipitation==Biome.Precipitation.SNOW;
                 }else{state.rain=state.snow=state.exposed=false;}
             }

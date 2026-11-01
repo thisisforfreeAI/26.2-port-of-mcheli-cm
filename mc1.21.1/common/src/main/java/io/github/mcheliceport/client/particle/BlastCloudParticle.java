@@ -2,7 +2,7 @@ package io.github.mcheliceport.client.particle;
 
 import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.state.level.QuadParticleRenderState;
+import io.github.mcheliceport.shim.client.QuadParticleRenderState;
 import net.minecraft.resources.ResourceLocation;
 
 /** A cohesive fire lobe becomes a shaded cloud; no block collision or entity wind scans. */
@@ -140,7 +140,7 @@ final class BlastCloudParticle extends SmokeParticle {
             this.rotation.rotateY((float) Math.PI / 2);
             this.extractRotatedQuad(state, camera, this.rotation, partialTick);
         } else if (depth && localAge < this.fireTicks) {
-            var pos = camera.position();
+            var pos = camera.getPosition();
             float r = this.getQuadSize(partialTick);
             this.alpha = alpha * 0.65F * detail;
             this.extractRotatedQuad(state, this.rotation,
@@ -162,8 +162,8 @@ final class BlastCloudParticle extends SmokeParticle {
     @Override protected float getV0() { return this.sprite.getV(this.frame / 4 * 0.25F); }
     @Override protected float getV1() { return this.sprite.getV((this.frame / 4 + 1) * 0.25F); }
 
-    @Override protected int getLightCoords(float partialTick) {
-        return EffectLook.smokeLight(super.getLightCoords(partialTick),
+    @Override protected int getLightColor(float partialTick) {
+        return EffectLook.smokeLight(super.getLightColor(partialTick),
                 Math.max(ExplosionSequence.fireHeat(this.age + partialTick - this.delay, this.fireTicks),
                         ExplosionSequence.backlight(this.age + partialTick - this.delay, this.backlightTicks)));
     }

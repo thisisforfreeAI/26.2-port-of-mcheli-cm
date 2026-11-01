@@ -16,7 +16,7 @@ final class WreckFlameParticle extends McheliParticle {
     @Override public void tick(){
         xo=x;yo=y;zo=z;if(++age>=lifetime){remove();return;}move(xd,yd,zd);
     }
-    @Override public void extract(net.minecraft.client.renderer.state.level.QuadParticleRenderState state,
+    @Override public void extract(io.github.mcheliceport.shim.client.QuadParticleRenderState state,
             net.minecraft.client.Camera camera,float partial){
         float t=age+partial;frame=Math.min(7,(int)(t*8/lifetime));
         alpha=opacity*Math.clamp(t/3,0,1)*Math.clamp((lifetime-t)/8,0,1);
@@ -27,5 +27,5 @@ final class WreckFlameParticle extends McheliParticle {
     @Override protected float getU1(){return frameU(frame%4,4,true);}
     @Override protected float getV0(){return sprite.getV(frame/4*.25F);}
     @Override protected float getV1(){return sprite.getV((frame/4+1)*.25F);}
-    @Override protected int getLightCoords(float partial){return LightCoordsUtil.FULL_BRIGHT;}
+    @Override protected int getLightColor(float partial){return LightCoordsUtil.FULL_BRIGHT;}
 }

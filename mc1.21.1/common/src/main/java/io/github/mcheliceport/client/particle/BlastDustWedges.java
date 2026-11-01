@@ -2,37 +2,20 @@ package io.github.mcheliceport.client.particle;
 
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Camera;
-import net.minecraft.client.particle.ParticleEngine;
-import net.minecraft.client.particle.ParticleGroup;
-import net.minecraft.client.particle.ParticleRenderType;
-import net.minecraft.client.particle.SingleQuadParticle;
-import net.minecraft.client.renderer.culling.Frustum;
-import net.minecraft.client.renderer.state.level.QuadParticleRenderState;
-import net.neoforged.neoforge.client.event.RegisterParticleGroupsEvent;
+import io.github.mcheliceport.shim.client.SingleQuadParticle;
+import io.github.mcheliceport.shim.client.QuadParticleRenderState;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 /** Low triangular dust canopies, batched through vanilla particle shaders/atlas on both backends. */
 public final class BlastDustWedges {
-    static final ParticleRenderType TYPE = new ParticleRenderType("mcheli_dust_wedges", "m8dw");
     // Three tapered faces; repeated last vertices encode triangles in the vanilla quad stream.
     private static final float[][] POINTS = {{-1,0,-1},{1,0,-1},{-.35F,.02F,1},{.35F,.02F,1},{0,.32F,-.15F}};
     private static final int[][] FACES = {{0,2,4,4},{4,3,1,1},{2,3,4,4}};
     private BlastDustWedges() {}
     static float coordinate(int face, int corner, int axis) { return POINTS[FACES[face][corner]][axis]; }
-    public static void register(RegisterParticleGroupsEvent event) { event.register(TYPE, Group::new); }
-
-    private static final class Group extends ParticleGroup<BlastRingParticle> {
-        private final State state = new State();
-        Group(ParticleEngine engine) { super(engine); }
-        @Override public State extractRenderState(Frustum frustum, Camera camera, float partial) {
-            state.clear();
-            for (BlastRingParticle p : particles) if (frustum.isVisible(p.getBoundingBox().inflate(4)))
-                p.extract(state,camera,partial);
-            return state;
-        }
-    }
     static final class State extends QuadParticleRenderState {
+        State(VertexConsumer buffer) { super(buffer); }
         boolean billboard;
         @Override public void add(SingleQuadParticle.Layer layer,float x,float y,float z,float qx,float qy,float qz,float qw,
                 float size,float u0,float u1,float v0,float v1,int color,int light) {

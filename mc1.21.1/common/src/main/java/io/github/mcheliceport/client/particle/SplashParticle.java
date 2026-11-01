@@ -70,7 +70,7 @@ public class SplashParticle extends SmokeParticle {
     }
 
     @Override
-    protected int getLightCoords(float partialTick) {
+    protected int getLightColor(float partialTick) {
         // Upstream's splash used the default brightness at its position.
         return io.github.mcheliceport.shim.client.LightCoordsUtil.getLightCoords(this.level,
                 BlockPos.containing(this.x, this.y, this.z));

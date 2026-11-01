@@ -10,8 +10,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import io.github.mcheliceport.shim.client.event.RegisterKeyMappingsEvent;
-import net.neoforged.neoforge.client.settings.IKeyConflictContext;
-import net.neoforged.neoforge.client.settings.KeyConflictContext;
+import io.github.mcheliceport.shim.client.KeyContext;
 import org.lwjgl.glfw.GLFW;
 
 /**
@@ -21,41 +20,22 @@ import org.lwjgl.glfw.GLFW;
  */
 public final class ModKeyMappings {
 
-    public static final KeyMapping.Category CATEGORY =
-            new KeyMapping.Category(ResourceLocation.fromNamespaceAndPath(McheliCePort.MOD_ID, "vehicles"));
+    public static final String CATEGORY = "key.category." + McheliCePort.MOD_ID + ".vehicles";
 
     /** Active while the player rides a McHeli vehicle, in any seat, or sits at a laser designator. */
-    public static final IKeyConflictContext RIDING = new IKeyConflictContext() {
-        @Override
-        public boolean isActive() {
-            Minecraft mc = Minecraft.getInstance();
-            return mc.screen == null && mc.player != null && (isRidingAircraft(mc.player.getVehicle())
-                    || mc.player.getVehicle() instanceof io.github.mcheliceport.entity.gltd.GltdEntity);
-        }
-
-        @Override
-        public boolean conflicts(IKeyConflictContext other) {
-            // KeyModifier.NONE suppresses keys while Ctrl/Shift/Alt is held unless this context
-            // conflicts with IN_GAME. Ctrl itself and Ctrl+C/I/F must all remain usable while riding.
-            return other == this || other == KeyConflictContext.IN_GAME;
-        }
+    public static final KeyContext RIDING = () -> {
+        Minecraft mc = Minecraft.getInstance();
+        return mc.screen == null && mc.player != null && (isRidingAircraft(mc.player.getVehicle())
+                || mc.player.getVehicle() instanceof io.github.mcheliceport.entity.gltd.GltdEntity);
     };
 
     /**
      * Upstream's multiplayer keys work outside vehicles too, with no screen open. Upstream kept them
      * off singleplayer (unless the debug log was on); here they work there too.
      */
-    public static final IKeyConflictContext MULTIPLAY = new IKeyConflictContext() {
-        @Override
-        public boolean isActive() {
-            Minecraft mc = Minecraft.getInstance();
-            return mc.screen == null && mc.player != null;
-        }
-
-        @Override
-        public boolean conflicts(IKeyConflictContext other) {
-            return other == this || other == KeyConflictContext.IN_GAME;
-        }
+    public static final KeyContext MULTIPLAY = () -> {
+        Minecraft mc = Minecraft.getInstance();
+        return mc.screen == null && mc.player != null;
     };
 
     public static final KeyMapping UP = key("up", GLFW.GLFW_KEY_W);
@@ -84,12 +64,10 @@ public final class ModKeyMappings {
     public static final KeyMapping CAMERA_DISTANCE_DOWN = key("camera_distance_down", GLFW.GLFW_KEY_PAGE_DOWN);
 
     /** Upstream {@code KeyScoreboard}: held, it shows the team lists. */
-    public static final KeyMapping SCOREBOARD = new KeyMapping("key." + McheliCePort.MOD_ID + ".scoreboard",
-            MULTIPLAY, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_L, CATEGORY);
+    public static final KeyMapping SCOREBOARD = KeyContext.bind(new KeyMapping("key." + McheliCePort.MOD_ID + ".scoreboard", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_L, CATEGORY), MULTIPLAY);
     /** Upstream {@code KeyMultiplayManager}: opens the multiplay manager. */
-    public static final KeyMapping MULTIPLAY_MANAGER = new KeyMapping(
-            "key." + McheliCePort.MOD_ID + ".multiplay_manager", MULTIPLAY, InputConstants.Type.KEYSYM,
-            GLFW.GLFW_KEY_M, CATEGORY);
+    public static final KeyMapping MULTIPLAY_MANAGER = KeyContext.bind(new KeyMapping(
+            "key." + McheliCePort.MOD_ID + ".multiplay_manager", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_M, CATEGORY), MULTIPLAY);
 
     /** Upstream's fixed {@code KeyUseWeapon} (-100, the left mouse button); bindable here. */
     public static final KeyMapping USE_WEAPON = mouse("use_weapon", GLFW.GLFW_MOUSE_BUTTON_LEFT);
@@ -109,11 +87,9 @@ public final class ModKeyMappings {
     public static final KeyMapping MARK_TARGET = key("mark_target", GLFW.GLFW_KEY_M);
 
     /** Upstream's wingman category, with its one key. */
-    public static final KeyMapping.Category WINGMAN_CATEGORY =
-            new KeyMapping.Category(ResourceLocation.fromNamespaceAndPath(McheliCePort.MOD_ID, "wingman"));
+    public static final String WINGMAN_CATEGORY = "key.category." + McheliCePort.MOD_ID + ".wingman";
     /** Upstream {@code WingmanKeyHandler.KEY_PANEL}: opens the wingman panel while piloting. */
-    public static final KeyMapping WINGMAN_PANEL = new KeyMapping("key." + McheliCePort.MOD_ID + ".wingman_panel",
-            RIDING, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_KP_0, WINGMAN_CATEGORY);
+    public static final KeyMapping WINGMAN_PANEL = KeyContext.bind(new KeyMapping("key." + McheliCePort.MOD_ID + ".wingman_panel", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_KP_0, WINGMAN_CATEGORY), RIDING);
 
     public static final List<KeyMapping> ALL = List.of(UP, DOWN, RIGHT, LEFT, SWITCH_GUNNER, SWITCH_HOVERING, ZOOM,
             UNMOUNT, EXTRA, FREE_LOOK, GUI, GEAR_UP_DOWN, CAMERA_MODE, CAMERA_DISTANCE_UP, CAMERA_DISTANCE_DOWN,
@@ -125,13 +101,11 @@ public final class ModKeyMappings {
     }
 
     private static KeyMapping key(String name, int keyCode) {
-        return new KeyMapping("key." + McheliCePort.MOD_ID + "." + name, RIDING, InputConstants.Type.KEYSYM, keyCode,
-                CATEGORY);
+        return KeyContext.bind(new KeyMapping("key." + McheliCePort.MOD_ID + "." + name, InputConstants.Type.KEYSYM, keyCode, CATEGORY), RIDING);
     }
 
     private static KeyMapping mouse(String name, int button) {
-        return new KeyMapping("key." + McheliCePort.MOD_ID + "." + name, RIDING, InputConstants.Type.MOUSE, button,
-                CATEGORY);
+        return KeyContext.bind(new KeyMapping("key." + McheliCePort.MOD_ID + "." + name, InputConstants.Type.MOUSE, button, CATEGORY), RIDING);
     }
 
     public static boolean isRidingAircraft(Entity vehicle) {
@@ -140,8 +114,6 @@ public final class ModKeyMappings {
     }
 
     public static void register(RegisterKeyMappingsEvent event) {
-        event.registerCategory(CATEGORY);
-        event.registerCategory(WINGMAN_CATEGORY);
         ALL.forEach(event::register);
     }
 

@@ -21,7 +21,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.fml.ModList;
 
 /**
  * Fills a {@link HudFrame} from the ridden vehicle each frame: upstream's
@@ -79,7 +78,7 @@ public final class HudVariables {
         Vec3 motion = ac.getDeltaMovement();
         Map<String, Object> v = frame.vars;
         v.clear();
-        v.put("time", level.getOverworldClockTime() % 24000L);
+        v.put("time", level.getDayTime() % 24000L);
         v.put("test_mode", frame.testMode);
         v.put("plyr_yaw", Mth.wrapDegrees(player.getYRot()));
         v.put("plyr_pitch", player.getXRot());
@@ -130,7 +129,7 @@ public final class HudVariables {
             Vec3 motion) {
         Map<HudStringArg, Object> s = frame.stringArgs;
         s.clear();
-        int worldTime = (int) ((level.getOverworldClockTime() + 6000L) % 24000L);
+        int worldTime = (int) ((level.getDayTime() + 6000L) % 24000L);
         s.put(HudStringArg.NAME, info != null ? info.displayName : "");
         s.put(HudStringArg.ALTITUDE, altitude);
         s.put(HudStringArg.DATE, new Date());
@@ -153,9 +152,8 @@ public final class HudVariables {
         s.put(HudStringArg.RELOAD_PER, reloadPer);
         s.put(HudStringArg.RELOAD_SEC, reloadSec);
         s.put(HudStringArg.MORTAR_DIST, mortarDist);
-        s.put(HudStringArg.MC_VER, SharedConstants.getCurrentVersion().name());
-        s.put(HudStringArg.MOD_VER, ModList.get().getModContainerById(McheliCePort.MOD_ID)
-                .map(c -> c.getModInfo().getVersion().toString()).orElse(""));
+        s.put(HudStringArg.MC_VER, SharedConstants.getCurrentVersion().getName());
+        s.put(HudStringArg.MOD_VER, io.github.mcheliceport.platform.Services.PLATFORM.modVersion());
         s.put(HudStringArg.MOD_NAME, "MC Helicopter MOD");
         s.put(HudStringArg.YAW, HudInterpreter.getRotate360(ac.getYaw() + 180.0F));
         s.put(HudStringArg.PITCH, -ac.getPitch());

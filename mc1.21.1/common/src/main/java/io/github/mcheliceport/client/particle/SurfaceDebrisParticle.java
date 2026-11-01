@@ -25,7 +25,7 @@ final class SurfaceDebrisParticle extends McheliParticle {
         alpha = Math.min(1, (lifetime - age) / 5F);
     }
 
-    @Override public void extract(net.minecraft.client.renderer.state.level.QuadParticleRenderState state,
+    @Override public void extract(io.github.mcheliceport.shim.client.QuadParticleRenderState state,
             net.minecraft.client.Camera camera, float partialTick) {
         getFacingCameraMode().setRotation(rotation, camera, partialTick);
         rotation.rotateZ((age + partialTick) * spin);

@@ -45,7 +45,7 @@ public class GlowParticle extends McheliParticle {
     }
 
     @Override
-    public void extract(net.minecraft.client.renderer.state.level.QuadParticleRenderState state,
+    public void extract(io.github.mcheliceport.shim.client.QuadParticleRenderState state,
             net.minecraft.client.Camera camera, float partialTick) {
         this.alpha = this.baseAlpha * EffectLook.glowAlpha(this.age + partialTick, this.lifetime);
         super.extract(state, camera, partialTick);
@@ -58,7 +58,7 @@ public class GlowParticle extends McheliParticle {
     }
 
     @Override
-    protected int getLightCoords(float partialTick) {
+    protected int getLightColor(float partialTick) {
         return LightCoordsUtil.FULL_BRIGHT;
     }
 

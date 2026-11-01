@@ -1,57 +1,59 @@
 package io.github.mcheliceport.client.particle;
 
-import com.mojang.blaze3d.pipeline.BlendFunction;
-import com.mojang.blaze3d.pipeline.ColorTargetState;
-import com.mojang.blaze3d.pipeline.DepthStencilState;
-import com.mojang.blaze3d.pipeline.RenderPipeline;
-import com.mojang.blaze3d.platform.CompareOp;
-import io.github.mcheliceport.McheliCePort;
-import net.minecraft.client.particle.SingleQuadParticle;
-import io.github.mcheliceport.shim.client.RenderPipelines;
+import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.VertexFormat;
+import io.github.mcheliceport.shim.client.SingleQuadParticle;
+import java.util.List;
+import net.minecraft.client.particle.ParticleRenderType;
+import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.texture.TextureAtlas;
-import net.minecraft.resources.ResourceLocation;
-import net.neoforged.neoforge.client.event.RegisterRenderPipelinesEvent;
+import net.minecraft.client.renderer.texture.TextureManager;
 
 /**
- * The particle layer of the M8 glows: vanilla's particle shaders with additive blending
- * ({@code src alpha, one}) and no depth writes, so overlapping glows brighten each other and never
- * hide the smoke behind them. Vanilla pipeline state only, so it runs on OpenGL and Vulkan.
+ * The port's particle layers. 26.2 gives them their own pipelines; on 1.21.1 they are particle
+ * render types that set the blend state: additive glow, and the translucent smoke and condensation
+ * layers, which do not write depth so overlapping puffs blend.
  */
 public final class ParticleLayers {
 
-    static final RenderPipeline ADDITIVE_PIPELINE = RenderPipeline.builder(RenderPipelines.PARTICLE_SNIPPET)
-            .withLocation(ResourceLocation.fromNamespaceAndPath(McheliCePort.MOD_ID, "pipeline/additive_particle"))
-            .withColorTargetState(new ColorTargetState(BlendFunction.LIGHTNING))
-            .withDepthStencilState(new DepthStencilState(CompareOp.GREATER_THAN_OR_EQUAL, false))
-            .build();
-    /** One instance: the particle renderer groups layers by identity. */
-    public static final SingleQuadParticle.Layer ADDITIVE = new SingleQuadParticle.Layer(true,
-            TextureAtlas.LOCATION_PARTICLES, ADDITIVE_PIPELINE);
+    private static ParticleRenderType type(String name, boolean additive) {
+        return new ParticleRenderType() {
+            @Override
+            public BufferBuilder begin(Tesselator tesselator, TextureManager textures) {
+                RenderSystem.setShader(GameRenderer::getParticleShader);
+                RenderSystem.setShaderTexture(0, TextureAtlas.LOCATION_PARTICLES);
+                RenderSystem.enableBlend();
+                RenderSystem.depthMask(false);
+                if (additive) {
+                    RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE);
+                } else {
+                    RenderSystem.defaultBlendFunc();
+                }
+                return tesselator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.PARTICLE);
+            }
 
-    private static final RenderPipeline ERODING_SMOKE_PIPELINE = RenderPipeline.builder(RenderPipelines.PARTICLE_SNIPPET)
-            .withLocation(ResourceLocation.fromNamespaceAndPath(McheliCePort.MOD_ID, "pipeline/eroding_smoke"))
-            .withFragmentShader(ResourceLocation.fromNamespaceAndPath(McheliCePort.MOD_ID, "core/eroding_smoke"))
-            .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
-            .withDepthStencilState(new DepthStencilState(CompareOp.GREATER_THAN_OR_EQUAL, false))
-            .build();
-    static final SingleQuadParticle.Layer ERODING_SMOKE = new SingleQuadParticle.Layer(true,
-            TextureAtlas.LOCATION_PARTICLES, ERODING_SMOKE_PIPELINE);
-
-    // Water vapor keeps the existing wisp alpha while receiving normal ambient particle lighting.
-    private static final RenderPipeline CONDENSATION_PIPELINE=RenderPipeline.builder(RenderPipelines.PARTICLE_SNIPPET)
-            .withLocation(ResourceLocation.fromNamespaceAndPath(McheliCePort.MOD_ID,"pipeline/condensation"))
-            .withFragmentShader(ResourceLocation.fromNamespaceAndPath(McheliCePort.MOD_ID,"core/condensation"))
-            .withCull(false)
-            .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
-            .withDepthStencilState(new DepthStencilState(CompareOp.GREATER_THAN_OR_EQUAL,false)).build();
-    static final SingleQuadParticle.Layer CONDENSATION=new SingleQuadParticle.Layer(true,TextureAtlas.LOCATION_PARTICLES,CONDENSATION_PIPELINE);
-
-    private ParticleLayers() {
+            @Override
+            public String toString() {
+                return name;
+            }
+        };
     }
 
-    public static void registerPipelines(RegisterRenderPipelinesEvent event) {
-        event.registerPipeline(ADDITIVE_PIPELINE);
-        event.registerPipeline(ERODING_SMOKE_PIPELINE);
-        event.registerPipeline(CONDENSATION_PIPELINE);
+    public static final ParticleRenderType ADDITIVE_TYPE = type("MCHELI_ADDITIVE", true);
+    public static final ParticleRenderType ERODING_SMOKE_TYPE = type("MCHELI_ERODING_SMOKE", false);
+    public static final ParticleRenderType CONDENSATION_TYPE = type("MCHELI_CONDENSATION", false);
+
+    /** Drawn after vanilla's sheets; loaders add these to the particle engine's render order. */
+    public static final List<ParticleRenderType> TYPES = List.of(ERODING_SMOKE_TYPE, CONDENSATION_TYPE, ADDITIVE_TYPE);
+
+    public static final SingleQuadParticle.Layer ADDITIVE = new SingleQuadParticle.Layer(ADDITIVE_TYPE);
+    static final SingleQuadParticle.Layer ERODING_SMOKE = new SingleQuadParticle.Layer(ERODING_SMOKE_TYPE);
+    static final SingleQuadParticle.Layer CONDENSATION = new SingleQuadParticle.Layer(CONDENSATION_TYPE);
+
+    private ParticleLayers() {
     }
 }

@@ -6,14 +6,13 @@ import io.github.mcheliceport.damage.*;
 import io.github.mcheliceport.entity.aircraft.AircraftEntity;
 import net.minecraft.client.*;
 import io.github.mcheliceport.shim.client.GuiGraphicsExtractor;
-import net.minecraft.client.gui.render.TextureSetup;
 import io.github.mcheliceport.shim.client.RenderPipelines;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import io.github.mcheliceport.shim.client.event.SubscribeEvent;
-import net.neoforged.neoforge.client.event.*;
+import io.github.mcheliceport.shim.client.event.*;
 import org.joml.Matrix3x2f;
 
 /** One pilot's optional annunciator strip and sparse closed-canopy droplets. */
@@ -94,7 +93,7 @@ public final class CockpitFeedbackLayer {
         submit(g,dark,0x33212F38);submit(g,light,0x527EB2C6);
     }
     private static void submit(GuiGraphicsExtractor g,GuiHudCanvas.QuadBuilder q,int color){
-        float[] vertices=q.toArray();if(vertices.length==0)return;var pose=new Matrix3x2f(g.pose());var scissor=g.peekScissorStack();
-        g.submitGuiElementRenderState(new HudShapeRenderState(RenderPipelines.GUI,TextureSetup.noTexture(),pose,vertices,false,color,scissor,HudShapeRenderState.bounds(vertices,2,pose,scissor)));
+        float[] vertices=q.toArray();if(vertices.length==0)return;
+        HudShapeRenderState.draw(g,RenderPipelines.GUI,null,new Matrix3x2f(g.pose()),vertices,false,color);
     }
 }

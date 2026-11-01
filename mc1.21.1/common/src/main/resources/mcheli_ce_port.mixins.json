@@ -4,6 +4,6 @@
   "package": "io.github.mcheliceport.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": ["ChunkMapAccessor", "LevelPartsMixin", "ServerLevelPartsMixin", "ServerEntityCallbacksMixin", "ServerEntityMixin"],
-  "client": ["ClientEntityCallbacksMixin"],
+  "client": ["ClientEntityCallbacksMixin", "client.CameraInvoker", "client.ClientLevelAccessor", "client.GameRendererInvoker", "client.KeyMappingAccessor", "client.LivingEntityRendererMixin", "client.MouseHandlerAccessor"],
   "injectors": {"defaultRequire": 1}
 }

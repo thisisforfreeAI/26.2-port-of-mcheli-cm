@@ -33,12 +33,12 @@ final class RotorRippleParticle extends McheliParticle {
                 && (!this.level.hasChunkAt(this.water) || !this.level.getFluidState(this.water).is(FluidTags.WATER))) this.remove();
     }
 
-    @Override public void extract(net.minecraft.client.renderer.state.level.QuadParticleRenderState state,
+    @Override public void extract(io.github.mcheliceport.shim.client.QuadParticleRenderState state,
             net.minecraft.client.Camera camera, float partialTick) {
         this.alpha = this.opacity * RotorWashLook.fade(this.age + partialTick, this.lifetime);
         this.extractRotatedQuad(state, camera, this.facing, partialTick);
     }
 
     @Override public float getQuadSize(float partialTick) { return this.radius * (0.4F + 0.6F * Math.min(1, (this.age + partialTick) / this.lifetime)); }
-    @Override protected int getLightCoords(float partialTick) { return this.light; }
+    @Override protected int getLightColor(float partialTick) { return this.light; }
 }

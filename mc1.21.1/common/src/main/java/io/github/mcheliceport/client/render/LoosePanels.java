@@ -1,5 +1,6 @@
 package io.github.mcheliceport.client.render;
 
+import net.minecraft.client.renderer.RenderType;
 import io.github.mcheliceport.client.model.McheliModel;
 import io.github.mcheliceport.config.*;
 import io.github.mcheliceport.entity.aircraft.AircraftEntity;
@@ -272,7 +273,7 @@ public final class LoosePanels {
             boolean hulk=burnt&&p.owner.isDestroyed();
             int color=((int)(255*Math.clamp((p.life-age)/15,0,1))<<24)|(thermal?0xFFFFFF:hulk?0x8A857E:0xDADADA);
             event.getSubmitNodeCollector().submitCustomGeometry(event.getPoseStack(),RenderType.entityTranslucent(texture,false),(pose,buffer)->{
-                var local=pose.copy();local.mulPose(transform);ModelVertices.emit(buffer,local,List.of(p.group),color,pieceLight,false);
+                var local=pose.copy();io.github.mcheliceport.shim.client.Poses.mul(local, transform);ModelVertices.emit(buffer,local,List.of(p.group),color,pieceLight,false);
             });
             if(burnt){
                 int alpha=(color>>>24)&255;
@@ -283,13 +284,13 @@ public final class LoosePanels {
                     if(bands!=null)for(int b=0;b<2;b++){
                         var soot=bands[b];int sootColor=((int)(alpha*(b==0?.55F+.35F*charring:.15F+.35F*charring))<<24)|0xFFFFFF;
                         event.getSubmitNodeCollector().submitCustomGeometry(event.getPoseStack(),RenderType.entityTranslucent(WreckAppearance.CHAR,false),(pose,buffer)->{
-                            var local=pose.copy();local.mulPose(transform);ModelVertices.emit(buffer,local,List.of(soot),sootColor,pieceLight,false);
+                            var local=pose.copy();io.github.mcheliceport.shim.client.Poses.mul(local, transform);ModelVertices.emit(buffer,local,List.of(soot),sootColor,pieceLight,false);
                         });
                     }
                 }else{
                     var soot=io.github.mcheliceport.client.model.WreckMesh.sootOf(p.group);int sootColor=((int)(alpha*.9F)<<24)|0xFFFFFF;
                     event.getSubmitNodeCollector().submitCustomGeometry(event.getPoseStack(),RenderType.entityTranslucent(WreckAppearance.CHAR,false),(pose,buffer)->{
-                        var local=pose.copy();local.mulPose(transform);ModelVertices.emit(buffer,local,List.of(soot),sootColor,pieceLight,false);
+                        var local=pose.copy();io.github.mcheliceport.shim.client.Poses.mul(local, transform);ModelVertices.emit(buffer,local,List.of(soot),sootColor,pieceLight,false);
                     });
                 }
             }
@@ -297,11 +298,11 @@ public final class LoosePanels {
             if(shell==null)continue;
             int alpha=color&0xFF000000;
             event.getSubmitNodeCollector().submitCustomGeometry(event.getPoseStack(),RenderType.entityTranslucent(texture,false),(pose,buffer)->{
-                var local=pose.copy();local.mulPose(transform);
+                var local=pose.copy();io.github.mcheliceport.shim.client.Poses.mul(local, transform);
                 ModelVertices.emit(buffer,local,List.of(shell.lining()),alpha|(thermal?0xFFFFFF:PlaneAirframeParts.LINING&0xFFFFFF),pieceLight,false);
             });
             event.getSubmitNodeCollector().submitCustomGeometry(event.getPoseStack(),RenderType.entityTranslucent(thermal?texture:METAL,false),(pose,buffer)->{
-                var local=pose.copy();local.mulPose(transform);
+                var local=pose.copy();io.github.mcheliceport.shim.client.Poses.mul(local, transform);
                 ModelVertices.emit(buffer,local,List.of(shell.cap()),alpha|(thermal?0xFFFFFF:PlaneAirframeParts.CAP&0xFFFFFF),pieceLight,false);
             });
         }

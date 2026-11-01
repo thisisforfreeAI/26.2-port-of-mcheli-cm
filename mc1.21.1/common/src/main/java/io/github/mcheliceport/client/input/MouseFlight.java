@@ -60,12 +60,12 @@ public final class MouseFlight {
         // The turn vanilla just applied, worked out the way MouseHandler#turnPlayer does.
         double s = mc.options.sensitivity().get() * 0.6 + 0.2;
         double sens = s * s * s * 8.0;
-        double xo = mc.mouseHandler.getXVelocity() * sens;
-        double yo = mc.mouseHandler.getYVelocity() * sens;
-        if (mc.options.invertMouseX().get()) {
+        double xo = ((io.github.mcheliceport.mixin.client.MouseHandlerAccessor) mc.mouseHandler).mcheli$dx() * sens;
+        double yo = ((io.github.mcheliceport.mixin.client.MouseHandlerAccessor) mc.mouseHandler).mcheli$dy() * sens;
+        if (false) { // 1.21.1 has no inverted mouse X option
             xo = -xo;
         }
-        boolean vanillaInvertY = mc.options.invertMouseY().get();
+        boolean vanillaInvertY = mc.options.invertYMouse().get();
         double turnedPitch = (vanillaInvertY ? -yo : yo) * 0.15;
         float yawBefore = player.getYRot() - (float) (xo * 0.15);
         float pitchBefore = Mth.clamp(player.getXRot() - (float) turnedPitch, -90.0F, 90.0F);

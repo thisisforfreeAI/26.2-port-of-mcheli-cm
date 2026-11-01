@@ -3,11 +3,10 @@ package io.github.mcheliceport.client.particle;
 import java.util.List;
 import java.util.Optional;
 import io.github.mcheliceport.config.EffectQuality;
-import net.minecraft.core.particles.ParticleLimit;
+import net.minecraft.core.particles.ParticleGroup;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.particle.SingleQuadParticle;
-import net.minecraft.data.AtlasIds;
+import io.github.mcheliceport.shim.client.SingleQuadParticle;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
@@ -23,7 +22,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 abstract class McheliParticle extends SingleQuadParticle {
 
     protected final boolean polished = EffectQuality.enhanced();
-    private final Optional<ParticleLimit> particleLimit = EffectAdmission.limit(this instanceof FlashParticle);
+    private final Optional<ParticleGroup> particleLimit = EffectAdmission.limit(this instanceof FlashParticle);
 
     public boolean isEffectedWind;
     public boolean diffusible;
@@ -45,8 +44,7 @@ abstract class McheliParticle extends SingleQuadParticle {
     }
 
     static TextureAtlasSprite sprite(ResourceLocation id) {
-        return Minecraft.getInstance().getAtlasManager().getAtlasOrThrow(AtlasIds.PARTICLES)
-                .getSprite(id);
+        return Minecraft.getInstance().getTextureAtlas(net.minecraft.client.renderer.texture.TextureAtlas.LOCATION_PARTICLES).apply(id);
     }
 
     public void setAlphaF(float a) {
@@ -58,7 +56,7 @@ abstract class McheliParticle extends SingleQuadParticle {
     }
 
     @Override
-    public Optional<ParticleLimit> getParticleLimit() {
+    public Optional<ParticleGroup> getParticleLimit() {
         return this.particleLimit;
     }
 
@@ -72,7 +70,7 @@ abstract class McheliParticle extends SingleQuadParticle {
         double oy = ya;
         double oz = za;
         if (this.hasPhysics && (xa != 0.0 || ya != 0.0 || za != 0.0)) {
-            Vec3 movement = Entity.collideBoundingBox(CollisionContext.positionContext(this.y), new Vec3(xa, ya, za),
+            Vec3 movement = Entity.collideBoundingBox(null, new Vec3(xa, ya, za),
                     this.getBoundingBox(), this.level, List.of());
             xa = movement.x;
             ya = movement.y;

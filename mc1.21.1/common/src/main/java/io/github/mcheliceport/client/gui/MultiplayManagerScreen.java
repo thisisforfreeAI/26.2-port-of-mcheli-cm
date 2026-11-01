@@ -16,7 +16,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextColor;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.scores.PlayerTeam;
-import net.minecraft.world.scores.TeamColor;
+import net.minecraft.ChatFormatting;
 import io.github.mcheliceport.platform.network.ClientPacketDistributor;
 import org.jspecify.annotations.Nullable;
 
@@ -32,10 +32,10 @@ public class MultiplayManagerScreen extends Screen {
 
     private static final ResourceLocation NEW_TEAM = ResourceLocation.fromNamespaceAndPath("mcheli", "textures/gui/mp_new_team.png");
     /** Upstream {@code colorNames}: no color, then the team colors but white. */
-    private static final @Nullable TeamColor[] COLORS = {null, TeamColor.BLACK, TeamColor.DARK_BLUE,
-            TeamColor.DARK_GREEN, TeamColor.DARK_AQUA, TeamColor.DARK_RED, TeamColor.DARK_PURPLE, TeamColor.GOLD,
-            TeamColor.GRAY, TeamColor.DARK_GRAY, TeamColor.BLUE, TeamColor.GREEN, TeamColor.AQUA, TeamColor.RED,
-            TeamColor.LIGHT_PURPLE, TeamColor.YELLOW};
+    private static final @Nullable ChatFormatting[] COLORS = {null, ChatFormatting.BLACK, ChatFormatting.DARK_BLUE,
+            ChatFormatting.DARK_GREEN, ChatFormatting.DARK_AQUA, ChatFormatting.DARK_RED, ChatFormatting.DARK_PURPLE, ChatFormatting.GOLD,
+            ChatFormatting.GRAY, ChatFormatting.DARK_GRAY, ChatFormatting.BLUE, ChatFormatting.GREEN, ChatFormatting.AQUA, ChatFormatting.RED,
+            ChatFormatting.LIGHT_PURPLE, ChatFormatting.YELLOW};
     /** Upstream's 16 characters, in the characters {@code /team add} reads as one word. */
     private static final Pattern TEAM_NAME = Pattern.compile("[0-9A-Za-z_\\-.+]{1,16}");
 
@@ -206,7 +206,7 @@ public class MultiplayManagerScreen extends Screen {
     private void createTeam() {
         String name = this.teamName;
         if (TEAM_NAME.matcher(name).matches() && this.minecraft.player != null) {
-            TeamColor color = COLORS[this.teamColor];
+            ChatFormatting color = COLORS[this.teamColor];
             this.minecraft.player.connection.sendCommand("team add " + name);
             this.minecraft.player.connection.sendCommand(
                     "team modify " + name + " color " + (color == null ? "reset" : color.getSerializedName()));
@@ -261,7 +261,7 @@ public class MultiplayManagerScreen extends Screen {
 
     /** Upstream drew no darkened background, only the lists (and the new team panel). */
     @Override
-    public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
+    public void renderBackground(net.minecraft.client.gui.GuiGraphics graphics$v, int mouseX, int mouseY, float a) { GuiGraphicsExtractor graphics = GuiGraphicsExtractor.of(graphics$v);
         if (this.minecraft.level == null || this.minecraft.player == null) {
             return;
         }
@@ -277,8 +277,8 @@ public class MultiplayManagerScreen extends Screen {
         int y = this.height / 2;
         graphics.centeredText(this.font, "Create team", x, y - 85, -1);
         graphics.centeredText(this.font, "Team name", x, y - 70, -1);
-        TeamColor color = COLORS[this.teamColor];
-        int rgb = color == null ? 0xFFFFFF : color.rgb();
+        ChatFormatting color = COLORS[this.teamColor];
+        int rgb = color == null || color.getColor() == null ? 0xFFFFFF : color.getColor();
         graphics.centeredText(this.font,
                 Component.literal("Team Color").withStyle(s -> s.withColor(TextColor.fromRgb(rgb))), x, y - 13, -1);
     }

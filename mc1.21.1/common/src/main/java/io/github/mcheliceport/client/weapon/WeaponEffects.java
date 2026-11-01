@@ -1,5 +1,6 @@
 package io.github.mcheliceport.client.weapon;
 
+import net.minecraft.client.renderer.RenderType;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
@@ -166,7 +167,7 @@ public final class WeaponEffects {
             var model=BulletModels.bullet(entry.getKey());if(model==null)continue;
             var texture=ResourceLocation.fromNamespaceAndPath("mcheli","textures/bullets/"+entry.getKey().toLowerCase(Locale.ROOT)+".png");var draws=List.copyOf(entry.getValue());
             collector.submitCustomGeometry(poseStack,AircraftRenderTypes.aircraft(texture),(pose,buffer)->{
-                for(var draw:draws){var p=pose.copy();p.mulPose(draw.pose);ModelVertices.emit(buffer,p,model.groups,0xFFFFFFFF,draw.light,false);}
+                for(var draw:draws){var p=pose.copy();io.github.mcheliceport.shim.client.Poses.mul(p, draw.pose);ModelVertices.emit(buffer,p,model.groups,0xFFFFFFFF,draw.light,false);}
             });casingBatches++;
         }
     }

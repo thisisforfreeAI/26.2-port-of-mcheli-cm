@@ -37,7 +37,7 @@ public record VehicleLightProbe(double minX, double minY, double minZ, float siz
             }
             int block = level.getBrightness(LightLayer.BLOCK, pos), sky = level.getBrightness(LightLayer.SKY, pos);
             // A corner inside the ground or a wall reads no light; take the space above it instead.
-            if (level.getBlockState(pos).isSolidRender()) {
+            if (level.getBlockState(pos).isSolidRender(level, pos)) {
                 pos.move(0, 1, 0);
                 block = Math.max(block, level.getBrightness(LightLayer.BLOCK, pos));
                 sky = Math.max(sky, level.getBrightness(LightLayer.SKY, pos));

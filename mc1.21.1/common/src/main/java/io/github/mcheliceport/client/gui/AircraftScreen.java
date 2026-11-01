@@ -22,8 +22,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.fml.ModList;
-import net.neoforged.neoforge.client.gui.ConfigurationScreen;
 import io.github.mcheliceport.platform.network.ClientPacketDistributor;
 import org.lwjgl.glfw.GLFW;
 
@@ -63,8 +61,9 @@ public class AircraftScreen extends AbstractContainerScreen<AircraftMenu> {
     private boolean commandEditable;
 
     public AircraftScreen(AircraftMenu menu, Inventory inventory, Component title) {
-        super(menu, inventory, title, AircraftMenu.CONTENT_X + 176,
-                menu.getPlayerInventoryY() + 82 + 1 + COMMAND_STRIP_H);
+        super(menu, inventory, title);
+        this.imageWidth = AircraftMenu.CONTENT_X + 176;
+        this.imageHeight = menu.getPlayerInventoryY() + 82 + 1 + COMMAND_STRIP_H;
         this.titleLabelX = AircraftMenu.CONTENT_X + 8;
         this.inventoryLabelX = AircraftMenu.CONTENT_X + 8;
         this.inventoryLabelY = menu.getPlayerInventoryY() - 11;
@@ -143,10 +142,11 @@ public class AircraftScreen extends AbstractContainerScreen<AircraftMenu> {
      * port's settings are NeoForge's config screen.
      */
     private void openOptions() {
-        ModList.get().getModContainerById(McheliCePort.MOD_ID).ifPresent(container -> {
+        var config = io.github.mcheliceport.platform.ClientPlatform.INSTANCE.configScreen(null);
+        if (config != null) {
             this.onClose();
-            this.minecraft.setScreenAndShow(new ConfigurationScreen(container, null));
-        });
+            this.minecraft.setScreen(config);
+        }
     }
 
     /** Upstream sends the field's text as a command on Enter (CE built the packet but never sent it). */
@@ -166,7 +166,7 @@ public class AircraftScreen extends AbstractContainerScreen<AircraftMenu> {
             if (event.key() == GLFW.GLFW_KEY_ENTER || event.key() == GLFW.GLFW_KEY_KP_ENTER) {
                 this.runCommandNow();
             } else {
-                this.commandField.keyPressed(event);
+                this.commandField.keyPressed(event.key(), event.scancode(), event.modifiers());
             }
             return true;
         }
@@ -226,8 +226,7 @@ public class AircraftScreen extends AbstractContainerScreen<AircraftMenu> {
     }
 
     @Override
-    public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
-        super.extractBackground(graphics, mouseX, mouseY, a);
+    protected void renderBg(net.minecraft.client.gui.GuiGraphics graphics$v, float a, int mouseX, int mouseY) { GuiGraphicsExtractor graphics = GuiGraphicsExtractor.of(graphics$v);
         int x = this.leftPos;
         int y = this.topPos;
         int cx = x + AircraftMenu.CONTENT_X;
@@ -294,7 +293,7 @@ public class AircraftScreen extends AbstractContainerScreen<AircraftMenu> {
 
     @Override
     protected void renderLabels(net.minecraft.client.gui.GuiGraphics graphics$v, int xm, int ym) { GuiGraphicsExtractor graphics = GuiGraphicsExtractor.of(graphics$v);
-        super.extractLabels(graphics, xm, ym);
+        super.renderLabels(graphics.vanilla(), xm, ym);
         AircraftEntity aircraft = this.menu.getAircraft();
         int percent = aircraft != null ? (int) (aircraft.getFuelPercentage() * 100.0F + 0.5F) : 0;
         graphics.text(this.font, String.format("%3d", percent) + "%", 6, 17 + 4 * 18 + 4, 0xFF404040, false);

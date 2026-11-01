@@ -50,6 +50,9 @@ public interface Platform {
     void explosionDetonate(net.minecraft.world.level.Level level, net.minecraft.world.level.Explosion explosion,
             java.util.List<net.minecraft.world.entity.Entity> entities, java.util.List<net.minecraft.core.BlockPos> blocks);
 
+    /** Every loaded mod, in the loader's order. */
+    java.util.List<ModDescriptor> mods();
+
     /** This mod's version string from its metadata. */
     String modVersion();
 

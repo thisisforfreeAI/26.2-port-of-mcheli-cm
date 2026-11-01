@@ -51,8 +51,8 @@ public final class AircraftAppearanceScreen extends Screen {
     @Override public void tick(){if(minecraft.player==null||minecraft.player.containerMenu!=menu||aircraft.isRemoved())minecraft.setScreen(null);}
     @Override public void onClose(){minecraft.setScreen(parent);}
     @Override public boolean isPauseScreen(){return false;}
-    @Override public void extractRenderState(GuiGraphicsExtractor g,int mx,int my,float partial){
-        super.extractRenderState(g,mx,my,partial);int x=width/2-110,y=Math.max(38,height/2-78);
+    @Override public void render(net.minecraft.client.gui.GuiGraphics g$v, int mx, int my, float partial) { GuiGraphicsExtractor g = GuiGraphicsExtractor.of(g$v);
+        super.render(g.vanilla(),mx,my,partial);int x=width/2-110,y=Math.max(38,height/2-78);
         g.centeredText(font,title,width/2,y-24,0xFFFFFFFF);g.text(font,"Number (blank: none)",x,y+30,0xFFFFFFFF);
         boolean supported=AircraftMarkingMesh.supported(aircraft.getAcInfo().name);
         g.centeredText(font,supported?"Park nearby with the engine off to apply.":"This aircraft supports liveries only.",width/2,y+100,0xFFCCCCCC);

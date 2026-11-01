@@ -2,7 +2,7 @@ package io.github.mcheliceport.client.particle;
 
 import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.state.level.QuadParticleRenderState;
+import io.github.mcheliceport.shim.client.QuadParticleRenderState;
 import net.minecraft.core.BlockPos;
 import io.github.mcheliceport.shim.client.ARGB;
 import net.minecraft.util.Mth;
@@ -62,14 +62,14 @@ final class BlastFragmentParticle extends BlockDustParticle {
         float age = this.age + partialTick;
         float size = this.getQuadSize(partialTick);
         if (size <= 0) return;
-        var cameraPos = camera.position();
+        var cameraPos = camera.getPosition();
         float x = (float) (Mth.lerp(partialTick, this.xo, this.x) - cameraPos.x);
         float y = (float) (Mth.lerp(partialTick, this.yo, this.y) - cameraPos.y);
         float z = (float) (Mth.lerp(partialTick, this.zo, this.z) - cameraPos.z);
         float spinAge = this.settled ? this.settledAge : age;
         this.body.rotationXYZ(this.phase + spinAge * this.spinX, spinAge * this.spinY, spinAge * this.spinZ);
         this.body.transformInverse(this.view.set(-x, -y, -z));
-        int light = this.getLightCoords(partialTick);
+        int light = this.getLightColor(partialTick);
         float heat = this.hot ? ExplosionSequence.fireHeat(age, 8) : 0;
         for (int axis = 0; axis < 3; axis++) {
             float sign = this.view.get(axis) >= 0 ? 1 : -1;
@@ -82,7 +82,7 @@ final class BlastFragmentParticle extends BlockDustParticle {
             float shade = 0.6F + 0.3F * Math.max(0, this.normal.y) + 0.1F * Math.max(0, this.normal.z);
             int colour = ARGB.colorFromFloat(1, EffectLook.fireBlend(this.rCol * shade, 1, heat),
                     EffectLook.fireBlend(this.gCol * shade, 0.58F, heat), EffectLook.fireBlend(this.bCol * shade, 0.2F, heat));
-            state.add(this.getLayer(), x + this.normal.x * size, y + this.normal.y * size, z + this.normal.z * size,
+            state.add(io.github.mcheliceport.shim.client.SingleQuadParticle.Layer.TERRAIN, x + this.normal.x * size, y + this.normal.y * size, z + this.normal.z * size,
                     this.face.x, this.face.y, this.face.z, this.face.w, size,
                     this.getU0(), this.getU1(), this.getV0(), this.getV1(), colour, light);
         }
@@ -92,7 +92,7 @@ final class BlastFragmentParticle extends BlockDustParticle {
         return this.radius * BlastGroundLook.fragmentScale(this.age + partialTick, this.lifetime);
     }
 
-    @Override protected int getLightCoords(float partialTick) {
+    @Override public int getLightColor(float partialTick) {
         this.lightPos.set(this.x, this.y, this.z);
         long key = this.lightPos.asLong();
         if (EffectLook.refreshLight(this.age, this.lightAge, key != this.sampledBlock)) {
