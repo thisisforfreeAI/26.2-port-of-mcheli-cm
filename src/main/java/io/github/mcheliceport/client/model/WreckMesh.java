@@ -166,6 +166,12 @@ public final class WreckMesh {
    float z=hi.z-length*(.34F-i*.02F),w=halfWidth(hull,z);
    if(w>0&&w<=tube)return z;
   }
+  // A hull whose whole tail cone went with its tail ends square at the tail line, a fuselage about as wide as
+  // its nose, and 27% short: judged by the length it had, its fuselage is a tube again.
+  float stern=halfWidth(hull,lo.z+.05F);
+  if(stern>.5F&&stern<=nose*1.6F){
+   var whole=new Vector3f(lo);whole.z=hi.z-length/.73F;return noseCut(hull,whole,hi);
+  }
   return Float.NaN;
  }
  /**

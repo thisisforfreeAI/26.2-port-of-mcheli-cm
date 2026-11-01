@@ -38,7 +38,8 @@ class AllPlaneFracturesTest {
     @Test void aLostTailLeavesTheRearFuselageAttached() throws Exception {
         Path root=ContentTestSupport.projectDir().resolve("src/main/resources/assets/mcheli/models/planes");
         var failures=new ArrayList<String>();
-        for(String name:List.of("a-10","a6m2","ac-130","b29","c5","cessna172","e767","f-15e","f-35a","f14d","f22a","f4a","fa18f","md90","mig29","p-51d","su37")) {
+        // Not the AC-130: its tail cone hangs off the plating that breaks away, so it goes with the tail (TailShatterTest).
+        for(String name:List.of("a-10","a6m2","b29","c5","cessna172","e767","f-15e","f-35a","f14d","f22a","f4a","fa18f","md90","mig29","p-51d","su37")) {
             McheliModel model;try(var in=Files.newInputStream(root.resolve(name+".mqo"))){model=MqoParser.parse(name,in);}
             var body=model.groups.stream().filter(g->g.name().equals("$body")).findFirst().orElseThrow();
             var frame=BreakupMeshes.airframeBuild(body,4);var tail=frame.sections().get(2);

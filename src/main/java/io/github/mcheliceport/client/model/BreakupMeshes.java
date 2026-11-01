@@ -316,9 +316,37 @@ public final class BreakupMeshes {
                 }
             }
         }
+        adrift(d,fin,bounds(region).high.z);
         var kept=new ArrayList<Float>();var gone=new ArrayList<Float>();
         for(int t=0;t<triangles;t++){var out=fin[t]?gone:kept;for(int i=t*24;i<t*24+24;i++)out.add(d[i]);}
         return new McheliModel.Group[]{group(region.name(),kept),group("$tail",gone)};
+    }
+    /** How close a kept piece must come to the tail line, or to another kept piece, to count as still attached. */
+    static final float ANCHOR=.06F;
+    /**
+     * Rear fuselage left hanging in the air once the plates around it have gone (a tail cone or a fin that only
+     * met the airframe through a band of plating that broke away) goes with the tail: kept skin stays only if it
+     * reaches the tail line, or touches skin that does.
+     */
+    private static void adrift(float[] d,boolean[] gone,float cut){
+        int triangles=d.length/24;boolean[] kept=new boolean[triangles];boolean any=false;
+        for(int t=0;t<triangles;t++){kept[t]=!gone[t];any|=kept[t];}
+        if(!any)return;
+        int[] parent=pieces(d,kept);var low=new LinkedHashMap<Integer,Vector3f>();var high=new HashMap<Integer,Vector3f>();
+        for(int t=0;t<triangles;t++)if(kept[t]){
+            int root=find(parent,t);var l=low.computeIfAbsent(root,x->new Vector3f(Float.POSITIVE_INFINITY));var h=high.computeIfAbsent(root,x->new Vector3f(Float.NEGATIVE_INFINITY));
+            for(int k=0;k<3;k++){var v=new Vector3f(d[t*24+k*8],d[t*24+k*8+1],d[t*24+k*8+2]);l.min(v);h.max(v);}
+        }
+        var attached=new HashSet<Integer>();
+        for(int root:low.keySet())if(high.get(root).z>=cut-ANCHOR)attached.add(root);
+        for(boolean grew=true;grew;){grew=false;
+            for(int root:low.keySet()){
+                if(attached.contains(root))continue;var l=low.get(root);var h=high.get(root);
+                for(int other:attached){var ol=low.get(other);var oh=high.get(other);
+                    if(l.x<=oh.x+ANCHOR&&h.x>=ol.x-ANCHOR&&l.y<=oh.y+ANCHOR&&h.y>=ol.y-ANCHOR&&l.z<=oh.z+ANCHOR&&h.z>=ol.z-ANCHOR){attached.add(root);grew=true;break;}}
+            }
+        }
+        for(int t=0;t<triangles;t++)if(kept[t]&&!attached.contains(find(parent,t)))gone[t]=true;
     }
     private record Edge(long a,long b){}
     /**
