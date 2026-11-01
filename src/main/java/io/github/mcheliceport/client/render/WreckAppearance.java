@@ -160,7 +160,9 @@ public final class WreckAppearance {
    var moved=breakPose(s,seed,open);var at=new Matrix4f(pose).mul(moved);
    draws.add(new AircraftPartPoses.Draw(at,List.of(s.shape())));
    if(render.thermal)continue;
-   VehicleDetailLayers.add(render,at,render.texture,List.of(s.paint()),(int)(0x70*(1.15F-.55F*burn))<<24|0x7E7769);
+   // Torn off and dragged through the fire, a section's paint is smoked dark end to end, not left factory
+   // clean beside a blackened hull; the fire's own char goes over it.
+   VehicleDetailLayers.add(render,at,render.texture,List.of(s.paint()),(int)(0xB8*(1.1F-.3F*burn))<<24|0x3A3632);
    if(open>0){
     VehicleDetailLayers.require(render,at,render.texture,List.of(s.lining()),PlaneAirframeParts.LINING);
     VehicleDetailLayers.require(render,at,PlaneAirframeParts.METAL,List.of(s.cap()),PlaneAirframeParts.CAP);

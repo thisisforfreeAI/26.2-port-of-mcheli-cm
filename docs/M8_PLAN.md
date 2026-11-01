@@ -575,6 +575,10 @@ ruptures, fire-lit exposed interiors, varied secondary pops, small-panel tumble,
 and terrain-colored contact fans. [Native vehicle examples](M8_DRAMATIC_DESTRUCTION_GALLERY.md).
 Main fuselages, original craters and gameplay remain unchanged; existing particle limits remain.
 
+[Tank cook-off correction](M8_TANK_COOKOFF_PARTS.md): actual M1A2 pressure panels blow open,
+loaded carousel tanks reliably eject complete posed turrets, and outside observers receive the
+existing authoritative ammo notification. Full debris budgets keep visibly open/dislodged parts.
+
 
 ### Vehicle-kill blood (follow-up)
 

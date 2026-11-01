@@ -1192,14 +1192,24 @@ public final class AircraftWeapons {
 
     /** Upstream {@code PacketNotifyAmmoNum.sendAllAmmoNum}: to {@code target}, or every rider when null. */
     public void sendAllAmmoNum(@Nullable ServerPlayer target) {
-        int n = this.getWeaponNum();
+        this.sendAmmo(this.allAmmoPayload(), target);
+    }
+
+    /** A final authoritative snapshot for observers' cosmetic tank cook-offs, using the existing packet. */
+    public void notifyWreckAmmo(){
+        if(this.ac.level() instanceof ServerLevel)
+            net.neoforged.neoforge.network.PacketDistributor.sendToPlayersTrackingEntity(this.ac,this.allAmmoPayload());
+    }
+
+    public NotifyAmmoPayload allAmmoPayload(){
+        int n = Math.min(256,this.getWeaponNum());
         short[] ammo = new short[n];
         short[] rest = new short[n];
         for (int i = 0; i < n; i++) {
             ammo[i] = (short) this.getWeapon(i).getAmmo();
             rest[i] = (short) this.getWeapon(i).getRestAllAmmoNum();
         }
-        this.sendAmmo(new NotifyAmmoPayload(this.ac.getId(), true, (byte) -1, ammo, rest), target);
+        return new NotifyAmmoPayload(this.ac.getId(), true, (byte) -1, ammo, rest);
     }
 
     /** Upstream {@code PacketNotifyAmmoNum.sendAmmoNum}: one weapon's counts. */

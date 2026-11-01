@@ -17,6 +17,8 @@ public final class WreckSequenceEffects {
     public static final class State {
         public int age=-1,ammo,heavyAmmo,seed,parts,strikes,bursts;long tick=Long.MIN_VALUE;public boolean seenAlive;
         public long flashTick=Long.MIN_VALUE;
+        public io.github.mcheliceport.client.render.TankCookoffParts.Snapshot tankTurret;
+        public boolean blowout,turretFallback;public int openLids;boolean blowoutRupture;public Vec3 vent;
         boolean rupture,coverRupture,groundSurge;
         public boolean turret,cover,wing,tail,track;
         public int liveMask=-1;
@@ -46,10 +48,14 @@ public final class WreckSequenceEffects {
         var s=STATES.computeIfAbsent(ac,k->new State());if(s.tick==level.getGameTime())return;s.tick=level.getGameTime();s.seed=ac.getUUID().hashCode();
         if(age<0){if(s.age>=0){s.scattered.clear();s.struck.clear();s.fragments.clear();s.rotorStarts.clear();s.rotorSpeeds.clear();s.tips.clear();s.opening=s.ring=null;s.turret=s.cover=s.wing=s.tail=s.track=false;s.parts=s.strikes=s.bursts=0;}
             s.rupture=s.coverRupture=s.groundSurge=false;s.flashTick=Long.MIN_VALUE;
+            s.blowout=s.blowoutRupture=s.turretFallback=false;s.openLids=0;s.vent=null;s.tankTurret=null;
             if(s.age>=0)s.controlLossAt.clear();
             s.age=-1;s.seenAlive=true;if(level.getGameTime()%20==0||s.ammo==0){s.ammo=CookoffEffects.conventionalAmmo(ac);s.heavyAmmo=CookoffEffects.explosiveAmmo(ac);}return;}
         if(s.age<0&&!s.seenAlive){s.ammo=CookoffEffects.conventionalAmmo(ac);s.heavyAmmo=CookoffEffects.explosiveAmmo(ac);}
         s.age=age;if(!s.seenAlive)return; // Old wrecks keep their static silhouette, without fresh bursts.
+        // The death notification reaches spectators after the destroyed flag; accept its late ammo snapshot.
+        if(ac instanceof io.github.mcheliceport.entity.tank.TankEntity&&age<=96)
+            s.heavyAmmo=CookoffEffects.explosiveAmmo(ac);
         if(age==0){s.ammo=CookoffEffects.conventionalAmmo(ac);s.heavyAmmo=CookoffEffects.explosiveAmmo(ac);}
         if(Minecraft.getInstance().gameRenderer.mainCamera().position().distanceToSqr(ac.position())>40*40)return;
         Vec3 at=s.opening==null?VehicleAtmosphere.wreckOrigins(ac).getFirst():s.opening;
@@ -57,6 +63,12 @@ public final class WreckSequenceEffects {
         if(!s.coverRupture&&s.cover&&age>=36&&age<=48&&WreckRuptureEffects.emit(level,ac,at,true))s.coverRupture=true;
         if(!s.groundSurge&&age>=100&&age<=108&&DebrisImpactEffects.settle(level,ac))s.groundSurge=true;
         int pressure=1+EffectPerformance.pressure();
+        if(s.blowout&&s.vent!=null&&age>=36&&age<360){
+            float fire=1-age/360F;
+            io.github.mcheliceport.client.render.SceneLights.fire(level,ac,4,s.vent,fire,8);
+            if(!s.blowoutRupture&&age<=60&&WreckRuptureEffects.emit(level,ac,s.vent,true))s.blowoutRupture=true;
+            if(age%(4*pressure)==0){flame(level,s.vent,.55F,.8F*fire);smoke(level,s.vent,.22F,.6F*fire,30);}
+        }
         if(s.cover&&age>=36&&age<76&&age%(4*pressure)==0){flame(level,at,.5F,.85F);smoke(level,at,.18F,.8F,28);}
         if(s.turret&&s.ring!=null&&age>=96&&age<240&&age%(6*pressure)==0)flame(level,s.ring,.55F,.75F);
         if((DestructionTimeline.secondary(age,s.seed)||s.turret&&age==98)&&s.ammo>0&&bursts<2){
