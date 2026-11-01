@@ -1,5 +1,8 @@
 # Dramatic vehicle destruction
 
+The [tank cook-off correction](M8_TANK_COOKOFF_PARTS.md) supersedes the earlier random turret gate
+and adds the Abrams' actual pressure-panel opening, plus authoritative ammo for observers.
+
 [Native vehicle examples](M8_DRAMATIC_DESTRUCTION_GALLERY.md).
 
 Fresh vehicle destruction now has a clearer opening, visible fire-lit machinery and heavier contact

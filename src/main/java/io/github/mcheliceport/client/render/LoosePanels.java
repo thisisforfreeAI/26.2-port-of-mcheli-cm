@@ -291,6 +291,7 @@ public final class LoosePanels {
         }
     }
     public static int pieces(){return PIECES.size();}
+    public static int namedPieces(AircraftEntity owner,String name){return (int)PIECES.stream().filter(p->p.owner==owner&&p.group.name().equals(name)).count();}
     /** Centre and phase of an aircraft's live structural fragments, for probes. */
     public static List<String> airframeMotion(AircraftEntity owner){
         return PIECES.stream().filter(p->p.owner==owner&&p.airframeBit!=0&&!p.skin).map(p->p.airframeBit+":"+p.motion.phase+"@"+p.motion.position).toList();
