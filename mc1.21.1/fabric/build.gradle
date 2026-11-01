@@ -24,6 +24,10 @@ dependencies {
     modImplementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
     modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_api_version}"
 
+    // NeoForge's config API on Fabric, nested in the jar so players need not install it.
+    modApi "fuzs.forgeconfigapiport:forgeconfigapiport-fabric:${forge_config_api_port_version}"
+    include "fuzs.forgeconfigapiport:forgeconfigapiport-fabric:${forge_config_api_port_version}"
+
     compileOnly project(':common')
     commonJava project(path: ':common', configuration: 'commonJava')
     commonResources project(path: ':common', configuration: 'commonResources')

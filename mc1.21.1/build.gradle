@@ -18,11 +18,22 @@ subprojects {
 
     repositories {
         mavenCentral()
+        // Forge Config API Port: NeoForge's config API (ModConfigSpec) on Fabric.
+        maven {
+            url = 'https://raw.githubusercontent.com/Fuzss/modresources/main/maven/'
+            content { includeGroup 'fuzs.forgeconfigapiport' }
+        }
+    }
+
+    dependencies {
+        // Null-marker annotations used across the code (26.2 ships them with Minecraft; 1.21.1 does not).
+        compileOnly 'org.jspecify:jspecify:1.0.0'
     }
 
     tasks.withType(JavaCompile).configureEach {
         options.encoding = 'UTF-8'
         options.release = java_version as int
+        options.compilerArgs += ['-Xmaxerrs', '100000']
     }
 
     // The shared art and sound assets are not duplicated: they are read straight from the

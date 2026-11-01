@@ -23,6 +23,15 @@ public interface Platform {
     /** The config directory. */
     Path configDir();
 
+    /**
+     * The entity's saved mod data, kept across saves (and, for players, across death): NeoForge's
+     * {@code getPersistentData()}, a Fabric data attachment.
+     */
+    net.minecraft.nbt.CompoundTag persistentData(net.minecraft.world.entity.Entity entity);
+
+    /** The running server, or null (NeoForge's {@code io.github.mcheliceport.platform.Services.PLATFORM.currentServer()}). */
+    net.minecraft.server.@org.jspecify.annotations.Nullable MinecraftServer currentServer();
+
     /** This mod's version string from its metadata. */
     String modVersion();
 

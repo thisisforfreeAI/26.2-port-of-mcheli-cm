@@ -6,6 +6,10 @@ import java.util.ServiceLoader;
 public final class Services {
 
     public static final Platform PLATFORM = load(Platform.class);
+    public static final Registrar REGISTRAR = load(Registrar.class);
+    public static final io.github.mcheliceport.platform.network.Network NETWORK =
+            load(io.github.mcheliceport.platform.network.Network.class);
+    public static final Configs CONFIGS = load(Configs.class);
 
     private Services() {
     }
