@@ -1,0 +1,50 @@
+package io.github.mcheliceport.client.render;
+
+import io.github.mcheliceport.content.aircraft.BoundingBoxInfo;
+import java.util.ArrayList;
+import java.util.List;
+import io.github.mcheliceport.shim.client.EntityRenderState;
+import net.minecraft.resources.ResourceLocation;
+import org.jspecify.annotations.Nullable;
+import io.github.mcheliceport.client.model.McheliModel;
+import org.joml.Matrix4f;
+
+/** What one frame draws of a vehicle. */
+public class AircraftRenderState extends EntityRenderState {
+    /** Null while the models load: nothing is drawn, as upstream's on-demand mode. */
+    public @Nullable ResourceLocation texture;
+    /** Thermal vision draws the vehicle white, unless it is the one being ridden. */
+    public boolean thermal;
+    /** Past the render distance: drawn without fog, as upstream's far pass. */
+    public boolean far;
+    public int color;
+    public boolean flat;
+    public boolean surfaceShade;
+    /** Lit by the sun or moon and nearby flashes and fires; see {@link SceneLights}. */
+    public boolean realistic;
+    /** Light at the corners of the vehicle's box, or null for its single light value. */
+    public VehicleLightProbe lightProbe;
+    public float contactShadowRadius = 2;
+    public final List<AircraftPartPoses.Draw> draws = new ArrayList<>();
+    /** {@code weights}, when set, scales the alpha of each vertex of the single group in {@code groups}. */
+    public record DetailDraw(ResourceLocation texture,Matrix4f pose,List<McheliModel.Group> groups,int color,float[] weights){
+        public DetailDraw(ResourceLocation texture,Matrix4f pose,List<McheliModel.Group> groups,int color){this(texture,pose,groups,color,null);}
+    }
+    public final List<DetailDraw> detailDraws=new ArrayList<>();
+    public final List<AircraftMarkings.Draw> markingDraws=new ArrayList<>();
+    public final List<VehicleImpactMarks.Draw> impactDraws = new ArrayList<>();
+    public record EmissiveDraw(ResourceLocation texture, Matrix4f pose, List<McheliModel.Group> groups,int color) {
+        public EmissiveDraw(ResourceLocation texture,Matrix4f pose,List<McheliModel.Group> groups){this(texture,pose,groups,0xFFFFFFFF);}
+    }
+    public final List<EmissiveDraw> emissiveDraws = new ArrayList<>();
+    public final List<GlowGeometry.Lamp> flightLamps=new ArrayList<>();
+
+    public boolean testMode;
+    public float yaw;
+    public float pitch;
+    public float roll;
+    public final List<BoundingBoxInfo> boxes = new ArrayList<>();
+    public final List<net.minecraft.world.phys.Vec3> ropeHooks = new ArrayList<>();
+    public float ropeLength;
+    public final List<io.github.mcheliceport.entity.aircraft.SearchLightBeam> searchLights = new ArrayList<>();
+}

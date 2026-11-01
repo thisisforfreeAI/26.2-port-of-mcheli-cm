@@ -1,0 +1,317 @@
+package io.github.mcheliceport.client.gui;
+
+import io.github.mcheliceport.McheliCePort;
+import io.github.mcheliceport.content.weapon.WeaponInfo;
+import io.github.mcheliceport.entity.aircraft.AircraftEntity;
+import io.github.mcheliceport.entity.aircraft.AircraftWeapons;
+import io.github.mcheliceport.menu.AircraftMenu;
+import io.github.mcheliceport.net.AircraftCommandPayload;
+import io.github.mcheliceport.net.ResupplyPayload;
+import io.github.mcheliceport.weapon.WeaponSet;
+import java.util.ArrayList;
+import java.util.List;
+import io.github.mcheliceport.shim.client.GuiGraphicsExtractor;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.components.Tooltip;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import io.github.mcheliceport.shim.client.KeyEvent;
+import io.github.mcheliceport.shim.client.RenderPipelines;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.neoforged.fml.ModList;
+import net.neoforged.neoforge.client.gui.ConfigurationScreen;
+import io.github.mcheliceport.platform.network.ClientPacketDistributor;
+import org.lwjgl.glfw.GLFW;
+
+/**
+ * The fuel slots and trunk of a vehicle (decision D12): the trunk and player inventory on
+ * vanilla's chest background, with a fuel panel on the left (fuel can in, empty can out, and
+ * upstream's fuel gauge), plus the plane's parachute reserves below that panel.
+ *
+ * <p>Beside them, the weapon list of upstream CE's aircraft GUI: each weapon set with a magazine,
+ * its magazine and reserve counts, the round items one supply costs, and a reload button that
+ * pays them ({@link AircraftWeapons#supplyAmmo}).
+ *
+ * <p>Along the bottom, upstream's command field and its "MOD Options" button. The command runs on
+ * the server when the vehicle is destroyed by anything but a player; Enter runs it now as the
+ * player. Upstream's Close and Inventory buttons are left out: Escape closes the menu, and the
+ * trunk is already part of it.
+ */
+public class AircraftScreen extends AbstractContainerScreen<AircraftMenu> {
+
+    private static final ResourceLocation CHEST = ResourceLocation.withDefaultNamespace("textures/gui/container/generic_54.png");
+    private static final ResourceLocation FUEL_SLOT = ResourceLocation.fromNamespaceAndPath("mcheli", "textures/gui/fuel_slot.png");
+    private static final int PANEL_BG = 0xFFC6C6C6;
+    private static final int DARK = 0xFF373737;
+    private static final int LIGHT = 0xFFFFFFFF;
+    private static final int SLOT_BG = 0xFF8B8B8B;
+    private static final int WEAPON_PANEL_W = 176;
+    private static final int WEAPON_ROW_H = 22;
+    /** The strip under the player inventory holding the command field. */
+    private static final int COMMAND_STRIP_H = 46;
+
+    /** A weapon set with a magazine and its reload button. */
+    private record WeaponRow(int weaponId, WeaponSet set, Button button) {
+    }
+
+    private final List<WeaponRow> weaponRows = new ArrayList<>();
+    private EditBox commandField;
+    private boolean commandEditable;
+
+    public AircraftScreen(AircraftMenu menu, Inventory inventory, Component title) {
+        super(menu, inventory, title, AircraftMenu.CONTENT_X + 176,
+                menu.getPlayerInventoryY() + 82 + 1 + COMMAND_STRIP_H);
+        this.titleLabelX = AircraftMenu.CONTENT_X + 8;
+        this.inventoryLabelX = AircraftMenu.CONTENT_X + 8;
+        this.inventoryLabelY = menu.getPlayerInventoryY() - 11;
+    }
+
+    private List<Integer> weaponIds() {
+        List<Integer> ids = new ArrayList<>();
+        AircraftEntity aircraft = this.menu.getAircraft();
+        if (aircraft != null) {
+            for (int i = 0; i < aircraft.getWeaponNum(); i++) {
+                if (aircraft.getWeapon(i).getInfo() != null && aircraft.getWeapon(i).getMagSize() > 0) {
+                    ids.add(i);
+                }
+            }
+        }
+        return ids;
+    }
+
+    private int weaponPanelX() {
+        return this.leftPos + this.imageWidth + 2;
+    }
+
+    @Override
+    protected void init() {
+        super.init();
+        this.weaponRows.clear();
+        List<Integer> ids = this.weaponIds();
+        AircraftEntity aircraft = this.menu.getAircraft();
+        if (!ids.isEmpty() && aircraft != null) {
+            // Centre the menu and the weapon list together.
+            this.leftPos = Math.max(0, (this.width - this.imageWidth - 2 - WEAPON_PANEL_W) / 2);
+        }
+        this.initCommandStrip(aircraft);
+        if (ids.isEmpty() || aircraft == null) {
+            return;
+        }
+        int px = this.weaponPanelX();
+        for (int r = 0; r < ids.size(); r++) {
+            int id = ids.get(r);
+            WeaponSet ws = aircraft.getWeapon(id);
+            Button button = Button.builder(Component.literal("Reload"), b -> this.resupply(id))
+                    .bounds(px + WEAPON_PANEL_W - 48, this.topPos + 16 + r * WEAPON_ROW_H, 44, 18)
+                    .tooltip(Tooltip.create(this.costOf(ws)))
+                    .build();
+            this.addRenderableWidget(button);
+            this.weaponRows.add(new WeaponRow(id, ws, button));
+        }
+        this.updateButtons();
+    }
+
+    private void initCommandStrip(AircraftEntity aircraft) {
+        int sy = this.topPos + this.imageHeight - COMMAND_STRIP_H + 4;
+        if(aircraft!=null)this.addRenderableWidget(Button.builder(Component.literal("Appearance"),b ->
+                {this.saveCommand();this.minecraft.setScreen(new AircraftAppearanceScreen(this,this.menu,aircraft));})
+                .bounds(this.leftPos+6,sy+22,this.imageWidth-12,18).build());
+        this.commandField = new EditBox(this.font, this.leftPos + 6, sy + 1, 150, 16, Component.literal("Command"));
+        this.commandField.setMaxLength(AircraftCommandPayload.MAX_LENGTH);
+        this.commandField.setValue(aircraft != null ? aircraft.getCommand() : "");
+        this.commandField.setHint(Component.literal("Command when destroyed"));
+        boolean editable = aircraft != null && this.minecraft != null && this.minecraft.player != null
+                && AircraftEntity.canSetCommand(this.minecraft.player);
+        this.commandEditable = editable;
+        this.commandField.setEditable(editable);
+        this.commandField.setTooltip(Tooltip.create(Component.literal(editable
+                ? "Runs on the server when this vehicle is destroyed. Enter runs it now as you."
+                : "Setting the command needs operator permission.")));
+        this.addRenderableWidget(this.commandField);
+        this.addRenderableWidget(Button.builder(Component.literal("Options"), b -> this.openOptions())
+                .bounds(this.leftPos + this.imageWidth - 56, sy, 50, 18)
+                .tooltip(Tooltip.create(Component.literal("MOD Options")))
+                .build());
+    }
+
+    /**
+     * Upstream's "MOD Options" button, which closed this menu and opened the mod's settings; the
+     * port's settings are NeoForge's config screen.
+     */
+    private void openOptions() {
+        ModList.get().getModContainerById(McheliCePort.MOD_ID).ifPresent(container -> {
+            this.onClose();
+            this.minecraft.setScreenAndShow(new ConfigurationScreen(container, null));
+        });
+    }
+
+    /** Upstream sends the field's text as a command on Enter (CE built the packet but never sent it). */
+    private void runCommandNow() {
+        String s = this.commandField.getValue().trim();
+        if (s.startsWith("/")) {
+            s = s.substring(1);
+        }
+        if (!s.isEmpty() && this.minecraft != null && this.minecraft.player != null) {
+            this.minecraft.player.connection.sendCommand(s);
+        }
+    }
+
+    @Override
+    public boolean keyPressed(int event$k, int event$s, int event$m) { KeyEvent event = new KeyEvent(event$k, event$s, event$m);
+        if (this.commandField != null && this.commandField.isFocused() && event.key() != GLFW.GLFW_KEY_ESCAPE) {
+            if (event.key() == GLFW.GLFW_KEY_ENTER || event.key() == GLFW.GLFW_KEY_KP_ENTER) {
+                this.runCommandNow();
+            } else {
+                this.commandField.keyPressed(event);
+            }
+            return true;
+        }
+        return super.keyPressed(event.key(), event.scancode(), event.modifiers());
+    }
+
+    /**
+     * Upstream {@code closeScreen}: the command is saved when the menu closes. It goes out before
+     * the menu's close packet, since the server takes it only from an open menu of this vehicle.
+     */
+    @Override
+    public void onClose() {
+        this.saveCommand();
+        super.onClose();
+    }
+
+    private void saveCommand() {
+        AircraftEntity aircraft = this.menu.getAircraft();
+        if (aircraft != null && this.commandField != null && this.commandEditable
+                && !this.commandField.getValue().equals(aircraft.getCommand())) {
+            ClientPacketDistributor.sendToServer(new AircraftCommandPayload(aircraft.getId(),
+                    this.commandField.getValue()));
+        }
+    }
+
+    private void resupply(int weaponId) {
+        AircraftEntity aircraft = this.menu.getAircraft();
+        if (aircraft != null && this.minecraft != null && this.minecraft.player != null
+                && aircraft.weapons().canResupply(this.minecraft.player, aircraft.getWeapon(weaponId))) {
+            ClientPacketDistributor.sendToServer(new ResupplyPayload(aircraft.getId(), weaponId));
+            aircraft.weapons().supplyAmmo(weaponId, this.minecraft.player);
+        }
+    }
+
+    /** "Reload: 1x Iron Ingot, ..." from the definition's round items. */
+    private Component costOf(WeaponSet ws) {
+        List<String> parts = new ArrayList<>();
+        for (WeaponInfo.RoundItem ri : ws.getInfo().roundItems) {
+            Item item = AircraftWeapons.itemOf(ri);
+            parts.add(ri.num() + "x " + (item != null ? new ItemStack(item).getHoverName().getString() : ri.itemName()));
+        }
+        return Component.literal(parts.isEmpty() ? "Reload (free)" : "Reload: " + String.join(", ", parts));
+    }
+
+    private void updateButtons() {
+        AircraftEntity aircraft = this.menu.getAircraft();
+        for (WeaponRow row : this.weaponRows) {
+            row.button().active = aircraft != null && this.minecraft != null && this.minecraft.player != null
+                    && aircraft.weapons().canResupply(this.minecraft.player, row.set());
+        }
+    }
+
+    @Override
+    protected void containerTick() {
+        super.containerTick();
+        this.updateButtons();
+    }
+
+    @Override
+    public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
+        super.extractBackground(graphics, mouseX, mouseY, a);
+        int x = this.leftPos;
+        int y = this.topPos;
+        int cx = x + AircraftMenu.CONTENT_X;
+        int rows = this.menu.getTrunkRows();
+        // Trunk rows and the player inventory on the chest background.
+        graphics.blit(RenderPipelines.GUI_TEXTURED, CHEST, cx, y, 0.0F, 0.0F, 176, 17, 256, 256);
+        for (int row = 0; row < rows; row++) {
+            int ry = y + 17 + row * 18;
+            graphics.blit(RenderPipelines.GUI_TEXTURED, CHEST, cx, ry, 0.0F, 17.0F, 176, 18, 256, 256);
+        }
+        int trunk = this.menu.getTrunkSize();
+        for (int i = trunk; i < rows * AircraftMenu.COLUMNS; i++) {
+            // Hide the slot frames the trunk does not have.
+            int sx = cx + 7 + i % AircraftMenu.COLUMNS * 18;
+            int sy = y + 17 + i / AircraftMenu.COLUMNS * 18;
+            graphics.fill(sx, sy, sx + 18, sy + 18, PANEL_BG);
+        }
+        int invTop = y + 17 + rows * 18;
+        graphics.blit(RenderPipelines.GUI_TEXTURED, CHEST, cx, invTop, 0.0F, 126.0F, 176, 96, 256, 256);
+
+        // The fuel panel left of the chest.
+        int px = x;
+        int py = y;
+        int ph = this.menu.getParachuteSlots() > 0 ? 120 + this.menu.getParachuteSlots() * 18 : 17 + 4 * 18 + 16;
+        graphics.fill(px, py, px + AircraftMenu.CONTENT_X + 4, py + ph, DARK);
+        graphics.fill(px + 1, py + 1, px + AircraftMenu.CONTENT_X + 4, py + ph - 1, PANEL_BG);
+        this.slotFrame(graphics, x + 10, y + 17, true);
+        this.slotFrame(graphics, x + 10, y + 17 + 3 * 18, false);
+        for (int i = 0; i < this.menu.getParachuteSlots(); i++) {
+            this.slotFrame(graphics, x + 10, y + 117 + i * 18, false);
+        }
+        // Upstream's gauge: 50 pixels for a full tank.
+        AircraftEntity aircraft = this.menu.getAircraft();
+        float fuel = aircraft != null ? aircraft.getFuelPercentage() : 0.0F;
+        int gaugeX = x + 31;
+        int gaugeTop = y + 19;
+        graphics.fill(gaugeX - 1, gaugeTop - 1, gaugeX + 5, gaugeTop + 51, DARK);
+        graphics.fill(gaugeX, gaugeTop, gaugeX + 4, gaugeTop + 50, SLOT_BG);
+        int ff = (int) (fuel * 50.0F);
+        int color = fuel > 0.2F ? 0xFF20C020 : 0xFFE03030;
+        graphics.fill(gaugeX, gaugeTop + 50 - ff, gaugeX + 4, gaugeTop + 50, color);
+
+        // The command strip under the player inventory.
+        int sy = y + this.imageHeight - COMMAND_STRIP_H;
+        graphics.fill(x, sy, x + this.imageWidth, y + this.imageHeight, DARK);
+        graphics.fill(x + 1, sy, x + this.imageWidth - 1, y + this.imageHeight - 1, PANEL_BG);
+
+        if (!this.weaponRows.isEmpty()) {
+            int wx = this.weaponPanelX();
+            int wh = 14 + this.weaponRows.size() * WEAPON_ROW_H + 4;
+            graphics.fill(wx, y, wx + WEAPON_PANEL_W, y + wh, DARK);
+            graphics.fill(wx + 1, y + 1, wx + WEAPON_PANEL_W - 1, y + wh - 1, PANEL_BG);
+        }
+    }
+
+    private void slotFrame(GuiGraphicsExtractor graphics, int sx, int sy, boolean fuelIcon) {
+        graphics.fill(sx, sy, sx + 18, sy + 18, DARK);
+        graphics.fill(sx + 1, sy + 1, sx + 18, sy + 18, LIGHT);
+        graphics.fill(sx + 1, sy + 1, sx + 17, sy + 17, SLOT_BG);
+        if (fuelIcon && this.menu.getSlot(AircraftEntity.SLOT_FUEL_IN).getItem().isEmpty()) {
+            graphics.blit(RenderPipelines.GUI_TEXTURED, FUEL_SLOT, sx + 1, sy + 1, 0.0F, 0.0F, 16, 16, 16, 16);
+        }
+    }
+
+    @Override
+    protected void renderLabels(net.minecraft.client.gui.GuiGraphics graphics$v, int xm, int ym) { GuiGraphicsExtractor graphics = GuiGraphicsExtractor.of(graphics$v);
+        super.extractLabels(graphics, xm, ym);
+        AircraftEntity aircraft = this.menu.getAircraft();
+        int percent = aircraft != null ? (int) (aircraft.getFuelPercentage() * 100.0F + 0.5F) : 0;
+        graphics.text(this.font, String.format("%3d", percent) + "%", 6, 17 + 4 * 18 + 4, 0xFF404040, false);
+        if (this.menu.getParachuteSlots() > 0) {
+            graphics.text(this.font, "Chutes", 2, 106, 0xFF404040, false);
+        }
+        if (!this.weaponRows.isEmpty()) {
+            int wx = this.weaponPanelX() - this.leftPos;
+            graphics.text(this.font, "Weapons", wx + 6, 5, 0xFF404040, false);
+            for (int r = 0; r < this.weaponRows.size(); r++) {
+                WeaponSet ws = this.weaponRows.get(r).set();
+                int ry = 16 + r * WEAPON_ROW_H;
+                String name = this.font.plainSubstrByWidth(ws.getInfo().displayName, WEAPON_PANEL_W - 60);
+                graphics.text(this.font, name, wx + 6, ry, 0xFF404040, false);
+                graphics.text(this.font, ws.getAmmo() + "/" + ws.getMagSize() + " (" + ws.getRestAllAmmoNum() + ")",
+                        wx + 6, ry + 10, 0xFF606060, false);
+            }
+        }
+    }
+}
