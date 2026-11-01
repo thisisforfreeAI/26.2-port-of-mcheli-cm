@@ -25,6 +25,10 @@ sky (Nether, End) get no key light.
 
 ## Flash and fire light
 
+The [fire-light follow-up](M8_FIRE_LIGHTING.md) gives fuel pools their own lifetime, lights damaged
+engines and small detached fires, strengthens nearby ground glow, and keeps fire lights alive when
+particle admission is full.
+
 `SceneLights` keeps up to 96 brief lights: explosions (radius 5–28 blocks, 6–20 ticks, from the
 client explosion entry point), muzzle flashes (2.5–9 blocks, 3 ticks), burning wrecks (3–10 blocks
 with flicker, refreshed while the wreck burns) and burning flares (7 blocks). Each frame the eight
@@ -45,8 +49,8 @@ vehicles and vehicles past the render distance keep the single value.
 
 ## Limits
 
-- Vehicles drawn on the CPU path (glowing outline, emissive layers, or `render.gpuModelBuffers`
-  off) keep vanilla lighting.
+- With `render.gpuModelBuffers` off, vehicles get a local lightmap lift from nearby fires;
+  directional coloured point lighting remains on the GPU path. Outlines/emissive layers keep vanilla lighting.
 - Walls are not lit by fire patches; only top faces are.
 - Point lights reach at most eight per frame for vehicles.
 - Performance on target hardware has not been measured; the shader adds one eight-light loop and

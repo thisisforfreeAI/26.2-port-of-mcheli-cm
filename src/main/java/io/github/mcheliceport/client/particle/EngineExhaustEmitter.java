@@ -22,7 +22,6 @@ public final class EngineExhaustEmitter {
 
     public static boolean emit(AircraftEntity aircraft) {
         if (!(aircraft.level() instanceof ClientLevel level) || !(aircraft instanceof HeliEntity || aircraft instanceof PlaneEntity)) return false;
-        if(aircraft instanceof PlaneEntity p && io.github.mcheliceport.client.render.PlaneAirframeParts.tailMissing(p))return true;
         var info = aircraft.getAcInfo();
         if (info == null) return false;
         float nozzle = aircraft instanceof PlaneEntity plane ? plane.getNozzleRotation() : 0;

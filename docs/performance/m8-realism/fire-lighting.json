@@ -1,0 +1,235 @@
+{
+  "feature": "M8 fire illumination",
+  "baselineSource": "b7e14ebfd29a07ab1099914a6e0b96665d8b367b",
+  "target": {
+    "fps": 60,
+    "resolution": [
+      1920,
+      1080
+    ],
+    "gpu": "RTX 3060 8 GB",
+    "cpu": "Ryzen 7 7800X3D",
+    "hardwareVerified": false
+  },
+  "localRuntime": {
+    "java": 25,
+    "minecraft": "26.2",
+    "renderer": "Mesa software: lavapipe / llvmpipe",
+    "captureResolution": [
+      1280,
+      720
+    ],
+    "optionalDependenciesExcludedLocally": true,
+    "distributedLocalJar": false
+  },
+  "unitTests": {
+    "passed": 560,
+    "failed": 0
+  },
+  "requiredLocalGameTests": {
+    "passed": 297,
+    "failed": 0
+  },
+  "limits": {
+    "sources": 96,
+    "vehicleShaderLights": 8,
+    "terrainPatches": 4,
+    "sourceResamplesPerTick": 1,
+    "terrainHorizontalReach": 7,
+    "terrainDownwardSearch": 14
+  },
+  "native": [
+    {
+      "backend": "vulkan",
+      "scenesPassed": 6,
+      "checkpoints": [
+        {
+          "scene": "ah64-lighting-off",
+          "stage": "burning",
+          "lights": 0,
+          "peak": 0,
+          "sampled_faces": 0
+        },
+        {
+          "scene": "ah64-lighting-on",
+          "stage": "burning",
+          "lights": 2,
+          "peak": 2,
+          "sampled_faces": 336
+        },
+        {
+          "scene": "ah64-lighting-on",
+          "stage": "late-pool",
+          "lights": 1,
+          "peak": 2,
+          "sampled_faces": 177
+        },
+        {
+          "scene": "ah64-lighting-on",
+          "stage": "drained",
+          "lights": 0,
+          "peak": 2,
+          "sampled_faces": 0
+        },
+        {
+          "scene": "f35-engine-fire",
+          "stage": "burning",
+          "lights": 1,
+          "peak": 1,
+          "sampled_faces": 58
+        },
+        {
+          "scene": "f35-engine-fire",
+          "stage": "drained",
+          "lights": 0,
+          "peak": 1,
+          "sampled_faces": 0
+        },
+        {
+          "scene": "ah64-compatibility",
+          "stage": "burning",
+          "lights": 2,
+          "peak": 2,
+          "sampled_faces": 336
+        },
+        {
+          "scene": "shared-load",
+          "stage": "cap-pressure",
+          "lights": 96,
+          "peak": 96,
+          "sampled_faces": 2112
+        },
+        {
+          "scene": "shared-load",
+          "stage": "burning",
+          "lights": 48,
+          "peak": 96,
+          "sampled_faces": 8418
+        },
+        {
+          "scene": "classic-quality",
+          "stage": "burning",
+          "lights": 0,
+          "peak": 0,
+          "sampled_faces": 0
+        }
+      ]
+    },
+    {
+      "backend": "opengl",
+      "scenesPassed": 6,
+      "checkpoints": [
+        {
+          "scene": "ah64-lighting-off",
+          "stage": "burning",
+          "lights": 0,
+          "peak": 0,
+          "sampled_faces": 0
+        },
+        {
+          "scene": "ah64-lighting-on",
+          "stage": "burning",
+          "lights": 2,
+          "peak": 2,
+          "sampled_faces": 336
+        },
+        {
+          "scene": "ah64-lighting-on",
+          "stage": "late-pool",
+          "lights": 1,
+          "peak": 2,
+          "sampled_faces": 177
+        },
+        {
+          "scene": "ah64-lighting-on",
+          "stage": "drained",
+          "lights": 0,
+          "peak": 2,
+          "sampled_faces": 0
+        },
+        {
+          "scene": "f35-engine-fire",
+          "stage": "burning",
+          "lights": 1,
+          "peak": 1,
+          "sampled_faces": 58
+        },
+        {
+          "scene": "f35-engine-fire",
+          "stage": "drained",
+          "lights": 0,
+          "peak": 1,
+          "sampled_faces": 0
+        },
+        {
+          "scene": "ah64-compatibility",
+          "stage": "burning",
+          "lights": 2,
+          "peak": 2,
+          "sampled_faces": 336
+        },
+        {
+          "scene": "shared-load",
+          "stage": "cap-pressure",
+          "lights": 96,
+          "peak": 96,
+          "sampled_faces": 2080
+        },
+        {
+          "scene": "shared-load",
+          "stage": "burning",
+          "lights": 48,
+          "peak": 96,
+          "sampled_faces": 1429
+        },
+        {
+          "scene": "classic-quality",
+          "stage": "burning",
+          "lights": 0,
+          "peak": 0,
+          "sampled_faces": 0
+        }
+      ]
+    }
+  ],
+  "fixture": "Held client vehicle HP/wreck states with production emitters, not server crash captures",
+  "screenshots": [
+    {
+      "path": "docs/screens/m8-fire-lighting/m8-fire-light-ah64-compatibility.png",
+      "sha256": "3eac0495068dc49d038f6bb09f33460d78433f0e636b37838a2b6733f7103c55"
+    },
+    {
+      "path": "docs/screens/m8-fire-lighting/m8-fire-light-ah64-cooled.png",
+      "sha256": "cd6ecd65c44cfcf5a6741b9a817e640254144e39b453cbef1d3e52fc36f98239"
+    },
+    {
+      "path": "docs/screens/m8-fire-lighting/m8-fire-light-ah64-late-fuel-fire.png",
+      "sha256": "01ec460a742bd65342068e500a22858ef074e0504104993982ebcf465c6fc6d3"
+    },
+    {
+      "path": "docs/screens/m8-fire-lighting/m8-fire-light-ah64-lighting-off.png",
+      "sha256": "24ed1726e29f2d919114b944f6387e15645f1e9ca679c4165c1627d6f7eaa0a0"
+    },
+    {
+      "path": "docs/screens/m8-fire-lighting/m8-fire-light-ah64-lighting-on.png",
+      "sha256": "b457fa1cd06ac500f76bb3e2abc658e882ea97671ce0a4fd151b6c5671dfbe39"
+    },
+    {
+      "path": "docs/screens/m8-fire-lighting/m8-fire-light-f35-engine-fire.png",
+      "sha256": "f6a523d8edcf0aa23d154491265d17ca78cb81b492ddcdf853b96e88be32818d"
+    },
+    {
+      "path": "docs/screens/m8-fire-lighting/m8-fire-light-f35-repaired.png",
+      "sha256": "3ede43a10b3d1a03d5bc06c29d1a7f61a50fec802a397a6f8424e9d59002e75c"
+    },
+    {
+      "path": "docs/screens/m8-fire-lighting/m8-fire-light-shared-load.png",
+      "sha256": "5350950e190c04f2440c09c4fe039a6e500faa92636c099ace9fb5e566fe60f1"
+    }
+  ],
+  "screenshotEditing": false,
+  "limitations": [
+    "Software rendering does not measure target-PC FPS.",
+    "Terrain glow is an additive top-face approximation, without dynamic world shadows or block-light updates."
+  ]
+}

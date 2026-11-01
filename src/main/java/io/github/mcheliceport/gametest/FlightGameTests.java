@@ -117,8 +117,9 @@ final class FlightGameTests {
         BlockPos pad = new BlockPos(-4000, origin.getY(), -4000);
         int chunkX = pad.getX() >> 4;
         int chunkZ = pad.getZ() >> 4;
-        level.getChunk(chunkX, chunkZ);
-        level.setChunkForced(chunkX, chunkZ, true);
+        // The pad sits on a chunk corner, so keep the neighbouring chunks ticking too: a helicopter that
+        // drifts a few hundredths of a block across the edge would otherwise freeze in an unloaded chunk.
+        forceChunks(level, chunkX, chunkZ, true);
         for (int dx = -3; dx <= 3; dx++) {
             for (int dz = -3; dz <= 3; dz++) {
                 level.setBlockAndUpdate(pad.offset(dx, 0, dz), Blocks.STONE.defaultBlockState());
@@ -157,10 +158,21 @@ final class FlightGameTests {
                 check(helper, heli.getDamageTaken() == 0, "without damage");
                 s.done = true;
                 GameTestSupport.cleanUp(heli);
-                level.setChunkForced(chunkX, chunkZ, false);
+                forceChunks(level, chunkX, chunkZ, false);
                 helper.succeed();
             }
         });
+    }
+
+    private static void forceChunks(ServerLevel level, int chunkX, int chunkZ, boolean force) {
+        for (int dx = -1; dx <= 1; dx++) {
+            for (int dz = -1; dz <= 1; dz++) {
+                if (force) {
+                    level.getChunk(chunkX + dx, chunkZ + dz);
+                }
+                level.setChunkForced(chunkX + dx, chunkZ + dz, force);
+            }
+        }
     }
 
     private static void crashExplodes(GameTestHelper helper) {

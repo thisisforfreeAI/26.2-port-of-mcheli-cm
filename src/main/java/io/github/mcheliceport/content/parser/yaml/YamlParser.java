@@ -817,7 +817,10 @@ public final class YamlParser implements ContentParser {
             case "StepHeight" -> info.stepHeight = getClamped(0F, 1000F, entry.getValue());
             case "CanRotOnGround" -> info.canRotOnGround = (Boolean) entry.getValue();
             case "CanMoveOnGround" -> info.canMoveOnGround = (Boolean) entry.getValue();
-            case "OnGroundPitch" -> info.onGroundPitch = -getClamped(-90F, 90F, entry.getValue());
+            // Port: YAML stores the in-game pitch (negative = nose up), as upstream's converter wrote it
+            // into every stock and add-on YAML file. Upstream negated it again here, as its TXT parser
+            // does, which pinned tail-draggers nose-down on the ground so they could never lift off.
+            case "OnGroundPitch" -> info.onGroundPitch = getClamped(-90F, 90F, entry.getValue());
             case "PivotTurnThrottle" -> info.pivotTurnThrottle = getClamped(1F, entry.getValue());
 
             case "Mobility" -> {

@@ -42,7 +42,6 @@ public final class VehicleAtmosphere {
     private VehicleAtmosphere() {}
 
     public static float engineHeat(AircraftEntity aircraft) {
-        if(aircraft instanceof PlaneEntity p && io.github.mcheliceport.client.render.PlaneAirframeParts.tailMissing(p))return 0;
         State state = STATES.get(aircraft);
         return EffectQuality.enhanced() && ClientConfig.get(ClientConfig.ENGINE_STARTUP_EFFECTS) && state != null
                 ? state.engine.heat() : EngineExhaustLook.strength(aircraft.getCurrentThrottle());
@@ -50,7 +49,7 @@ public final class VehicleAtmosphere {
 
     public static void clear() {
         STATES.values().forEach(State::stop); STATES.clear(); world = null;
-        lastTick = Long.MIN_VALUE;farContrails=0; CookoffEffects.clear(); WreckSequenceEffects.clear();
+        lastTick = Long.MIN_VALUE;farContrails=0; CookoffEffects.clear(); WreckSequenceEffects.clear();DebrisImpactEffects.clear();
     }
     public static int stateCount() { return STATES.size(); }
     /** How far an aircraft keeps its state: contrail range, and for a plane at least the breakaway range. */
@@ -119,8 +118,7 @@ public final class VehicleAtmosphere {
             state.cooling.tick(aircraft.isDestroyed());
             if(aircraft instanceof PlaneEntity plane)WingVaporEffects.update(level,plane,state.condensation,now);
             WreckSequenceEffects.tick(level,aircraft,state.cooling.age());
-            boolean powered = !aircraft.isDestroyed() && aircraft.canUseFuel()
-                    && !(aircraft instanceof PlaneEntity p && io.github.mcheliceport.client.render.PlaneAirframeParts.tailMissing(p));
+            boolean powered = !aircraft.isDestroyed() && aircraft.canUseFuel();
             state.engine.tick(aircraft.getCurrentThrottle(), powered);
             if (!ClientConfig.get(ClientConfig.ENGINE_STARTUP_EFFECTS)) state.stop();
             else {
@@ -131,8 +129,12 @@ public final class VehicleAtmosphere {
                 }
                 if (state.engine.startup() == 0) state.stop();
             }
-            if (emitted >= EngineExhaustLook.cap(ClientConfig.get(ClientConfig.EFFECT_BUDGET))) continue;
             List<Vec3> origins = origins(aircraft);
+            if(ClientConfig.get(ClientConfig.VEHICLE_DAMAGE_DETAILS)){
+                if(aircraft.isDestroyed())WreckEffects.light(level,wreckOrigins(aircraft),state.cooling,aircraft,now);
+                else AirflowFireEffects.light(level,aircraft,origins,VehicleAtmosphereLook.damage(aircraft.getHP(),aircraft.getMaxHP()));
+            }
+            if (emitted >= EngineExhaustLook.cap(ClientConfig.get(ClientConfig.EFFECT_BUDGET))) continue;
             if (ClientConfig.get(ClientConfig.ENGINE_STARTUP_EFFECTS) && powered && state.engine.heat() > 0
                     && Math.floorMod(now + aircraft.getId(), 2) == 0) {
                 var outlets = EngineExhaustLook.outlets(aircraft.getAcInfo(), aircraft instanceof PlaneEntity p ? p.getNozzleRotation() : 0);
@@ -169,10 +171,6 @@ public final class VehicleAtmosphere {
 
     /** Prefer authored engine anchors. A short startup puff may use the machinery below a lift rotor. */
     public static List<Vec3> origins(AircraftEntity aircraft) {
-        if(aircraft instanceof PlaneEntity p && io.github.mcheliceport.client.render.PlaneAirframeParts.tailMissing(p)) {
-            var sequence=WreckSequenceEffects.get(aircraft);
-            if(sequence!=null&&sequence.opening!=null)return List.of(sequence.opening);
-        }
         var info = aircraft.getAcInfo();
         List<Vec3> result = new ArrayList<>(2);
         var outlets = EngineExhaustLook.outlets(info, aircraft instanceof PlaneEntity p ? p.getNozzleRotation() : 0);

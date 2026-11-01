@@ -22,7 +22,7 @@ public final class PlaneRenderer extends AircraftRenderer<PlaneEntity> {
         super.extractRenderState(plane, state, partialTicks);
         PlaneInfo info = plane.getPlaneInfo();
         float throttle = Math.clamp((float) plane.getCurrentThrottle(), 0.0F, 1.0F);
-        if (state.texture == null || info == null || throttle == 0.0F || plane.getVtolMode() != 0 || PlaneAirframeParts.tailMissing(plane)) {
+        if (state.texture == null || info == null || throttle == 0.0F || plane.getVtolMode() != 0) {
             return;
         }
         float steer = plane.previousExhaustYaw + (plane.exhaustYaw - plane.previousExhaustYaw) * partialTicks;

@@ -19,6 +19,16 @@ public final class WreckFuelFire {
     public static float strength(int age){
         if(age<0)return 0;if(age<FULL)return 1;return Math.max(0,1-(age-FULL)/(float)DECAY);
     }
+    static void light(ClientLevel level,AircraftEntity aircraft,WreckCoolingLook cooling,long tick){
+        var scene=WreckScene.get(aircraft);
+        if(scene==null||!scene.fresh()||scene.position==null||tick-scene.impactTick<3)return;
+        float fire=strength(cooling.age());if(fire<=0)return;
+        if(Minecraft.getInstance().gameRenderer.mainCamera().position().distanceToSqr(scene.position)>64*64)return;
+        float radius=io.github.mcheliceport.client.effect.WreckGround.poolRadius(scene.size())
+                *io.github.mcheliceport.client.effect.WreckGround.poolGrowth(tick-scene.impactTick);
+        io.github.mcheliceport.client.render.SceneLights.fire(level,aircraft,1,scene.position,fire,
+                io.github.mcheliceport.client.render.SceneLightLook.poolRadius(radius,fire));
+    }
     static void emit(ClientLevel level,AircraftEntity aircraft,WreckCoolingLook cooling,long tick){
         var scene=WreckScene.get(aircraft);
         if(scene==null||!scene.fresh()||scene.position==null||tick-scene.impactTick<3)return;

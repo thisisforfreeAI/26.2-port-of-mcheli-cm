@@ -14,16 +14,15 @@ import org.joml.Vector3f;
 
 /** Identical structural silhouettes while alive, wrecked, saved/reloaded, or viewed at a distance. */
 public final class PlaneAirframeParts {
-    private static final Identifier METAL=Identifier.withDefaultNamespace("textures/block/iron_block.png");
+    static final Identifier METAL=Identifier.withDefaultNamespace("textures/block/iron_block.png");
     /** Inner skin is the aircraft's own paint in shadow; bulkheads are bare scorched alloy. */
     static final int LINING=0xFF6A665F,CAP=0xFF3D3934;
     private PlaneAirframeParts() {}
-    public static boolean tailMissing(PlaneEntity ac) {var state=WreckSequenceEffects.get(ac);return state!=null&&state.tail;}
     public static void apply(PlaneEntity ac,AircraftRenderState render,WreckSequenceEffects.State state,BreakupMeshes.Body engineBody) {
         long now=ac.level().getGameTime();int missing=AirframeDamage.missing(ac);
         if(state.liveMask>=0&&!ac.isDestroyed())for(int bit:new int[]{1,2,4}){
             if((missing&bit)!=0&&(state.liveMask&bit)==0)state.airframeLossAt.put(bit,now);
-            if((missing&bit)==0){state.airframeLossAt.remove(bit);state.scattered.remove("liveAirframe"+bit);
+            if((missing&bit)==0){state.airframeLossAt.remove(bit);state.scattered.remove("liveAirframe"+bit);String shards="liveAirframe"+bit+":";state.scattered.removeIf(k->k.startsWith(shards));
                 for(int i=0;i<3;i++)state.scattered.remove("skin"+bit+":"+i);}
         }
         state.liveMask=missing;
@@ -60,10 +59,12 @@ public final class PlaneAirframeParts {
                     if(io.github.mcheliceport.config.ClientConfig.get(io.github.mcheliceport.config.ClientConfig.EFFECT_STYLE)
                             ==io.github.mcheliceport.config.ClientConfig.EffectStyle.POLISHED&&detail.vertices()>0) {
                         VehicleDetailLayers.add(render,settled,METAL,List.of(detail.ribs()),0xFF777168);
+                        InteriorFirelight.add(ac,render,settled,detail.ribs());
                         VehicleDetailLayers.add(render,settled,METAL,List.of(detail.cables()),0xFF302C27);
                     }else VehicleDetailLayers.add(render,settled,METAL,List.of(frame.ribs()),0xFF595752);
-                    if((actual&4)!=0){
-                        var b=frame.bounds();var at=settled.transformPosition(new Vector3f(0,(b.low().y+b.high().y)*.45F,frame.tailCut()+.1F));
+                    var root=frame.openings().get(4);
+                    if((actual&4)!=0&&root!=null){
+                        var at=settled.transformPosition(new Vector3f((float)root.x,(float)root.y,(float)root.z));
                         state.opening=ac.position().add(at.x,at.y,at.z);
                     }
                 }
@@ -76,6 +77,7 @@ public final class PlaneAirframeParts {
                     state.cover=true;state.parts|=1;
                     scatterWreck(ac,render,state,"cover",engineBody.cover(),pose,36,new Vec3(.1,.34,-.08));
                     VehicleDetailLayers.add(render,settled,METAL,List.of(engineBody.machinery()),0xFF514D45);
+                    InteriorFirelight.add(ac,render,settled,engineBody.machinery());
                     if((actual&4)==0&&engineBody.opening()!=null){var v=engineBody.opening();var p=settled.transformPosition(new Vector3f((float)v.x,(float)v.y,(float)v.z));state.opening=ac.position().add(p.x,p.y,p.z);}
                 }
                 continue;
@@ -90,7 +92,7 @@ public final class PlaneAirframeParts {
             }
             if(nearby&&state.age>=36&&(name.startsWith("$enginecover")||name.startsWith("$cover"))&&group.vertexCount()<=1200){
                 scatterWreck(ac,render,state,"named_cover"+name,group,pose,36,new Vec3(.1,.3,0));
-                PanelInteriors.add(render,new Matrix4f(WreckAppearance.root(ac)).mul(pose),group);state.cover=true;state.parts|=1;continue;
+                PanelInteriors.add(render,new Matrix4f(WreckAppearance.root(ac)).mul(pose),group,ac);state.cover=true;state.parts|=1;continue;
             }
             output.add(new AircraftPartPoses.Draw(pose,List.of(group)));
         }
@@ -99,6 +101,7 @@ public final class PlaneAirframeParts {
     private static void detach(PlaneEntity ac,AircraftRenderState render,WreckSequenceEffects.State state,
             BreakupMeshes.Airframe frame,Matrix4f pose,int index,long now,int missing){
         var group=DamagedControlSurfaces.fragment(state,frame.sections().get(index),index);if(group==null||group.vertexCount()==0)return;
+        if(index==2){shatterTail(ac,render,state,frame,pose,group,now,missing);return;}
         int bit=1<<index;String key="liveAirframe"+bit;
         Long born=state.airframeLossAt.get(bit);
         if(born!=null&&now>=born&&now-born<=60&&!state.scattered.contains(key)){
@@ -113,6 +116,46 @@ public final class PlaneAirframeParts {
                 var part=BreakupMeshes.part(group);if(part!=null)LoosePanels.tear(tear(frame,index,part));
             }
         }
+    }
+    /**
+     * A tail does not leave in one rigid cluster: every fin and stabiliser (and the halves of a big one)
+     * pops off on its own, a couple a tick, each folding about its own root and flung up and out from the
+     * fuselage with its own tumble. The same on a live loss and on a wreck's destruction sequence.
+     */
+    private static void shatterTail(PlaneEntity ac,AircraftRenderState render,WreckSequenceEffects.State state,
+            BreakupMeshes.Airframe frame,Matrix4f pose,McheliModel.Group tail,long now,int missing){
+        int bit=AirframeDamage.TAIL;Long born=state.airframeLossAt.get(bit);
+        boolean live=born!=null&&now>=born&&now-born<=60;
+        boolean wreck=!live&&(missing&bit)==0&&state.seenAlive&&state.age>=110&&state.age<=138;
+        if(!live&&!wreck)return;
+        var shards=BreakupMeshes.shatter(tail);if(shards==null||shards.isEmpty())return;
+        var middle=BreakupMeshes.bounds(tail).center();
+        for(int i=0;i<shards.size();i++){
+            String key=(live?"liveAirframe":"tail")+bit+":"+i;if(state.scattered.contains(key))continue;
+            var shard=shards.get(i);var b=BreakupMeshes.bounds(shard);var c=b.center();
+            boolean fin=b.high().y-b.low().y>b.high().x-b.low().x;float side=Math.abs(c.x)<.15F?(i%2==0?1:-1):Math.signum(c.x);
+            // Up and out from the fuselage, back into the slipstream, every piece a little differently.
+            float jitter=((i*37+ac.getId())%7-3)*.012F;
+            var impulse=fin?new Vec3(side*.05+jitter,.12+Math.max(0,c.y-middle.y)*.02,-.10-jitter)
+                    :new Vec3(side*.13,.06+jitter,-.08+jitter);
+            boolean spawned=live?LoosePanels.airframePiece(ac,render.texture,shard,pose,c,impulse,bit)
+                    :LoosePanels.scatter(ac,render.texture,shard,pose,c,impulse.add(0,.12,0));
+            if(!spawned)break;
+            state.scattered.add(key);
+            LoosePanels.tear(shardTear(shard,b,fin));
+            LoosePanels.tumble(new org.joml.Vector3f(fin?.05F*side:.02F,(i%3-1)*.03F,fin?.02F:.07F*side));
+        }
+    }
+    /** A tail piece's own root: the foot of a fin, the inboard edge of a stabiliser. */
+    static LoosePanels.Tear shardTear(McheliModel.Group shard,BreakupMeshes.Bounds b,boolean fin){
+        int axis=fin?1:0;boolean left=b.center().x<0;
+        float cut=fin?b.low().y:left?b.high().x:b.low().x;
+        // outward points away from the side the piece lies on, like the wing and tail cuts.
+        int outward=fin?-1:left?1:-1;
+        var d=shard.data();Vector3f root=null;float best=Float.POSITIVE_INFINITY;
+        for(int i=0;i+7<d.length;i+=8){float distance=Math.abs(d[i+axis]-cut);if(distance<best){best=distance;root=new Vector3f(d[i],d[i+1],d[i+2]);}}
+        if(root==null)root=b.center();
+        return new LoosePanels.Tear(axis,cut,outward,root);
     }
     /** The section's own cut: same plane as the kept stump, with its cap facing back toward the fuselage. */
     static LoosePanels.Tear tear(BreakupMeshes.Airframe frame,int index,BreakupMeshes.Part part){

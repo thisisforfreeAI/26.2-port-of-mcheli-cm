@@ -635,6 +635,11 @@ These follow from how Minecraft 26.2 works or from decisions approved in PORTING
     flies upstream's return to base (reason `recalled`), or taxis back to parking if still on the ground.
     A planner mission has no base of its own, so it returns to the base of its last landing, take-off
     or parking node, else the nearest base, and stops where it is when there is no base.
+113. YAML `OnGroundPitch` is read as written: the in-game pitch, negative for nose up, which is how
+    upstream's converter wrote every stock and add-on YAML file. Upstream negated it a second time, so
+    tail-draggers (Zero, P-51D, An-2, Fi 167, PZL M-18, BQM-74E) sat nose-down, pushed themselves into
+    the runway and could never lift off, and helicopters sat nose-down by a few degrees. YAML written by
+    earlier builds of the port's TXT converter (which stored the TXT sign) reads with the opposite sign.
 
 ## Upstream content issues kept as they are
 
@@ -648,8 +653,6 @@ its stock content from TXT to YAML lost or changed (the full list, checked by a 
   restored recipes. Existing installations refresh their extracted stock pack on restart.
 - Some weapons lost their damage factors, bomblet, fuel-air explosive, dispenser and targeting pod
   settings; some racks lost their fixed angles.
-- Stock YAML vehicles sit with the opposite pitch on the ground (`OnGroundPitch` was written with
-  its sign flipped).
 - The stock helicopter HUD tests `hovering==1`, but `hovering` is true or false, so the HOVERING
   label never shows, as upstream.
 - The UH-1C names a `camera0` part that its model file does not have; nothing is drawn for it,

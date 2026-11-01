@@ -37,6 +37,29 @@ class SceneLightLookTest {
         assertEquals(0,SceneLightLook.fireRadius(Float.NaN));assertEquals(10,SceneLightLook.fireRadius(5));
     }
 
+    @Test void fireLightCoolsWithTheSourceInsteadOfKeepingAConstantMinimum(){
+        assertEquals(0,SceneLightLook.fireIntensity(0));
+        assertEquals(0,SceneLightLook.fireIntensity(Float.NaN));
+        assertEquals(0,SceneLightLook.fireIntensity(Float.POSITIVE_INFINITY));
+        assertEquals(1,SceneLightLook.fireIntensity(5));
+        assertTrue(SceneLightLook.fireIntensity(.01F)<SceneLightLook.fireIntensity(.25F)*.25F);
+        assertEquals(0,SceneLightLook.poolRadius(6,0));
+        assertEquals(0,SceneLightLook.poolRadius(Float.NaN,1));
+        assertTrue(SceneLightLook.poolRadius(7,1)>SceneLightLook.poolRadius(2,1));
+        assertEquals(14,SceneLightLook.poolRadius(1000,1));
+        // Fuel is still burning after the hull's opening fire has cooled away.
+        var cooling=new io.github.mcheliceport.client.particle.WreckCoolingLook();
+        cooling.tick(false);cooling.tick(true);for(int i=0;i<400;i++)cooling.tick(true);
+        assertEquals(0,cooling.fire());
+        assertTrue(SceneLightLook.fireIntensity(io.github.mcheliceport.client.particle.WreckFuelFire.strength(cooling.age()))>0);
+        assertEquals(0,SceneLightLook.fireIntensity(io.github.mcheliceport.client.particle.WreckFuelFire.strength(760)));
+    }
+
+    @Test void fireFlickerChangesGentlyBetweenFrames(){
+        for(float t=0;t<200;t+=.2F)
+            assertTrue(Math.abs(SceneLightLook.flicker(t+.2F,3)-SceneLightLook.flicker(t,3))<.015F);
+    }
+
     @Test void sunRisesEastIsOverheadAtNoonAndMoonTakesOverAtNight(){
         float[] noon=SceneLightLook.keyLight(NOON,MIDNIGHT,0,0);
         assertEquals(1,noon[1],1e-4);assertEquals(1,noon[3],1e-4);

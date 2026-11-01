@@ -45,6 +45,7 @@ public final class SceneLights {
         List<GlowGeometry.Surface> surfaces = List.of();
         double patchX, patchY, patchZ;
         float patchSky;
+        float patchRadius;
         long sampled = Long.MIN_VALUE;
 
         float strength(long now, float partial) {
@@ -70,6 +71,8 @@ public final class SceneLights {
     private static final Map<Object, Light> KEYED = new HashMap<>();
     private static ClientLevel world;
     private static int seeds;
+    private record FireKey(Object source, int channel) {}
+    private record FlameCell(int x, int y, int z) {}
 
     private SceneLights() {
     }
@@ -125,14 +128,14 @@ public final class SceneLights {
         return light;
     }
 
-    /** Frees the weakest brief light when it is weaker than a new one of {@code weight}. */
+    /** Frees a weaker brief light or flame cell before refusing a stronger main fire. */
     private static boolean evictFor(float weight) {
         int weakest = -1;
         float least = weight;
         for (int i = 0; i < LIGHTS.size(); i++) {
             Light light = LIGHTS.get(i);
             float w = light.radius * light.intensity;
-            if (light.key == null && w < least) {
+            if ((light.key == null || light.key instanceof FlameCell) && w < least) {
                 least = w;
                 weakest = i;
             }
@@ -140,7 +143,8 @@ public final class SceneLights {
         if (weakest < 0) {
             return false;
         }
-        LIGHTS.remove(weakest);
+        Light removed=LIGHTS.remove(weakest);
+        if(removed.key!=null)KEYED.remove(removed.key);
         return true;
     }
 
@@ -158,8 +162,25 @@ public final class SceneLights {
 
     /** A burning wreck, refreshed every tick while it burns; {@code fire} from 0 to 1. */
     public static void fire(Level level, Object key, Vec3 at, float fire) {
-        add(level, key, at.x, at.y + 0.6, at.z, SceneLightLook.fireRadius(fire), 1.0F, 0.55F, 0.22F,
-                0.45F + 0.5F * Math.min(1, fire), 8, true);
+        fire(level, key, 0, at, fire, SceneLightLook.fireRadius(fire));
+    }
+
+    /** One stable light per burning region, rather than one light per flame particle. */
+    public static void fire(Level level, Object key, int channel, Vec3 at, float fire, float radius) {
+        add(level, new FireKey(key, channel), at.x, at.y + 0.6, at.z, radius, 1.0F, 0.58F, 0.25F,
+                SceneLightLook.fireIntensity(fire), 8, true);
+    }
+
+    /** Small detached fires share two-block cells; larger nearby fire sources take precedence. */
+    public static void flame(Level level, Vec3 at, float radius, float opacity) {
+        if(!enabled() || opacity <= .1F || radius <= .15F)return;
+        if(world!=null && world!=level)clear();
+        for(Light light:LIGHTS)if(light.key instanceof FireKey
+                && at.distanceToSqr(light.x,light.y,light.z)<light.radius*light.radius*.64F
+                && light.strength(level.getGameTime(),0)>.1F)return;
+        var key=new FlameCell((int)Math.floor(at.x/2),(int)Math.floor(at.y/2),(int)Math.floor(at.z/2));
+        add(level,key,at.x,at.y+.35,at.z,Math.min(5,2+radius*3),1,.58F,.25F,
+                .5F*Math.clamp(opacity,0,1)*Math.min(1,radius),24,true);
     }
 
     /** A burning decoy flare: a small white-hot light. */
@@ -246,7 +267,7 @@ public final class SceneLights {
 
     /** Block light, 0 to 15, that the current lights give a point. */
     public static int blockLight(Vec3 at, float partial) {
-        if (world == null || LIGHTS.isEmpty()) {
+        if (world == null || LIGHTS.isEmpty() || !enabled()) {
             return 0;
         }
         long now = world.getGameTime();
@@ -289,7 +310,7 @@ public final class SceneLights {
             }
             boolean moved = light.sampled == Long.MIN_VALUE
                     || Math.abs(light.x - light.patchX) + Math.abs(light.y - light.patchY) + Math.abs(light.z - light.patchZ) > 1
-                    || now - light.sampled > 60;
+                    || Math.abs(light.radius-light.patchRadius)>.75F || now - light.sampled > 60;
             if (moved && (next == null || eye.distanceToSqr(light.x, light.y, light.z)
                     < eye.distanceToSqr(next.x, next.y, next.z))) {
                 next = light;
@@ -306,13 +327,14 @@ public final class SceneLights {
         light.patchX = light.x;
         light.patchY = light.y;
         light.patchZ = light.z;
+        light.patchRadius = light.radius;
         light.surfaces = List.of();
         BlockPos center = BlockPos.containing(light.x, light.y, light.z);
         if (!world.hasChunkAt(center)) {
             return;
         }
         light.patchSky = world.getBrightness(LightLayer.SKY, center) / 15F;
-        float reach = Math.min(5, light.radius * 0.6F);
+        float reach = Math.min(7, light.radius * 0.75F);
         int span = (int) Math.ceil(reach);
         var surfaces = new ArrayList<GlowGeometry.Surface>();
         var pos = new BlockPos.MutableBlockPos();
@@ -325,7 +347,7 @@ public final class SceneLights {
                 if (!world.hasChunkAt(pos)) {
                     continue;
                 }
-                for (int step = 0; step < 7; step++, pos.move(0, -1, 0)) {
+                for (int step = 0; step < Math.min(14, (int) Math.ceil(light.radius) + 2); step++, pos.move(0, -1, 0)) {
                     var state = world.getBlockState(pos);
                     if (state.isAir()) {
                         continue;
@@ -377,13 +399,17 @@ public final class SceneLights {
         float partial = mc.getDeltaTracker().getGameTimeDeltaPartialTick(false);
         float night = FlightLightLook.night(world.getSkyDarken());
         int patches = 0;
-        for (Light light : List.copyOf(LIGHTS)) {
-            if (light.key == null || light.surfaces.isEmpty() || patches >= PATCHES) {
-                continue;
+        // A distant, old fire must not take one of the four visible patches from a nearer one.
+        var visible = LIGHTS.stream().filter(l -> l.key != null && !l.surfaces.isEmpty()
+                && camera.distanceToSqr(l.x, l.y, l.z) <= 96 * 96)
+                .sorted(java.util.Comparator.comparingDouble(l -> camera.distanceToSqr(l.x, l.y, l.z))).toList();
+        for (Light light : visible) {
+            if (patches >= PATCHES) {
+                break;
             }
             // Daylight drowns a fire's glow; it shows at night and under cover.
             float dark = Math.max(night, 1 - light.patchSky);
-            float alpha = light.strength(now, partial) * dark * 0.32F;
+            float alpha = light.strength(now, partial) * dark * 0.62F;
             if (alpha <= 0.01F) {
                 continue;
             }

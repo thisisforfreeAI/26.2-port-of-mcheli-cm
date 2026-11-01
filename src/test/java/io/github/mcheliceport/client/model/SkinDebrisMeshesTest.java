@@ -7,8 +7,8 @@ class SkinDebrisMeshesTest {
     @Test void smallPiecesKeepTheirPaintUvsWithoutChangingTheAircraft() {
         var boxes=new DetailBoxes();boxes.box(-7,0,-10,7,2,6);var body=boxes.group("$body");
         var original=body.data().clone();var frame=BreakupMeshes.airframeBuild(body,7);
-        for(int i=0;i<3;i++) {
-            int axis=i==2?2:0,sign=i==1?1:-1;float cut=i==0?frame.leftCut():i==1?frame.rightCut():frame.tailCut();
+        for(int i=0;i<2;i++) {
+            int axis=0,sign=i==1?1:-1;float cut=i==0?frame.leftCut():frame.rightCut();
             var source=frame.sections().get(i);var saved=source.data().clone();var chips=SkinDebrisMeshes.build(source,axis,cut,sign);
             assertEquals(3,chips.size());
             for(var chip:chips) {

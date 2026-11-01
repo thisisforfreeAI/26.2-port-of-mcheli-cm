@@ -29,6 +29,8 @@ public final class LoosePanels {
     private static final Identifier METAL=Identifier.withDefaultNamespace("textures/block/iron_block.png");
     /** A structural section's cut plane in model space, and a point on it where the tear burns. */
     public record Tear(int axis,float cut,int outward,Vector3f edge){}
+    /** Flying and resting pieces at once: room for both wings, a tail in its separate fins and stabilisers, and panels. */
+    static final int MAX=16;
     private static final Map<AircraftEntity,State> STATES=new LinkedHashMap<>();
     private static final List<Piece> PIECES=new ArrayList<>();
     private static ClientLevel world;private static long birthTick=Long.MIN_VALUE;private static int births,collisionCursor;
@@ -48,12 +50,24 @@ public final class LoosePanels {
             var size=part==null?new Vector3f(.6F):new Vector3f(part.bounds().high()).sub(part.bounds().low()).mul(local.getScale(new Vector3f()));
             span=Math.max(size.x,Math.max(size.y,size.z));
             motion=new DebrisMotion(position,velocity,new Vector3f(),local.getNormalizedRotation(new Quaternionf()),size,seed);
+            if(part!=null)motion.keel(keel(group,part.bounds()).mul(local.getScale(new Vector3f())));
         }
         Vec3 velocity(){return motion.velocity;}
         void velocity(Vec3 v){motion.velocity=v;}
         boolean settled(){return motion.phase==DebrisMotion.Phase.REST||motion.phase==DebrisMotion.Phase.SUNK;}
     }
     private LoosePanels(){}
+    /** Area-weighted middle of a piece's skin, relative to the middle of its bounds, in its model space. */
+    static Vector3f keel(McheliModel.Group group,io.github.mcheliceport.client.model.BreakupMeshes.Bounds bounds){
+        var d=group.data();double x=0,y=0,z=0,total=0;
+        for(int t=0;t+23<d.length;t+=24){
+            double ax=d[t+8]-d[t],ay=d[t+9]-d[t+1],az=d[t+10]-d[t+2],bx=d[t+16]-d[t],by=d[t+17]-d[t+1],bz=d[t+18]-d[t+2];
+            double cx=ay*bz-az*by,cy=az*bx-ax*bz,cz=ax*by-ay*bx,area=Math.sqrt(cx*cx+cy*cy+cz*cz);
+            x+=area*(d[t]+d[t+8]+d[t+16])/3;y+=area*(d[t+1]+d[t+9]+d[t+17])/3;z+=area*(d[t+2]+d[t+10]+d[t+18])/3;total+=area;
+        }
+        if(total<=0)return new Vector3f();
+        return new Vector3f((float)(x/total),(float)(y/total),(float)(z/total)).sub(bounds.center());
+    }
     public static void wreckPiece(AircraftEntity owner,Identifier texture,McheliModel.Group group,Matrix4f pose,Vector3f center){
         scatter(owner,texture,group,pose,center,new Vec3(0,.22,0));
     }
@@ -61,9 +75,9 @@ public final class LoosePanels {
         var mc=Minecraft.getInstance();if(mc.level!=world){clear();world=mc.level;}
         long tick=world.getGameTime();if(birthTick!=tick){birthTick=tick;births=0;}
         // Pieces kept around a hulk give way to fresh ones, oldest first.
-        if(PIECES.size()>=8)for(var p:PIECES)if(kept(p)){PIECES.remove(p);break;}
+        if(PIECES.size()>=MAX)for(var p:PIECES)if(kept(p)){PIECES.remove(p);break;}
         int vertices=PIECES.stream().mapToInt(p->p.group.vertexCount()).sum();
-        if(!enabled()||PIECES.size()>=8||births>=2||group.vertexCount()<3||group.vertexCount()>12000||vertices+group.vertexCount()>24000)return false;
+        if(!enabled()||PIECES.size()>=MAX||births>=2||group.vertexCount()<3||group.vertexCount()>12000||vertices+group.vertexCount()>32000)return false;
         var at=pose.transformPosition(new Vector3f(center));var position=owner.position().add(at.x,at.y,at.z);
         int light=world.hasChunkAt(BlockPos.containing(position))?LightCoordsUtil.getLightCoords(world,BlockPos.containing(position)):0;
         var local=new Matrix4f().translation(-at.x,-at.y,-at.z).mul(pose);var piece=new Piece(owner,group,texture,local,position,light);piece.life=900;piece.velocity(piece.velocity().add(impulse).add(0,-.22,0));inherit(piece);PIECES.add(piece);births++;return true;
@@ -96,8 +110,13 @@ public final class LoosePanels {
         var owner=piece.owner;var m=piece.motion;
         var rate=DebrisMotion.angularVelocity(DebrisMotion.attitude(owner.yRotO,owner.xRotO,owner.prevRoll),
                 DebrisMotion.attitude(owner.getYaw(),owner.getPitch(),owner.getRoll()));
-        m.velocity=m.velocity.add(new Vec3(rate.x,rate.y,rate.z).cross(m.position.subtract(owner.position())));m.inherit(rate);
+        m.velocity=m.velocity.add(new Vec3(rate.x,rate.y,rate.z).cross(m.position.subtract(owner.position())));
+        if(owner.isDestroyed()&&io.github.mcheliceport.client.particle.WreckSequenceEffects.enabled())
+            rate.add(io.github.mcheliceport.client.particle.DestructionLook.panelSpin(piece.seed,piece.span));
+        m.inherit(rate);
     }
+    /** Extra tumble for the piece just admitted, on top of what it inherited. */
+    public static void tumble(Vector3f extra){if(!PIECES.isEmpty())PIECES.getLast().motion.addSpin(extra);}
     public static int airframePieces(AircraftEntity owner){return (int)PIECES.stream().filter(p->p.owner==owner&&p.airframeBit!=0).count();}
     public static boolean skinPiece(AircraftEntity owner,Identifier texture,McheliModel.Group group,
             Matrix4f pose,Vector3f center,Vec3 impulse,int bit){
@@ -291,6 +310,7 @@ public final class LoosePanels {
         }
     }
     public static int pieces(){return PIECES.size();}
+    public static int namedPieces(AircraftEntity owner,String name){return (int)PIECES.stream().filter(p->p.owner==owner&&p.group.name().equals(name)).count();}
     /** Centre and phase of an aircraft's live structural fragments, for probes. */
     public static List<String> airframeMotion(AircraftEntity owner){
         return PIECES.stream().filter(p->p.owner==owner&&p.airframeBit!=0&&!p.skin).map(p->p.airframeBit+":"+p.motion.phase+"@"+p.motion.position).toList();

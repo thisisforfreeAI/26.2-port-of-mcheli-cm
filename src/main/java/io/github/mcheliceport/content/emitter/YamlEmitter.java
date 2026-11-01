@@ -1365,9 +1365,8 @@ public final class YamlEmitter {
 
         if (info.canMoveOnGround != dummyInfo.canMoveOnGround) phys.put("CanMoveOnGround", info.canMoveOnGround);
 
-        // Port: the parser negates this value, so write it negated. Upstream did not, which flipped
-        // the sign in converted files (including upstream's stock YAML content).
-        if (info.onGroundPitch != dummyInfo.onGroundPitch) phys.put("OnGroundPitch", -info.onGroundPitch);
+        // YAML keeps the in-game pitch (negative = nose up), as upstream wrote it; the parser reads it as is.
+        if (info.onGroundPitch != dummyInfo.onGroundPitch) phys.put("OnGroundPitch", info.onGroundPitch);
 
         if (info.pivotTurnThrottle != dummyInfo.pivotTurnThrottle)
             phys.put("PivotTurnThrottle", info.pivotTurnThrottle);

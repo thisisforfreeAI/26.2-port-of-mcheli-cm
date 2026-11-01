@@ -100,6 +100,10 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
   or red. A repair now also heals components when the hull is already whole.
 
 ### Changed
+- A plane that loses its tail, in flight or in a crash, no longer drops the whole back of its fuselage.
+  Only the fins and stabilisers snap off at their roots; the rear fuselage, engine nozzles and exhaust
+  stay on the airframe. Parts are told apart by shape, so this works on every stock and add-on plane:
+  a fin or stabiliser is a thin plate standing clear of the fuselage tube.
 - Wreck burn look: the char now spreads from the fire (engines and wing roots) and fades out, so the
   nose, tail, tips and markings stay readable under darkened paint; peeled bare metal and a heat tint ring
   the burn. Replaces the near-opaque soot over the whole airframe and the flat bare-metal triangles.
@@ -118,6 +122,21 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
   and trail smoke out to `effects.breakawayDebrisDistance` (256 blocks by default, never past the
   render distance); sparks, chips and the fine torn-edge detail stay close-range only, and the existing
   cap of eight falling pieces is unchanged.
+- WW2 propeller planes crawling along the runway and never taking off. The Zero, P-51D, An-2, Fi 167,
+  PZL M-18 and BQM-74E were held nose-down on the ground because YAML `OnGroundPitch` was negated
+  twice, so their thrust pointed into the runway. They now sit tail-down and lift off; stock
+  helicopters also sit slightly nose-up again, as in the original mod. Jets without a ground pitch
+  are unchanged.
+- Glitchy plane wrecks. A crashed bomber's nose was covered in spikes: its skin wrinkles were scaled by
+  the whole airframe's length and reached a block deep. They are now dents a few hands deep at most, and
+  the crushed nose moves back and droops a bounded amount. A B-29, C-5, 767 and other planes with a
+  fuselage wider than 1.6 blocks no longer split lengthwise through the fuselage as if they were a flying
+  wing, which also left their inboard engines and wing hanging beside the hull: their nose breaks off
+  instead, and only a real flying wing (the B-2) splits. Propellers, turrets and guns on a section that
+  breaks off now go with it. A plane that loses its tail no longer shows a see-through tail cone where the
+  fin stood in the fuselage skin, a torn-off tail comes to rest on its stabilisers instead of balancing on
+  its fin tip in mid-air, the wing tips are no longer punched with holes, and the fire's soot patch follows
+  the drooped, crushed wreck instead of floating where the undamaged skin was.
 - A crashed or destroyed vehicle's wreck no longer sinks into the ground. Its own blast dug a crater
   right under it and the hulk dropped into the hole, so most of the airframe ended up hidden below the
   surface. The blast now breaks only what stands above the ground the wreck lies on (trees, fences,

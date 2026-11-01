@@ -6,8 +6,10 @@ public final class DestructionTimeline {
     private DestructionTimeline(){}
     public static boolean turret(String model,int seed,int explosiveAmmunition){
         return (model.equals("t-90")||model.equals("t-72")||model.equals("t-80")||model.equals("t-64")||model.equals("t84"))
-                &&explosiveAmmunition>=8&&Math.floorMod(seed,8)==0;
+                &&explosiveAmmunition>=8;
     }
+    /** Authored bustle roof profile; do not invent pressure panels on other turret designs. */
+    public static boolean blowout(String model,int explosiveAmmunition){return model.equals("m1a2")&&explosiveAmmunition>=8;}
     public static float collapse(int age){return Math.clamp((age-80)/70F,0,1);}
     public static float spin(float age,float speed){float t=Math.clamp(age,0,140);return speed*(t-t*t/280F);}
     public static boolean secondary(int age,int seed){return age==144+Math.floorMod(seed,7)||age==220+Math.floorMod(seed,11);}

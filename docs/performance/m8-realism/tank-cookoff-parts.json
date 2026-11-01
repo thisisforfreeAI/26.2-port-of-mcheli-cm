@@ -1,0 +1,278 @@
+{
+  "feature": "M8 tank pressure panels and complete turret ejection",
+  "baselineSource": "a12adf9ea69e8bf23b92ba0301e5df4d8e60e47b",
+  "target": {
+    "fps": 60,
+    "resolution": [
+      1920,
+      1080
+    ],
+    "gpu": "RTX 3060 8 GB",
+    "cpu": "Ryzen 7 7800X3D",
+    "hardwareVerified": false
+  },
+  "unitTests": {
+    "passed": 571,
+    "failed": 0
+  },
+  "requiredLocalGameTests": {
+    "passed": 297,
+    "failed": 0
+  },
+  "runtime": {
+    "renderer": "Mesa software lavapipe / llvmpipe",
+    "optionalDependenciesExcludedLocally": true,
+    "distributedLocalJar": false
+  },
+  "native": [
+    {
+      "backend": "Vulkan",
+      "scenariosPassed": 7,
+      "provenance": "Five normal server cases plus two isolated saturated-budget cases after correcting the filler setup. Same production source.",
+      "checkpoints": [
+        {
+          "passed": true,
+          "scene": "m1a2",
+          "observer_ammo": 80,
+          "wreck_age": 116,
+          "turret": false,
+          "open_lids": 0,
+          "fallback": false,
+          "pieces": 5
+        },
+        {
+          "reset": true,
+          "scene": "m1a2"
+        },
+        {
+          "passed": true,
+          "scene": "t-90",
+          "observer_ammo": 90,
+          "wreck_age": 117,
+          "turret": true,
+          "open_lids": 0,
+          "fallback": false,
+          "pieces": 4
+        },
+        {
+          "reset": true,
+          "scene": "t-90"
+        },
+        {
+          "passed": true,
+          "scene": "t84",
+          "observer_ammo": 74,
+          "wreck_age": 116,
+          "turret": true,
+          "open_lids": 0,
+          "fallback": false,
+          "pieces": 4
+        },
+        {
+          "reset": true,
+          "scene": "t84"
+        },
+        {
+          "passed": true,
+          "scene": "empty-t90",
+          "observer_ammo": 0,
+          "wreck_age": 116,
+          "turret": false,
+          "open_lids": 0,
+          "fallback": false,
+          "pieces": 3
+        },
+        {
+          "passed": true,
+          "scene": "classic-m1a2",
+          "observer_ammo": 80,
+          "wreck_age": -1,
+          "turret": false,
+          "open_lids": 0,
+          "fallback": false,
+          "pieces": 0
+        },
+        {
+          "passed": true,
+          "scene": "busy-m1a2",
+          "observer_ammo": 80,
+          "wreck_age": 115,
+          "turret": false,
+          "open_lids": 2,
+          "fallback": false,
+          "pieces": 8
+        },
+        {
+          "reset": true,
+          "scene": "busy-m1a2"
+        },
+        {
+          "passed": true,
+          "scene": "busy-t90",
+          "observer_ammo": 90,
+          "wreck_age": 117,
+          "turret": true,
+          "open_lids": 0,
+          "fallback": true,
+          "pieces": 8
+        },
+        {
+          "reset": true,
+          "scene": "busy-t90"
+        }
+      ]
+    },
+    {
+      "backend": "OpenGL",
+      "scenariosPassed": 7,
+      "checkpoints": [
+        {
+          "passed": true,
+          "scene": "m1a2",
+          "observer_ammo": 80,
+          "wreck_age": 117,
+          "turret": false,
+          "open_lids": 0,
+          "fallback": false,
+          "pieces": 5
+        },
+        {
+          "reset": true,
+          "scene": "m1a2"
+        },
+        {
+          "passed": true,
+          "scene": "t-90",
+          "observer_ammo": 90,
+          "wreck_age": 117,
+          "turret": true,
+          "open_lids": 0,
+          "fallback": false,
+          "pieces": 4
+        },
+        {
+          "reset": true,
+          "scene": "t-90"
+        },
+        {
+          "passed": true,
+          "scene": "t84",
+          "observer_ammo": 74,
+          "wreck_age": 117,
+          "turret": true,
+          "open_lids": 0,
+          "fallback": false,
+          "pieces": 4
+        },
+        {
+          "reset": true,
+          "scene": "t84"
+        },
+        {
+          "passed": true,
+          "scene": "empty-t90",
+          "observer_ammo": 0,
+          "wreck_age": 117,
+          "turret": false,
+          "open_lids": 0,
+          "fallback": false,
+          "pieces": 3
+        },
+        {
+          "passed": true,
+          "scene": "classic-m1a2",
+          "observer_ammo": 80,
+          "wreck_age": -1,
+          "turret": false,
+          "open_lids": 0,
+          "fallback": false,
+          "pieces": 0
+        },
+        {
+          "passed": true,
+          "scene": "busy-m1a2",
+          "observer_ammo": 80,
+          "wreck_age": 117,
+          "turret": false,
+          "open_lids": 2,
+          "fallback": false,
+          "pieces": 8
+        },
+        {
+          "reset": true,
+          "scene": "busy-m1a2"
+        },
+        {
+          "passed": true,
+          "scene": "busy-t90",
+          "observer_ammo": 90,
+          "wreck_age": 118,
+          "turret": true,
+          "open_lids": 0,
+          "fallback": true,
+          "pieces": 8
+        },
+        {
+          "reset": true,
+          "scene": "busy-t90"
+        }
+      ]
+    }
+  ],
+  "fixture": "Real server-owned tanks, server-filled ammo, existing server destruction API; unmounted spectator. No client ammo injection, selected lucky seed, or actual projectile detonation. Reset explicitly clears local wreck countdown in dev fixture.",
+  "limits": {
+    "loosePieces": 8,
+    "looseVertices": 24000,
+    "looseBirthsPerTick": 2,
+    "maximumSnapshotVertices": 12000,
+    "ammoSetsPerExistingNotification": 256,
+    "newProtocolOrPacketFormat": false
+  },
+  "screenshots": [
+    {
+      "path": "docs/screens/m8-tank-cookoff/m8-tank-cookoff-busy-m1a2-opening.png",
+      "sha256": "356a92fde568ce2b84f4ece5a74cf578362c321f57de9ce48952e2e0b1075dfd"
+    },
+    {
+      "path": "docs/screens/m8-tank-cookoff/m8-tank-cookoff-busy-t90-separated.png",
+      "sha256": "7889b558fa04d09f711fadcdae3d8d1b06b530acd8a467075a6144b343e65eee"
+    },
+    {
+      "path": "docs/screens/m8-tank-cookoff/m8-tank-cookoff-m1a2-aftermath.png",
+      "sha256": "beadde1fc3757354541b538a6ae17308781096dc4ce6449c4a1cbeff7d7ce7ec"
+    },
+    {
+      "path": "docs/screens/m8-tank-cookoff/m8-tank-cookoff-m1a2-opening.png",
+      "sha256": "f7d3f55a4e3ac78e1281881838e0cb275a2ed238522a7330d05d3f4b7f6d3859"
+    },
+    {
+      "path": "docs/screens/m8-tank-cookoff/m8-tank-cookoff-m1a2-venting.png",
+      "sha256": "c927a51a4678eaf18424985ad5c8127c12b06bc8afa83436baef97c8ccbb160a"
+    },
+    {
+      "path": "docs/screens/m8-tank-cookoff/m8-tank-cookoff-t-90-before.png",
+      "sha256": "4f3ea08aad453221a7c417671dc48e3411afc859c77fb17c573a515d8aa457a4"
+    },
+    {
+      "path": "docs/screens/m8-tank-cookoff/m8-tank-cookoff-t-90-landed.png",
+      "sha256": "ad30f9a3d3b206b238f43990c6a0762db9dfdad7d18e68e42a827041be8c9aeb"
+    },
+    {
+      "path": "docs/screens/m8-tank-cookoff/m8-tank-cookoff-t-90-separated.png",
+      "sha256": "f53a11f721d5032cb7d5f4123c842261639ab5f30f4ea8007a1f24707bced4f7"
+    },
+    {
+      "path": "docs/screens/m8-tank-cookoff/m8-tank-cookoff-t84-before.png",
+      "sha256": "42a7b8c8050c9706df4f98abb473bbed5c727fdb7557e0e6b7da2c077cbf0f94"
+    },
+    {
+      "path": "docs/screens/m8-tank-cookoff/m8-tank-cookoff-t84-landed.png",
+      "sha256": "74f8f1f01c0624b3ac539be15dbfc673c339b428da455d68061ce059463b3397"
+    },
+    {
+      "path": "docs/screens/m8-tank-cookoff/m8-tank-cookoff-t84-separated.png",
+      "sha256": "7468795b22abcd3b00b157954df714322eadd549e7ef2c942e6e25bff99eea77"
+    }
+  ],
+  "screenshotEditing": false
+}

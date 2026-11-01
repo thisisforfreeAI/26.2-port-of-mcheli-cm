@@ -135,6 +135,12 @@ public abstract class AircraftRenderer<T extends AircraftEntity> extends EntityR
                 && io.github.mcheliceport.config.EffectQuality.enhanced();
         state.flat = !(info.smoothShading && ClientConfig.get(ClientConfig.SMOOTH_SHADING));
         state.realistic = !state.thermal && SceneLights.enabled();
+        if(state.realistic && !io.github.mcheliceport.client.render.baked.BakedVehicles.enabled()){
+            // The compatibility renderer has no point-light shader; retain a local lightmap lift.
+            int fireLight=SceneLights.blockLight(entity.getPosition(partialTicks).add(0,entity.getBbHeight()*.5,0),partialTicks);
+            if(fireLight>net.minecraft.util.LightCoordsUtil.block(state.lightCoords))
+                state.lightCoords=net.minecraft.util.LightCoordsUtil.pack(fireLight,net.minecraft.util.LightCoordsUtil.sky(state.lightCoords));
+        }
         state.lightProbe = null;
         if (state.realistic && !state.far) {
             AABB box = entity.getBoundingBox();
