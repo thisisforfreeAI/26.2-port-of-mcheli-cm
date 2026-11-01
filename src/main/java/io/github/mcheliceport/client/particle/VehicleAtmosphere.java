@@ -53,6 +53,11 @@ public final class VehicleAtmosphere {
         lastTick = Long.MIN_VALUE;farContrails=0; CookoffEffects.clear(); WreckSequenceEffects.clear();
     }
     public static int stateCount() { return STATES.size(); }
+    /** How far an aircraft keeps its state: contrail range, and for a plane at least the breakaway range. */
+    private static int range(ClientLevel level,AircraftEntity aircraft){
+        int scope=ContrailEffects.scope(level,aircraft);
+        return aircraft instanceof PlaneEntity?Math.max(scope,io.github.mcheliceport.client.render.DebrisRange.blocks()):scope;
+    }
     public static int wingVaporMask(AircraftEntity aircraft){var s=STATES.get(aircraft);return s==null?0:s.vaporMask;}
     public static int contrailMask(AircraftEntity aircraft){var s=STATES.get(aircraft);return s==null?0:s.contrailMask;}
     public static int farContrailBirths(){return farContrails;}
@@ -81,7 +86,7 @@ public final class VehicleAtmosphere {
         while(iterator.hasNext()){
             var entry=iterator.next();AircraftEntity aircraft=entry.getKey();
             double distance=mc.gameRenderer.mainCamera().position().distanceToSqr(aircraft.position());
-            int range=ContrailEffects.scope(level,aircraft);boolean far=distance>80*80;
+            int range=range(level,aircraft);boolean far=distance>80*80;
             if(aircraft.isRemoved()||aircraft.level()!=level||distance>range*range
                     ||far&&!AircraftCondensationLook.retainFarState(farRetained)){
                 entry.getValue().stop();iterator.remove();
@@ -89,7 +94,8 @@ public final class VehicleAtmosphere {
         }
         for (var entity : level.entitiesForRendering()) {
             if(!(entity instanceof AircraftEntity aircraft)||aircraft.getAcInfo()==null||aircraft.isRemoved())continue;
-            double distance=mc.gameRenderer.mainCamera().position().distanceToSqr(aircraft.position());int range=ContrailEffects.scope(level,aircraft);
+            double distance=mc.gameRenderer.mainCamera().position().distanceToSqr(aircraft.position());
+            int scope=ContrailEffects.scope(level,aircraft),range=range(level,aircraft);
             if(distance>range*range)continue;
             boolean far=distance>80*80;
             State state = STATES.get(aircraft);
@@ -101,7 +107,13 @@ public final class VehicleAtmosphere {
             if(aircraft instanceof PlaneEntity plane)ContrailEffects.update(level,plane,state.condensation,now);
             if(far){
                 state.stop();state.engine.tick(aircraft.getCurrentThrottle(),!aircraft.isDestroyed()&&aircraft.canUseFuel());
-                if(aircraft instanceof PlaneEntity plane)state.contrailMask=ContrailEffects.emit(level,plane,state.condensation,now,true);
+                if(aircraft instanceof PlaneEntity plane){
+                    if(distance<=scope*scope)state.contrailMask=ContrailEffects.emit(level,plane,state.condensation,now,true);
+                    // A plane shot at from range still runs its breakup, so torn sections fall where the player can see them.
+                    state.cooling.tick(aircraft.isDestroyed());
+                    WreckSequenceEffects.tick(level,aircraft,state.cooling.age());
+                    if(ClientConfig.get(ClientConfig.VEHICLE_DAMAGE_DETAILS))BreakawayEffects.stump(level,plane,now);
+                }
                 continue;
             }
             state.cooling.tick(aircraft.isDestroyed());

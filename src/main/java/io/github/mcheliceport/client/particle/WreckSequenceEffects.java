@@ -36,7 +36,7 @@ public final class WreckSequenceEffects {
     private WreckSequenceEffects(){}
     public static boolean enabled(){return EffectQuality.enhanced()&&ClientConfig.get(ClientConfig.VEHICLE_DAMAGE_DETAILS)&&ClientConfig.get(ClientConfig.VEHICLE_DESTRUCTION_SEQUENCES);}
     public static void clear(){STATES.clear();world.clear();budgetTick=Long.MIN_VALUE;rays=bursts=strikes=0;}
-    private static void budget(ClientLevel level){if(world.get()!=level){clear();world=new java.lang.ref.WeakReference<>(level);}if(budgetTick!=level.getGameTime()){budgetTick=level.getGameTime();rays=bursts=strikes=0;STATES.keySet().removeIf(e->e.isRemoved()||e.level()!=level||Minecraft.getInstance().gameRenderer.mainCamera().position().distanceToSqr(e.position())>80*80);}}
+    private static void budget(ClientLevel level){if(world.get()!=level){clear();world=new java.lang.ref.WeakReference<>(level);}if(budgetTick!=level.getGameTime()){budgetTick=level.getGameTime();rays=bursts=strikes=0;STATES.keySet().removeIf(e->e.isRemoved()||e.level()!=level||Minecraft.getInstance().gameRenderer.mainCamera().position().distanceToSqr(e.position())>Math.max(80*80,io.github.mcheliceport.client.render.DebrisRange.squared()));}}
     public static State get(AircraftEntity ac){return enabled()?STATES.get(ac):null;}
     public static void tick(ClientLevel level,AircraftEntity ac,int age){
         budget(level);if(!enabled()){STATES.clear();return;}

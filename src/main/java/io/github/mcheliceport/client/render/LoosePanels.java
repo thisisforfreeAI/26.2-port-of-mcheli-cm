@@ -241,8 +241,11 @@ public final class LoosePanels {
         if(!enabled()||PIECES.isEmpty()||world!=Minecraft.getInstance().level)return;
         var camera=event.getLevelRenderState().cameraRenderState.pos;
         float partial=Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaPartialTick(false);
+        double range=DebrisRange.squared();
         for(var p:PIECES){
-            if(camera.distanceToSqr(p.motion.position)>40*40)continue;
+            // Torn sections and loose panels are seen falling from combat range; skin chips only up close.
+            double distance=camera.distanceToSqr(p.motion.position);
+            if(distance>range||p.skin&&distance>64*64)continue;
             Vec3 at=p.motion.at(partial).subtract(camera);float age=p.age+partial;
             var transform=new Matrix4f().translation((float)at.x,(float)at.y,(float)at.z).rotate(p.motion.rotation(partial)).mul(p.local);
             boolean thermal=ThermalVision.drawsWhite(p.owner);
