@@ -11,7 +11,6 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.resources.Identifier;
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
-import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 
 /**
  * Upstream's {@code WingmanKeyHandler}: while the player pilots an aircraft with no screen open,
@@ -40,7 +39,7 @@ public final class WingmanKeyHintLayer {
         Minecraft mc = Minecraft.getInstance();
         boolean clicked = ModKeyMappings.WINGMAN_PANEL.consumeClick();
         if (clicked && piloting(mc)) {
-            ClientPacketDistributor.sendToServer(WingmanPanelOpenPayload.INSTANCE);
+            io.github.mcheliceport.platform.Platform.get().sendToServer(WingmanPanelOpenPayload.INSTANCE);
         }
     }
 

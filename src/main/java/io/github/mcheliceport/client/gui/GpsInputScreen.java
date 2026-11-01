@@ -9,7 +9,6 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
-import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import org.lwjgl.glfw.GLFW;
 
 /**
@@ -95,7 +94,7 @@ public class GpsInputScreen extends Screen {
             double y = Double.parseDouble(this.yField.getValue().trim());
             double z = Double.parseDouble(this.zField.getValue().trim());
             GpsPosition.setClient(new GpsPosition.Point(x, y, z, true));
-            ClientPacketDistributor.sendToServer(new GpsSetPayload(x, y, z, true));
+            io.github.mcheliceport.platform.Platform.get().sendToServer(new GpsSetPayload(x, y, z, true));
             this.onClose();
         } catch (NumberFormatException e) {
             this.message = "Invalid coordinates";

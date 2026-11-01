@@ -10,7 +10,6 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
-import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 
 /**
  * Upstream's {@code GuiWingmanPlanner}, opened by {@code /wingman gui}: the aircraft on the left
@@ -93,7 +92,7 @@ public class WingmanPlannerScreen extends Screen {
 
     private void assign() {
         if (this.selUav >= 0 && this.selRoute >= 0) {
-            ClientPacketDistributor.sendToServer(new MissionActionPayload(MissionActionPayload.ASSIGN,
+            io.github.mcheliceport.platform.Platform.get().sendToServer(new MissionActionPayload(MissionActionPayload.ASSIGN,
                     Optional.of(this.uavs.get(this.selUav).uuid()), this.routes.get(this.selRoute).name()));
             this.onClose();
         }
@@ -101,7 +100,7 @@ public class WingmanPlannerScreen extends Screen {
 
     private void abort() {
         if (this.selUav >= 0) {
-            ClientPacketDistributor.sendToServer(new MissionActionPayload(MissionActionPayload.ABORT,
+            io.github.mcheliceport.platform.Platform.get().sendToServer(new MissionActionPayload(MissionActionPayload.ABORT,
                     Optional.of(this.uavs.get(this.selUav).uuid()), ""));
             this.onClose();
         }
@@ -109,7 +108,7 @@ public class WingmanPlannerScreen extends Screen {
 
     private void recall() {
         if (this.selUav >= 0) {
-            ClientPacketDistributor.sendToServer(new MissionActionPayload(MissionActionPayload.RECALL,
+            io.github.mcheliceport.platform.Platform.get().sendToServer(new MissionActionPayload(MissionActionPayload.RECALL,
                     Optional.of(this.uavs.get(this.selUav).uuid()), ""));
             this.onClose();
         }
@@ -117,7 +116,7 @@ public class WingmanPlannerScreen extends Screen {
 
     private void delete() {
         if (this.selRoute >= 0) {
-            ClientPacketDistributor.sendToServer(new MissionRouteActionPayload(MissionRouteActionPayload.DELETE,
+            io.github.mcheliceport.platform.Platform.get().sendToServer(new MissionRouteActionPayload(MissionRouteActionPayload.DELETE,
                     this.routes.get(this.selRoute).name(), List.of()));
             this.onClose();
         }

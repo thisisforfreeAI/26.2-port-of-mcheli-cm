@@ -23,7 +23,6 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.FormattedCharSequence;
-import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 
@@ -594,7 +593,7 @@ public class BaseConfigScreen extends Screen {
 
         int dispY = ary + this.routeRows() * 20 + 6;
         this.button(clipped, "Recall All", cx - 124, dispY, 80, 16,
-                () -> ClientPacketDistributor.sendToServer(new RecallOrdersPayload(this.base.pos())));
+                () -> io.github.mcheliceport.platform.Platform.get().sendToServer(new RecallOrdersPayload(this.base.pos())));
         this.button(clipped, "Dispatch", cx - 40, dispY, 80, 16, this::dispatchOrder);
         this.orbitAttackButton = this.button(clipped, "Orbit Atk", cx + 44, dispY, 70, 16,
                 () -> this.orbitAttackMode = !this.orbitAttackMode);
@@ -642,7 +641,7 @@ public class BaseConfigScreen extends Screen {
             return;
         }
         this.saveMissionValues();
-        ClientPacketDistributor.sendToServer(new DispatchOrderPayload(this.base.pos(), this.selectedAircraft,
+        io.github.mcheliceport.platform.Platform.get().sendToServer(new DispatchOrderPayload(this.base.pos(), this.selectedAircraft,
                 this.selectedRouteForDispatch, List.copyOf(this.selectedMissionTypes), List.copyOf(this.selectedWeapons),
                 parseDouble(this.missionValues[0], 0.0), parseDouble(this.missionValues[1], 0.0),
                 parseDouble(this.missionValues[2], 300.0), parseDouble(this.missionValues[3], 80.0),
@@ -750,7 +749,7 @@ public class BaseConfigScreen extends Screen {
         // The parking heading is set on the parking marker.
         TaxiRoute route = new TaxiRoute(rid, this.base.baseId(), this.selectedParkingId, this.selectedRunwayId,
                 this.selectedRunwayBId, this.routeWaypoints, this.routeArrivalWaypoints, -1, this.selectedArrivalRunwayId);
-        ClientPacketDistributor.sendToServer(new TaxiRouteActionPayload(this.base.pos(), false, route));
+        io.github.mcheliceport.platform.Platform.get().sendToServer(new TaxiRouteActionPayload(this.base.pos(), false, route));
         boolean found = false;
         for (int i = 0; i < this.routes.size(); i++) {
             if (this.routes.get(i).routeId().equals(rid)) {
@@ -773,7 +772,7 @@ public class BaseConfigScreen extends Screen {
             return;
         }
         TaxiRoute route = this.routes.remove(this.selectedRouteIdx);
-        ClientPacketDistributor.sendToServer(new TaxiRouteActionPayload(this.base.pos(), true, route));
+        io.github.mcheliceport.platform.Platform.get().sendToServer(new TaxiRouteActionPayload(this.base.pos(), true, route));
         this.selectedRouteIdx = -1;
         this.status = "§aDeleted " + route.routeId() + ".";
         this.clearRouteForm();

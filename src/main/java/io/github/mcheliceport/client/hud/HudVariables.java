@@ -21,7 +21,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.fml.ModList;
 
 /**
  * Fills a {@link HudFrame} from the ridden vehicle each frame: upstream's
@@ -154,8 +153,7 @@ public final class HudVariables {
         s.put(HudStringArg.RELOAD_SEC, reloadSec);
         s.put(HudStringArg.MORTAR_DIST, mortarDist);
         s.put(HudStringArg.MC_VER, SharedConstants.getCurrentVersion().name());
-        s.put(HudStringArg.MOD_VER, ModList.get().getModContainerById(McheliCePort.MOD_ID)
-                .map(c -> c.getModInfo().getVersion().toString()).orElse(""));
+        s.put(HudStringArg.MOD_VER, io.github.mcheliceport.platform.Platform.get().modVersion());
         s.put(HudStringArg.MOD_NAME, "MC Helicopter MOD");
         s.put(HudStringArg.YAW, HudInterpreter.getRotate360(ac.getYaw() + 180.0F));
         s.put(HudStringArg.PITCH, -ac.getPitch());

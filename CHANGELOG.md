@@ -11,6 +11,11 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 ## [Unreleased]
 
 ### Added
+- Groundwork for a Fabric version (stage 1 of 5, see `docs/FABRIC_PLAN.md`): a `fabric/` Gradle
+  subproject that builds against Minecraft 26.2 and Fabric API from the same sources, and a
+  loader-neutral seam (`platform/Platform.java`) that registration, the fuel fluid, menus,
+  networking and the stock-pack loader now go through. Nothing changes for NeoForge players. The
+  build now uses Gradle 9.8.2 running on Java 25 (Gradle downloads it when missing).
 - Realistic lighting (M8): vehicles are lit from where the sun or moon really is, warm and low at
   dusk and dawn, faint and cool under the moon, flatter in rain, with a soft sun glint on their
   panels. Explosions, muzzle flashes, burning wrecks and flares now light nearby vehicles, mobs and

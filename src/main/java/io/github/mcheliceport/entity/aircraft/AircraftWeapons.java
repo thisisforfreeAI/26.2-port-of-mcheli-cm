@@ -1198,7 +1198,7 @@ public final class AircraftWeapons {
     /** A final authoritative snapshot for observers' cosmetic tank cook-offs, using the existing packet. */
     public void notifyWreckAmmo(){
         if(this.ac.level() instanceof ServerLevel)
-            net.neoforged.neoforge.network.PacketDistributor.sendToPlayersTrackingEntity(this.ac,this.allAmmoPayload());
+            io.github.mcheliceport.platform.Platform.get().sendToPlayersTrackingEntity(this.ac,this.allAmmoPayload());
     }
 
     public NotifyAmmoPayload allAmmoPayload(){

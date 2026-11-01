@@ -25,8 +25,6 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
-import net.neoforged.neoforge.registries.DeferredBlock;
-import net.neoforged.neoforge.registries.DeferredItem;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import io.github.mcheliceport.item.CargoContainerItem;
@@ -41,23 +39,23 @@ import io.github.mcheliceport.item.CargoContainerItem;
 public final class ModItems {
 
     private static final Logger LOGGER = LogUtils.getLogger();
-    private static final Map<ModTab, List<DeferredItem<? extends Item>>> TAB_ITEMS = new EnumMap<>(ModTab.class);
+    private static final Map<ModTab, List<ItemEntry<? extends Item>>> TAB_ITEMS = new EnumMap<>(ModTab.class);
     private static final List<ContentItem> CONTENT_ITEMS = new ArrayList<>();
     private static final Set<String> USED_PATHS = new HashSet<>();
 
-    public static final DeferredItem<io.github.mcheliceport.item.SpawnGunnerItem> SPAWN_GUNNER_VS_MONSTER = register(
+    public static final ItemEntry<io.github.mcheliceport.item.SpawnGunnerItem> SPAWN_GUNNER_VS_MONSTER = register(
             "spawn_gunner_vs_monster", p -> new io.github.mcheliceport.item.SpawnGunnerItem(
                     io.github.mcheliceport.entity.gunner.GunnerEntity.VS_MONSTER, p), p -> p.stacksTo(1), ModTab.ITEMS);
-    public static final DeferredItem<io.github.mcheliceport.item.SpawnGunnerItem> SPAWN_GUNNER_VS_PLAYER = register(
+    public static final ItemEntry<io.github.mcheliceport.item.SpawnGunnerItem> SPAWN_GUNNER_VS_PLAYER = register(
             "spawn_gunner_vs_player", p -> new io.github.mcheliceport.item.SpawnGunnerItem(
                     io.github.mcheliceport.entity.gunner.GunnerEntity.VS_PLAYER, p), p -> p.stacksTo(1), ModTab.ITEMS);
-    public static final DeferredItem<Item> RANGEFINDER = register("rangefinder",
+    public static final ItemEntry<Item> RANGEFINDER = register("rangefinder",
             io.github.mcheliceport.item.RangeFinderItem::new, p -> p.durability(10), ModTab.ITEMS);
     /**
      * Upstream's wrench took its durability (250), enchantability (14), repair item and attack
      * damage (4 + 2) from 1.12's iron tool material.
      */
-    public static final DeferredItem<Item> WRENCH = register("wrench", io.github.mcheliceport.item.WrenchItem::new,
+    public static final ItemEntry<Item> WRENCH = register("wrench", io.github.mcheliceport.item.WrenchItem::new,
             p -> p.durability(250).enchantable(14).repairable(net.minecraft.world.item.Items.IRON_INGOT)
                     .attributes(net.minecraft.world.item.component.ItemAttributeModifiers.builder()
                             .add(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE,
@@ -67,47 +65,47 @@ public final class ModItems {
                                     net.minecraft.world.entity.EquipmentSlotGroup.MAINHAND)
                             .build()),
             ModTab.ITEMS);
-    public static final DeferredItem<Item> FUEL = item("fuel", p -> p.durability(600).setNoCombineRepair());
+    public static final ItemEntry<Item> FUEL = item("fuel", p -> p.durability(600).setNoCombineRepair());
     /** Upstream's Forge bucket of {@code mch_fuel}; see {@link ModFluids}. */
-    public static final DeferredItem<io.github.mcheliceport.item.FuelBucketItem> FUEL_BUCKET = register("fuel_bucket",
+    public static final ItemEntry<io.github.mcheliceport.item.FuelBucketItem> FUEL_BUCKET = register("fuel_bucket",
             p -> new io.github.mcheliceport.item.FuelBucketItem(ModFluids.FUEL.get(), p),
             p -> p.craftRemainder(net.minecraft.world.item.Items.BUCKET).stacksTo(1), ModTab.ITEMS);
-    public static final DeferredItem<Item> GLTD = register("gltd", io.github.mcheliceport.item.GltdItem::new,
+    public static final ItemEntry<Item> GLTD = register("gltd", io.github.mcheliceport.item.GltdItem::new,
             p -> p.stacksTo(1), ModTab.ITEMS);
-    public static final DeferredItem<Item> CHAIN = register("chain", io.github.mcheliceport.item.ChainItem::new,
+    public static final ItemEntry<Item> CHAIN = register("chain", io.github.mcheliceport.item.ChainItem::new,
             p -> p.stacksTo(1), ModTab.ITEMS);
-    public static final DeferredItem<Item> PARACHUTE = register("parachute", ParachuteItem::new,
+    public static final ItemEntry<Item> PARACHUTE = register("parachute", ParachuteItem::new,
             p -> p.stacksTo(1), ModTab.ITEMS);
-    public static final DeferredItem<Item> CONTAINER = register("container", CargoContainerItem::new,
+    public static final ItemEntry<Item> CONTAINER = register("container", CargoContainerItem::new,
             p -> p.stacksTo(1), ModTab.ITEMS);
-    public static final DeferredItem<io.github.mcheliceport.item.UavStationItem> UAV_STATION = register("uav_station",
+    public static final ItemEntry<io.github.mcheliceport.item.UavStationItem> UAV_STATION = register("uav_station",
             p -> new io.github.mcheliceport.item.UavStationItem(p, false), p -> p.stacksTo(1), ModTab.ITEMS);
     /** The portable UAV controller. */
-    public static final DeferredItem<io.github.mcheliceport.item.UavStationItem> UAV_STATION2 = register("uav_station2",
+    public static final ItemEntry<io.github.mcheliceport.item.UavStationItem> UAV_STATION2 = register("uav_station2",
             p -> new io.github.mcheliceport.item.UavStationItem(p, true), p -> p.stacksTo(1), ModTab.ITEMS);
-    public static final DeferredItem<io.github.mcheliceport.item.UavControllerItem> UAV_PAIRING_DEVICE = register("uav_pairing_device", p -> new io.github.mcheliceport.item.UavControllerItem(p, false), p -> p.stacksTo(1), ModTab.ITEMS);
-    public static final DeferredItem<io.github.mcheliceport.item.UavControllerItem> UAV_TABLET = register("uav_tablet", p -> new io.github.mcheliceport.item.UavControllerItem(p, true), p -> p.stacksTo(1), ModTab.ITEMS);
-    public static final DeferredItem<Item> MINE_DEFUSER = register("mine_defuser",
+    public static final ItemEntry<io.github.mcheliceport.item.UavControllerItem> UAV_PAIRING_DEVICE = register("uav_pairing_device", p -> new io.github.mcheliceport.item.UavControllerItem(p, false), p -> p.stacksTo(1), ModTab.ITEMS);
+    public static final ItemEntry<io.github.mcheliceport.item.UavControllerItem> UAV_TABLET = register("uav_tablet", p -> new io.github.mcheliceport.item.UavControllerItem(p, true), p -> p.stacksTo(1), ModTab.ITEMS);
+    public static final ItemEntry<Item> MINE_DEFUSER = register("mine_defuser",
             io.github.mcheliceport.item.MineDefuserItem::new, p -> p.stacksTo(1), ModTab.ITEMS);
     /** Upstream's invisible helper item ({@code MCH_InvisibleItem}). It is in no creative tab. */
-    public static final DeferredItem<Item> INTERNAL = register("internal", Item::new, UnaryOperator.identity(), null);
-    public static final DeferredItem<Item> FIM92_BULLET = item("fim92_bullet", p -> p.stacksTo(2));
-    public static final DeferredItem<Item> FGM148_BULLET = item("fgm148_bullet", p -> p.stacksTo(2));
-    public static final DeferredItem<Item> FIM92 = register("fim92",
+    public static final ItemEntry<Item> INTERNAL = register("internal", Item::new, UnaryOperator.identity(), null);
+    public static final ItemEntry<Item> FIM92_BULLET = item("fim92_bullet", p -> p.stacksTo(2));
+    public static final ItemEntry<Item> FGM148_BULLET = item("fgm148_bullet", p -> p.stacksTo(2));
+    public static final ItemEntry<Item> FIM92 = register("fim92",
             p -> new io.github.mcheliceport.item.LightWeaponItem(p, FIM92_BULLET), p -> p.durability(10), ModTab.ITEMS);
-    public static final DeferredItem<Item> FGM148 = register("fgm148",
+    public static final ItemEntry<Item> FGM148 = register("fgm148",
             p -> new io.github.mcheliceport.item.LightWeaponItem(p, FGM148_BULLET), p -> p.durability(10),
             ModTab.ITEMS);
-    public static final DeferredItem<BlockItem> DRAFTING_TABLE = blockItem(ModBlocks.DRAFTING_TABLE);
-    public static final DeferredItem<BlockItem> CHARGER = blockItem(ModBlocks.CHARGER);
-    public static final DeferredItem<BlockItem> WINGMAN_MARKER = blockItem(ModBlocks.WINGMAN_MARKER);
-    public static final DeferredItem<BlockItem> REPAIR_PAD = blockItem(ModBlocks.REPAIR_PAD);
+    public static final ItemEntry<BlockItem> DRAFTING_TABLE = blockItem(ModBlocks.DRAFTING_TABLE);
+    public static final ItemEntry<BlockItem> CHARGER = blockItem(ModBlocks.CHARGER);
+    public static final ItemEntry<BlockItem> WINGMAN_MARKER = blockItem(ModBlocks.WINGMAN_MARKER);
+    public static final ItemEntry<BlockItem> REPAIR_PAD = blockItem(ModBlocks.REPAIR_PAD);
 
     private ModItems() {
     }
 
     /** An item made from a content definition. */
-    public record ContentItem(ContentType type, String contentName, DeferredItem<? extends Item> item) {
+    public record ContentItem(ContentType type, String contentName, ItemEntry<? extends Item> item) {
 
         public Identifier id() {
             return this.item.getId();
@@ -158,7 +156,7 @@ public final class ModItems {
                     contentName, McheliCePort.MOD_ID, path);
             return;
         }
-        DeferredItem<? extends Item> item = register(path, factory, properties, tab);
+        ItemEntry<? extends Item> item = register(path, factory, properties, tab);
         CONTENT_ITEMS.add(new ContentItem(type, contentName, item));
     }
 
@@ -182,23 +180,23 @@ public final class ModItems {
     }
 
     /** The items of a creative tab, in registration order (the tab sorts them). */
-    public static List<DeferredItem<? extends Item>> tabItems(ModTab tab) {
+    public static List<ItemEntry<? extends Item>> tabItems(ModTab tab) {
         return Collections.unmodifiableList(TAB_ITEMS.getOrDefault(tab, List.of()));
     }
 
-    private static DeferredItem<Item> item(String path, UnaryOperator<Item.Properties> properties) {
+    private static ItemEntry<Item> item(String path, UnaryOperator<Item.Properties> properties) {
         return register(path, Item::new, properties, ModTab.ITEMS);
     }
 
-    private static DeferredItem<BlockItem> blockItem(DeferredBlock<? extends Block> block) {
+    private static ItemEntry<BlockItem> blockItem(BlockEntry<? extends Block> block) {
         return register(block.getId().getPath(), p -> new BlockItem(block.get(), p),
                 Item.Properties::useBlockDescriptionPrefix, ModTab.ITEMS);
     }
 
-    private static <I extends Item> DeferredItem<I> register(String path,
+    private static <I extends Item> ItemEntry<I> register(String path,
             Function<Item.Properties, ? extends I> factory,
             UnaryOperator<Item.Properties> properties, @Nullable ModTab tab) {
-        DeferredItem<I> item = ModRegistries.ITEMS.registerItem(path, factory, properties);
+        ItemEntry<I> item = ModRegistries.ITEMS.registerItem(path, factory, properties);
         USED_PATHS.add(path);
         if (tab != null) {
             TAB_ITEMS.computeIfAbsent(tab, t -> new ArrayList<>()).add(item);

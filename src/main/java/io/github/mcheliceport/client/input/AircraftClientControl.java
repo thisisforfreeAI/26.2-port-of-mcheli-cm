@@ -21,7 +21,6 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
-import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 
 /**
  * Shared helicopter, plane and ship rider controls, read once per client tick: upstream's
@@ -61,7 +60,7 @@ public final class AircraftClientControl {
                     && mc.gui.screen() == null) {
                 boolean exit = ModKeyMappings.UNMOUNT.consumeClick();
                 if (exit || ModKeyMappings.GUI.consumeClick()) {
-                    ClientPacketDistributor.sendToServer(new io.github.mcheliceport.net.UavStationControlPayload(station.getId(), exit));
+                    io.github.mcheliceport.platform.Platform.get().sendToServer(new io.github.mcheliceport.net.UavStationControlPayload(station.getId(), exit));
                 }
                 ModKeyMappings.ALL.forEach(key -> { while (key.consumeClick()) { } });
             }
@@ -184,7 +183,7 @@ public final class AircraftClientControl {
         boolean guiClicked = ModKeyMappings.GUI.consumeClick();
         boolean extraClicked = ModKeyMappings.EXTRA.consumeClick();
         if (freeLookHeld && (guiClicked || extraClicked)) {
-            ClientPacketDistributor.sendToServer(
+            io.github.mcheliceport.platform.Platform.get().sendToServer(
                     new SeatControlPayload(guiClicked ? SeatControlPayload.Action.NEXT : SeatControlPayload.Action.PREV));
             guiClicked = false;
             extraClicked = false;
@@ -210,11 +209,11 @@ public final class AircraftClientControl {
                 unmount = HeliControlPayload.UnmountAction.UNMOUNT_CREW; send = true;
             }
             if (ModKeyMappings.PUT_TO_RACK.consumeClick()) {
-                ClientPacketDistributor.sendToServer(new io.github.mcheliceport.net.RackControlPayload(aircraft.getId(),
+                io.github.mcheliceport.platform.Platform.get().sendToServer(new io.github.mcheliceport.net.RackControlPayload(aircraft.getId(),
                         aircraft.racks().canRide() ? io.github.mcheliceport.net.RackControlPayload.Action.RIDE
                                 : io.github.mcheliceport.net.RackControlPayload.Action.LOAD));
             } else if (ModKeyMappings.DOWN_FROM_RACK.consumeClick()) {
-                ClientPacketDistributor.sendToServer(new io.github.mcheliceport.net.RackControlPayload(aircraft.getId(),
+                io.github.mcheliceport.platform.Platform.get().sendToServer(new io.github.mcheliceport.net.RackControlPayload(aircraft.getId(),
                         aircraft.isPassenger() ? io.github.mcheliceport.net.RackControlPayload.Action.LEAVE
                                 : io.github.mcheliceport.net.RackControlPayload.Action.UNLOAD));
             }
@@ -267,7 +266,7 @@ public final class AircraftClientControl {
                 if (chain != null && chain.tow() == aircraft
                         && (aircraft instanceof HeliEntity || aircraft instanceof io.github.mcheliceport.entity.vehicle.VehicleEntity)) {
                     // Upstream: the extra key unhitches what a helicopter or vehicle tows first.
-                    ClientPacketDistributor.sendToServer(new io.github.mcheliceport.net.RackControlPayload(aircraft.getId(),
+                    io.github.mcheliceport.platform.Platform.get().sendToServer(new io.github.mcheliceport.net.RackControlPayload(aircraft.getId(),
                             io.github.mcheliceport.net.RackControlPayload.Action.UNHITCH));
                     playSoundOk();
                 } else if (aircraft instanceof HeliEntity helicopter && helicopter.canSwitchFoldBlades()) {
@@ -366,7 +365,7 @@ public final class AircraftClientControl {
         if (send || player.tickCount % 100 == 0) {
             HeliControlPayload common = new HeliControlPayload(aircraft.getId(), unmount, mode, hatch, gear,
                     switches, freeLook, blades, cameraMode);
-            ClientPacketDistributor.sendToServer(aircraft instanceof GroundVehicleEntity ground
+            io.github.mcheliceport.platform.Platform.get().sendToServer(aircraft instanceof GroundVehicleEntity ground
                     ? new GroundControlPayload(common, ground.getBrake())
                     : aircraft instanceof ShipEntity ? new ShipControlPayload(common, vtol, wing)
                     : aircraft instanceof WingedAircraftEntity

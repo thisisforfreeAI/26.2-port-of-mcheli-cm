@@ -13,7 +13,6 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
-import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 
@@ -241,7 +240,7 @@ public class NewRouteScreen extends Screen {
                 return;
             }
         }
-        ClientPacketDistributor.sendToServer(new MissionRouteActionPayload(MissionRouteActionPayload.CREATE, name,
+        io.github.mcheliceport.platform.Platform.get().sendToServer(new MissionRouteActionPayload(MissionRouteActionPayload.CREATE, name,
                 List.copyOf(this.nodes)));
         this.onClose();
     }

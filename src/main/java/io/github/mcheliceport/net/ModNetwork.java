@@ -1,7 +1,6 @@
 package io.github.mcheliceport.net;
 
 import com.mojang.logging.LogUtils;
-import io.github.mcheliceport.config.ServerConfig;
 import io.github.mcheliceport.config.ServerSettings;
 import io.github.mcheliceport.effect.McheliEffects;
 import io.github.mcheliceport.entity.aircraft.AircraftEntity;
@@ -17,6 +16,8 @@ import io.github.mcheliceport.entity.ground.GroundVehicleEntity;
 import io.github.mcheliceport.entity.tank.TankEntity;
 import io.github.mcheliceport.entity.aircraft.WingedAircraftEntity;
 import io.github.mcheliceport.entity.seat.SeatEntity;
+import io.github.mcheliceport.platform.Payloads;
+import io.github.mcheliceport.platform.Platform;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.level.ServerLevel;
@@ -25,16 +26,6 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.fml.config.ModConfig;
-import net.neoforged.fml.event.config.ModConfigEvent;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.entity.player.PlayerEvent;
-import net.neoforged.neoforge.network.PacketDistributor;
-import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
-import net.neoforged.neoforge.network.handling.IPayloadContext;
-import net.neoforged.neoforge.network.registration.PayloadRegistrar;
-import net.neoforged.neoforge.server.ServerLifecycleHooks;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
@@ -52,20 +43,14 @@ public final class ModNetwork {
     private ModNetwork() {
     }
 
-    public static void register(IEventBus modBus) {
-        modBus.addListener(ModNetwork::registerPayloads);
-        modBus.addListener(ModNetwork::onConfigReloaded);
-        NeoForge.EVENT_BUS.addListener(ModNetwork::onPlayerLoggedIn);
-    }
-
-    private static void registerPayloads(RegisterPayloadHandlersEvent event) {
-        PayloadRegistrar registrar = event.registrar(VERSION);
-        event.registrar(VERSION).optional().playToClient(VehicleBloodPayload.TYPE, VehicleBloodPayload.CODEC,
+    /** Declares every payload; each loader calls this once with its own registrar. */
+    public static void registerPayloads(Payloads registrar) {
+        registrar.optionalPlayToClient(VehicleBloodPayload.TYPE, VehicleBloodPayload.CODEC,
                 (p, context) -> { var hooks = WeaponClientHooks.get(); if (hooks != null) hooks.vehicleBlood(p); });
         // Optional addition: older clients keep the existing protocol and simply receive no marks.
-        event.registrar(VERSION).optional().playToClient(VehicleImpactPayload.TYPE,VehicleImpactPayload.CODEC,
+        registrar.optionalPlayToClient(VehicleImpactPayload.TYPE,VehicleImpactPayload.CODEC,
                 (p,context)->{var hooks=WeaponClientHooks.get();if(hooks!=null)hooks.vehicleImpact(p);});
-        event.registrar(VERSION).optional().playToClient(VehicleMotionPayload.TYPE, VehicleMotionPayload.CODEC,
+        registrar.optionalPlayToClient(VehicleMotionPayload.TYPE, VehicleMotionPayload.CODEC,
                 (p, context) -> {
                     if (p.valid() && context.player().level().getEntity(p.entityId())
                             instanceof io.github.mcheliceport.entity.aircraft.AircraftEntity aircraft) {
@@ -244,10 +229,9 @@ public final class ModNetwork {
 
     // ---- server settings ----
 
-    private static void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
-        if (event.getEntity() instanceof ServerPlayer player) {
-            sendSettings(player, ServerSettingsPayload.of(ServerSettings.server()));
-        }
+    /** A player joined the server: send the server settings. */
+    public static void onPlayerLoggedIn(ServerPlayer player) {
+        sendSettings(player, ServerSettingsPayload.of(ServerSettings.server()));
     }
 
     /** Sends the settings to a player whose connection knows them (not to fake players or vanilla clients). */
@@ -261,12 +245,12 @@ public final class ModNetwork {
      * negotiate, which would crash the server tick that sent it.
      */
     public static void sendToPlayer(ServerPlayer player, CustomPacketPayload payload) {
-        if (player.connection != null && player.connection.hasChannel(payload.type())) {
-            PacketDistributor.sendToPlayer(player, payload);
+        if (player.connection != null && Platform.get().canSend(player, payload.type())) {
+            Platform.get().sendToPlayer(player, payload);
         }
     }
 
-    /** {@link PacketDistributor#sendToPlayersNear}, through {@link #sendToPlayer}. */
+    /** {@code PacketDistributor#sendToPlayersNear}, through {@link #sendToPlayer}. */
     public static void sendToPlayersNear(ServerLevel level, @Nullable ServerPlayer excluded, double x, double y,
             double z, double radius, CustomPacketPayload payload) {
         for (ServerPlayer player : level.players()) {
@@ -276,25 +260,22 @@ public final class ModNetwork {
         }
     }
 
-    /** {@link PacketDistributor#sendToAllPlayers}, through {@link #sendToPlayer}. */
+    /** {@code PacketDistributor#sendToAllPlayers}, through {@link #sendToPlayer}. */
     public static void sendToAllPlayers(net.minecraft.server.MinecraftServer server, CustomPacketPayload payload) {
         for (ServerPlayer player : server.getPlayerList().getPlayers()) {
             sendToPlayer(player, payload);
         }
     }
 
-    /** {@link PacketDistributor#sendToPlayersInDimension}, through {@link #sendToPlayer}. */
+    /** {@code PacketDistributor#sendToPlayersInDimension}, through {@link #sendToPlayer}. */
     public static void sendToPlayersInDimension(ServerLevel level, CustomPacketPayload payload) {
         for (ServerPlayer player : level.players()) {
             sendToPlayer(player, payload);
         }
     }
 
-    private static void onConfigReloaded(ModConfigEvent.Reloading event) {
-        if (event.getConfig().getSpec() != ServerConfig.SPEC || event.getConfig().getType() != ModConfig.Type.SERVER) {
-            return;
-        }
-        MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
+    /** The server config file was edited while {@code server} runs. */
+    public static void onServerConfigReloaded(@Nullable MinecraftServer server) {
         if (server != null) {
             server.execute(() -> sendServerSettings(server));
         }
@@ -485,7 +466,7 @@ public final class ModNetwork {
         return null;
     }
 
-    static void handleHeliControl(HeliControlPayload p, IPayloadContext context) {
+    static void handleHeliControl(HeliControlPayload p, Payloads.Context context) {
         Player player = context.player();
         if (!(riddenAircraft(player) instanceof HeliEntity heli) || heli.getId() != p.entityId()) {
             return;
@@ -607,7 +588,7 @@ public final class ModNetwork {
         }
     }
 
-    static void handlePlaneControl(PlaneControlPayload p, IPayloadContext context) {
+    static void handlePlaneControl(PlaneControlPayload p, Payloads.Context context) {
         if (riddenAircraft(context.player()) instanceof PlaneEntity plane) {
             applyPlaneControl(plane, context.player(), p);
         }
@@ -617,7 +598,7 @@ public final class ModNetwork {
         applyWingedControl(plane, player, p.controls(), p.vtol(), p.wing());
     }
 
-    static void handleShipControl(ShipControlPayload p, IPayloadContext context) {
+    static void handleShipControl(ShipControlPayload p, Payloads.Context context) {
         if (riddenAircraft(context.player()) instanceof ShipEntity ship) {
             applyShipControl(ship, context.player(), p);
         }
@@ -648,7 +629,7 @@ public final class ModNetwork {
         }
     }
 
-    static void handleAttitude(AircraftAttitudePayload p, IPayloadContext context) {
+    static void handleAttitude(AircraftAttitudePayload p, Payloads.Context context) {
         AircraftEntity aircraft = riddenAircraft(context.player());
         if (aircraft != null) { applyPilotAttitude(aircraft, context.player(), p); }
     }
@@ -675,7 +656,7 @@ public final class ModNetwork {
         aircraft.setAttitudeFromPilot(p.yaw(), p.pitch(), p.roll());
     }
 
-    static void handleMotion(AircraftMotionPayload p, IPayloadContext context) {
+    static void handleMotion(AircraftMotionPayload p, Payloads.Context context) {
         Player player = context.player();
         if (!(player.getVehicle() instanceof AircraftEntity aircraft) || aircraft.getId() != p.entityId()
                 || !aircraft.isPilot(player) || !aircraft.followsPilot()) {
@@ -699,7 +680,7 @@ public final class ModNetwork {
                 ? Mth.clamp(p.throttle(), 0.0, 1.0) : aircraft.getCurrentThrottle());
     }
 
-    static void handleSeatControl(SeatControlPayload p, IPayloadContext context) {
+    static void handleSeatControl(SeatControlPayload p, Payloads.Context context) {
         Player player = context.player();
         AircraftEntity aircraft = riddenAircraft(player);
         if (aircraft == null || player.getVehicle() instanceof io.github.mcheliceport.entity.uav.UavStationEntity) {
@@ -719,7 +700,7 @@ public final class ModNetwork {
 
     // ---- weapons ----
 
-    static void handleWeaponControl(WeaponControlPayload p, IPayloadContext context) {
+    static void handleWeaponControl(WeaponControlPayload p, Payloads.Context context) {
         Player player = context.player();
         AircraftEntity aircraft = riddenAircraft(player);
         if (aircraft == null || aircraft.getId() != p.entityId()) {
@@ -817,7 +798,7 @@ public final class ModNetwork {
     }
 
     /** Upstream {@code PacketRequestResupply}: only from a player who has that vehicle's menu open. */
-    static void handleResupply(ResupplyPayload p, IPayloadContext context) {
+    static void handleResupply(ResupplyPayload p, Payloads.Context context) {
         if (context.player() instanceof ServerPlayer player
                 && player.containerMenu instanceof io.github.mcheliceport.menu.AircraftMenu menu
                 && menu.getAircraft() != null && menu.getAircraft().getId() == p.aircraftId()
@@ -827,7 +808,7 @@ public final class ModNetwork {
     }
 
     /** Upstream {@code PacketCommandSave}, from the menu of that vehicle only. */
-    static void handleAircraftCommand(AircraftCommandPayload p, IPayloadContext context) {
+    static void handleAircraftCommand(AircraftCommandPayload p, Payloads.Context context) {
         if (context.player() instanceof ServerPlayer player
                 && player.containerMenu instanceof io.github.mcheliceport.menu.AircraftMenu menu
                 && menu.getAircraft() != null && menu.getAircraft().getId() == p.aircraftId()) {
@@ -835,7 +816,7 @@ public final class ModNetwork {
         }
     }
 
-    static void handleAmmoRequest(AmmoRequestPayload p, IPayloadContext context) {
+    static void handleAmmoRequest(AmmoRequestPayload p, Payloads.Context context) {
         if (context.player() instanceof ServerPlayer player && riddenAircraft(player) instanceof AircraftEntity ac
                 && ac.getId() == p.aircraftId()) {
             if (p.weaponId() >= 0) {
@@ -847,7 +828,7 @@ public final class ModNetwork {
     }
 
     /** M10b: only a rider in a commander seat of that vehicle marks. */
-    static void handleCrewMark(CrewMarkPayload p, IPayloadContext context) {
+    static void handleCrewMark(CrewMarkPayload p, Payloads.Context context) {
         Player player = context.player();
         if (riddenAircraft(player) instanceof AircraftEntity ac && ac.getId() == p.aircraftId()
                 && io.github.mcheliceport.entity.aircraft.CrewRoles.roleOf(ac, player)
@@ -856,7 +837,7 @@ public final class ModNetwork {
         }
     }
 
-    static void handleAirburstDist(AirburstDistPayload p, IPayloadContext context) {
+    static void handleAirburstDist(AirburstDistPayload p, Payloads.Context context) {
         Player player = context.player();
         if (riddenAircraft(player) instanceof AircraftEntity ac && ac.getId() == p.aircraftId()) {
             WeaponSet ws = ac.getCurrentWeapon(player);
@@ -866,13 +847,13 @@ public final class ModNetwork {
         }
     }
 
-    static void handleWeaponSync(WeaponSyncPayload p, IPayloadContext context) {
+    static void handleWeaponSync(WeaponSyncPayload p, Payloads.Context context) {
         if (context.player().level().getEntity(p.aircraftId()) instanceof AircraftEntity ac) {
             ac.weapons().applySync(p, ac.getEntityBySeatId(p.seatId()) == context.player());
         }
     }
 
-    static void handleStatusRequest(AircraftStatusRequestPayload p, IPayloadContext context) {
+    static void handleStatusRequest(AircraftStatusRequestPayload p, Payloads.Context context) {
         Player player = context.player();
         if (player instanceof ServerPlayer serverPlayer
                 && player.level().getEntity(p.entityId()) instanceof AircraftEntity aircraft
@@ -892,7 +873,7 @@ public final class ModNetwork {
     }
 
     /** Upstream {@code PacketStatusResponse#onReceive}: every seat's selected weapon. */
-    static void handleStatusResponse(AircraftStatusResponsePayload p, IPayloadContext context) {
+    static void handleStatusResponse(AircraftStatusResponsePayload p, Payloads.Context context) {
         if (p.seatNum() <= 0 || p.weaponIds().length != p.seatNum()) {
             LOGGER.debug("Vehicle status response for entity {} has a bad seat count {}", p.entityId(), p.seatNum());
             return;

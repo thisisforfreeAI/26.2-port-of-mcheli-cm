@@ -29,7 +29,8 @@ import net.minecraft.data.PackOutput;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
-import net.neoforged.neoforge.registries.DeferredItem;
+import io.github.mcheliceport.registry.ItemEntry;
+import io.github.mcheliceport.registry.RegEntry;
 
 /**
  * Block states and models of the port's blocks, and item models of its fixed items. Content items
@@ -41,7 +42,7 @@ import net.neoforged.neoforge.registries.DeferredItem;
 public class ModModelProvider extends ModelProvider {
 
     /** Items whose item model is hand-written (assets/mcheli_ce_port/items). */
-    private static final List<DeferredItem<? extends Item>> TOOLS = List.of(ModItems.RANGEFINDER, ModItems.WRENCH,
+    private static final List<ItemEntry<? extends Item>> TOOLS = List.of(ModItems.RANGEFINDER, ModItems.WRENCH,
             ModItems.GLTD, ModItems.FIM92, ModItems.FGM148);
 
     public ModModelProvider(PackOutput output) {
@@ -50,20 +51,20 @@ public class ModModelProvider extends ModelProvider {
 
     @Override
     protected void registerModels(BlockModelGenerators blockModels, ItemModelGenerators itemModels) {
-        for (DeferredItem<? extends Item> item : List.of(ModItems.FUEL, ModItems.CHAIN, ModItems.PARACHUTE,
+        for (ItemEntry<? extends Item> item : List.of(ModItems.FUEL, ModItems.CHAIN, ModItems.PARACHUTE,
                 ModItems.CONTAINER, ModItems.UAV_STATION, ModItems.UAV_STATION2, ModItems.INTERNAL,
                 ModItems.FIM92_BULLET, ModItems.FGM148_BULLET)) {
             flatItem(itemModels, item.get(), mcheli("items/" + item.getId().getPath()));
         }
         // The hand tools: the flat model is the fallback of a hand-written mcheli_ce_port:tool item model
         // (ToolItemModel), which draws upstream's 3D model in the hand.
-        for (DeferredItem<? extends Item> item : TOOLS) {
+        for (ItemEntry<? extends Item> item : TOOLS) {
             ModelTemplates.FLAT_ITEM.create(ModelLocationUtils.getModelLocation(item.get()),
                     TextureMapping.layer0(new Material(mcheli("items/" + item.getId().getPath()))),
                     itemModels.modelOutput);
         }
         // Upstream has no textures for these three; the port draws simple placeholders.
-        for (DeferredItem<? extends Item> item : List.of(ModItems.UAV_PAIRING_DEVICE, ModItems.UAV_TABLET,
+        for (ItemEntry<? extends Item> item : List.of(ModItems.UAV_PAIRING_DEVICE, ModItems.UAV_TABLET,
                 ModItems.MINE_DEFUSER)) {
             flatItem(itemModels, item.get(), item.getId().withPrefix("item/"));
         }
@@ -93,7 +94,7 @@ public class ModModelProvider extends ModelProvider {
 
     @Override
     protected Stream<? extends Holder<Block>> getKnownBlocks() {
-        return ModRegistries.BLOCKS.getEntries().stream();
+        return ModRegistries.BLOCKS.getEntries().stream().map(RegEntry::holder);
     }
 
     /** The fixed items only: content items are not known at build time. */
@@ -104,7 +105,8 @@ public class ModModelProvider extends ModelProvider {
                 .filter(holder -> TOOLS.stream().noneMatch(tool -> tool.get() == holder.get())
                         && holder.get() != ModItems.DRAFTING_TABLE.get()
                         // The fuel bucket's model is hand-written (NeoForge's fluid container model).
-                        && holder.get() != ModItems.FUEL_BUCKET.get());
+                        && holder.get() != ModItems.FUEL_BUCKET.get())
+                .map(RegEntry::holder);
     }
 
     private static Identifier mcheli(String path) {

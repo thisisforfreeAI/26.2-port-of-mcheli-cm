@@ -17,7 +17,6 @@ import net.minecraft.network.chat.TextColor;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.world.scores.TeamColor;
-import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -132,7 +131,7 @@ public class MultiplayManagerScreen extends Screen {
             Button button;
             if (team == null) {
                 button = Button.builder(Component.literal("Leave team"),
-                        b -> ClientPacketDistributor.sendToServer(
+                        b -> io.github.mcheliceport.platform.Platform.get().sendToServer(
                                 new MultiplayActionPayload(MultiplayActionPayload.Action.LEAVE_TEAM)))
                         .bounds(left - 1, y, width + 1, 20).build();
                 button.active = own != null;
@@ -140,7 +139,7 @@ public class MultiplayManagerScreen extends Screen {
                 boolean joined = own != null && own.getName().equals(team.getName());
                 String name = team.getName();
                 button = Button.builder(Component.literal(joined ? "Joined" : "Join"),
-                        b -> ClientPacketDistributor.sendToServer(
+                        b -> io.github.mcheliceport.platform.Platform.get().sendToServer(
                                 new MultiplayActionPayload(MultiplayActionPayload.Action.JOIN_TEAM, name)))
                         .bounds(left - 1, y, width + 1, 20).build();
                 button.active = !joined && name.length() <= MultiplayActionPayload.MAX_TEAM_NAME;
@@ -199,7 +198,7 @@ public class MultiplayManagerScreen extends Screen {
     }
 
     private void send(MultiplayActionPayload.Action action) {
-        ClientPacketDistributor.sendToServer(new MultiplayActionPayload(action));
+        io.github.mcheliceport.platform.Platform.get().sendToServer(new MultiplayActionPayload(action));
     }
 
     /** Upstream sent the three team commands as the player's own. */

@@ -43,7 +43,7 @@ public class UavStationScreen extends AbstractContainerScreen<UavStationMenu> {
         refreshRows();
     }
     private void action(java.util.UUID id, int action) {
-        if (menu.station() != null) { net.neoforged.neoforge.client.network.ClientPacketDistributor.sendToServer(
+        if (menu.station() != null) { io.github.mcheliceport.platform.Platform.get().sendToServer(
                 new io.github.mcheliceport.net.UavRosterActionPayload(menu.containerId, menu.station().getId(), id, action)); }
     }
     @Override protected void containerTick() { super.containerTick(); refreshRows(); }

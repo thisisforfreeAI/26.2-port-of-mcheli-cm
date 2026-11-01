@@ -44,7 +44,7 @@
 |---|---|
 | Minecraft | **26.2** (unobfuscated, official Mojang names) |
 | NeoForge | **26.2.0.88**, pinned at your request. Latest 26.2 build is .90, but .89/.90 only add translation updates and a Mixin dependency bump, so pinning .88 costs nothing functional. `neoforge.mods.toml` will declare `[26.2.0.88,)`. |
-| Build | Official template `NeoForgeMDKs/MDK-26.2-ModDevGradle` (commit `3acf94e`): ModDevGradle **2.0.148**, Gradle **9.2.1**, Java toolchain **25** |
+| Build | Official template `NeoForgeMDKs/MDK-26.2-ModDevGradle` (commit `3acf94e`): ModDevGradle **2.0.148**, Gradle **9.2.1** (now **9.8.2** on Java 25 for the Fabric build, docs/FABRIC_PLAN.md), Java toolchain **25** |
 | JDK on this machine | Temurin 25.0.4.1 (works; the MDK set up and decompiled cleanly) |
 | Reference sources | `minecraft-patched-26.2.0.88-sources.jar` (7,055 files) and `neoforge-26.2.0.88-sources.jar` (1,158 files), generated with the unmodified MDK |
 | Docs read | NeoForge primers 1.21.2 → 26.2 (`neoforged/.github/primers`), 26.2 primer in full for rendering; NeoForge 26.2 docs; Fabric 26.2 porting guide |
@@ -144,7 +144,7 @@ Deps columns come from a per-package scan of 1.12.2 API usage (counts are matchi
 <workspace root>/                     ← port repo (git); upstream/ is reference only (git-ignored)
   build.gradle, settings.gradle, gradle.properties   ← from MDK-26.2-ModDevGradle, neo_version=26.2.0.88
   src/main/java/io/github/mcheliceport/
-    McheliCePort.java                 ← @Mod entry; parses content in the constructor
+    McheliCePort.java                 ← shared setup; the @Mod entry is now platform/neoforge/NeoForgeMod.java
     registry/                         ← DeferredRegisters: items, blocks, block entities, entities, menus,
                                         data components, sounds, particles, creative tabs
     content/                          ← ported helper/info + helper/addon (pure Java where possible)

@@ -93,6 +93,9 @@ JDK 25 toolchain automatically.
 ./gradlew runServer   # development dedicated server (no GUI; type "stop" to shut it down)
 ```
 
+A Fabric build is in progress in `fabric/` and does not compile yet; see
+[docs/FABRIC_PLAN.md](docs/FABRIC_PLAN.md). `./gradlew -PwithFabric :fabric:compileJava` tries it.
+
 Development runs use `run/` as the game directory.
 
 For Vulkan with the pinned NeoForge build, set `earlyWindowControl = false` in

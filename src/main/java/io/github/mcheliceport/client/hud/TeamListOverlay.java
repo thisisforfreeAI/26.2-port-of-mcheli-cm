@@ -25,7 +25,6 @@ import net.minecraft.world.scores.Scoreboard;
 import net.neoforged.neoforge.client.event.InputEvent;
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
-import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -63,7 +62,7 @@ public final class TeamListOverlay {
         }
         drawScoreboard = ModKeyMappings.SCOREBOARD.isDown() && scoreboardTakesKey(mc);
         if (!drawScoreboard && manager) {
-            ClientPacketDistributor.sendToServer(new MultiplayActionPayload(MultiplayActionPayload.Action.STATE));
+            io.github.mcheliceport.platform.Platform.get().sendToServer(new MultiplayActionPayload(MultiplayActionPayload.Action.STATE));
             mc.gui.setScreen(new MultiplayManagerScreen());
         }
     }

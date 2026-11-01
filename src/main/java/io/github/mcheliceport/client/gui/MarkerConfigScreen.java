@@ -14,7 +14,6 @@ import net.minecraft.client.input.KeyEvent;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.FormattedCharSequence;
-import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import org.lwjgl.glfw.GLFW;
 
 /**
@@ -285,6 +284,6 @@ public class MarkerConfigScreen extends Screen {
         String id = this.idField.getValue().trim();
         String base = this.selectedType == MarkerType.BASE ? "" : this.baseIdField.getValue().trim();
         int heading = this.selectedType == MarkerType.PARKING ? this.parkingHeading : -1;
-        ClientPacketDistributor.sendToServer(new MarkerUpdatePayload(this.pos, this.selectedType, id, base, heading));
+        io.github.mcheliceport.platform.Platform.get().sendToServer(new MarkerUpdatePayload(this.pos, this.selectedType, id, base, heading));
     }
 }

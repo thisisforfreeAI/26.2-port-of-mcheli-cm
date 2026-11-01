@@ -26,7 +26,6 @@ import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.RenderFrameEvent;
 import net.neoforged.neoforge.client.event.RenderHandEvent;
 import net.neoforged.neoforge.client.event.ViewportEvent;
-import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import net.neoforged.neoforge.common.NeoForge;
 import org.jspecify.annotations.Nullable;
 
@@ -45,7 +44,7 @@ public final class AircraftClientEvents {
 
             @Override
             public void sendToServer(net.minecraft.network.protocol.common.custom.CustomPacketPayload payload) {
-                ClientPacketDistributor.sendToServer(payload);
+                io.github.mcheliceport.platform.Platform.get().sendToServer(payload);
             }
         });
         NeoForge.EVENT_BUS.addListener((ClientTickEvent.Post event) -> {

@@ -35,7 +35,6 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
-import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 
@@ -297,7 +296,7 @@ public class DraftingTableScreen extends AbstractContainerScreen<DraftingTableMe
 
     private void create() {
         if (this.current != null && this.current.entry != null) {
-            ClientPacketDistributor.sendToServer(new DraftingTableCreatePayload(this.menu.containerId,
+            io.github.mcheliceport.platform.Platform.get().sendToServer(new DraftingTableCreatePayload(this.menu.containerId,
                     this.current.entry.id()));
         }
     }

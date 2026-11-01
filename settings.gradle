@@ -1,6 +1,12 @@
 pluginManagement {
     repositories {
+        // Fabric Loom, for the Fabric build in fabric/.
+        maven {
+            name = 'Fabric'
+            url = 'https://maven.fabricmc.net/'
+        }
         gradlePluginPortal()
+        mavenCentral()
     }
 }
 
@@ -10,3 +16,10 @@ plugins {
 
 // Keep the project name independent of the checkout directory name.
 rootProject.name = 'mcheli_ce_port'
+
+// The Fabric build (fabric/) compiles the same mod sources as the NeoForge build in the root
+// project, minus the NeoForge-only glue, plus its own Fabric glue. See docs/FABRIC_PLAN.md.
+// It is opt-in (-PwithFabric) until the Fabric port compiles, so ./gradlew build stays green.
+if (providers.gradleProperty('withFabric').isPresent()) {
+    include 'fabric'
+}

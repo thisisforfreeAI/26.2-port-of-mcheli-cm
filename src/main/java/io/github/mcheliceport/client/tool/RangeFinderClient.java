@@ -11,7 +11,6 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.client.event.ViewportEvent;
-import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 
@@ -123,10 +122,10 @@ public final class RangeFinderClient {
         }
         if (mode == MODE_POINT) {
             cooldown = RangeFinderItem.SPOT_COOLDOWN;
-            ClientPacketDistributor.sendToServer(new RangeFinderSpotPayload(0));
+            io.github.mcheliceport.platform.Platform.get().sendToServer(new RangeFinderSpotPayload(0));
         } else if (RangeFinderItem.hasCharge(stack)) {
             cooldown = RangeFinderItem.SPOT_COOLDOWN;
-            ClientPacketDistributor.sendToServer(new RangeFinderSpotPayload(
+            io.github.mcheliceport.platform.Platform.get().sendToServer(new RangeFinderSpotPayload(
                     mode == MODE_VEHICLES ? RangeFinderItem.MODE_VEHICLES_FILTER : RangeFinderItem.MODE_MOBS_FILTER));
         } else {
             WeaponClientHooks.playSound("ng", 1.0F, 1.0F);

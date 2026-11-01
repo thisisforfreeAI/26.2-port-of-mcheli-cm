@@ -7,7 +7,7 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.data.loot.BlockLootSubProvider;
 import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.level.block.Block;
-import net.neoforged.neoforge.registries.DeferredHolder;
+import io.github.mcheliceport.registry.RegEntry;
 
 /** Block drops: each block drops itself, and the lit drafting table drops the unlit one. */
 public class ModBlockLootProvider extends BlockLootSubProvider {
@@ -27,6 +27,6 @@ public class ModBlockLootProvider extends BlockLootSubProvider {
 
     @Override
     protected Iterable<Block> getKnownBlocks() {
-        return ModRegistries.BLOCKS.getEntries().stream().<Block>map(DeferredHolder::get).toList();
+        return ModRegistries.BLOCKS.getEntries().stream().<Block>map(RegEntry::get).toList();
     }
 }
