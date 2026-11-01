@@ -109,6 +109,94 @@ public final class BreakupMeshes {
         return new Airframe(frame,sections,join("$airframe_spars",ribs),b,left,right,tail,mask,Map.copyOf(openings),FractureInteriorMeshes.merge(fracture),
                 join("$fracture_lining",linings),leftWing.trailing(),rightWing.trailing());
     }
+    /** A torn tail's pieces, each fin and stabiliser on its own; null while still being built. */
+    @SuppressWarnings("unchecked")
+    public static List<McheliModel.Group> shatter(McheliModel.Group section) {
+        if(section.vertexCount()<3||section.vertexCount()>12000)return List.of();
+        return (List<McheliModel.Group>)get(new Key(section,"shatter",Vec3.ZERO),()->shatterBuild(section));
+    }
+    /** Most pieces a torn tail breaks into, and the extent past which a plate snaps in two. */
+    static final int MAX_SHARDS=8,MAX_TOTAL=12;static final float SNAP=2.6F;
+    /**
+     * Splits a torn tail into the plates it is made of, so fins and stabilisers come off separately rather
+     * than as one rigid cluster. Connected skin is one candidate; a fin welded to a stabiliser is told apart
+     * by its facing (upright against flat); a stabiliser modelled straight through the fuselage is split at
+     * the centreline; skins lying on top of each other (upper and lower, trim strips) stay together; slivers
+     * join their nearest piece. A plate taller or longer than {@link #SNAP} snaps across its middle.
+     */
+    public static List<McheliModel.Group> shatterBuild(McheliModel.Group section) {
+        var d=section.data();int triangles=d.length/24;if(triangles==0)return List.of();
+        // Facing: 0 upright (fins), 1 flat (stabilisers); edge strips side with whichever they touch.
+        int[] facing=new int[triangles];double upright=0,flat=0;
+        for(int t=0;t<triangles;t++){
+            int a=t*24;float ux=d[a+8]-d[a],uy=d[a+9]-d[a+1],uz=d[a+10]-d[a+2],vx=d[a+16]-d[a],vy=d[a+17]-d[a+1],vz=d[a+18]-d[a+2];
+            float nx=uy*vz-uz*vy,ny=uz*vx-ux*vz,nz=ux*vy-uy*vx,l=(float)Math.sqrt(nx*nx+ny*ny+nz*nz);
+            facing[t]=l>1E-9F&&Math.abs(ny/l)>.75F?1:0;double area=triangleArea(d,a);if(facing[t]==1)flat+=area;else upright+=area;
+        }
+        boolean mixed=Math.min(upright,flat)>(upright+flat)*.12;
+        // Components by shared edges, kept within one facing when the tail has both.
+        int[] parent=new int[triangles];for(int t=0;t<triangles;t++)parent[t]=t;
+        {var edges=new HashMap<Long,Integer>();var ids=new HashMap<Long,Integer>();
+            for(int t=0;t<triangles;t++){int[] c=new int[3];for(int k=0;k<3;k++)c[k]=ids.computeIfAbsent(point(d,t*24+k*8),x->ids.size());
+                for(int k=0;k<3;k++){int a=c[k],b=c[(k+1)%3];if(a==b)continue;long key=(long)Math.min(a,b)<<33|(long)Math.max(a,b)<<1|(mixed?facing[t]:0);
+                    Integer other=edges.putIfAbsent(key,t);if(other!=null)union(parent,other,t);}}}
+        var members=new LinkedHashMap<Integer,List<Integer>>();
+        for(int t=0;t<triangles;t++)members.computeIfAbsent(find(parent,t),x->new ArrayList<>()).add(t);
+        var shards=new ArrayList<Shard>();
+        for(var list:members.values()){
+            var s=new Shard(d,list);
+            // One flat plate straight across the fuselage is two stabilisers.
+            if(s.low.x<-.4F&&s.high.x>.4F&&s.high.y-s.low.y<(s.high.x-s.low.x)*.35F){
+                var halves=split(new McheliModel.Group("$tail",s.data()),0,0);
+                for(var h:halves)if(h.vertexCount()>0)shards.add(new Shard(h.data(),allTriangles(h)));
+            }else shards.add(s);
+        }
+        // Skins that overlap in space (two sides of one plate) are one piece.
+        for(boolean merged=true;merged;){merged=false;
+            for(int i=0;i<shards.size()&&!merged;i++)for(int j=i+1;j<shards.size()&&!merged;j++)
+                if(shards.get(i).overlap(shards.get(j))>.4){shards.get(i).absorb(shards.remove(j));merged=true;}}
+        double total=shards.stream().mapToDouble(s->s.area).sum();
+        // Slivers and rims go with their nearest piece, and the smallest join in until the count fits.
+        while(shards.size()>1){
+            Shard small=shards.stream().min(Comparator.comparingDouble(s->s.area)).orElseThrow();
+            if(small.area>total*.04&&shards.size()<=MAX_SHARDS)break;
+            shards.remove(small);Shard near=shards.stream().min(Comparator.comparingDouble(s->s.gap(small))).orElseThrow();near.absorb(small);
+        }
+        // Long plates snap across the middle of their longest side, a little off centre, biggest first.
+        var out=new ArrayList<McheliModel.Group>();for(var s:shards)out.add(new McheliModel.Group(section.name(),s.data()));
+        while(out.size()<MAX_TOTAL){
+            McheliModel.Group longest=null;float extent=SNAP;int axis=0;Bounds at=null;
+            for(var g:out){var b=bounds(g);float[] size={b.high.x-b.low.x,b.high.y-b.low.y,b.high.z-b.low.z};
+                for(int i=0;i<3;i++)if(size[i]>extent){extent=size[i];longest=g;axis=i;at=b;}}
+            if(longest==null)break;
+            float cut=(axis==0?at.low.x:axis==1?at.low.y:at.low.z)+extent*.55F;var halves=split(longest,axis,cut);
+            if(halves[0].vertexCount()==0||halves[1].vertexCount()==0)break;
+            out.remove(longest);out.add(halves[0]);out.add(halves[1]);
+        }
+        return List.copyOf(out);
+    }
+    /** A corner's position to a five-hundredth, 21 bits an axis. */
+    private static long point(float[] d,int at){return ((long)Math.round(d[at]*500)&0x1FFFFF)<<42|((long)Math.round(d[at+1]*500)&0x1FFFFF)<<21|((long)Math.round(d[at+2]*500)&0x1FFFFF);}
+    private static List<Integer> allTriangles(McheliModel.Group g){var l=new ArrayList<Integer>();for(int t=0;t<g.data().length/24;t++)l.add(t);return l;}
+    /** Triangles of one candidate piece, with their bounds and area. */
+    private static final class Shard {
+        final List<float[]> triangles=new ArrayList<>();final Vector3f low=new Vector3f(Float.POSITIVE_INFINITY),high=new Vector3f(Float.NEGATIVE_INFINITY);double area;
+        Shard(float[] d,List<Integer> list){for(int t:list){float[] tri=Arrays.copyOfRange(d,t*24,t*24+24);triangles.add(tri);area+=triangleArea(tri,0);
+            for(int k=0;k<3;k++){var v=new Vector3f(tri[k*8],tri[k*8+1],tri[k*8+2]);low.min(v);high.max(v);}}}
+        float[] data(){float[] out=new float[triangles.size()*24];for(int i=0;i<triangles.size();i++)System.arraycopy(triangles.get(i),0,out,i*24,24);return out;}
+        void absorb(Shard o){triangles.addAll(o.triangles);area+=o.area;low.min(o.low);high.max(o.high);}
+        static final float PAD=.06F;
+        double volume(){return (high.x-low.x+2*PAD)*(high.y-low.y+2*PAD)*(high.z-low.z+2*PAD);}
+        /** Shared bounding volume as a fraction of the smaller piece's. */
+        double overlap(Shard o){
+            double x=Math.min(high.x,o.high.x)-Math.max(low.x,o.low.x)+2*PAD,y=Math.min(high.y,o.high.y)-Math.max(low.y,o.low.y)+2*PAD,z=Math.min(high.z,o.high.z)-Math.max(low.z,o.low.z)+2*PAD;
+            if(x<=0||y<=0||z<=0)return 0;return x*y*z/Math.min(volume(),o.volume());
+        }
+        double gap(Shard o){
+            double x=Math.max(0,Math.max(low.x-o.high.x,o.low.x-high.x)),y=Math.max(0,Math.max(low.y-o.high.y,o.low.y-high.y)),z=Math.max(0,Math.max(low.z-o.high.z,o.low.z-high.z));
+            return x*x+y*y+z*z;
+        }
+    }
     /** Where a torn-off tail met the airframe: the middle of the corners it shares with the kept skin. */
     static Vec3 root(McheliModel.Group section,McheliModel.Group kept){
         var d=section.data();if(d.length==0)return null;var corners=new HashSet<Long>();var k=kept.data();

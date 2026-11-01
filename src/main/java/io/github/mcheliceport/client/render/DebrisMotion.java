@@ -49,6 +49,8 @@ public final class DebrisMotion {
     }
     /** The aircraft's own rotation at the moment of release, kept on top of the tear fold. */
     public void inherit(Vector3f rate){if(age>0||!finite(rate))return;spin.set(rate);clampSpin();inherited.set(spin);}
+    /** Adds to the spin and the inherited part kept through a tear fold. */
+    public void addSpin(Vector3f extra){if(age>0||!finite(extra))return;spin.add(extra);clampSpin();inherited.set(spin);}
     /** Before release, the section folds about its torn root (an offset from the centre) for a few ticks. */
     public void tear(Vec3 hingeOffset) {
         if(phase!=Phase.FREE||age>0||hingeOffset==null||!finite(hingeOffset)||hingeOffset.lengthSqr()<=.01)return;
