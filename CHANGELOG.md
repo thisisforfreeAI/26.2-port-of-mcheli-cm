@@ -116,6 +116,11 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
   See `docs/M6B_PLAN.md`.
 
 ### Fixed
+- WW2 propeller planes crawling along the runway and never taking off. The Zero, P-51D, An-2, Fi 167,
+  PZL M-18 and BQM-74E were held nose-down on the ground because YAML `OnGroundPitch` was negated
+  twice, so their thrust pointed into the runway. They now sit tail-down and lift off; stock
+  helicopters also sit slightly nose-up again, as in the original mod. Jets without a ground pitch
+  are unchanged.
 - Glitchy plane wrecks. A crashed bomber's nose was covered in spikes: its skin wrinkles were scaled by
   the whole airframe's length and reached a block deep. They are now dents a few hands deep at most, and
   the crushed nose moves back and droops a bounded amount. A B-29, C-5, 767 and other planes with a
