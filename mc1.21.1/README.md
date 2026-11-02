@@ -33,8 +33,9 @@ Jars land in `neoforge/build/libs` and `fabric/build/libs`. Dev servers: `:neofo
 
 - Server side: complete, and a dedicated server boots with the mod on both loaders.
 - Client side: backported. NeoForge posts the port's client events from its own; Fabric posts
-  them from Fabric API events and client mixins (`fabric/.../mixin/client`). Not yet done on
-  1.21.1: the 26.2 baked vehicle meshes (vehicles draw the plain way).
+  them from Fabric API events and client mixins (`fabric/.../mixin/client`). The 26.2 baked
+  vehicle meshes are left out on purpose: vehicles draw through normal render types, which keeps
+  them working with Iris shader packs.
 - The 3D hand-held tool models are drawn by a common `ItemRendererMixin` in place of 26.2's
   custom item model type; the `item/<tool>_hand` models still give their display transforms.
 - The engine heat haze is a core shader drawn after the level (`GameRendererLevelMixin`), under
