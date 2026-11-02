@@ -13,13 +13,8 @@ import java.util.UUID;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.event.tick.EntityTickEvent;
 
 /** Samples existing local collision contacts after ground vehicles tick; never scans the world entity list. */
-@EventBusSubscriber(modid = "mcheli_ce_port", value = Dist.CLIENT)
 public final class VehicleTracks {
     private static WeakReference<ClientLevel> world = new WeakReference<>(null);
     private static final LinkedHashMap<Integer, State> states = new LinkedHashMap<>(64, 0.75F, true);
@@ -31,8 +26,8 @@ public final class VehicleTracks {
     public static int vehicles() { return vehicles; }
     public static int stateCount() { return states.size(); }
 
-    @SubscribeEvent public static void entityTick(EntityTickEvent.Post event) {
-        if (event.getEntity() instanceof GroundVehicleEntity vehicle && vehicle.level() instanceof ClientLevel) sample(vehicle);
+    public static void entityTick(net.minecraft.world.entity.Entity event) {
+        if (event instanceof GroundVehicleEntity vehicle && vehicle.level() instanceof ClientLevel) sample(vehicle);
     }
 
     public static void sample(GroundVehicleEntity vehicle) {

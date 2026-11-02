@@ -10,13 +10,8 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
 
 /** Tiny lit droplets, not glowing mist. Shared particle admission bounds simultaneous kills. */
-@EventBusSubscriber(modid="mcheli_ce_port", value=Dist.CLIENT)
 public final class VehicleBloodEffects {
     private static ClientLevel world;
     private static VehicleBloodRules.Gate gate = new VehicleBloodRules.Gate(4);
@@ -52,7 +47,7 @@ public final class VehicleBloodEffects {
         BloodStains.queue(level, feet, p.width(), p.seed());
     }
 
-    @SubscribeEvent public static void tick(ClientTickEvent.Post event) {
+    public static void tick() {
         if (Minecraft.getInstance().level != world || !enabled()) clear();
     }
 }

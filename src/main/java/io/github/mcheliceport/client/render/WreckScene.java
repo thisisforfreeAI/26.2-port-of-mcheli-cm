@@ -7,10 +7,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
 
 /**
  * Where each nearby crashed plane or helicopter hit the ground, which way it was going and the path it
@@ -18,7 +14,6 @@ import net.neoforged.neoforge.client.event.ClientTickEvent;
  * A wreck first seen already destroyed (joining near an old crash) is {@link Scene#late}: it gets a scar
  * and a settled debris field, but no fresh fire, flying debris or trail.
  */
-@EventBusSubscriber(modid="mcheli_ce_port",value=Dist.CLIENT)
 public final class WreckScene {
     public static final int MAX_TRAIL=48,FADE=200;
     public static final double TRAIL_STEP=.9;
@@ -47,7 +42,7 @@ public final class WreckScene {
     public static Scene get(AircraftEntity ac){return STATES.get(ac);}
     public static Collection<Scene> scenes(){return Collections.unmodifiableCollection(STATES.values());}
     public static void clear(){STATES.clear();world=null;}
-    @SubscribeEvent public static void tick(ClientTickEvent.Post event){
+    public static void tick(){
         var mc=Minecraft.getInstance();
         if(mc.level!=world){clear();world=mc.level;}
         if(world==null||!enabled()){STATES.clear();return;}

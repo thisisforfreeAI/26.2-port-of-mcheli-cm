@@ -9,21 +9,16 @@ import io.github.mcheliceport.entity.aircraft.AircraftEntity;
 import io.github.mcheliceport.entity.plane.PlaneEntity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.RenderFrameEvent;
 import org.joml.Vector3f;
 
 /** Authored, part-local lamps and a small original-texture cockpit overlay. */
-@EventBusSubscriber(modid="mcheli_ce_port",value=Dist.CLIENT)
 public final class FlightLighting {
     private static int lamps,cockpitVertices,lastLamps,lastCockpitVertices;private static Object world;
     private FlightLighting(){}
     public static boolean enabled(){return EffectQuality.enhanced()&&ClientConfig.get(ClientConfig.NIGHT_FLIGHT_LIGHTING);}
     public static int lampsDrawn(){return lastLamps;}public static int cockpitVertices(){return lastCockpitVertices;}
     public static void clear(){lamps=cockpitVertices=lastLamps=lastCockpitVertices=0;world=null;LandingLightGround.clear();}
-    @SubscribeEvent public static void frame(RenderFrameEvent.Pre event){
+    public static void frame(){
         var level=Minecraft.getInstance().level;if(world!=level){clear();world=level;}
         // 26.2 emits Pre after extraction: publish this frame before resetting its admission window.
         lastLamps=lamps;lastCockpitVertices=cockpitVertices;lamps=cockpitVertices=0;

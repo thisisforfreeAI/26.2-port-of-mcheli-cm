@@ -31,7 +31,6 @@ import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.client.event.SubmitCustomGeometryEvent;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -122,7 +121,7 @@ public final class WeaponEffects {
     }
 
     /** Draws beams and cartridges; registered on the game bus. */
-    public static void onSubmitGeometry(SubmitCustomGeometryEvent event) {
+    public static void onSubmitGeometry(io.github.mcheliceport.platform.ClientEvents.Geometry event) {
         casingBatches=0;
         if (BEAMS.isEmpty() && CARTRIDGES.isEmpty()) {
             return;

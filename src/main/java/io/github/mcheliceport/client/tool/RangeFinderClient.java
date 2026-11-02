@@ -10,7 +10,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.client.event.ViewportEvent;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 
@@ -133,7 +132,7 @@ public final class RangeFinderClient {
     }
 
     /** Upstream {@code W_Reflection.setCameraZoom}: the scope narrows the view. */
-    public static void onComputeFov(ViewportEvent.ComputeFov event) {
+    public static void onComputeFov(io.github.mcheliceport.platform.ClientEvents.Fov event) {
         LocalPlayer player = Minecraft.getInstance().player;
         if (player != null && continueUsing && RangeFinderItem.canUse(player) && isUsingScope(player)) {
             event.setFOV(event.getFOV() / zoom);

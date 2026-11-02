@@ -4,21 +4,16 @@ import io.github.mcheliceport.client.model.McheliModel;
 import io.github.mcheliceport.config.*;
 import java.util.*;
 import net.minecraft.resources.Identifier;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.RenderFrameEvent;
 import org.joml.Matrix4f;
 
 /** Shared per-view geometry allowance for all living-vehicle overlays. */
-@EventBusSubscriber(modid="mcheli_ce_port",value=Dist.CLIENT)
 public final class VehicleDetailLayers {
     private static int vertices;
     /** Layers drawn last frame and this frame: a shown layer keeps its place instead of popping in and out. */
     private static Set<Layer> shown=new HashSet<>(),drawn=new HashSet<>();
     private record Layer(McheliModel.Group group,Identifier texture){}
     private VehicleDetailLayers(){}
-    @SubscribeEvent public static void frame(RenderFrameEvent.Pre event){InteriorFirelight.frame();vertices=0;var last=shown;shown=drawn;drawn=last;drawn.clear();}
+    public static void frame(){InteriorFirelight.frame();vertices=0;var last=shown;shown=drawn;drawn=last;drawn.clear();}
     public static boolean add(AircraftRenderState render,Matrix4f pose,Identifier texture,List<McheliModel.Group> groups,int color){
         if(render.far||render.thermal||!EffectQuality.enhanced())return false;
         int count=groups.stream().mapToInt(McheliModel.Group::vertexCount).sum();

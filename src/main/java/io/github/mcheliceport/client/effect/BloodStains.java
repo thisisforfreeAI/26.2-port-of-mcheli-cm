@@ -15,14 +15,8 @@ import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.*;
 import net.minecraft.world.phys.shapes.CollisionContext;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
-import net.neoforged.neoforge.client.event.SubmitCustomGeometryEvent;
 
 /** Small temporary splashes fitted to one surviving collision surface, never world block edits. */
-@EventBusSubscriber(modid="mcheli_ce_port", value=Dist.CLIENT)
 public final class BloodStains {
     // Reuse the original neutral wet-patch alpha mask; no NTM artwork.
     private static final Identifier TEXTURE = Identifier.fromNamespaceAndPath("mcheli_ce_port", "textures/effect/m8_fluid_stains.png");
@@ -74,7 +68,7 @@ public final class BloodStains {
         }
     }
 
-    @SubscribeEvent public static void tick(ClientTickEvent.Post event) {
+    public static void tick() {
         var mc=Minecraft.getInstance();
         if (mc.level!=world || !VehicleBloodEffects.enabled()) { clear(); return; }
         if (world==null || mc.isPaused()) return;
@@ -88,7 +82,7 @@ public final class BloodStains {
     }
     private static boolean valid(Stain m) { return world.hasChunkAt(m.pos) && world.getBlockState(m.pos)==m.state; }
 
-    @SubscribeEvent public static void submit(SubmitCustomGeometryEvent event) {
+    public static void submit(io.github.mcheliceport.platform.ClientEvents.Geometry event) {
         if (!VehicleBloodEffects.enabled() || MARKS.isEmpty() || world!=Minecraft.getInstance().level) return;
         var camera=event.getLevelRenderState().cameraRenderState.pos;
         long now=world.getGameTime(); var draws=new ArrayList<Draw>();

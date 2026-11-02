@@ -13,13 +13,8 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.*;
 
 /** Detached, broken V foam and wheel spray. Fluid sampling and support maintenance are bounded. */
-@EventBusSubscriber(modid="mcheli_ce_port",value=Dist.CLIENT)
 public final class VehicleWaterEffects {
     private record Wake(Vec3 point,Vec3 forward,float width,BlockPos support,long born,int light){}
     private static final List<Wake> WAKES=new ArrayList<>();
@@ -39,7 +34,7 @@ public final class VehicleWaterEffects {
         }
         return Double.NaN;
     }
-    @SubscribeEvent public static void tick(ClientTickEvent.Post event){
+    public static void tick(){
         var mc=Minecraft.getInstance();if(world!=mc.level||!enabled()){clear();world=mc.level;}
         if(world==null||!enabled()||mc.player==null||mc.isPaused())return;
         prepare(world);if(processedTick==world.getGameTime())return;processedTick=world.getGameTime();
@@ -83,7 +78,7 @@ public final class VehicleWaterEffects {
             double angle=i*2.4;engine.add(new SurfaceDebrisParticle(level,point.x,point.y,point.z,Math.cos(angle)*.09,.14,Math.sin(angle)*.09,.05F,.75F,.9F,1,Double.NEGATIVE_INFINITY,16,.02F));
         }
     }
-    @SubscribeEvent public static void submit(SubmitCustomGeometryEvent event){
+    public static void submit(io.github.mcheliceport.platform.ClientEvents.Geometry event){
         if(!enabled()||world!=Minecraft.getInstance().level||WAKES.isEmpty())return;
         var camera=event.getLevelRenderState().cameraRenderState.pos;float partial=Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaPartialTick(false);
         long now=world.getGameTime();var snapshot=List.copyOf(WAKES);

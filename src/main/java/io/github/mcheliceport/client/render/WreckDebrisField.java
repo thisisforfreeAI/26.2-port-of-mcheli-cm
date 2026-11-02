@@ -14,11 +14,6 @@ import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.*;
 import net.minecraft.world.phys.shapes.CollisionContext;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
-import net.neoforged.neoforge.client.event.SubmitCustomGeometryEvent;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -29,7 +24,6 @@ import org.joml.Vector3f;
  * slide to rest; around a wreck first seen already down they lie settled behind it. They stay as long as
  * the wreck. Cosmetic meshes only: no entities, items or hitboxes.
  */
-@EventBusSubscriber(modid="mcheli_ce_port",value=Dist.CLIENT)
 public final class WreckDebrisField {
     public static final int MAX_FIELDS=6,MAX_PIECES=72,MAX_VERTICES=36000,RAYS=3,GROUND_RAYS=24;
     static final Identifier SOOT=Identifier.fromNamespaceAndPath("mcheli_ce_port","textures/effect/m8_wreck_char.png");
@@ -98,7 +92,7 @@ public final class WreckDebrisField {
         var d=g.data();if(d.length<24)return null;var lo=new Vector3f(Float.POSITIVE_INFINITY);var hi=new Vector3f(Float.NEGATIVE_INFINITY);
         for(int i=0;i+7<d.length;i+=8){var p=new Vector3f(d[i],d[i+1],d[i+2]);lo.min(p);hi.max(p);}return new Vector3f[]{lo,hi};
     }
-    @SubscribeEvent public static void tick(ClientTickEvent.Post event){
+    public static void tick(){
         var mc=Minecraft.getInstance();if(mc.level!=world){clear();world=mc.level;}
         if(world==null||!WreckScene.enabled()){FIELDS.clear();return;}
         if(mc.isPaused())return;long tick=world.getGameTime();
@@ -135,7 +129,7 @@ public final class WreckDebrisField {
             io.github.mcheliceport.client.particle.DebrisImpactEffects.strike(world,hit.getLocation(),before,m.impact,m.span(),cursor);
         else if(contact==DebrisMotion.Event.SPLASH)io.github.mcheliceport.client.particle.VehicleWaterEffects.splash(world,hit.getLocation(),m.impact);
     }
-    @SubscribeEvent public static void submit(SubmitCustomGeometryEvent event){
+    public static void submit(io.github.mcheliceport.platform.ClientEvents.Geometry event){
         if(FIELDS.isEmpty()||world!=Minecraft.getInstance().level||!WreckScene.enabled())return;
         var camera=event.getLevelRenderState().cameraRenderState.pos;long now=world.getGameTime();
         float partial=Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaPartialTick(false);

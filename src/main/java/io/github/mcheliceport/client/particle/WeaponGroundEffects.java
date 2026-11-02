@@ -13,14 +13,8 @@ import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
-import net.neoforged.neoforge.client.event.SubmitCustomGeometryEvent;
 
 /** Short terrain illumination and cannon dust, triggered once by the existing replicated shot bit. */
-@EventBusSubscriber(modid = "mcheli_ce_port", value = Dist.CLIENT)
 public final class WeaponGroundEffects {
     private record Flash(Vec3 origin, List<GlowGeometry.Surface> surfaces, long born) {}
     private static final List<Flash> FLASHES = new ArrayList<>();
@@ -102,7 +96,7 @@ public final class WeaponGroundEffects {
         }
     }
 
-    @SubscribeEvent public static void tick(ClientTickEvent.Post event) {
+    public static void tick() {
         var level = Minecraft.getInstance().level;
         if (level != world || !enabled()) { clear(); return; }
         if (level == null) return;
@@ -110,7 +104,7 @@ public final class WeaponGroundEffects {
         FLASHES.removeIf(f -> now < f.born || now - f.born > 3);
     }
 
-    @SubscribeEvent public static void submit(SubmitCustomGeometryEvent event) {
+    public static void submit(io.github.mcheliceport.platform.ClientEvents.Geometry event) {
         if (!enabled() || FLASHES.isEmpty() || world != Minecraft.getInstance().level) return;
         var pose = event.getPoseStack();
         Vec3 camera = event.getLevelRenderState().cameraRenderState.pos;

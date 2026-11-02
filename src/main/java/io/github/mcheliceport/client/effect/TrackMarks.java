@@ -21,14 +21,8 @@ import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
-import net.neoforged.neoforge.client.event.SubmitCustomGeometryEvent;
 
 /** Client-only clipped ground imprints. Terrain/light sampling happens only on ticks. */
-@EventBusSubscriber(modid = "mcheli_ce_port", value = Dist.CLIENT)
 public final class TrackMarks {
     public enum Kind { TREAD, TIRE }
     private static final RenderType TYPE = RenderTypes.entityTranslucent(
@@ -62,7 +56,7 @@ public final class TrackMarks {
         pending.addLast(new Request(contact, patterns, kind, Math.min(1, strength), level.getGameTime()));
     }
 
-    @SubscribeEvent public static void tick(ClientTickEvent.Post event) {
+    public static void tick() {
         var mc = Minecraft.getInstance(); ClientLevel level = mc.level;
         if (level == null || !enabled()) { clear(); return; }
         if (world.get() != level) { clear(); world = new WeakReference<>(level); }
@@ -130,7 +124,7 @@ public final class TrackMarks {
         return false;
     }
 
-    @SubscribeEvent public static void submit(SubmitCustomGeometryEvent event) {
+    public static void submit(io.github.mcheliceport.platform.ClientEvents.Geometry event) {
         drawn = 0;
         var mc = Minecraft.getInstance();
         if (!enabled() || snapshot.isEmpty() || mc.level == null || world.get() != mc.level) return;

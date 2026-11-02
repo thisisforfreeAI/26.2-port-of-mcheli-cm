@@ -14,14 +14,8 @@ import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.*;
 import net.minecraft.world.phys.shapes.CollisionContext;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
-import net.neoforged.neoforge.client.event.SubmitCustomGeometryEvent;
 
 /** Small ground-fitted wet patches, with bounded terrain sampling and dry-out. */
-@EventBusSubscriber(modid="mcheli_ce_port",value=Dist.CLIENT)
 public final class FluidStains {
     private static final Identifier TEXTURE=Identifier.fromNamespaceAndPath("mcheli_ce_port","textures/effect/m8_fluid_stains.png");
     private static final List<Stain> MARKS=new ArrayList<>();
@@ -64,7 +58,7 @@ public final class FluidStains {
         }
         return Double.NaN;
     }
-    @SubscribeEvent public static void tick(ClientTickEvent.Post event){
+    public static void tick(){
         var mc=Minecraft.getInstance();if(mc.level!=world||!enabled()){clear();return;}if(world==null||mc.isPaused())return;
         world(world);long now=world.getGameTime();
         MARKS.removeIf(m->now<m.born||now-m.wet>FluidLeakLook.life(m.coolant));
@@ -73,7 +67,7 @@ public final class FluidStains {
             if(!world.hasChunkAt(mark.pos)||world.getBlockState(mark.pos)!=mark.state)MARKS.remove(at);
         }
     }
-    @SubscribeEvent public static void submit(SubmitCustomGeometryEvent event){
+    public static void submit(io.github.mcheliceport.platform.ClientEvents.Geometry event){
         if(!enabled()||MARKS.isEmpty()||world!=Minecraft.getInstance().level)return;
         var camera=event.getLevelRenderState().cameraRenderState.pos;
         long now=world.getGameTime();var draws=new ArrayList<Draw>();

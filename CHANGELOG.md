@@ -17,7 +17,8 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
   networking and the stock-pack loader now go through. Stage 2 moves the vehicle core behind it
   too: hit boxes, spawn data, fuel containers, batteries and the charger. Stage 3 moves the server
   systems from NeoForge's event bus to a shared event hub, so a Fabric dedicated server now boots
-  with all the content and spawns every stock vehicle (the Fabric client comes in stage 4).
+  with all the content and spawns every stock vehicle (the Fabric client comes in stage 4, which
+  has started: the client systems now listen on a shared client event hub too).
   Nothing changes for NeoForge players. The build now uses Gradle 9.8.2 running on Java 25 (Gradle downloads it when
   missing).
 - Realistic lighting (M8): vehicles are lit from where the sun or moon really is, warm and low at

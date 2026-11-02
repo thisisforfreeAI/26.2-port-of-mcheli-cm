@@ -12,14 +12,9 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.*;
 import org.joml.Matrix3x2f;
 
 /** One pilot's optional annunciator strip and sparse closed-canopy droplets. */
-@EventBusSubscriber(modid="mcheli_ce_port",value=Dist.CLIENT)
 public final class CockpitFeedbackLayer {
     public static final Identifier ID=Identifier.fromNamespaceAndPath("mcheli_ce_port","cockpit_feedback");
     private static final CockpitFeedbackLook LOOK=new CockpitFeedbackLook();
@@ -29,7 +24,7 @@ public final class CockpitFeedbackLayer {
     private static float hull=1,engine=1,fuel=1;
     private static int drawnDrops;
     private CockpitFeedbackLayer(){}
-    public static void register(RegisterGuiLayersEvent event){event.registerAbove(AircraftHudLayer.ID,ID,CockpitFeedbackLayer::render);}
+    public static void register(io.github.mcheliceport.platform.HudLayers event){event.registerAbove(AircraftHudLayer.ID,ID,CockpitFeedbackLayer::render);}
     private static boolean eligible(Minecraft mc,AircraftEntity ac){
         return ac!=null&&ac.getAcInfo()!=null&&new CockpitFeedbackLook.View(
                 EffectQuality.enhanced()&&ClientConfig.get(ClientConfig.COCKPIT_FEEDBACK),ac.isPilot(mc.player),
@@ -37,7 +32,7 @@ public final class CockpitFeedbackLayer {
                 ac.isUAV()||ac.isGunnerMode(mc.player)||ac.getCameraId()>0||ac.isMissileCameraMode(mc.player),ac.isDestroyed()).visible();
     }
     public static void clear(){vehicle=null;LOOK.reset();rain=false;weatherAt=Long.MIN_VALUE;drawnDrops=0;hull=engine=fuel=1;}
-    @SubscribeEvent public static void tick(ClientTickEvent.Post event){
+    public static void tick(){
         var mc=Minecraft.getInstance();var ac=AircraftClientEvents.riddenAircraft(mc.player);
         if(mc.level==null||!eligible(mc,ac)){clear();return;}
         if(vehicle!=ac||ac.level()!=mc.level){clear();vehicle=ac;}

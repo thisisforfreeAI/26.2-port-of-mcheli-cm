@@ -11,14 +11,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
 import org.joml.Vector3f;
 
 /** Up to 32 warm mounts; no new packets, firing logic, ammunition costs or barrel glow. */
-@EventBusSubscriber(modid="mcheli_ce_port",value=Dist.CLIENT)
 public final class VehicleWeaponHeat {
     private record Key(AircraftEntity vehicle,String weapon,int mount){}
     private static final class State {
@@ -64,7 +59,7 @@ public final class VehicleWeaponHeat {
         for(int i=0;i+7<d.length;i+=8){x0=Math.min(x0,d[i]);y0=Math.min(y0,d[i+1]);z0=Math.min(z0,d[i+2]);x1=Math.max(x1,d[i]);y1=Math.max(y1,d[i+1]);z1=Math.max(z1,d[i+2]);}
         float[] span={x1-x0,y1-y0,z1-z0};Arrays.sort(span);return span[2]>.35F&&span[2]<9&&span[2]>span[1]*2.4F;
     }
-    @SubscribeEvent public static void tick(ClientTickEvent.Post event){
+    public static void tick(){
         var mc=Minecraft.getInstance();if(world!=mc.level||!enabled()){clear();return;}if(world==null||mc.isPaused())return;
         long now=world.getGameTime();int emitted=0;
         var it=STATES.entrySet().iterator();while(it.hasNext()){

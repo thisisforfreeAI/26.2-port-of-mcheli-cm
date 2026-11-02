@@ -13,15 +13,10 @@ import java.util.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.resources.Identifier;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.RenderFrameEvent;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
 /** Bounded session-local marks, fitted once and subsequently animated with their owning model group. */
-@EventBusSubscriber(modid="mcheli_ce_port",value=Dist.CLIENT)
 public final class VehicleImpactMarks {
     public static final Identifier TEXTURE=Identifier.fromNamespaceAndPath("mcheli_ce_port","textures/effect/vehicle_impacts.png");
     private static final Map<AircraftEntity,State> STATES=new LinkedHashMap<>();
@@ -51,7 +46,7 @@ public final class VehicleImpactMarks {
     private VehicleImpactMarks() {}
     public static boolean enabled(){return EffectQuality.enhanced()&&ClientConfig.get(ClientConfig.VEHICLE_DAMAGE_DETAILS);}
     public static void clear(){STATES.clear();world=null;}
-    @SubscribeEvent public static void frame(RenderFrameEvent.Pre event){fits=0;visible=0;}
+    public static void frame(){fits=0;visible=0;}
     public static void receive(VehicleImpactPayload payload){ receive(payload,false); }
     static void receiveBlast(VehicleImpactPayload payload){ receive(payload,true); }
     private static void receive(VehicleImpactPayload payload,boolean blast){

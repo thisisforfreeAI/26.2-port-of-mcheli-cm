@@ -10,7 +10,6 @@ import net.minecraft.client.gui.screens.ChatScreen;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
-import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 
 /**
  * Upstream's {@code GuiInteractSeat}: looking at a vehicle in first person, a prompt below the
@@ -29,7 +28,7 @@ public final class InteractSeatHudLayer {
     private InteractSeatHudLayer() {
     }
 
-    public static void register(RegisterGuiLayersEvent event) {
+    public static void register(io.github.mcheliceport.platform.HudLayers event) {
         event.registerBelow(AircraftHudLayer.ID, ID, InteractSeatHudLayer::render);
     }
 

@@ -6,7 +6,6 @@ import io.github.mcheliceport.effectrange.*;
 import io.github.mcheliceport.net.EffectsRangeNoticePayload;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.Identifier;
-import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 
 /** Scoped reset and actual displayed FPS; particle counts are never presented as frame rate. */
 public final class EffectsRangeClient {
@@ -20,7 +19,7 @@ public final class EffectsRangeClient {
         options=new RangeOptions(p.weapon(),p.surface(),p.lighting());READINESS.notice(p.state(),p.cooldown(),mc.level.getGameTime());ready=READINESS.ready();
         if(p.state()==0||p.state()==1){mc.particleEngine.clearParticles();BlastMarks.clear();io.github.mcheliceport.client.weapon.WeaponEffects.clear();}
     }
-    public static void registerGui(RegisterGuiLayersEvent event){
+    public static void registerGui(io.github.mcheliceport.platform.HudLayers event){
         event.registerAboveAll(Identifier.fromNamespaceAndPath(McheliCePort.MOD_ID,"effects_range"),(g,delta)->{
             var mc=Minecraft.getInstance();if(mc.level==null||!EffectsRange.inRange(mc.level)||mc.gui.hud.isHidden()||mc.gui.screen()!=null)return;
             String line="Test range · "+RangeOptions.WEAPON_LABELS.get(options.weapon())+" · "+mc.getFps()+" FPS";

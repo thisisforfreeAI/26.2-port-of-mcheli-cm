@@ -21,16 +21,10 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.RegisterRenderPipelinesEvent;
-import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import org.joml.Matrix4f;
 
 /** Local exhaust refraction, one shared color copy and one scissored pass before hands/HUD. */
-@EventBusSubscriber(modid = "mcheli_ce_port", value = Dist.CLIENT)
 public final class EngineHeat {
     private static final RenderPipeline PIPELINE = RenderPipeline.builder(RenderPipelines.POST_PROCESSING_SNIPPET)
             .withLocation(Identifier.fromNamespaceAndPath("mcheli_ce_port", "pipeline/engine_heat"))
@@ -65,7 +59,7 @@ public final class EngineHeat {
         sources.put(key, new Source(position, direction.normalize(), motion, Math.clamp(size * 0.22F, 0.12F, 0.55F),
                 Math.clamp(strength, 0, 1), jet, level.getGameTime()));
     }
-    @SubscribeEvent public static void tick(ClientTickEvent.Post event) {
+    public static void tick() {
         var level = Minecraft.getInstance().level;
         if (level == null || world.get() != level || !enabled()) { clear(); return; }
         long now = level.getGameTime();
@@ -84,7 +78,7 @@ public final class EngineHeat {
         worldProjection.set(projection); projectionReady = true;
     }
 
-    @SubscribeEvent public static void render(RenderLevelStageEvent.AfterLevel event) {
+    public static void render(io.github.mcheliceport.platform.ClientEvents.AfterLevel event) {
         drawn = copies = 0;
         var mc = Minecraft.getInstance();
         if (mc.level == null || world.get() != mc.level || !enabled() || sources.isEmpty() || !projectionReady) return;

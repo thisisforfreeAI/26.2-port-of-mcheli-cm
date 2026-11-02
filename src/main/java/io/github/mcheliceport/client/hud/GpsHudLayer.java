@@ -11,7 +11,6 @@ import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 import org.joml.Vector4f;
 
 /**
@@ -32,7 +31,7 @@ public final class GpsHudLayer {
     private GpsHudLayer() {
     }
 
-    public static void register(RegisterGuiLayersEvent event) {
+    public static void register(io.github.mcheliceport.platform.HudLayers event) {
         event.registerAbove(AircraftHudLayer.ID, ID, GpsHudLayer::render);
     }
 

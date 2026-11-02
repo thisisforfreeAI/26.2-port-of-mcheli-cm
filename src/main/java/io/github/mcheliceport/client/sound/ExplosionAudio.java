@@ -9,13 +9,8 @@ import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
 
 /** Bounded distance-delayed crack/tail; clears on world changes and never doubles server audio. */
-@EventBusSubscriber(modid="mcheli_ce_port", value=Dist.CLIENT)
 public final class ExplosionAudio {
     private record Voice(ExplosionSoundPayload payload, float volume, float pitch) {}
     private static final ExplosionAudioQueue<Voice> pending = new ExplosionAudioQueue<>();
@@ -47,7 +42,7 @@ public final class ExplosionAudio {
             pending.clear(); world = new WeakReference<>(level);
         }
     }
-    @SubscribeEvent public static void tick(ClientTickEvent.Post event) {
+    public static void tick() {
         var mc = Minecraft.getInstance(); prepare(mc.level);
         if (mc.level == null || mc.isPaused()) return;
         long now = mc.level.getGameTime();

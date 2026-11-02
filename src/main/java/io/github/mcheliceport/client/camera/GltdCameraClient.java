@@ -12,10 +12,6 @@ import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.TriState;
 import net.minecraft.world.entity.Entity;
-import net.neoforged.neoforge.client.event.InputEvent;
-import net.neoforged.neoforge.client.event.RenderHandEvent;
-import net.neoforged.neoforge.client.event.RenderNameTagEvent;
-import net.neoforged.neoforge.client.event.ViewportEvent;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -160,7 +156,7 @@ public final class GltdCameraClient {
         view.xRotO = rider.xRotO;
     }
 
-    public static void onCameraAngles(ViewportEvent.ComputeCameraAngles event) {
+    public static void onCameraAngles(io.github.mcheliceport.platform.ClientEvents.CameraAngles event) {
         Entity view = viewEntity();
         LocalPlayer player = Minecraft.getInstance().player;
         if (view == null || player == null || event.getCamera().entity() != view) {
@@ -173,7 +169,7 @@ public final class GltdCameraClient {
     }
 
     /** The view narrows by the zoom. */
-    public static void onComputeFov(ViewportEvent.ComputeFov event) {
+    public static void onComputeFov(io.github.mcheliceport.platform.ClientEvents.Fov event) {
         Entity view = viewEntity();
         GltdEntity gltd = riddenGltd();
         if (view != null && gltd != null && event.getCamera().entity() == view) {
@@ -182,23 +178,23 @@ public final class GltdCameraClient {
     }
 
     /** Upstream {@code disableFirstPersonItemRender}: no hand at the designator. */
-    public static void onRenderHand(RenderHandEvent event) {
+    public static void onRenderHand(io.github.mcheliceport.platform.ClientEvents.Cancelable event) {
         if (riddenGltd() != null) {
             event.setCanceled(true);
         }
     }
 
     /** The attack and use keys do nothing else at the designator. */
-    public static void onInteractionKey(InputEvent.InteractionKeyMappingTriggered event) {
+    public static void onInteractionKey(io.github.mcheliceport.platform.ClientEvents.InteractionKey event) {
         if ((event.isAttack() || event.isUseItem()) && riddenGltd() != null) {
             event.setSwingHand(false);
             event.setCanceled(true);
         }
     }
 
-    public static void onNameTag(RenderNameTagEvent.CanRender event) {
+    public static void onNameTag(io.github.mcheliceport.platform.ClientEvents.NameTag event) {
         if (viewEntity() != null && event.getEntity() == Minecraft.getInstance().player) {
-            event.setCanRender(TriState.FALSE);
+            event.hide();
         }
     }
 }

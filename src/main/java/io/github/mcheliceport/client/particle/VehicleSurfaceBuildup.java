@@ -12,13 +12,8 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.tags.*;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.*;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
 
 /** Four ground probes per tick, cached material and bounded cosmetic history. */
-@EventBusSubscriber(modid="mcheli_ce_port",value=Dist.CLIENT)
 public final class VehicleSurfaceBuildup {
     private static final class State {final SurfaceBuildupLook look=new SurfaceBuildupLook();boolean loose,water,rain;int color=0x786044;}
     private static final Map<AircraftEntity,State> STATES=new LinkedHashMap<>();
@@ -30,7 +25,7 @@ public final class VehicleSurfaceBuildup {
     public static float dirt(AircraftEntity ac){var s=STATES.get(ac);return s==null?0:s.look.dirt();}
     public static float soot(AircraftEntity ac){var s=STATES.get(ac);return s==null?0:s.look.soot();}
     public static int probes(){return probes;}
-    @SubscribeEvent public static void tick(ClientTickEvent.Post event){
+    public static void tick(){
         var mc=Minecraft.getInstance();if(world!=mc.level||!enabled()){clear();world=mc.level;}
         if(world==null||!enabled()||mc.player==null||mc.isPaused()||tick==world.getGameTime())return;
         tick=world.getGameTime();probes=0;

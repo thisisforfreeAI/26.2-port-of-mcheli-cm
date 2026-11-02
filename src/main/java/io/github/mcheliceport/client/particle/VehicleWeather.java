@@ -10,13 +10,8 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.biome.Biome;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
 
 /** Cached climate sampling: eight exposed-biome checks per tick, 64 nearby vehicle states. */
-@EventBusSubscriber(modid="mcheli_ce_port",value=Dist.CLIENT)
 public final class VehicleWeather {
     private static final class State {final VehicleWeatherLook look=new VehicleWeatherLook();boolean rain,snow,cold,exposed;}
     private static final Map<AircraftEntity,State> STATES=new LinkedHashMap<>();
@@ -28,7 +23,7 @@ public final class VehicleWeather {
     public static float wet(AircraftEntity ac){var s=STATES.get(ac);return s==null?0:s.look.wet();}
     public static float snow(AircraftEntity ac){var s=STATES.get(ac);return s==null?0:s.look.snow();}
     public static int samples(){return samples;}
-    @SubscribeEvent public static void tick(ClientTickEvent.Post event){
+    public static void tick(){
         var mc=Minecraft.getInstance();if(world!=mc.level||!enabled()){clear();world=mc.level;}
         if(world==null||!enabled()||mc.player==null||mc.isPaused())return;
         long now=world.getGameTime();if(now==lastTick)return;lastTick=now;samples=shed=0;
