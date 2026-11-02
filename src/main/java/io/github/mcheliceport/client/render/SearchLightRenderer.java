@@ -1,6 +1,5 @@
 package io.github.mcheliceport.client.render;
 
-import com.google.common.reflect.TypeToken;
 import com.mojang.blaze3d.pipeline.BlendFunction;
 import com.mojang.blaze3d.pipeline.ColorTargetState;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
@@ -23,8 +22,7 @@ import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.client.event.RegisterRenderPipelinesEvent;
-import net.neoforged.neoforge.client.renderstate.RegisterRenderStateModifiersEvent;
+import io.github.mcheliceport.platform.ClientRegistrars;
 
 /** Additive, two-sided stock cones; no GL calls, custom shaders or world light-engine updates. */
 public final class SearchLightRenderer {
@@ -37,7 +35,7 @@ public final class SearchLightRenderer {
             RenderSetup.builder(PIPELINE).createRenderSetup());
     private SearchLightRenderer() { }
 
-    public static void registerPipelines(RegisterRenderPipelinesEvent event) { event.registerPipeline(PIPELINE); }
+    public static void registerPipelines(ClientRegistrars.Pipelines event) { event.registerPipeline(PIPELINE); }
 
     public static void submit(List<SearchLightBeam> beams, PoseStack stack, SubmitNodeCollector collector) {
         if (beams.isEmpty()) { return; }
@@ -62,14 +60,13 @@ public final class SearchLightRenderer {
         return ((int) ((color >>> 24) * strength) << 24) | (color & 0xFFFFFF);
     }
 
-    public static void registerModifiers(RegisterRenderStateModifiersEvent event) {
-        event.registerEntityModifier(new TypeToken<LivingEntityRenderer<LivingEntity, LivingEntityRenderState, ?>>() { },
-                (LivingEntity entity, LivingEntityRenderState state) -> {
+    public static void registerModifiers() {
+        io.github.mcheliceport.platform.ClientEvents.LIVING_RENDER_STATE.add((LivingEntity entity, LivingEntityRenderState state, float partialTick) -> {
                     var mc = Minecraft.getInstance();
                     if (mc.level == null) { return; }
-                    Vec3 target = entity.getPosition(state.partialTick);
+                    Vec3 target = entity.getPosition(partialTick);
                     int block = LightCoordsUtil.block(state.lightCoords);
-                    for (var beam : lights(state.partialTick)) {
+                    for (var beam : lights(partialTick)) {
                         block = Math.max(block, beam.beam.blockLight(target.subtract(beam.position)));
                         if (block == 15) { break; }
                     }

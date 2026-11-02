@@ -1,6 +1,6 @@
 package io.github.mcheliceport.client.render;
 
-import com.google.common.reflect.TypeToken;
+import io.github.mcheliceport.platform.loader.RenderData;
 import com.mojang.blaze3d.vertex.PoseStack;
 import io.github.mcheliceport.McheliCePort;
 import io.github.mcheliceport.config.ClientConfig;
@@ -13,13 +13,8 @@ import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.resources.Identifier;
-import net.minecraft.util.context.ContextKey;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-import net.neoforged.bus.api.EventPriority;
-import net.neoforged.neoforge.client.event.RenderLivingEvent;
-import net.neoforged.neoforge.client.renderstate.RegisterRenderStateModifiersEvent;
-import net.neoforged.neoforge.common.NeoForge;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -43,23 +38,26 @@ public final class RiderTilt {
         }
     }
 
-    public static final ContextKey<Tilt> TILT =
-            new ContextKey<>(Identifier.fromNamespaceAndPath(McheliCePort.MOD_ID, "rider_tilt"));
-    private static final ContextKey<Boolean> HIDDEN =
-            new ContextKey<>(Identifier.fromNamespaceAndPath(McheliCePort.MOD_ID, "rider_hidden"));
+    public static final RenderData.Key<Tilt> TILT =
+            RenderData.key(Identifier.fromNamespaceAndPath(McheliCePort.MOD_ID, "rider_tilt"));
+    private static final RenderData.Key<Boolean> HIDDEN =
+            RenderData.key(Identifier.fromNamespaceAndPath(McheliCePort.MOD_ID, "rider_hidden"));
 
     private RiderTilt() {
     }
 
-    public static void registerModifiers(RegisterRenderStateModifiersEvent event) {
-        event.registerEntityModifier(new TypeToken<LivingEntityRenderer<LivingEntity, LivingEntityRenderState, ?>>() {
-        }, (LivingEntity entity, LivingEntityRenderState state) -> {
+    public static void registerModifiers() {
+        io.github.mcheliceport.platform.ClientEvents.LIVING_RENDER_STATE.add((LivingEntity entity, LivingEntityRenderState state, float partialTick) -> {
             boolean hidden = hidden(entity);
-            state.setRenderData(HIDDEN, hidden);
-            state.setRenderData(TILT, hidden ? null : tilt(entity, state.partialTick));
+            RenderData.set(state, HIDDEN, hidden);
+            RenderData.set(state, TILT, hidden ? null : tilt(entity, partialTick));
         });
-        NeoForge.EVENT_BUS.addListener(EventPriority.LOWEST, RiderTilt::onPre);
-        NeoForge.EVENT_BUS.addListener(RiderTilt::onPost);
+    }
+
+    /** After every other pre listener (NeoForge's lowest priority): {@code ThermalVision} goes first. */
+    public static void registerRenderHooks() {
+        io.github.mcheliceport.platform.ClientEvents.RENDER_LIVING_PRE.add(RiderTilt::onPre);
+        io.github.mcheliceport.platform.ClientEvents.RENDER_LIVING_POST.add(RiderTilt::onPost);
     }
 
     private static boolean hidden(Entity rider) {
@@ -96,23 +94,23 @@ public final class RiderTilt {
                 info.entityHeight);
     }
 
-    private static void onPre(RenderLivingEvent.Pre<?, ?, ?> event) {
+    private static void onPre(io.github.mcheliceport.platform.ClientEvents.RenderLiving event) {
         if (event.isCanceled()) {
             return;
         }
-        if (Boolean.TRUE.equals(event.getRenderState().getRenderData(HIDDEN))) {
+        if (Boolean.TRUE.equals(RenderData.get(event.getRenderState(), HIDDEN))) {
             event.setCanceled(true);
             return;
         }
-        Tilt tilt = event.getRenderState().getRenderData(TILT);
+        Tilt tilt = RenderData.get(event.getRenderState(), TILT);
         if (tilt != null) {
             event.getPoseStack().pushPose();
             tilt.apply(event.getPoseStack());
         }
     }
 
-    private static void onPost(RenderLivingEvent.Post<?, ?, ?> event) {
-        if (event.getRenderState().getRenderData(TILT) != null) {
+    private static void onPost(io.github.mcheliceport.platform.ClientEvents.RenderLiving event) {
+        if (RenderData.get(event.getRenderState(), TILT) != null) {
             event.getPoseStack().popPose();
         }
     }

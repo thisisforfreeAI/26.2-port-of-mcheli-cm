@@ -8,7 +8,7 @@ import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.particle.SingleQuadParticle;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.state.level.QuadParticleRenderState;
-import net.neoforged.neoforge.client.event.RegisterParticleGroupsEvent;
+import io.github.mcheliceport.platform.ClientRegistrars;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
@@ -20,7 +20,7 @@ public final class BlastDustWedges {
     private static final int[][] FACES = {{0,2,4,4},{4,3,1,1},{2,3,4,4}};
     private BlastDustWedges() {}
     static float coordinate(int face, int corner, int axis) { return POINTS[FACES[face][corner]][axis]; }
-    public static void register(RegisterParticleGroupsEvent event) { event.register(TYPE, Group::new); }
+    public static void register(ClientRegistrars.ParticleGroups event) { event.register(TYPE, Group::new); }
 
     private static final class Group extends ParticleGroup<BlastRingParticle> {
         private final State state = new State();

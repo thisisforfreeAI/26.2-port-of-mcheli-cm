@@ -34,7 +34,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.client.event.RegisterItemModelsEvent;
+import io.github.mcheliceport.platform.ClientRegistrars;
 import org.joml.Matrix4fc;
 import org.joml.Vector3fc;
 import org.jspecify.annotations.Nullable;
@@ -112,7 +112,7 @@ public final class ToolItemModel implements ItemModel {
         this.renderer = new Renderer(tool);
     }
 
-    public static void register(RegisterItemModelsEvent event) {
+    public static void register(ClientRegistrars.ItemModels event) {
         event.register(TYPE, Unbaked.MAP_CODEC);
     }
 

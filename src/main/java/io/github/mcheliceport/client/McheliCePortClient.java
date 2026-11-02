@@ -26,49 +26,46 @@ import net.minecraft.client.renderer.entity.NoopRenderer;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.fml.ModContainer;
-import net.neoforged.fml.common.Mod;
-import net.neoforged.fml.config.ModConfig;
-import net.neoforged.neoforge.client.event.AddClientReloadListenersEvent;
-import net.neoforged.neoforge.client.event.EntityRenderersEvent;
-import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
-import net.neoforged.neoforge.client.gui.ConfigurationScreen;
-import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
+import io.github.mcheliceport.platform.ClientEvents;
+import io.github.mcheliceport.platform.ClientRegistrars;
 import io.github.mcheliceport.client.render.CargoContainerRenderer;
 
-/** Client-only entry point. FML never loads this class on a dedicated server. */
-@Mod(value = McheliCePort.MOD_ID, dist = Dist.CLIENT)
+/**
+ * The client's setup, for both loaders' client entry points (NeoForge: {@code NeoForgeClientMod},
+ * Fabric: {@code FabricClientMod}), which register {@link ClientConfig} and then call {@link #init()}.
+ */
 public final class McheliCePortClient {
-    public McheliCePortClient(IEventBus modBus, ModContainer container) {
-        container.registerConfig(ModConfig.Type.CLIENT, ClientConfig.SPEC);
-        // Adds a Config button for the mod on the Mods screen.
-        container.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
-        modBus.addListener(McheliCePortClient::registerRenderers);
-        modBus.addListener(McheliCePortClient::registerFluidModels);
-        modBus.addListener(ModKeyMappings::register);
-        modBus.addListener(McheliCePortClient::registerScreens);
-        modBus.addListener(RiderTilt::registerModifiers);
+
+    private McheliCePortClient() {
+    }
+
+    public static void init() {
+        ClientEvents.REGISTER_RENDERERS.add(McheliCePortClient::registerRenderers);
+        ClientEvents.REGISTER_FLUID_MODELS.add(McheliCePortClient::registerFluidModels);
+        ClientEvents.REGISTER_KEY_MAPPINGS.add(ModKeyMappings::register);
+        ClientEvents.REGISTER_MENU_SCREENS.add(McheliCePortClient::registerScreens);
+        // ThermalVision's render hook goes before RiderTilt's, so tilting and hiding act once, on its resubmit.
         io.github.mcheliceport.client.render.ThermalVision.register();
-        modBus.addListener(io.github.mcheliceport.client.render.FarVehicles::registerPipelines);
-        io.github.mcheliceport.client.render.baked.BakedVehicles.register(modBus);
-        modBus.addListener(io.github.mcheliceport.client.render.SearchLightRenderer::registerModifiers);
-        modBus.addListener(io.github.mcheliceport.client.render.SceneLights::registerModifiers);
-        modBus.addListener(io.github.mcheliceport.client.render.SearchLightRenderer::registerPipelines);
-        modBus.addListener(io.github.mcheliceport.client.render.GunnerRenderer::registerLayer);
-        modBus.addListener(AircraftHudLayer::registerPipelines);
-        modBus.addListener(io.github.mcheliceport.client.particle.ParticleLayers::registerPipelines);
-        modBus.addListener(io.github.mcheliceport.client.particle.BlastDustWedges::register);
-        modBus.addListener(io.github.mcheliceport.client.particle.AirflowFireParticle::register);
-        modBus.addListener(io.github.mcheliceport.client.particle.CondensationParticle::register);
-        modBus.addListener(io.github.mcheliceport.client.particle.SupersonicConeParticle::register);
-        modBus.addListener(io.github.mcheliceport.client.render.EngineHeat::registerPipelines);
-        modBus.addListener(io.github.mcheliceport.client.render.GlowGeometry::registerPipelines);
-        modBus.addListener(io.github.mcheliceport.client.render.DraftingModelRenderer::registerPipelines);
-        modBus.addListener(io.github.mcheliceport.client.render.DraftingModelRenderer::register);
-        modBus.addListener(io.github.mcheliceport.client.render.ToolItemModel::register);
-        modBus.addListener((AddClientReloadListenersEvent event) -> {
+        RiderTilt.registerRenderHooks();
+        RiderTilt.registerModifiers();
+        io.github.mcheliceport.client.render.SearchLightRenderer.registerModifiers();
+        io.github.mcheliceport.client.render.SceneLights.registerModifiers();
+        ClientEvents.REGISTER_PIPELINES.add(io.github.mcheliceport.client.render.FarVehicles::registerPipelines);
+        io.github.mcheliceport.client.render.baked.BakedVehicles.register();
+        ClientEvents.REGISTER_PIPELINES.add(io.github.mcheliceport.client.render.SearchLightRenderer::registerPipelines);
+        ClientEvents.REGISTER_LAYER_DEFINITIONS.add(io.github.mcheliceport.client.render.GunnerRenderer::registerLayer);
+        ClientEvents.REGISTER_PIPELINES.add(AircraftHudLayer::registerPipelines);
+        ClientEvents.REGISTER_PIPELINES.add(io.github.mcheliceport.client.particle.ParticleLayers::registerPipelines);
+        ClientEvents.REGISTER_PARTICLE_GROUPS.add(io.github.mcheliceport.client.particle.BlastDustWedges::register);
+        ClientEvents.REGISTER_PARTICLE_GROUPS.add(io.github.mcheliceport.client.particle.AirflowFireParticle::register);
+        ClientEvents.REGISTER_PARTICLE_GROUPS.add(io.github.mcheliceport.client.particle.CondensationParticle::register);
+        ClientEvents.REGISTER_PARTICLE_GROUPS.add(io.github.mcheliceport.client.particle.SupersonicConeParticle::register);
+        ClientEvents.REGISTER_PIPELINES.add(io.github.mcheliceport.client.render.EngineHeat::registerPipelines);
+        ClientEvents.REGISTER_PIPELINES.add(io.github.mcheliceport.client.render.GlowGeometry::registerPipelines);
+        ClientEvents.REGISTER_PIPELINES.add(io.github.mcheliceport.client.render.DraftingModelRenderer::registerPipelines);
+        ClientEvents.REGISTER_PICTURE_IN_PICTURE.add(io.github.mcheliceport.client.render.DraftingModelRenderer::register);
+        ClientEvents.REGISTER_ITEM_MODELS.add(io.github.mcheliceport.client.render.ToolItemModel::register);
+        ClientEvents.ADD_RELOAD_LISTENERS.add(event -> {
             event.addListener(Identifier.fromNamespaceAndPath(McheliCePort.MOD_ID, "aircraft_models"),
                     new AircraftModels.ReloadListener());
             event.addListener(Identifier.fromNamespaceAndPath(McheliCePort.MOD_ID, "hud_textures"),
@@ -81,7 +78,6 @@ public final class McheliCePortClient {
                                 io.github.mcheliceport.client.model.PlaneExhaustTextures.clear();
                             });
         });
-        io.github.mcheliceport.platform.neoforge.NeoForgeClientEvents.register(modBus);
         ClientSetup.registerEvents();
         AircraftClientEvents.register();
         io.github.mcheliceport.command.CommandClientHooks.setTitle(io.github.mcheliceport.client.hud.TitleOverlay::show);
@@ -92,7 +88,7 @@ public final class McheliCePortClient {
         io.github.mcheliceport.client.effect.EffectsRangeClient.register();
     }
 
-    private static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
+    private static void registerRenderers(ClientRegistrars.Renderers event) {
         event.registerEntityRenderer(ModEntityTypes.UAV_STATION.get(), io.github.mcheliceport.client.render.UavStationRenderer::new);
         event.registerEntityRenderer(ModEntityTypes.HELICOPTER.get(), HeliRenderer::new);
         event.registerEntityRenderer(ModEntityTypes.PLANE.get(), io.github.mcheliceport.client.render.PlaneRenderer::new);
@@ -134,31 +130,26 @@ public final class McheliCePortClient {
                 .forEach(type -> registerNoop(event, type.get()));
     }
 
-    private static <T extends BaseBulletEntity> void bullet(EntityRenderersEvent.RegisterRenderers event,
+    private static <T extends BaseBulletEntity> void bullet(ClientRegistrars.Renderers event,
             EntityType<T> type, BulletRenderer.Kind kind) {
         event.registerEntityRenderer(type, ctx -> new BulletRenderer<>(ctx, kind));
     }
 
-    private static void registerScreens(RegisterMenuScreensEvent event) {
+    private static void registerScreens(ClientRegistrars.MenuScreenRegistrar event) {
         event.register(ModMenuTypes.AIRCRAFT.get(), AircraftScreen::new);
         event.register(ModMenuTypes.UAV_STATION.get(), io.github.mcheliceport.client.gui.UavStationScreen::new);
         event.register(ModMenuTypes.DRAFTING_TABLE.get(), io.github.mcheliceport.client.gui.DraftingTableScreen::new);
     }
 
-    private static <T extends Entity> void registerNoop(EntityRenderersEvent.RegisterRenderers event,
+    private static <T extends Entity> void registerNoop(ClientRegistrars.Renderers event,
             EntityType<T> type) {
         event.registerEntityRenderer(type, NoopRenderer::new);
     }
 
     /** Upstream drew {@code mch_fuel} with water's textures, tinted brown. */
-    private static void registerFluidModels(net.neoforged.neoforge.client.event.RegisterFluidModelsEvent event) {
-        event.register(new net.minecraft.client.renderer.block.FluidModel.Unbaked(
-                new net.minecraft.client.resources.model.sprite.Material(
-                        net.minecraft.resources.Identifier.withDefaultNamespace("block/water_still")),
-                new net.minecraft.client.resources.model.sprite.Material(
-                        net.minecraft.resources.Identifier.withDefaultNamespace("block/water_flow")),
-                null,
-                (net.neoforged.neoforge.client.fluid.FluidTintSource) state -> ModFluids.FUEL_COLOR),
-                ModFluids.FUEL, ModFluids.FLOWING_FUEL);
+    private static void registerFluidModels(ClientRegistrars.FluidModels event) {
+        event.register(Identifier.withDefaultNamespace("block/water_still"),
+                Identifier.withDefaultNamespace("block/water_flow"), ModFluids.FUEL_COLOR,
+                ModFluids.FUEL.get(), ModFluids.FLOWING_FUEL.get());
     }
 }

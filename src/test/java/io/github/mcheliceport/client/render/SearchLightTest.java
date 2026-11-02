@@ -17,9 +17,8 @@ import org.junit.jupiter.api.Test;
 
 class SearchLightTest {
     @Test void renderPipelineRegistersWithAnExplicitNamespace() {
-        SearchLightRenderer.registerPipelines(new net.neoforged.neoforge.client.event.RegisterRenderPipelinesEvent(
-                pipeline -> assertEquals(net.minecraft.resources.Identifier.fromNamespaceAndPath(
-                        "mcheli_ce_port", "pipeline/searchlight"), pipeline.getLocation())));
+        SearchLightRenderer.registerPipelines(pipeline -> assertEquals(net.minecraft.resources.Identifier.fromNamespaceAndPath(
+                "mcheli_ce_port", "pipeline/searchlight"), pipeline.getLocation()));
     }
     private static AircraftInfo.SearchLight lamp(boolean fixed, boolean steering, float yaw, float pitch, float factor) {
         return new AircraftInfo.SearchLight(new Vec3(2, 1, -3), 0x50FFFFFF, 0x10FFFFC0, 60, 20,

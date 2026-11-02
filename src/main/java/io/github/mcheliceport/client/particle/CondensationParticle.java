@@ -9,7 +9,7 @@ import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.state.level.QuadParticleRenderState;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.client.event.RegisterParticleGroupsEvent;
+import io.github.mcheliceport.platform.ClientRegistrars;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
@@ -48,7 +48,7 @@ public final class CondensationParticle extends SmokeParticle {
     }
     @Override public float getQuadSize(float partial){return radius*(.75F+.45F*Math.clamp((age+partial)/lifetime,0,1));}
 
-    public static void register(RegisterParticleGroupsEvent event){event.register(TYPE,Group::new);}
+    public static void register(ClientRegistrars.ParticleGroups event){event.register(TYPE,Group::new);}
     private static final class Group extends ParticleGroup<CondensationParticle> {
         private final State state=new State();
         Group(ParticleEngine engine){super(engine);}

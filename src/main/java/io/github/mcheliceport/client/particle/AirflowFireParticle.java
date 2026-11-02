@@ -10,7 +10,7 @@ import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.state.level.QuadParticleRenderState;
 import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.client.event.RegisterParticleGroupsEvent;
+import io.github.mcheliceport.platform.ClientRegistrars;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
@@ -51,7 +51,7 @@ public final class AirflowFireParticle extends McheliParticle {
     @Override protected float getV1(){return sprite.getV((frame/4+1)*.25F);}
     @Override protected int getLightCoords(float partial){return LightCoordsUtil.FULL_BRIGHT;}
 
-    public static void register(RegisterParticleGroupsEvent event){event.register(TYPE,Group::new);}
+    public static void register(ClientRegistrars.ParticleGroups event){event.register(TYPE,Group::new);}
     private static final class Group extends ParticleGroup<AirflowFireParticle> {
         private final State state=new State();
         Group(ParticleEngine engine){super(engine);}

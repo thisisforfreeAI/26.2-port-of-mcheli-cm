@@ -40,6 +40,19 @@ public final class NeoForgePlatform implements Platform {
     }
 
     @Override
+    public java.util.List<String> modListLines() {
+        return ModList.get().getMods().stream()
+                .map(mod -> "[" + mod.getModId() + "]  " + mod.getDisplayName() + "[" + mod.getVersion() + "]  "
+                        + mod.getOwningFile().getFile().getFileName())
+                .toList();
+    }
+
+    @Override
+    public net.minecraft.world.item.crafting.Ingredient componentsIngredient(net.minecraft.world.item.ItemStack stack) {
+        return net.neoforged.neoforge.common.crafting.DataComponentIngredient.of(false, stack);
+    }
+
+    @Override
     public String modVersion() {
         return ModList.get().getModContainerById(McheliCePort.MOD_ID)
                 .map(container -> container.getModInfo().getVersion().toString()).orElse("");

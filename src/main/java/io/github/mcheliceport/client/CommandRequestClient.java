@@ -21,9 +21,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.Screenshot;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Util;
-import net.neoforged.fml.ModList;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforgespi.language.IModInfo;
 
 /**
  * The client side of {@code /mcheli sendss} and {@code /mcheli modlist} (upstream
@@ -108,15 +105,13 @@ public final class CommandRequestClient {
         }
     }
 
-    /** Upstream {@code readModList}, from NeoForge's mod list: the game version, then each mod and its file. */
+    /** Upstream {@code readModList}, from the loader's mod list: the game version, then each mod and its file. */
     static List<String> modList() {
         List<String> lines = new ArrayList<>();
         lines.add(ChatFormatting.RED + "###### " + Minecraft.getInstance().getUser().getName() + " ######");
         lines.add(ChatFormatting.AQUA + "# Client " + SharedConstants.getCurrentVersion().name());
         lines.add(ChatFormatting.YELLOW + "=== ActiveModList ===");
-        for (IModInfo mod : ModList.get().getMods()) {
-            String line = "[" + mod.getModId() + "]  " + mod.getDisplayName() + "[" + mod.getVersion() + "]  "
-                    + mod.getOwningFile().getFile().getFileName();
+        for (String line : io.github.mcheliceport.platform.Platform.get().modListLines()) {
             lines.add(line.length() > ModListPayload.MAX_LINE_LENGTH
                     ? line.substring(0, ModListPayload.MAX_LINE_LENGTH) : line);
             if (lines.size() == ModListPayload.MAX_LINES) {

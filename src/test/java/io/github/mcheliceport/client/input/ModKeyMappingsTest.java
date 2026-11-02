@@ -11,8 +11,9 @@ class ModKeyMappingsTest {
     void ridingContextAllowsUnmodifiedBindingsWhileModifiersAreHeld() {
         // KeyModifier.NONE.isActive checks this exact relationship before accepting any key
         // while Ctrl/Shift/Alt is held. Without it even the Ctrl binding suppresses itself.
-        assertTrue(ModKeyMappings.RIDING.conflicts(KeyConflictContext.IN_GAME));
-        assertTrue(ModKeyMappings.RIDING.conflicts(ModKeyMappings.RIDING));
-        assertFalse(ModKeyMappings.RIDING.conflicts(KeyConflictContext.GUI));
+        var riding = ModKeyMappings.UP.getKeyConflictContext();
+        assertTrue(riding.conflicts(KeyConflictContext.IN_GAME));
+        assertTrue(riding.conflicts(riding));
+        assertFalse(riding.conflicts(KeyConflictContext.GUI));
     }
 }

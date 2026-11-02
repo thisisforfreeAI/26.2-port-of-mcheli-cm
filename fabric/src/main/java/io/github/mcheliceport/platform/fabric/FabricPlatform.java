@@ -54,6 +54,20 @@ public final class FabricPlatform implements Platform {
     }
 
     @Override
+    public java.util.List<String> modListLines() {
+        return FabricLoader.getInstance().getAllMods().stream()
+                .map(mod -> "[" + mod.getMetadata().getId() + "]  " + mod.getMetadata().getName() + "["
+                        + mod.getMetadata().getVersion().getFriendlyString() + "]  "
+                        + mod.getOrigin().toString())
+                .toList();
+    }
+
+    @Override
+    public net.minecraft.world.item.crafting.Ingredient componentsIngredient(net.minecraft.world.item.ItemStack stack) {
+        return net.fabricmc.fabric.api.recipe.v1.ingredient.DefaultCustomIngredients.components(stack);
+    }
+
+    @Override
     public String modVersion() {
         return FabricLoader.getInstance().getModContainer(io.github.mcheliceport.McheliCePort.MOD_ID)
                 .map(container -> container.getMetadata().getVersion().getFriendlyString()).orElse("");

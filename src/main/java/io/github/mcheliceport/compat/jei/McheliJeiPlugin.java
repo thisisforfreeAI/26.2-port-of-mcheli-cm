@@ -25,7 +25,6 @@ import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.ShapelessRecipe;
-import net.neoforged.neoforge.common.crafting.DataComponentIngredient;
 
 /**
  * Optional Just Enough Items support. JEI finds this class by its annotation and loads it only
@@ -84,6 +83,6 @@ public final class McheliJeiPlugin implements IModPlugin {
     /** The stack as shown, damage included; a plain item when it has no changed data. */
     private static Ingredient ingredient(ItemStack stack) {
         DataComponentPatch patch = stack.getComponentsPatch();
-        return patch.isEmpty() ? Ingredient.of(stack.getItem()) : DataComponentIngredient.of(false, stack);
+        return patch.isEmpty() ? Ingredient.of(stack.getItem()) : io.github.mcheliceport.platform.Platform.get().componentsIngredient(stack);
     }
 }

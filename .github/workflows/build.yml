@@ -24,10 +24,19 @@ jobs:
           java-version: '25'
           distribution: 'temurin'
       - uses: gradle/actions/setup-gradle@v4
-      # Work in progress (docs/FABRIC_PLAN.md): the Fabric jar builds and its server passes the
-      # Fabric GameTests; the client is not ported yet.
+      # Work in progress (docs/FABRIC_PLAN.md): the Fabric jar builds, its server passes the
+      # Fabric GameTests, and its client boots and flies a helicopter on a virtual display.
       - name: Build the Fabric jar and run its server GameTests
         run: ./gradlew -PwithFabric :fabric:build :fabric:runGameTestServer
+      - name: Run the Fabric client GameTest
+        run: xvfb-run -a -s '-screen 0 1280x720x24' ./gradlew -PwithFabric :fabric:runClientGameTest
+      - name: Upload the client GameTest screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fabric-client-screenshots
+          path: fabric/build/clientgametest/screenshots
+          if-no-files-found: ignore
 
   build:
     runs-on: ubuntu-latest

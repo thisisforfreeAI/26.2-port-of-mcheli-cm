@@ -14,7 +14,6 @@ import net.minecraft.client.renderer.entity.HumanoidMobRenderer;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
 import net.minecraft.resources.Identifier;
-import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 
 /**
  * Upstream's {@code MCH_RenderGunner}: the 1.12 biped model with {@code heligunner.png}, scaled to
@@ -32,7 +31,7 @@ public class GunnerRenderer extends LivingEntityRenderer<GunnerEntity, HumanoidR
         super(context, new HumanoidModel<>(context.bakeLayer(LAYER)), 0.5F);
     }
 
-    public static void registerLayer(EntityRenderersEvent.RegisterLayerDefinitions event) {
+    public static void registerLayer(io.github.mcheliceport.platform.ClientRegistrars.LayerDefinitions event) {
         event.registerLayerDefinition(LAYER,
                 () -> LayerDefinition.create(HumanoidModel.createMesh(CubeDeformation.NONE, 0.0F), 64, 32));
     }

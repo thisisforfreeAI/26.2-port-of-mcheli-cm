@@ -12,7 +12,7 @@ import net.minecraft.client.particle.*;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.state.level.QuadParticleRenderState;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.client.event.RegisterParticleGroupsEvent;
+import io.github.mcheliceport.platform.ClientRegistrars;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
@@ -54,7 +54,7 @@ public final class SupersonicConeParticle extends SmokeParticle {
         alpha=opacity*EffectLook.smokeAlpha(age+partial,lifetime);extractRotatedQuad(state,camera,rotation,partial);
     }
     @Override public float getQuadSize(float partial){return radius*(.92F+.08F*(float)Math.sin((age+partial)*Math.PI/lifetime));}
-    public static void register(RegisterParticleGroupsEvent event){event.register(TYPE,Group::new);}
+    public static void register(ClientRegistrars.ParticleGroups event){event.register(TYPE,Group::new);}
     private static final class Group extends ParticleGroup<SupersonicConeParticle>{
         private final State state=new State();Group(ParticleEngine engine){super(engine);}
         @Override public State extractRenderState(Frustum frustum,Camera camera,float partial){

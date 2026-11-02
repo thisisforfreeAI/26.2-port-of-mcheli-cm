@@ -37,12 +37,6 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.client.event.FlipFrameEvent;
-import net.neoforged.neoforge.client.event.RegisterFeatureRenderersEvent;
-import net.neoforged.neoforge.client.event.RegisterRenderPipelinesEvent;
-import net.neoforged.neoforge.client.submit.RenderPhaseKeys;
-import net.neoforged.neoforge.common.NeoForge;
 import org.joml.Matrix4f;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -109,14 +103,14 @@ public final class BakedVehicles {
     private BakedVehicles() {
     }
 
-    public static void register(IEventBus modBus) {
-        modBus.addListener((RegisterRenderPipelinesEvent event) -> {
+    public static void register() {
+        io.github.mcheliceport.platform.ClientEvents.REGISTER_PIPELINES.add(event -> {
             event.registerPipeline(PIPELINE);
             event.registerPipeline(PIPELINE_FAR);
         });
-        NeoForge.EVENT_BUS.addListener((RegisterFeatureRenderersEvent event) ->
-                event.register(TYPE, new BakedVehicleRenderer()));
-        NeoForge.EVENT_BUS.addListener((FlipFrameEvent event) -> endFrame());
+        io.github.mcheliceport.platform.ClientEvents.REGISTER_FEATURE_RENDERERS.add(event ->
+                event.register(TYPE, BakedVehicleRenderer::new));
+        io.github.mcheliceport.platform.ClientEvents.FLIP_FRAME.add(BakedVehicles::endFrame);
     }
 
     private static Identifier id(String path) {
@@ -245,7 +239,7 @@ public final class BakedVehicles {
     public static boolean submit(SubmitNodeCollector collector, PoseStack poseStack, Identifier texture,
             List<AircraftPartPoses.Draw> draws, int color, int light, boolean flat, boolean surfaceShade,
             boolean far, VehicleLightProbe probe, boolean realistic) {
-        // NeoForge's default submitSpecial drops the submit: only the vanilla collectors keep it.
+        // The loaders' default custom submit drops the node: only the vanilla collectors keep it.
         if (!enabled() || !(collector instanceof SubmitNodeStorage || collector instanceof SubmitNodeCollection)) {
             return false;
         }
@@ -255,7 +249,7 @@ public final class BakedVehicles {
             pose.mulPose(draw.pose());
             list.add(new Part(new Matrix4f(pose.pose()), new Matrix4f().set(pose.normal()), draw.groups()));
         }
-        collector.submitSpecial(RenderPhaseKeys.SOLID, new Submit(texture, list, color, light, flat, surfaceShade, far,
+        io.github.mcheliceport.platform.loader.Submits.solid(collector, new Submit(texture, list, color, light, flat, surfaceShade, far,
                 realistic ? probe : null, realistic));
         return true;
     }

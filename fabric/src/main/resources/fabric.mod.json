@@ -24,7 +24,9 @@
   "entrypoints": {
     "main": ["io.github.mcheliceport.platform.fabric.FabricMod"],
     "client": ["io.github.mcheliceport.platform.fabric.FabricClientMod"],
-    "fabric-gametest": ["io.github.mcheliceport.platform.fabric.gametest.FabricServerGameTests"]
+    "fabric-gametest": ["io.github.mcheliceport.platform.fabric.gametest.FabricServerGameTests"],
+    "fabric-client-gametest": ["io.github.mcheliceport.platform.fabric.gametest.FabricClientGameTests"],
+    "jei_mod_plugin": ["io.github.mcheliceport.compat.jei.McheliJeiPlugin"]
   },
   "mixins": ["mcheli_ce_port.mixins.json", "mcheli_ce_port.fabric.mixins.json"],
   "accessWidener": "mcheli_ce_port.classtweaker",

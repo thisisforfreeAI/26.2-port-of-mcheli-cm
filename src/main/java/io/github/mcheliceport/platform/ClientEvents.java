@@ -53,6 +53,26 @@ public final class ClientEvents {
     public static final Listeners<Consumer<AfterLevel>> AFTER_LEVEL = new Listeners<>();
     /** Registers HUD layers. */
     public static final Listeners<Consumer<HudLayers>> REGISTER_HUD_LAYERS = new Listeners<>();
+    /** After the frame was presented (NeoForge's {@code FlipFrameEvent}). */
+    public static final Listeners<Runnable> FLIP_FRAME = new Listeners<>();
+    /** A living entity's render state was extracted; listeners may attach {@code RenderData} to it. */
+    public static final Listeners<LivingState> LIVING_RENDER_STATE = new Listeners<>();
+    /** Before and after a living entity submits; a listener may cancel the submit (and its post). */
+    public static final Listeners<Consumer<RenderLiving>> RENDER_LIVING_PRE = new Listeners<>();
+    public static final Listeners<Consumer<RenderLiving>> RENDER_LIVING_POST = new Listeners<>();
+
+    // Registration: each loader fires these once, at its registration time.
+    public static final Listeners<Consumer<ClientRegistrars.Pipelines>> REGISTER_PIPELINES = new Listeners<>();
+    public static final Listeners<Consumer<ClientRegistrars.ParticleGroups>> REGISTER_PARTICLE_GROUPS = new Listeners<>();
+    public static final Listeners<Consumer<ClientRegistrars.KeyMappings>> REGISTER_KEY_MAPPINGS = new Listeners<>();
+    public static final Listeners<Consumer<ClientRegistrars.Renderers>> REGISTER_RENDERERS = new Listeners<>();
+    public static final Listeners<Consumer<ClientRegistrars.LayerDefinitions>> REGISTER_LAYER_DEFINITIONS = new Listeners<>();
+    public static final Listeners<Consumer<ClientRegistrars.MenuScreenRegistrar>> REGISTER_MENU_SCREENS = new Listeners<>();
+    public static final Listeners<Consumer<ClientRegistrars.ItemModels>> REGISTER_ITEM_MODELS = new Listeners<>();
+    public static final Listeners<Consumer<ClientRegistrars.PictureInPicture>> REGISTER_PICTURE_IN_PICTURE = new Listeners<>();
+    public static final Listeners<Consumer<ClientRegistrars.ReloadListeners>> ADD_RELOAD_LISTENERS = new Listeners<>();
+    public static final Listeners<Consumer<ClientRegistrars.FeatureRenderers>> REGISTER_FEATURE_RENDERERS = new Listeners<>();
+    public static final Listeners<Consumer<ClientRegistrars.FluidModels>> REGISTER_FLUID_MODELS = new Listeners<>();
 
     private ClientEvents() {
     }
@@ -201,6 +221,35 @@ public final class ClientEvents {
     public record AfterLevel(LevelRenderState levelRenderState, org.joml.Matrix4fc modelViewMatrix) {
         public LevelRenderState getLevelRenderState() { return levelRenderState; }
         public org.joml.Matrix4fc getModelViewMatrix() { return modelViewMatrix; }
+    }
+
+    /** A listener on {@link #LIVING_RENDER_STATE}. */
+    @FunctionalInterface
+    public interface LivingState {
+        void accept(net.minecraft.world.entity.LivingEntity entity,
+                net.minecraft.client.renderer.entity.state.LivingEntityRenderState state, float partialTick);
+    }
+
+    /** NeoForge's {@code RenderLivingEvent.Pre} and {@code Post}. */
+    public static final class RenderLiving extends Cancelable {
+        private final net.minecraft.client.renderer.entity.LivingEntityRenderer<?, ?, ?> renderer;
+        private final net.minecraft.client.renderer.entity.state.LivingEntityRenderState state;
+        private final PoseStack poseStack;
+        private final SubmitNodeCollector collector;
+
+        public RenderLiving(net.minecraft.client.renderer.entity.LivingEntityRenderer<?, ?, ?> renderer,
+                net.minecraft.client.renderer.entity.state.LivingEntityRenderState state, PoseStack poseStack,
+                SubmitNodeCollector collector) {
+            this.renderer = renderer;
+            this.state = state;
+            this.poseStack = poseStack;
+            this.collector = collector;
+        }
+
+        public net.minecraft.client.renderer.entity.LivingEntityRenderer<?, ?, ?> getRenderer() { return renderer; }
+        public net.minecraft.client.renderer.entity.state.LivingEntityRenderState getRenderState() { return state; }
+        public PoseStack getPoseStack() { return poseStack; }
+        public SubmitNodeCollector getSubmitNodeCollector() { return collector; }
     }
 
     // ---- firing, for the loaders ----

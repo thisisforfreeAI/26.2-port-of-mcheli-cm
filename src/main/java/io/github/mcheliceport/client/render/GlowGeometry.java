@@ -16,7 +16,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 import java.util.List;
-import net.neoforged.neoforge.client.event.RegisterRenderPipelinesEvent;
+import io.github.mcheliceport.platform.ClientRegistrars;
 
 /**
  * M8 glows drawn with entities: soft camera-facing discs (flares, missile flames) and streaks
@@ -85,7 +85,7 @@ public final class GlowGeometry {
         });
     }
 
-    public static void registerPipelines(RegisterRenderPipelinesEvent event) {
+    public static void registerPipelines(ClientRegistrars.Pipelines event) {
         event.registerPipeline(PIPELINE);
     }
 
