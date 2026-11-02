@@ -90,6 +90,9 @@ public final class McheliCePortClient {
         io.github.mcheliceport.shim.client.event.ClientBus.addListener(AddClientReloadListenersEvent.class, (AddClientReloadListenersEvent event) -> {
             event.addListener(ResourceLocation.fromNamespaceAndPath(McheliCePort.MOD_ID, "aircraft_models"),
                     new AircraftModels.ReloadListener());
+            event.addListener(ResourceLocation.fromNamespaceAndPath(McheliCePort.MOD_ID, "engine_heat_shader"),
+                    (net.minecraft.server.packs.resources.ResourceManagerReloadListener)
+                            io.github.mcheliceport.client.render.EngineHeat::reloadShader);
             event.addListener(ResourceLocation.fromNamespaceAndPath(McheliCePort.MOD_ID, "hud_textures"),
                     (net.minecraft.server.packs.resources.ResourceManagerReloadListener) manager ->
                             GuiHudCanvas.clearTextureSizes());
@@ -97,6 +100,7 @@ public final class McheliCePortClient {
                     (net.minecraft.server.packs.resources.ResourceManagerReloadListener) manager ->
                             {
                                 BulletModels.clear();
+                                io.github.mcheliceport.client.render.ToolItemModel.clear();
                                 io.github.mcheliceport.client.model.PlaneExhaustTextures.clear();
                             });
         });

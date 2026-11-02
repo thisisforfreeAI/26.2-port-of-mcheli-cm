@@ -65,6 +65,9 @@ public final class McheliCePortFabricClient implements ClientModInitializer {
         FabricNetwork.clientSender = ClientPlayNetworking::send;
         FabricNetwork.registerClientReceivers();
         McheliCePortClient.init();
+        // Mod Menu's config button, through Forge Config API Port.
+        fuzs.forgeconfigapiport.fabric.api.neoforge.v4.client.ConfigScreenFactoryRegistry.INSTANCE.register(
+                io.github.mcheliceport.McheliCePort.MOD_ID, net.neoforged.neoforge.client.gui.ConfigurationScreen::new);
         register();
         events();
     }

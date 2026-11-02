@@ -25,4 +25,7 @@ public interface ChunkMapAccessor {
 
     @Invoker("getChunks")
     Iterable<ChunkHolder> mcheli$getChunks();
+
+    @Invoker("isChunkTracked")
+    boolean mcheli$isChunkTracked(ServerPlayer player, int x, int z);
 }

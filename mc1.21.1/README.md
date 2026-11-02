@@ -34,8 +34,12 @@ Jars land in `neoforge/build/libs` and `fabric/build/libs`. Dev servers: `:neofo
 - Server side: complete, and a dedicated server boots with the mod on both loaders.
 - Client side: backported. NeoForge posts the port's client events from its own; Fabric posts
   them from Fabric API events and client mixins (`fabric/.../mixin/client`). Not yet done on
-  1.21.1: the engine heat haze (tracked, not drawn), the 3D hand-held tool models (tools draw
-  their flat item models), and the 26.2 baked vehicle meshes (vehicles draw the plain way).
+  1.21.1: the 26.2 baked vehicle meshes (vehicles draw the plain way).
+- The 3D hand-held tool models are drawn by a common `ItemRendererMixin` in place of 26.2's
+  custom item model type; the `item/<tool>_hand` models still give their display transforms.
+- The engine heat haze is a core shader drawn after the level (`GameRendererLevelMixin`), under
+  `common/src/main/resources/assets/minecraft/shaders/core/mcheli_ce_port_engine_heat.*`.
+- Fabric's config screen is Forge Config API Port's copy of NeoForge's, and shows in Mod Menu.
 - Post effects (night and thermal vision) are rewritten for 1.21.1's post chain format; vanilla
   1.21.1 only loads post programs from the `minecraft` namespace, so they live in
   `common/src/main/resources/assets/minecraft/shaders/program/mcheli_ce_port_*`.

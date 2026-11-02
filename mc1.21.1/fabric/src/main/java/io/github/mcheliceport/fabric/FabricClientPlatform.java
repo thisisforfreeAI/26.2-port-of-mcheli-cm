@@ -1,13 +1,15 @@
 package io.github.mcheliceport.fabric;
 
+import io.github.mcheliceport.McheliCePort;
 import io.github.mcheliceport.platform.ClientPlatform;
 import net.minecraft.client.gui.screens.Screen;
+import net.neoforged.neoforge.client.gui.ConfigurationScreen;
 import org.jspecify.annotations.Nullable;
 
-/** Fabric has no built-in config screen; the config files are edited directly. */
+/** NeoForge's generated config screen, as Forge Config API Port ships it for Fabric. */
 public final class FabricClientPlatform implements ClientPlatform {
     @Override
     public @Nullable Screen configScreen(@Nullable Screen parent) {
-        return null;
+        return new ConfigurationScreen(McheliCePort.MOD_ID, parent);
     }
 }
