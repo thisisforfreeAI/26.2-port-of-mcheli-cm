@@ -4,13 +4,8 @@ import io.github.mcheliceport.config.ClientConfig;
 import java.lang.ref.WeakReference;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.ExtractLevelRenderStateEvent;
 
 /** Entity halos cannot use particle live limits, so charge their bounded geometry once per extracted view. */
-@EventBusSubscriber(modid = "mcheli_ce_port", value = Dist.CLIENT)
 public final class EntityGlowAdmission {
     private static WeakReference<ClientLevel> world = new WeakReference<>(null);
     private static EffectTuning.Budget budget = new EffectTuning.Budget();
@@ -41,9 +36,8 @@ public final class EntityGlowAdmission {
     }
 
     /** Entities are extracted before RenderFrameEvent.Pre in 26.2. Close that batch here. */
-    @SubscribeEvent
-    public static void extracted(ExtractLevelRenderStateEvent event) {
-        renderedCount = world.get() == event.getLevel() && frame == extraction ? count : 0;
+    public static void extracted(net.minecraft.client.multiplayer.ClientLevel event) {
+        renderedCount = world.get() == event && frame == extraction ? count : 0;
         renderedLimit = FlareLook.haloBudget(ClientConfig.get(ClientConfig.EFFECT_BUDGET), EffectPerformance.pressure());
         extraction++;
     }

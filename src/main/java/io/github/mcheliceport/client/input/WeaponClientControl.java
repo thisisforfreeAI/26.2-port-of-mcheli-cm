@@ -13,7 +13,6 @@ import io.github.mcheliceport.weapon.WeaponSet;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
-import net.neoforged.neoforge.client.event.InputEvent;
 
 /**
  * A rider's weapon keys, read once per client tick: upstream
@@ -150,7 +149,7 @@ public final class WeaponClientControl {
     }
 
     /** Decision D21: no punching or using items from a weapon seat. */
-    public static void onInteractionKey(InputEvent.InteractionKeyMappingTriggered event) {
+    public static void onInteractionKey(io.github.mcheliceport.platform.ClientEvents.InteractionKey event) {
         if ((event.isAttack() || event.isUseItem()) && ridesWeaponSeat()) {
             event.setSwingHand(false);
             event.setCanceled(true);
@@ -158,7 +157,7 @@ public final class WeaponClientControl {
     }
 
     /** Upstream {@code SwitchWeaponWithMouseWheel}: the wheel picks the weapon, not the hotbar slot. */
-    public static void onMouseScroll(InputEvent.MouseScrollingEvent event) {
+    public static void onMouseScroll(io.github.mcheliceport.platform.ClientEvents.MouseScroll event) {
         if (!ClientConfig.SWITCH_WEAPON_WITH_MOUSE_WHEEL.get() || Minecraft.getInstance().gui.screen() != null
                 || !ridesWeaponSeat()) {
             return;

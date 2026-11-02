@@ -5,13 +5,8 @@ import io.github.mcheliceport.config.ClientConfig;
 import java.lang.ref.WeakReference;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.RenderFrameEvent;
 
 /** Client-only feedback. Never changes game settings, simulation, or network traffic. */
-@EventBusSubscriber(modid = McheliCePort.MOD_ID, value = Dist.CLIENT)
 public final class EffectPerformance {
     private static final EffectFrameBudget BUDGET = new EffectFrameBudget();
     private static WeakReference<ClientLevel> world = new WeakReference<>(null);
@@ -28,8 +23,7 @@ public final class EffectPerformance {
         return ClientConfig.get(ClientConfig.EFFECT_BUDGET) != ClientConfig.EffectBudget.LOW && pressure() < 2;
     }
 
-    @SubscribeEvent
-    public static void frame(RenderFrameEvent.Pre event) {
+    public static void frame() {
         Minecraft mc = Minecraft.getInstance();
         if (world.get() != mc.level) {
             world = new WeakReference<>(mc.level);

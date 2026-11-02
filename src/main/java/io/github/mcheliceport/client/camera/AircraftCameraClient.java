@@ -23,9 +23,6 @@ import net.minecraft.world.entity.Pose;
 import net.minecraft.world.level.Level;
 import io.github.mcheliceport.entity.weapon.TvMissileEntity;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.client.event.CalculateDetachedCameraDistanceEvent;
-import net.neoforged.neoforge.client.event.RenderNameTagEvent;
-import net.neoforged.neoforge.client.event.ViewportEvent;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
@@ -242,7 +239,7 @@ public final class AircraftCameraClient {
     }
 
     /** The view entity turns with the rider every frame, as upstream's render-tick hooks did. */
-    public static void onCameraAngles(ViewportEvent.ComputeCameraAngles event) {
+    public static void onCameraAngles(io.github.mcheliceport.platform.ClientEvents.CameraAngles event) {
         Entity view = viewEntity();
         LocalPlayer player = Minecraft.getInstance().player;
         if (view == null || player == null || event.getCamera().entity() != view) {
@@ -258,7 +255,7 @@ public final class AircraftCameraClient {
      * Upstream {@code onFOVModifierEvent}: the camera view narrows by the zoom. Also places the
      * pilot's eye, since this is the first event after vanilla has positioned the camera.
      */
-    public static void onComputeFov(ViewportEvent.ComputeFov event) {
+    public static void onComputeFov(io.github.mcheliceport.platform.ClientEvents.Fov event) {
         placeCockpitEye(event.getCamera(), (float) event.getPartialTick());
         Entity view = viewEntity();
         AircraftEntity aircraft = AircraftClientEvents.riddenAircraft(Minecraft.getInstance().player);
@@ -312,16 +309,16 @@ public final class AircraftCameraClient {
     }
 
     /** Upstream's {@code CameraSetup} translation: third person sits at the vehicle's distance. */
-    public static void onDetachedDistance(CalculateDetachedCameraDistanceEvent event) {
+    public static void onDetachedDistance(io.github.mcheliceport.platform.ClientEvents.DetachedDistance event) {
         if (AircraftClientEvents.riddenAircraft(Minecraft.getInstance().player) != null) {
             event.setDistance(thirdPersonDistance);
         }
     }
 
     /** The rider's own name tag would show over the cockpit seen from the camera; hide it. */
-    public static void onNameTag(RenderNameTagEvent.CanRender event) {
+    public static void onNameTag(io.github.mcheliceport.platform.ClientEvents.NameTag event) {
         if (viewEntity() != null && event.getEntity() == Minecraft.getInstance().player) {
-            event.setCanRender(TriState.FALSE);
+            event.hide();
         }
     }
 

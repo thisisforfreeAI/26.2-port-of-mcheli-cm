@@ -38,11 +38,7 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.resources.Identifier;
-import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 import net.neoforged.neoforge.client.event.RegisterRenderPipelinesEvent;
-import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
-import net.neoforged.neoforge.client.gui.GuiLayer;
-import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 
 /**
  * The helicopter HUD, drawn above vanilla's: upstream's {@code MCH_GuiHeli} and
@@ -54,7 +50,7 @@ import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
  * <p>As upstream, nothing is drawn while a screen other than the chat is open, and the HUD and
  * key hints only show in first person unless {@code hud.displayInThirdPerson} is on.
  */
-public final class AircraftHudLayer implements GuiLayer {
+public final class AircraftHudLayer implements io.github.mcheliceport.platform.HudLayers.HudLayer {
 
     public static final Identifier ID = Identifier.fromNamespaceAndPath(McheliCePort.MOD_ID, "aircraft_hud");
     /** Upstream's night-vision noise: {@code blendFunc(GL_ONE, GL_ONE)} over the scene. */
@@ -64,9 +60,9 @@ public final class AircraftHudLayer implements GuiLayer {
             .build();
     private static final Identifier NOISE = Identifier.fromNamespaceAndPath("mcheli", "textures/gui/alpha.png");
     private static final Identifier TV_NOISE = Identifier.fromNamespaceAndPath("mcheli", "textures/gui/noise.png");
-    private static final Set<Identifier> HIDDEN_WHILE_RIDING = Set.of(VanillaGuiLayers.CROSSHAIR,
-            VanillaGuiLayers.HOTBAR, VanillaGuiLayers.PLAYER_HEALTH, VanillaGuiLayers.ARMOR_LEVEL,
-            VanillaGuiLayers.FOOD_LEVEL, VanillaGuiLayers.AIR_LEVEL, VanillaGuiLayers.BOSS_OVERLAY);
+    private static final Set<Identifier> HIDDEN_WHILE_RIDING = Set.of(io.github.mcheliceport.platform.HudLayers.CROSSHAIR,
+            io.github.mcheliceport.platform.HudLayers.HOTBAR, io.github.mcheliceport.platform.HudLayers.PLAYER_HEALTH, io.github.mcheliceport.platform.HudLayers.ARMOR_LEVEL,
+            io.github.mcheliceport.platform.HudLayers.FOOD_LEVEL, io.github.mcheliceport.platform.HudLayers.AIR_LEVEL, io.github.mcheliceport.platform.HudLayers.BOSS_OVERLAY);
     private static final int ACTIVE = -1342177281;
     private static final int INACTIVE = -1349546097;
 
@@ -76,7 +72,7 @@ public final class AircraftHudLayer implements GuiLayer {
     private int currentLeftY;
     private int currentRightY;
 
-    public static void register(RegisterGuiLayersEvent event) {
+    public static void register(io.github.mcheliceport.platform.HudLayers event) {
         event.registerAboveAll(ID, new AircraftHudLayer());
     }
 
@@ -85,7 +81,7 @@ public final class AircraftHudLayer implements GuiLayer {
     }
 
     /** Game bus: hides vanilla's crosshair and status bars while riding a vehicle. */
-    public static void onRenderLayer(RenderGuiLayerEvent.Pre event) {
+    public static void onRenderLayer(io.github.mcheliceport.platform.ClientEvents.GuiLayerRender event) {
         if (HIDDEN_WHILE_RIDING.contains(event.getName())
                 && AircraftClientEvents.riddenAircraft(Minecraft.getInstance().player) != null) {
             event.setCanceled(true);

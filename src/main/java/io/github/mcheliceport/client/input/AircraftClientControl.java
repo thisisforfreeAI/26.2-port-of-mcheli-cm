@@ -39,7 +39,7 @@ public final class AircraftClientControl {
     }
 
     /** Vanilla handles Advancements before our post-tick controls; reserve a shared key for lamps while riding. */
-    public static void onKey(net.neoforged.neoforge.client.event.InputEvent.Key event) {
+    public static void onKey(io.github.mcheliceport.platform.ClientEvents.KeyInput event) {
         Minecraft mc = Minecraft.getInstance();
         AircraftEntity aircraft = mc.player != null ? ModNetwork.riddenAircraft(mc.player) : null;
         if (mc.gui.screen() == null && aircraft != null && aircraft.canSwitchSearchLight(mc.player)

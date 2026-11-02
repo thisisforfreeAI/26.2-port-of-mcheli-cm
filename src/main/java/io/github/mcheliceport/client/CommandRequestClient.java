@@ -22,8 +22,6 @@ import net.minecraft.client.Screenshot;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Util;
 import net.neoforged.fml.ModList;
-import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforgespi.language.IModInfo;
 
@@ -41,8 +39,8 @@ public final class CommandRequestClient {
     }
 
     public static void register() {
-        NeoForge.EVENT_BUS.addListener(CommandRequestClient::onClientTick);
-        NeoForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.LoggingOut loggingOut) -> OUTGOING.clear());
+        io.github.mcheliceport.platform.ClientEvents.TICK_POST.add(CommandRequestClient::onClientTick);
+        io.github.mcheliceport.platform.ClientEvents.LOGGING_OUT.add(() -> OUTGOING.clear());
     }
 
     public static void answer(CommandRequestPayload request) {
@@ -103,7 +101,7 @@ public final class CommandRequestClient {
         }
     }
 
-    private static void onClientTick(ClientTickEvent.Post event) {
+    private static void onClientTick() {
         ScreenshotChunkPayload chunk = OUTGOING.poll();
         if (chunk != null && Minecraft.getInstance().getConnection() != null) {
             io.github.mcheliceport.platform.Platform.get().sendToServer(chunk);

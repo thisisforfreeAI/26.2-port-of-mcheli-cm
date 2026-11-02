@@ -21,12 +21,6 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
-import net.neoforged.neoforge.client.event.RenderFrameEvent;
-import net.neoforged.neoforge.client.event.RenderHandEvent;
-import net.neoforged.neoforge.client.event.ViewportEvent;
-import net.neoforged.neoforge.common.NeoForge;
 import org.jspecify.annotations.Nullable;
 
 /** The client's game-bus hooks for riding vehicles: controls, camera, camera roll and the hidden hand. */
@@ -47,7 +41,7 @@ public final class AircraftClientEvents {
                 io.github.mcheliceport.platform.Platform.get().sendToServer(payload);
             }
         });
-        NeoForge.EVENT_BUS.addListener((ClientTickEvent.Post event) -> {
+        io.github.mcheliceport.platform.ClientEvents.TICK_POST.add(() -> {
             AircraftCameraClient.handleKeys();
             io.github.mcheliceport.client.hud.TeamListOverlay.handleKeys();
             WeaponClientControl.onClientTick();
@@ -64,33 +58,33 @@ public final class AircraftClientEvents {
             io.github.mcheliceport.client.render.ToolItemModel.WrenchSwing.tick();
             TargetMarkers.INSTANCE.tick();
         });
-        NeoForge.EVENT_BUS.addListener(WeaponEffects::onSubmitGeometry);
-        NeoForge.EVENT_BUS.addListener((RenderFrameEvent.Pre event) -> {
+        io.github.mcheliceport.platform.ClientEvents.SUBMIT_GEOMETRY.add(WeaponEffects::onSubmitGeometry);
+        io.github.mcheliceport.platform.ClientEvents.RENDER_FRAME_PRE.add(() -> {
             MouseFlight.onFrameWithoutTurn();
             io.github.mcheliceport.client.render.SearchLightRenderer.beginFrame();
         });
-        NeoForge.EVENT_BUS.addListener((RenderFrameEvent.Post event) -> AircraftClientControl.applyRotLimit());
-        NeoForge.EVENT_BUS.addListener(AircraftCameraClient::onCameraAngles);
-        NeoForge.EVENT_BUS.addListener(AircraftClientEvents::onCameraAngles);
-        NeoForge.EVENT_BUS.addListener(AircraftCameraClient::onComputeFov);
-        NeoForge.EVENT_BUS.addListener(RangeFinderClient::onComputeFov);
-        NeoForge.EVENT_BUS.addListener(io.github.mcheliceport.client.tool.LightWeaponClient::onComputeFov);
-        NeoForge.EVENT_BUS.addListener(io.github.mcheliceport.client.tool.LightWeaponClient::onRenderHand);
-        NeoForge.EVENT_BUS.addListener(io.github.mcheliceport.client.camera.GltdCameraClient::onComputeFov);
-        NeoForge.EVENT_BUS.addListener(io.github.mcheliceport.client.camera.GltdCameraClient::onCameraAngles);
-        NeoForge.EVENT_BUS.addListener(io.github.mcheliceport.client.camera.GltdCameraClient::onRenderHand);
-        NeoForge.EVENT_BUS.addListener(io.github.mcheliceport.client.camera.GltdCameraClient::onInteractionKey);
-        NeoForge.EVENT_BUS.addListener(io.github.mcheliceport.client.camera.GltdCameraClient::onNameTag);
-        NeoForge.EVENT_BUS.addListener(io.github.mcheliceport.client.hud.ToolHudLayer::onRenderHand);
-        NeoForge.EVENT_BUS.addListener(AircraftCameraClient::onDetachedDistance);
-        NeoForge.EVENT_BUS.addListener(AircraftCameraClient::onNameTag);
-        NeoForge.EVENT_BUS.addListener(AircraftClientEvents::onRenderHand);
-        NeoForge.EVENT_BUS.addListener(WeaponClientControl::onInteractionKey);
-        NeoForge.EVENT_BUS.addListener(AircraftClientControl::onKey);
-        NeoForge.EVENT_BUS.addListener(io.github.mcheliceport.client.hud.TeamListOverlay::onKey);
-        NeoForge.EVENT_BUS.addListener(WeaponClientControl::onMouseScroll);
-        NeoForge.EVENT_BUS.addListener(AircraftHudLayer::onRenderLayer);
-        NeoForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.LoggingOut event) -> {
+        io.github.mcheliceport.platform.ClientEvents.RENDER_FRAME_POST.add(() -> AircraftClientControl.applyRotLimit());
+        io.github.mcheliceport.platform.ClientEvents.CAMERA_ANGLES.add(AircraftCameraClient::onCameraAngles);
+        io.github.mcheliceport.platform.ClientEvents.CAMERA_ANGLES.add(AircraftClientEvents::onCameraAngles);
+        io.github.mcheliceport.platform.ClientEvents.COMPUTE_FOV.add(AircraftCameraClient::onComputeFov);
+        io.github.mcheliceport.platform.ClientEvents.COMPUTE_FOV.add(RangeFinderClient::onComputeFov);
+        io.github.mcheliceport.platform.ClientEvents.COMPUTE_FOV.add(io.github.mcheliceport.client.tool.LightWeaponClient::onComputeFov);
+        io.github.mcheliceport.platform.ClientEvents.RENDER_HAND.add(io.github.mcheliceport.client.tool.LightWeaponClient::onRenderHand);
+        io.github.mcheliceport.platform.ClientEvents.COMPUTE_FOV.add(io.github.mcheliceport.client.camera.GltdCameraClient::onComputeFov);
+        io.github.mcheliceport.platform.ClientEvents.CAMERA_ANGLES.add(io.github.mcheliceport.client.camera.GltdCameraClient::onCameraAngles);
+        io.github.mcheliceport.platform.ClientEvents.RENDER_HAND.add(io.github.mcheliceport.client.camera.GltdCameraClient::onRenderHand);
+        io.github.mcheliceport.platform.ClientEvents.INTERACTION_KEY.add(io.github.mcheliceport.client.camera.GltdCameraClient::onInteractionKey);
+        io.github.mcheliceport.platform.ClientEvents.NAME_TAG.add(io.github.mcheliceport.client.camera.GltdCameraClient::onNameTag);
+        io.github.mcheliceport.platform.ClientEvents.RENDER_HAND.add(io.github.mcheliceport.client.hud.ToolHudLayer::onRenderHand);
+        io.github.mcheliceport.platform.ClientEvents.DETACHED_CAMERA_DISTANCE.add(AircraftCameraClient::onDetachedDistance);
+        io.github.mcheliceport.platform.ClientEvents.NAME_TAG.add(AircraftCameraClient::onNameTag);
+        io.github.mcheliceport.platform.ClientEvents.RENDER_HAND.add(AircraftClientEvents::onRenderHand);
+        io.github.mcheliceport.platform.ClientEvents.INTERACTION_KEY.add(WeaponClientControl::onInteractionKey);
+        io.github.mcheliceport.platform.ClientEvents.KEY.add(AircraftClientControl::onKey);
+        io.github.mcheliceport.platform.ClientEvents.KEY.add(io.github.mcheliceport.client.hud.TeamListOverlay::onKey);
+        io.github.mcheliceport.platform.ClientEvents.MOUSE_SCROLL.add(WeaponClientControl::onMouseScroll);
+        io.github.mcheliceport.platform.ClientEvents.RENDER_GUI_LAYER.add(AircraftHudLayer::onRenderLayer);
+        io.github.mcheliceport.platform.ClientEvents.LOGGING_OUT.add(() -> {
             ServerSettings.setClient(ServerSettings.Values.DEFAULT);
             io.github.mcheliceport.multiplay.MultiplayManager.setClientState(true, false);
             MouseFlight.reset();
@@ -105,7 +99,7 @@ public final class AircraftClientEvents {
             io.github.mcheliceport.radar.EntityInfoClientTracker.clear();
             io.github.mcheliceport.weapon.GpsPosition.setClient(null);
         });
-        NeoForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.LoggingIn event) -> {
+        io.github.mcheliceport.platform.ClientEvents.LOGGING_IN.add(() -> {
             RangeFinderClient.onLogin();
             TargetMarkers.INSTANCE.reset();
         });
@@ -135,7 +129,7 @@ public final class AircraftClientEvents {
     }
 
     /** Upstream {@code updateCameraRoll}: the view takes the vehicle's roll, less when looking sideways. */
-    private static void onCameraAngles(ViewportEvent.ComputeCameraAngles event) {
+    private static void onCameraAngles(io.github.mcheliceport.platform.ClientEvents.CameraAngles event) {
         LocalPlayer player = Minecraft.getInstance().player;
         AircraftEntity aircraft = riddenAircraft(player);
         Entity view = event.getCamera().entity();
@@ -161,7 +155,7 @@ public final class AircraftClientEvents {
     }
 
     /** The hand is hidden for the pilot and in camera view (upstream {@code disableFirstPersonItemRender}). */
-    private static void onRenderHand(RenderHandEvent event) {
+    private static void onRenderHand(io.github.mcheliceport.platform.ClientEvents.Cancelable event) {
         LocalPlayer player = Minecraft.getInstance().player;
         AircraftEntity aircraft = riddenAircraft(player);
         if (aircraft != null && (aircraft.isPilot(player) || AircraftCameraClient.viewEntity() != null)) {

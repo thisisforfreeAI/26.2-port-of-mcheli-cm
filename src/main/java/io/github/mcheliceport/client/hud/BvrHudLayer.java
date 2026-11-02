@@ -15,7 +15,6 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 
 /**
  * Upstream's {@code HudBVRLock}: in first person, a weapon with {@code EnableBVR} marks the vehicles
@@ -35,7 +34,7 @@ public final class BvrHudLayer {
     private BvrHudLayer() {
     }
 
-    public static void register(RegisterGuiLayersEvent event) {
+    public static void register(io.github.mcheliceport.platform.HudLayers event) {
         event.registerAbove(AircraftHudLayer.ID, ID, BvrHudLayer::render);
     }
 

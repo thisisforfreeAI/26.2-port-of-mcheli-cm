@@ -29,8 +29,6 @@ import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
-import net.neoforged.neoforge.client.event.RenderHandEvent;
 import org.joml.Vector4f;
 import org.jspecify.annotations.Nullable;
 
@@ -60,12 +58,12 @@ public final class ToolHudLayer {
     private ToolHudLayer() {
     }
 
-    public static void register(RegisterGuiLayersEvent event) {
+    public static void register(io.github.mcheliceport.platform.HudLayers event) {
         event.registerBelow(AircraftHudLayer.ID, ID, ToolHudLayer::render);
     }
 
     /** The scope hides the hand, as the spyglass does. */
-    public static void onRenderHand(RenderHandEvent event) {
+    public static void onRenderHand(io.github.mcheliceport.platform.ClientEvents.Cancelable event) {
         LocalPlayer player = Minecraft.getInstance().player;
         if (player != null && RangeFinderItem.canUse(player) && RangeFinderClient.isUsingScope(player)) {
             event.setCanceled(true);

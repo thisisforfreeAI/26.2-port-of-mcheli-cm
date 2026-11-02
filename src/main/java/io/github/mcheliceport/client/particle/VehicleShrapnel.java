@@ -8,13 +8,8 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
 
 /** Cosmetic three-face metal pieces; no gameplay entities, block reads or collision queries. */
-@EventBusSubscriber(modid="mcheli_ce_port",value=Dist.CLIENT)
 public final class VehicleShrapnel {
     private static final ArrayDeque<WeakReference<BlastFragmentParticle>> LIVE=new ArrayDeque<>();
     private static ClientLevel world;
@@ -23,7 +18,7 @@ public final class VehicleShrapnel {
     private VehicleShrapnel(){}
     private static int cap(){return switch(ClientConfig.get(ClientConfig.EFFECT_BUDGET)){case LOW->16;case BALANCED->32;case HIGH->48;};}
     public static void clear(){for(var ref:LIVE){var p=ref.get();if(p!=null)p.remove();}LIVE.clear();world=null;births=0;sampleTick=Long.MIN_VALUE;}
-    @SubscribeEvent public static void tick(ClientTickEvent.Post event){
+    public static void tick(){
         var mc=Minecraft.getInstance();if(world!=mc.level||!EffectQuality.enhanced()||!ClientConfig.get(ClientConfig.VEHICLE_DAMAGE_DETAILS)){clear();world=mc.level;}
         LIVE.removeIf(r->{var p=r.get();return p==null||!p.isAlive();});
         while(LIVE.size()>cap()){var p=LIVE.removeFirst().get();if(p!=null)p.remove();}

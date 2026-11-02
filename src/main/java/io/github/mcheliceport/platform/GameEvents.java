@@ -123,11 +123,16 @@ public final class GameEvents {
     public static final class Listeners<T> {
         private final List<T> listeners = new CopyOnWriteArrayList<>();
 
-        private Listeners() {
+        Listeners() {
         }
 
         public void add(T listener) {
             listeners.add(listener);
+        }
+
+        /** For the loaders: calls {@code action} with each listener, in order. */
+        public void forEach(Consumer<? super T> action) {
+            listeners.forEach(action);
         }
     }
 }

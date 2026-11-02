@@ -29,14 +29,8 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
-import net.neoforged.neoforge.client.event.SubmitCustomGeometryEvent;
 
 /** Temporary client-only surface textures. No block writes, entities, saved data or per-frame world queries. */
-@EventBusSubscriber(modid = "mcheli_ce_port", value = Dist.CLIENT)
 public final class BlastMarks {
     private static final int PER_MARK_QUADS = 256;
     private static final RenderType[] TYPES = {type("impact"), type("blast"), type("burn")};
@@ -97,8 +91,7 @@ public final class BlastMarks {
                 level.getGameTime(), ClientConfig.get(ClientConfig.BLAST_MARKS), EffectPerformance.optionalGlows()));
     }
 
-    @SubscribeEvent
-    public static void tick(ClientTickEvent.Post event) {
+    public static void tick() {
         Minecraft mc = Minecraft.getInstance();
         ClientLevel level = mc.level;
         world(level);
@@ -303,8 +296,7 @@ public final class BlastMarks {
         return 0xB8B8B8;
     }
 
-    @SubscribeEvent
-    public static void submit(SubmitCustomGeometryEvent event) {
+    public static void submit(io.github.mcheliceport.platform.ClientEvents.Geometry event) {
         flashQuads = 0;
         if (snapshot.isEmpty() || !enabled()) return;
         Minecraft mc = Minecraft.getInstance();

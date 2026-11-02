@@ -6,15 +6,10 @@ import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.PauseScreen;
 import net.minecraft.network.chat.Component;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.ScreenEvent;
 
-@EventBusSubscriber(modid="mcheli_ce_port",value=Dist.CLIENT)
 public final class EffectsPauseMenu {
     private EffectsPauseMenu() {}
-    @SubscribeEvent public static void init(ScreenEvent.Init.Post event) {
+    public static void init(io.github.mcheliceport.platform.ClientEvents.ScreenInit event) {
         if(!(event.getScreen() instanceof PauseScreen screen) || !screen.showsPauseMenu())return;
         var occupied=new ArrayList<EffectsMenuLayout.Rect>();
         for(var listener:event.getListenersList()) if(listener instanceof AbstractWidget w && w.visible)

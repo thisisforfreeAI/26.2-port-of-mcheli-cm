@@ -12,7 +12,6 @@ import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.resources.Identifier;
-import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 
 /**
  * Upstream's {@code HudRWR}: a vehicle with an {@code RWR} section shows its radar warning scope
@@ -36,7 +35,7 @@ public final class RwrHudLayer {
         return Identifier.fromNamespaceAndPath("mcheli", "textures/" + name + ".png");
     }
 
-    public static void register(RegisterGuiLayersEvent event) {
+    public static void register(io.github.mcheliceport.platform.HudLayers event) {
         event.registerAbove(AircraftHudLayer.ID, ID, RwrHudLayer::render);
     }
 

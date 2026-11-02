@@ -16,12 +16,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.renderstate.RegisterRenderStateModifiersEvent;
-import net.neoforged.neoforge.client.event.SubmitCustomGeometryEvent;
 import com.google.common.reflect.TypeToken;
 
 /**
@@ -31,7 +26,6 @@ import com.google.common.reflect.TypeToken;
  * (explosions and gun flashes already light the ground through their own flash patches). The
  * world's block light is never changed, so no chunk is rebuilt.
  */
-@EventBusSubscriber(modid = "mcheli_ce_port", value = Dist.CLIENT)
 public final class SceneLights {
 
     private static final class Light {
@@ -188,8 +182,7 @@ public final class SceneLights {
         add(level, key, x, y, z, 7, 1.0F, 0.9F, 0.75F, 0.85F, 3, true);
     }
 
-    @SubscribeEvent
-    public static void tick(ClientTickEvent.Post event) {
+    public static void tick() {
         var mc = Minecraft.getInstance();
         if (world != mc.level || !enabled()) {
             clear();
@@ -387,8 +380,7 @@ public final class SceneLights {
         return t * t;
     }
 
-    @SubscribeEvent
-    public static void submit(SubmitCustomGeometryEvent event) {
+    public static void submit(io.github.mcheliceport.platform.ClientEvents.Geometry event) {
         var mc = Minecraft.getInstance();
         if (world == null || world != mc.level || LIGHTS.isEmpty() || !enabled()) {
             return;

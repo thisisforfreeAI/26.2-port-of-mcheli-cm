@@ -12,7 +12,15 @@
     "ServerLevelEntityTickMixin",
     "ServerLevelPartsMixin"
   ],
-  "client": [],
+  "client": [
+    "client.CameraMixin",
+    "client.ClientLevelEntityTickMixin",
+    "client.EntityRendererMixin",
+    "client.GameRendererMixin",
+    "client.KeyboardHandlerMixin",
+    "client.MinecraftClientMixin",
+    "client.MouseHandlerMixin"
+  ],
   "injectors": {
     "defaultRequire": 1
   }

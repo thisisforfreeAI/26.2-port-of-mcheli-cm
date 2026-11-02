@@ -11,7 +11,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.resources.Identifier;
-import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 
 /**
  * M10c, a port addition: while the vehicle the player rides is being repaired, rearmed, refuelled
@@ -26,7 +25,7 @@ public final class GroundCrewHudLayer {
     private GroundCrewHudLayer() {
     }
 
-    public static void register(RegisterGuiLayersEvent event) {
+    public static void register(io.github.mcheliceport.platform.HudLayers event) {
         event.registerAbove(AircraftHudLayer.ID, ID, GroundCrewHudLayer::render);
     }
 

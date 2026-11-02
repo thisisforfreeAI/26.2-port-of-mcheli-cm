@@ -9,20 +9,15 @@ import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.RenderFrameEvent;
 import org.joml.Matrix4f;
 
 /** One ambient-lit atlas batch per nearby supported aircraft, sharing a bounded view allowance. */
-@EventBusSubscriber(modid="mcheli_ce_port",value=Dist.CLIENT)
 public final class AircraftMarkings {
     private static final Identifier TEXTURE=Identifier.fromNamespaceAndPath("mcheli_ce_port","textures/effect/m8_aircraft_markings.png");
     public record Draw(Matrix4f pose,VehicleImpactSurface.Mesh mesh,int tile,int color){}
     private static int vertices,lastVertices;
     private AircraftMarkings(){}
-    @SubscribeEvent public static void frame(RenderFrameEvent.Pre event){lastVertices=vertices;vertices=0;}
+    public static void frame(){lastVertices=vertices;vertices=0;}
     public static int vertices(){return lastVertices;}
     public static void extract(AircraftEntity ac,AircraftRenderState render){
         if(ac.isDestroyed()||render.far||render.thermal||!EffectQuality.enhanced()

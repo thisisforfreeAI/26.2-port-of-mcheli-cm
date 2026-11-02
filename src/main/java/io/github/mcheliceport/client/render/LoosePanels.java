@@ -13,17 +13,11 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.*;
 import net.minecraft.world.phys.shapes.CollisionContext;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
-import net.neoforged.neoforge.client.event.SubmitCustomGeometryEvent;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 /** Cosmetic panel movement and short-lived mesh debris. No hitboxes, items or gameplay entities. */
-@EventBusSubscriber(modid="mcheli_ce_port",value=Dist.CLIENT)
 public final class LoosePanels {
     private static final Map<McheliModel.Group,LoosePanelLook.Spec> SPECS=new WeakHashMap<>();
     private static final Identifier METAL=Identifier.withDefaultNamespace("textures/block/iron_block.png");
@@ -189,7 +183,7 @@ public final class LoosePanels {
         }
         render.draws.clear();render.draws.addAll(draws);
     }
-    @SubscribeEvent public static void tick(ClientTickEvent.Post event){
+    public static void tick(){
         var mc=Minecraft.getInstance();if(world!=mc.level||!enabled()){clear();return;}if(world==null||mc.isPaused())return;
         long tick=world.getGameTime();STATES.entrySet().removeIf(e->e.getKey().isRemoved()||e.getKey().level()!=world||mc.gameRenderer.mainCamera().position().distanceToSqr(e.getKey().position())>96*96);
         PIECES.removeIf(p->p.owner.isRemoved() || ++p.age>p.life || p.skin&&(!io.github.mcheliceport.client.particle.WreckSequenceEffects.enabled()
@@ -256,7 +250,7 @@ public final class LoosePanels {
         if(!p.scar&&!p.skin){io.github.mcheliceport.client.effect.FluidStains.add(world,p.motion.position.add(0,.2,0),false);p.scar=true;}
         p.life=Math.min(p.life,p.age+(p.skin?20:p.airframeBit!=0||p.tear!=null?300:200));
     }
-    @SubscribeEvent public static void submit(SubmitCustomGeometryEvent event){
+    public static void submit(io.github.mcheliceport.platform.ClientEvents.Geometry event){
         if(!enabled()||PIECES.isEmpty()||world!=Minecraft.getInstance().level)return;
         var camera=event.getLevelRenderState().cameraRenderState.pos;
         float partial=Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaPartialTick(false);

@@ -15,11 +15,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
-import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
-import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
-import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
-import net.neoforged.neoforge.common.NeoForge;
 
 /**
  * What {@code /mcheli} does on the client: upstream {@code MCH_GuiTitle}, the message
@@ -39,10 +34,10 @@ public final class TitleOverlay {
     private TitleOverlay() {
     }
 
-    public static void register(RegisterGuiLayersEvent event) {
-        event.registerAbove(VanillaGuiLayers.CHAT, ID, TitleOverlay::render);
-        NeoForge.EVENT_BUS.addListener(TitleOverlay::onClientTick);
-        NeoForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.LoggingOut loggingOut) -> clear());
+    public static void register(io.github.mcheliceport.platform.HudLayers event) {
+        event.registerAbove(io.github.mcheliceport.platform.HudLayers.CHAT, ID, TitleOverlay::render);
+        io.github.mcheliceport.platform.ClientEvents.TICK_POST.add(TitleOverlay::onClientTick);
+        io.github.mcheliceport.platform.ClientEvents.LOGGING_OUT.add(() -> clear());
     }
 
     /** Upstream {@code setupTitle}: splits the message at line breaks and at the chat's width. */
@@ -72,7 +67,7 @@ public final class TitleOverlay {
         showTick = 0;
     }
 
-    private static void onClientTick(ClientTickEvent.Post event) {
+    private static void onClientTick() {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null || mc.isPaused()) {
             return;

@@ -22,9 +22,6 @@ import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.world.scores.ReadOnlyScoreInfo;
 import net.minecraft.world.scores.ScoreHolder;
 import net.minecraft.world.scores.Scoreboard;
-import net.neoforged.neoforge.client.event.InputEvent;
-import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
-import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -49,8 +46,8 @@ public final class TeamListOverlay {
     private TeamListOverlay() {
     }
 
-    public static void register(RegisterGuiLayersEvent event) {
-        event.registerBelow(VanillaGuiLayers.TITLE, ID, TeamListOverlay::render);
+    public static void register(io.github.mcheliceport.platform.HudLayers event) {
+        event.registerBelow(io.github.mcheliceport.platform.HudLayers.TITLE, ID, TeamListOverlay::render);
     }
 
     /** Upstream {@code handleScoreboardAndMultiplayer}, each client tick with no screen open. */
@@ -81,7 +78,7 @@ public final class TeamListOverlay {
      * Upstream's scoreboard key is L, which is also vanilla's Advancements key; the scoreboard keeps
      * it while it can show, as the searchlight keeps it while riding.
      */
-    public static void onKey(InputEvent.Key event) {
+    public static void onKey(io.github.mcheliceport.platform.ClientEvents.KeyInput event) {
         Minecraft mc = Minecraft.getInstance();
         if (ModKeyMappings.MULTIPLAY.isActive() && scoreboardTakesKey(mc)
                 && ModKeyMappings.SCOREBOARD.matches(event.getKeyEvent())

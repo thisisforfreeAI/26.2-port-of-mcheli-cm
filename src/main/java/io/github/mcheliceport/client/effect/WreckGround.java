@@ -12,18 +12,12 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
-import net.neoforged.neoforge.client.event.SubmitCustomGeometryEvent;
 
 /**
  * Ground marks under a crashed plane or helicopter: a burn scar at the impact, a gouged groove along the
  * path it slid, and the fuel pool it burns in. They are cut to the top faces of the block columns beneath,
  * last as long as the wreck and fade after it. Client-only; no block writes.
  */
-@EventBusSubscriber(modid="mcheli_ce_port",value=Dist.CLIENT)
 public final class WreckGround {
     static final Identifier TEXTURE=Identifier.fromNamespaceAndPath("mcheli_ce_port","textures/effect/m8_wreck_ground.png");
     public enum Kind {SCAR,GROOVE,POOL}
@@ -46,7 +40,7 @@ public final class WreckGround {
     public static float poolRadius(float size){return Math.clamp(size*.2F,1.3F,3.6F);}
     /** The pool spreads over its first second and a half. */
     public static float poolGrowth(long age){return age<0?0:Math.clamp(.35F+age/30F,0,1);}
-    @SubscribeEvent public static void tick(ClientTickEvent.Post event){
+    public static void tick(){
         var mc=Minecraft.getInstance();
         if(mc.level!=world){clear();world=mc.level;}
         if(world==null||!WreckScene.enabled()){MARKS.clear();return;}
@@ -127,7 +121,7 @@ public final class WreckGround {
         float in=Math.clamp((now-mark.born)/10F,0,1);
         return in*fade*(mark.kind==Kind.POOL?.92F:mark.kind==Kind.GROOVE?.95F:.9F);
     }
-    @SubscribeEvent public static void submit(SubmitCustomGeometryEvent event){
+    public static void submit(io.github.mcheliceport.platform.ClientEvents.Geometry event){
         if(MARKS.isEmpty()||world!=Minecraft.getInstance().level||!WreckScene.enabled())return;
         var camera=event.getLevelRenderState().cameraRenderState.pos;long now=world.getGameTime();
         int cap=ClientConfig.get(ClientConfig.EFFECT_BUDGET)==ClientConfig.EffectBudget.LOW?160:600;

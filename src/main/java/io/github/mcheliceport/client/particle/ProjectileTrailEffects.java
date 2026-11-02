@@ -10,15 +10,13 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.Vec3;
 
 /** Bounded client motor trails. No weapon simulation, payload calls or additional entity scan. */
-@net.neoforged.fml.common.EventBusSubscriber(modid="mcheli_ce_port",value=net.neoforged.api.distmarker.Dist.CLIENT)
 public final class ProjectileTrailEffects {
     private static final Map<BaseBulletEntity,Track> TRACKS=new WeakHashMap<>();
     private static final Map<WeaponInfo,ProjectileTrailLook.Profile> PROFILES=new WeakHashMap<>();
     private static ClientLevel world;private static long tick=Long.MIN_VALUE;private static int births,active;
     private static final class Track {Vec3 previous;long seen,lastEmission=Long.MIN_VALUE;Track(Vec3 p,long now){previous=p;seen=now;}}
     private ProjectileTrailEffects() {}
-    @net.neoforged.bus.api.SubscribeEvent
-    public static void lifecycle(net.neoforged.neoforge.client.event.ClientTickEvent.Post event){
+    public static void lifecycle(){
         if(world!=Minecraft.getInstance().level||!EffectQuality.enhanced())clear();
     }
     public static void clear(){TRACKS.clear();PROFILES.clear();world=null;tick=Long.MIN_VALUE;births=active=0;}

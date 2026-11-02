@@ -17,13 +17,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
 
 /** Client presentation only. States and startup sound voices have hard limits and world ownership. */
-@EventBusSubscriber(modid = "mcheli_ce_port", value = Dist.CLIENT)
 public final class VehicleAtmosphere {
     private static final LinkedHashMap<AircraftEntity, State> STATES = new LinkedHashMap<>();
     private static ClientLevel world;
@@ -72,7 +67,7 @@ public final class VehicleAtmosphere {
                 &&Minecraft.getInstance().gameRenderer.mainCamera().position().distanceToSqr(aircraft.position())<=80*80;
     }
 
-    @SubscribeEvent public static void tick(ClientTickEvent.Post event) {
+    public static void tick() {
         Minecraft mc = Minecraft.getInstance();
         ClientLevel level = mc.level;
         if (level != world || !EffectQuality.enhanced()) { clear(); world = level; }

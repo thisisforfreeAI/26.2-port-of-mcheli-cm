@@ -12,7 +12,6 @@ import net.minecraft.client.gui.screens.ChatScreen;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
-import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 
 /**
  * Upstream's {@code MCH_GuiSpawnGunner}: holding a gunner spawn item in first person, a square at
@@ -30,7 +29,7 @@ public final class SpawnGunnerHudLayer {
     private SpawnGunnerHudLayer() {
     }
 
-    public static void register(RegisterGuiLayersEvent event) {
+    public static void register(io.github.mcheliceport.platform.HudLayers event) {
         event.registerBelow(AircraftHudLayer.ID, ID, SpawnGunnerHudLayer::render);
     }
 

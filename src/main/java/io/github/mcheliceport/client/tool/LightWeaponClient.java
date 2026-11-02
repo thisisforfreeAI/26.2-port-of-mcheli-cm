@@ -20,8 +20,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.client.event.RenderHandEvent;
-import net.neoforged.neoforge.client.event.ViewportEvent;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -266,7 +264,7 @@ public final class LightWeaponClient {
     }
 
     /** Upstream {@code W_Reflection.setCameraZoom}: the sight's zoom while aiming. */
-    public static void onComputeFov(ViewportEvent.ComputeFov event) {
+    public static void onComputeFov(io.github.mcheliceport.platform.ClientEvents.Fov event) {
         LocalPlayer player = Minecraft.getInstance().player;
         WeaponBase w = weapon;
         if (w != null && isAiming(player) && event.getCamera().entity() == player) {
@@ -276,7 +274,7 @@ public final class LightWeaponClient {
     }
 
     /** Upstream {@code BuiltInLightWeaponItemRenderer}: no launcher in view while aiming in first person. */
-    public static void onRenderHand(RenderHandEvent event) {
+    public static void onRenderHand(io.github.mcheliceport.platform.ClientEvents.Cancelable event) {
         if (isAiming(Minecraft.getInstance().player)) {
             event.setCanceled(true);
         }

@@ -4,16 +4,11 @@ import io.github.mcheliceport.content.aircraft.AircraftInfo;
 import io.github.mcheliceport.entity.aircraft.AircraftEntity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.particles.ParticleTypes;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
 
 /**
  * M10c, a port addition: while the player rides a vehicle, every fuel or ammo supply vehicle
  * within 64 blocks marks its supply range on the ground with a ring of sparkles once a second.
  */
-@EventBusSubscriber(modid = "mcheli_ce_port", value = Dist.CLIENT)
 public final class SupplyRangeRings {
 
     private static final double VIEW = 64.0;
@@ -22,8 +17,7 @@ public final class SupplyRangeRings {
     private SupplyRangeRings() {
     }
 
-    @SubscribeEvent
-    public static void tick(ClientTickEvent.Post event) {
+    public static void tick() {
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null || mc.player == null || mc.isPaused() || mc.level.getGameTime() % 20 != 0
                 || !(mc.player.getRootVehicle() instanceof AircraftEntity)) {

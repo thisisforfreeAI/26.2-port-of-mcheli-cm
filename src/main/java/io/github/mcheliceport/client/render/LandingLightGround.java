@@ -8,13 +8,8 @@ import net.minecraft.core.*;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.*;
 import net.minecraft.world.phys.shapes.CollisionContext;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.*;
 
 /** Four cached surface patches, offered by the existing beam extraction. At most 19 rays/tick. */
-@EventBusSubscriber(modid="mcheli_ce_port",value=Dist.CLIENT)
 public final class LandingLightGround {
     private record Key(AircraftEntity aircraft,io.github.mcheliceport.content.aircraft.AircraftInfo.SearchLight lamp){}
     private static final class Source {
@@ -43,7 +38,7 @@ public final class LandingLightGround {
         source.origin=at;source.end=position.add(beam.point(0,Math.min(48,beam.light().height),0));source.beam=beam;source.seen=tick;
         if(source.sampledOrigin!=null&&source.origin.distanceToSqr(source.sampledOrigin)>1)source.surfaces=List.of();
     }
-    @SubscribeEvent public static void tick(ClientTickEvent.Post event){
+    public static void tick(){
         var mc=Minecraft.getInstance();if(world!=mc.level||!enabled()){clear();world=mc.level;}
         if(world==null||!enabled()||mc.isPaused())return;++tick;rays=0;
         var eye=mc.gameRenderer.mainCamera().position();
@@ -75,7 +70,7 @@ public final class LandingLightGround {
     }
     static float falloff(float x,float z,float radius){return Math.clamp(1-(x*x+z*z)/(radius*radius),0,1);}
     static float radius(double distance,float width,float height){return Double.isFinite(distance)&&Float.isFinite(width+height)&&height>0?(float)Math.clamp(distance*width/(2*height),.9,1.9):.9F;}
-    @SubscribeEvent public static void submit(SubmitCustomGeometryEvent event){
+    public static void submit(io.github.mcheliceport.platform.ClientEvents.Geometry event){
         var mc=Minecraft.getInstance();if(world!=mc.level||!enabled())return;
         var pose=event.getPoseStack();var camera=event.getLevelRenderState().cameraRenderState.pos;
         float night=FlightLightLook.night(world.getSkyDarken());

@@ -19,7 +19,6 @@ import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 
 /**
  * The laser designator's HUD (upstream {@code MCH_GuiGLTD}): zoom, the strike and whether it is
@@ -40,7 +39,7 @@ public final class GltdHudLayer {
     private GltdHudLayer() {
     }
 
-    public static void register(RegisterGuiLayersEvent event) {
+    public static void register(io.github.mcheliceport.platform.HudLayers event) {
         event.registerBelow(AircraftHudLayer.ID, ID, GltdHudLayer::render);
     }
 
