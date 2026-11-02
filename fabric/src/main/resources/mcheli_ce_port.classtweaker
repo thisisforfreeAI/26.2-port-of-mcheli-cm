@@ -11,3 +11,10 @@ accessible field net/minecraft/server/level/ChunkMap entityMap Lit/unimi/dsi/fas
 accessible class net/minecraft/server/level/ChunkMap$TrackedEntity
 accessible field net/minecraft/server/level/ChunkMap$TrackedEntity seenBy Ljava/util/Set;
 accessible field net/minecraft/client/renderer/LevelRenderer levelRenderState Lnet/minecraft/client/renderer/state/level/LevelRenderState;
+# Shared client code calls methods NeoForge patches in; the Fabric build injects them (platform/fabric/inject).
+inject-interface net/minecraft/client/gui/GuiGraphicsExtractor io/github/mcheliceport/platform/fabric/inject/GuiGraphicsExtras
+inject-interface net/minecraft/client/MouseHandler io/github/mcheliceport/platform/fabric/inject/MouseHandlerExtras
+inject-interface net/minecraft/client/KeyMapping io/github/mcheliceport/platform/fabric/inject/KeyMappingExtras
+accessible class net/minecraft/client/gui/GuiGraphicsExtractor$ScissorStack
+# The aircraft camera switches vanilla post effects (NeoForge makes setPostEffect public).
+accessible method net/minecraft/client/renderer/GameRenderer setPostEffect (Lnet/minecraft/resources/Identifier;)V

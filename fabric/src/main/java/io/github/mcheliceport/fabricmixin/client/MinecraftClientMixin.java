@@ -8,7 +8,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-/** NeoForge's {@code RenderFrameEvent} and {@code InputEvent.InteractionKeyMappingTriggered} (attack and use). */
+/** NeoForge's {@code RenderFrameEvent}, {@code FlipFrameEvent} and {@code InputEvent.InteractionKeyMappingTriggered} (attack and use). */
 @Mixin(Minecraft.class)
 abstract class MinecraftClientMixin {
 
@@ -23,6 +23,12 @@ abstract class MinecraftClientMixin {
             shift = At.Shift.AFTER))
     private void mcheli$framePost(boolean advanceGameTime, CallbackInfo ci) {
         ClientEvents.run(ClientEvents.RENDER_FRAME_POST);
+    }
+
+    @Inject(method = "renderFrame", at = @At(value = "INVOKE",
+            target = "Lnet/minecraft/client/renderer/LevelRenderer;endFrame()V", shift = At.Shift.AFTER))
+    private void mcheli$flipFrame(boolean advanceGameTime, CallbackInfo ci) {
+        ClientEvents.run(ClientEvents.FLIP_FRAME);
     }
 
     @Inject(method = "startAttack", at = @At("HEAD"), cancellable = true)

@@ -7,7 +7,7 @@ import net.neoforged.neoforge.common.ModConfigSpec;
 
 /**
  * CLIENT config ({@code config/mcheli_ce_port-client.toml}): per-player settings that never leave the
- * client. Registered by {@link io.github.mcheliceport.client.McheliCePortClient}.
+ * client. Registered by each loader's client entry point.
  *
  * <p>Upstream's mouse, HUD and render keys from {@code mcheli.cfg} move here as they are ported
  * (PORTING_PLAN.md section 5.6).

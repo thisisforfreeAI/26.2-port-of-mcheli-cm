@@ -10,7 +10,7 @@ import net.minecraft.client.particle.SingleQuadParticle;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.resources.Identifier;
-import net.neoforged.neoforge.client.event.RegisterRenderPipelinesEvent;
+import io.github.mcheliceport.platform.ClientRegistrars;
 
 /**
  * The particle layer of the M8 glows: vanilla's particle shaders with additive blending
@@ -49,7 +49,7 @@ public final class ParticleLayers {
     private ParticleLayers() {
     }
 
-    public static void registerPipelines(RegisterRenderPipelinesEvent event) {
+    public static void registerPipelines(ClientRegistrars.Pipelines event) {
         event.registerPipeline(ADDITIVE_PIPELINE);
         event.registerPipeline(ERODING_SMOKE_PIPELINE);
         event.registerPipeline(CONDENSATION_PIPELINE);

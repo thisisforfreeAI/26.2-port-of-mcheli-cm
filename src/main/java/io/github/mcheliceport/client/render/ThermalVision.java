@@ -35,10 +35,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.neoforged.bus.api.EventPriority;
-import net.neoforged.neoforge.client.event.RenderLivingEvent;
-import net.neoforged.neoforge.client.submit.RenderPhaseKey;
-import net.neoforged.neoforge.common.NeoForge;
 import org.joml.Quaternionf;
 import org.jspecify.annotations.Nullable;
 
@@ -62,8 +58,8 @@ public final class ThermalVision {
     }
 
     public static void register() {
-        // Before every other listener, so the tilt and hiding listeners act once, on the resubmit.
-        NeoForge.EVENT_BUS.addListener(EventPriority.HIGHEST, ThermalVision::onPre);
+        // Added before every other listener, so the tilt and hiding listeners act once, on the resubmit.
+        io.github.mcheliceport.platform.ClientEvents.RENDER_LIVING_PRE.add(ThermalVision::onPre);
     }
 
     /** Upstream {@code CameraHandler.cameraMode == 2}: the local rider's camera is in thermal vision. */
@@ -86,7 +82,7 @@ public final class ThermalVision {
         return active() && entity != AircraftClientEvents.riddenAircraft(Minecraft.getInstance().player);
     }
 
-    private static void onPre(RenderLivingEvent.Pre<?, ?, ?> event) {
+    private static void onPre(io.github.mcheliceport.platform.ClientEvents.RenderLiving event) {
         if (resubmitting || event.isCanceled() || !active()) {
             return;
         }
@@ -116,13 +112,18 @@ public final class ThermalVision {
     }
 
     /** Passes everything on, with each model's texture swapped for the white one. */
-    static final class WhiteCollector implements SubmitNodeCollector {
+    static final class WhiteCollector extends io.github.mcheliceport.platform.loader.Submits.Forwarding {
         private final SubmitNodeCollector root;
         private final OrderedSubmitNodeCollector out;
 
         WhiteCollector(SubmitNodeCollector root, OrderedSubmitNodeCollector out) {
             this.root = root;
             this.out = out;
+        }
+
+        @Override
+        protected OrderedSubmitNodeCollector out() {
+            return this.out;
         }
 
         @Override
@@ -213,16 +214,6 @@ public final class ThermalVision {
             this.out.submitGizmoPrimitives(group, camera, onTop);
         }
 
-        @Override
-        public void submitMultiLayerBlockModel(PoseStack poseStack, List<BlockStateModelPart> modelParts,
-                boolean translucent, int[] tintLayers, int lightCoords, int overlayCoords, int outlineColor) {
-            this.out.submitMultiLayerBlockModel(poseStack, modelParts, translucent, tintLayers, lightCoords,
-                    overlayCoords, outlineColor);
-        }
 
-        @Override
-        public <T extends SubmitNode, S extends T> void submitSpecial(RenderPhaseKey<T> phaseKey, S submitNode) {
-            this.out.submitSpecial(phaseKey, submitNode);
-        }
     }
 }

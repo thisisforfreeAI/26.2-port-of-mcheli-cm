@@ -21,7 +21,7 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.client.event.RegisterRenderPipelinesEvent;
+import io.github.mcheliceport.platform.ClientRegistrars;
 import org.joml.Matrix4f;
 
 /** Local exhaust refraction, one shared color copy and one scissored pass before hands/HUD. */
@@ -44,7 +44,7 @@ public final class EngineHeat {
     private static final Matrix4f worldProjection = new Matrix4f();
     private static boolean projectionReady;
     private EngineHeat() {}
-    public static void registerPipelines(RegisterRenderPipelinesEvent event) { event.registerPipeline(PIPELINE); }
+    public static void registerPipelines(ClientRegistrars.Pipelines event) { event.registerPipeline(PIPELINE); }
     private static boolean enabled() {
         return EffectQuality.enhanced() && ClientConfig.get(ClientConfig.ENGINE_HEAT_HAZE)
                 && EngineHeatLook.enabled(ClientConfig.get(ClientConfig.EFFECT_BUDGET), EffectPerformance.pressure());

@@ -17,5 +17,9 @@ public final class FabricClientMod implements ClientModInitializer {
                 (entity, level) -> FabricParts.add(entity));
         net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientEntityEvents.ENTITY_UNLOAD.register(
                 (entity, level) -> FabricParts.remove(entity));
+        // The shared listeners first: FabricClientEvents fires the registration events right away.
+        io.github.mcheliceport.client.McheliCePortClient.init();
+        FabricClientEvents.register();
+        FabricClientEvents.registerContent();
     }
 }

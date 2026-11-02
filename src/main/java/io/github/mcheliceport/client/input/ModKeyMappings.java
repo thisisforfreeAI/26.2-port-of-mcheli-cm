@@ -9,9 +9,9 @@ import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
-import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
-import net.neoforged.neoforge.client.settings.IKeyConflictContext;
-import net.neoforged.neoforge.client.settings.KeyConflictContext;
+import io.github.mcheliceport.platform.ClientRegistrars;
+import io.github.mcheliceport.platform.KeyContext;
+import io.github.mcheliceport.platform.loader.ModKeyMapping;
 import org.lwjgl.glfw.GLFW;
 
 /**
@@ -25,37 +25,19 @@ public final class ModKeyMappings {
             new KeyMapping.Category(Identifier.fromNamespaceAndPath(McheliCePort.MOD_ID, "vehicles"));
 
     /** Active while the player rides a McHeli vehicle, in any seat, or sits at a laser designator. */
-    public static final IKeyConflictContext RIDING = new IKeyConflictContext() {
-        @Override
-        public boolean isActive() {
-            Minecraft mc = Minecraft.getInstance();
-            return mc.gui.screen() == null && mc.player != null && (isRidingAircraft(mc.player.getVehicle())
-                    || mc.player.getVehicle() instanceof io.github.mcheliceport.entity.gltd.GltdEntity);
-        }
-
-        @Override
-        public boolean conflicts(IKeyConflictContext other) {
-            // KeyModifier.NONE suppresses keys while Ctrl/Shift/Alt is held unless this context
-            // conflicts with IN_GAME. Ctrl itself and Ctrl+C/I/F must all remain usable while riding.
-            return other == this || other == KeyConflictContext.IN_GAME;
-        }
+    public static final KeyContext RIDING = () -> {
+        Minecraft mc = Minecraft.getInstance();
+        return mc.gui.screen() == null && mc.player != null && (isRidingAircraft(mc.player.getVehicle())
+                || mc.player.getVehicle() instanceof io.github.mcheliceport.entity.gltd.GltdEntity);
     };
 
     /**
      * Upstream's multiplayer keys work outside vehicles too, with no screen open. Upstream kept them
      * off singleplayer (unless the debug log was on); here they work there too.
      */
-    public static final IKeyConflictContext MULTIPLAY = new IKeyConflictContext() {
-        @Override
-        public boolean isActive() {
-            Minecraft mc = Minecraft.getInstance();
-            return mc.gui.screen() == null && mc.player != null;
-        }
-
-        @Override
-        public boolean conflicts(IKeyConflictContext other) {
-            return other == this || other == KeyConflictContext.IN_GAME;
-        }
+    public static final KeyContext MULTIPLAY = () -> {
+        Minecraft mc = Minecraft.getInstance();
+        return mc.gui.screen() == null && mc.player != null;
     };
 
     public static final KeyMapping UP = key("up", GLFW.GLFW_KEY_W);
@@ -84,10 +66,10 @@ public final class ModKeyMappings {
     public static final KeyMapping CAMERA_DISTANCE_DOWN = key("camera_distance_down", GLFW.GLFW_KEY_PAGE_DOWN);
 
     /** Upstream {@code KeyScoreboard}: held, it shows the team lists. */
-    public static final KeyMapping SCOREBOARD = new KeyMapping("key." + McheliCePort.MOD_ID + ".scoreboard",
+    public static final KeyMapping SCOREBOARD = ModKeyMapping.create("key." + McheliCePort.MOD_ID + ".scoreboard",
             MULTIPLAY, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_L, CATEGORY);
     /** Upstream {@code KeyMultiplayManager}: opens the multiplay manager. */
-    public static final KeyMapping MULTIPLAY_MANAGER = new KeyMapping(
+    public static final KeyMapping MULTIPLAY_MANAGER = ModKeyMapping.create(
             "key." + McheliCePort.MOD_ID + ".multiplay_manager", MULTIPLAY, InputConstants.Type.KEYSYM,
             GLFW.GLFW_KEY_M, CATEGORY);
 
@@ -112,7 +94,7 @@ public final class ModKeyMappings {
     public static final KeyMapping.Category WINGMAN_CATEGORY =
             new KeyMapping.Category(Identifier.fromNamespaceAndPath(McheliCePort.MOD_ID, "wingman"));
     /** Upstream {@code WingmanKeyHandler.KEY_PANEL}: opens the wingman panel while piloting. */
-    public static final KeyMapping WINGMAN_PANEL = new KeyMapping("key." + McheliCePort.MOD_ID + ".wingman_panel",
+    public static final KeyMapping WINGMAN_PANEL = ModKeyMapping.create("key." + McheliCePort.MOD_ID + ".wingman_panel",
             RIDING, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_KP_0, WINGMAN_CATEGORY);
 
     public static final List<KeyMapping> ALL = List.of(UP, DOWN, RIGHT, LEFT, SWITCH_GUNNER, SWITCH_HOVERING, ZOOM,
@@ -125,12 +107,12 @@ public final class ModKeyMappings {
     }
 
     private static KeyMapping key(String name, int keyCode) {
-        return new KeyMapping("key." + McheliCePort.MOD_ID + "." + name, RIDING, InputConstants.Type.KEYSYM, keyCode,
+        return ModKeyMapping.create("key." + McheliCePort.MOD_ID + "." + name, RIDING, InputConstants.Type.KEYSYM, keyCode,
                 CATEGORY);
     }
 
     private static KeyMapping mouse(String name, int button) {
-        return new KeyMapping("key." + McheliCePort.MOD_ID + "." + name, RIDING, InputConstants.Type.MOUSE, button,
+        return ModKeyMapping.create("key." + McheliCePort.MOD_ID + "." + name, RIDING, InputConstants.Type.MOUSE, button,
                 CATEGORY);
     }
 
@@ -139,7 +121,7 @@ public final class ModKeyMappings {
                 || vehicle instanceof SeatEntity seat && seat.getParent() != null;
     }
 
-    public static void register(RegisterKeyMappingsEvent event) {
+    public static void register(ClientRegistrars.KeyMappings event) {
         event.registerCategory(CATEGORY);
         event.registerCategory(WINGMAN_CATEGORY);
         ALL.forEach(event::register);

@@ -52,6 +52,8 @@ def sharedResourceCopy = tasks.register('sharedResources', Sync) {
     // The NeoForge build's Platform implementation; fabric/src/main/resources names Fabric's.
     exclude 'META-INF/services/io.github.mcheliceport.platform.Platform'
     exclude '**/*.bbmodel'
+    // Uses NeoForge's fluid_container item model; fabric/src/main/resources has a plain bucket.
+    exclude 'assets/mcheli_ce_port/items/fuel_bucket.json'
     exclude '**/.cache'
     into layout.buildDirectory.dir('sharedSources/resources')
 }
@@ -150,6 +152,13 @@ loom {
             vmArg '-Dfabric-api.gametest'
             vmArg "-Dfabric-api.gametest.report-file=${layout.buildDirectory.get().asFile}/gametest/junit.xml"
             runDir 'build/gametest'
+        }
+        // Boots a Fabric client (needs a display: xvfb-run in CI), runs FabricClientGameTests and exits.
+        clientGameTest {
+            client()
+            name 'Fabric Client GameTest'
+            vmArg '-Dfabric.client.gametest'
+            runDir 'build/clientgametest'
         }
     }
 }

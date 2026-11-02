@@ -20,8 +20,7 @@ import net.minecraft.client.renderer.state.gui.pip.PictureInPictureRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Util;
-import net.neoforged.neoforge.client.event.RegisterPictureInPictureRenderersEvent;
-import net.neoforged.neoforge.client.event.RegisterRenderPipelinesEvent;
+import io.github.mcheliceport.platform.ClientRegistrars;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -75,11 +74,11 @@ public final class DraftingModelRenderer extends PictureInPictureRenderer<Drafti
         }
     }
 
-    public static void registerPipelines(RegisterRenderPipelinesEvent event) {
+    public static void registerPipelines(ClientRegistrars.Pipelines event) {
         event.registerPipeline(PIPELINE);
     }
 
-    public static void register(RegisterPictureInPictureRenderersEvent event) {
+    public static void register(ClientRegistrars.PictureInPicture event) {
         event.register(State.class, DraftingModelRenderer::new);
     }
 

@@ -17,7 +17,7 @@ import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Util;
 import net.minecraft.world.entity.Entity;
-import net.neoforged.neoforge.client.event.RegisterRenderPipelinesEvent;
+import io.github.mcheliceport.platform.ClientRegistrars;
 
 /**
  * The client half of upstream's long-distance patch ({@code EntityRendererHook#renderFarPass}): a
@@ -46,7 +46,7 @@ public final class FarVehicles {
     private FarVehicles() {
     }
 
-    public static void registerPipelines(RegisterRenderPipelinesEvent event) {
+    public static void registerPipelines(ClientRegistrars.Pipelines event) {
         event.registerPipeline(PIPELINE);
     }
 

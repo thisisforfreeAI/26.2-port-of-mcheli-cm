@@ -33,6 +33,12 @@ public interface Platform {
     /** The mod's own version, e.g. {@code 0.6.0}. */
     String modVersion();
 
+    /** One line per loaded mod: {@code [id]  name[version]  file}. */
+    java.util.List<String> modListLines();
+
+    /** An ingredient that matches the stack's item with its changed data components. */
+    net.minecraft.world.item.crafting.Ingredient componentsIngredient(net.minecraft.world.item.ItemStack stack);
+
     /** Client only: the mod's config screen, or {@code null} when the loader has none. */
     net.minecraft.client.gui.screens.@org.jspecify.annotations.Nullable Screen createConfigScreen(
             net.minecraft.client.gui.screens.@org.jspecify.annotations.Nullable Screen parent);

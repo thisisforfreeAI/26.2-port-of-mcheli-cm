@@ -1,6 +1,7 @@
 package io.github.mcheliceport.platform.neoforge;
 
 import io.github.mcheliceport.platform.ClientEvents;
+import io.github.mcheliceport.platform.ClientRegistrars;
 import io.github.mcheliceport.platform.HudLayers;
 import net.minecraft.resources.Identifier;
 import net.neoforged.bus.api.IEventBus;
@@ -112,5 +113,102 @@ public final class NeoForgeClientEvents {
                         e.registerAboveAll(id, layer::render);
                     }
                 }));
+        bus.addListener((net.neoforged.neoforge.client.event.FlipFrameEvent e) -> ClientEvents.run(ClientEvents.FLIP_FRAME));
+        // Highest, as ThermalVision's own listener was: it cancels and resubmits before other mods see the entity.
+        bus.addListener(net.neoforged.bus.api.EventPriority.HIGHEST, (net.neoforged.neoforge.client.event.RenderLivingEvent.Pre<?, ?, ?> e) -> {
+            var living = new ClientEvents.RenderLiving(e.getRenderer(), e.getRenderState(), e.getPoseStack(),
+                    e.getSubmitNodeCollector());
+            living.setCanceled(e.isCanceled());
+            ClientEvents.fire(ClientEvents.RENDER_LIVING_PRE, living);
+            e.setCanceled(living.isCanceled());
+        });
+        bus.addListener((net.neoforged.neoforge.client.event.RenderLivingEvent.Post<?, ?, ?> e) -> ClientEvents.fire(
+                ClientEvents.RENDER_LIVING_POST, new ClientEvents.RenderLiving(e.getRenderer(), e.getRenderState(),
+                        e.getPoseStack(), e.getSubmitNodeCollector())));
+        bus.addListener((net.neoforged.neoforge.client.event.RegisterFeatureRenderersEvent e) -> ClientEvents.fire(
+                ClientEvents.REGISTER_FEATURE_RENDERERS, new ClientRegistrars.FeatureRenderers() {
+                    @Override
+                    public <S extends net.minecraft.client.renderer.feature.submit.SubmitNode> void register(
+                            net.minecraft.client.renderer.feature.FeatureRendererType<S> type,
+                            java.util.function.Supplier<net.minecraft.client.renderer.feature.FeatureRenderer<S>> renderer) {
+                        e.register(type, renderer.get());
+                    }
+                }));
+        registerContent(modBus);
+    }
+
+    /** The mod-bus registration events. */
+    private static void registerContent(IEventBus modBus) {
+        modBus.addListener((net.neoforged.neoforge.client.renderstate.RegisterRenderStateModifiersEvent e) ->
+                e.registerEntityModifier(new com.google.common.reflect.TypeToken<net.minecraft.client.renderer.entity.LivingEntityRenderer<
+                        net.minecraft.world.entity.LivingEntity, net.minecraft.client.renderer.entity.state.LivingEntityRenderState, ?>>() {
+                }, (net.minecraft.world.entity.LivingEntity entity,
+                        net.minecraft.client.renderer.entity.state.LivingEntityRenderState state) ->
+                        ClientEvents.LIVING_RENDER_STATE.forEach(listener -> listener.accept(entity, state, state.partialTick))));
+        modBus.addListener((net.neoforged.neoforge.client.event.RegisterRenderPipelinesEvent e) ->
+                ClientEvents.fire(ClientEvents.REGISTER_PIPELINES, e::registerPipeline));
+        modBus.addListener((net.neoforged.neoforge.client.event.RegisterParticleGroupsEvent e) ->
+                ClientEvents.fire(ClientEvents.REGISTER_PARTICLE_GROUPS, e::register));
+        modBus.addListener((net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent e) -> ClientEvents.fire(
+                ClientEvents.REGISTER_KEY_MAPPINGS, new ClientRegistrars.KeyMappings() {
+                    @Override
+                    public void registerCategory(net.minecraft.client.KeyMapping.Category category) {
+                        e.registerCategory(category);
+                    }
+
+                    @Override
+                    public void register(net.minecraft.client.KeyMapping key) {
+                        e.register(key);
+                    }
+                }));
+        modBus.addListener((net.neoforged.neoforge.client.event.EntityRenderersEvent.RegisterRenderers e) -> ClientEvents.fire(
+                ClientEvents.REGISTER_RENDERERS, new ClientRegistrars.Renderers() {
+                    @Override
+                    public <T extends net.minecraft.world.entity.Entity> void registerEntityRenderer(
+                            net.minecraft.world.entity.EntityType<? extends T> type,
+                            net.minecraft.client.renderer.entity.EntityRendererProvider<T> provider) {
+                        e.registerEntityRenderer(type, provider);
+                    }
+
+                    @Override
+                    public <T extends net.minecraft.world.level.block.entity.BlockEntity,
+                            S extends net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState> void registerBlockEntityRenderer(
+                            net.minecraft.world.level.block.entity.BlockEntityType<? extends T> type,
+                            net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider<T, S> provider) {
+                        e.registerBlockEntityRenderer(type, provider);
+                    }
+                }));
+        modBus.addListener((net.neoforged.neoforge.client.event.EntityRenderersEvent.RegisterLayerDefinitions e) ->
+                ClientEvents.fire(ClientEvents.REGISTER_LAYER_DEFINITIONS, e::registerLayerDefinition));
+        modBus.addListener((net.neoforged.neoforge.client.event.RegisterMenuScreensEvent e) -> ClientEvents.fire(
+                ClientEvents.REGISTER_MENU_SCREENS, new ClientRegistrars.MenuScreenRegistrar() {
+                    @Override
+                    public <M extends net.minecraft.world.inventory.AbstractContainerMenu,
+                            U extends net.minecraft.client.gui.screens.Screen & net.minecraft.client.gui.screens.inventory.MenuAccess<M>> void register(
+                            net.minecraft.world.inventory.MenuType<? extends M> type,
+                            net.minecraft.client.gui.screens.MenuScreens.ScreenConstructor<M, U> constructor) {
+                        e.register(type, constructor);
+                    }
+                }));
+        modBus.addListener((net.neoforged.neoforge.client.event.RegisterItemModelsEvent e) ->
+                ClientEvents.fire(ClientEvents.REGISTER_ITEM_MODELS, e::register));
+        modBus.addListener((net.neoforged.neoforge.client.event.RegisterPictureInPictureRenderersEvent e) -> ClientEvents.fire(
+                ClientEvents.REGISTER_PICTURE_IN_PICTURE, new ClientRegistrars.PictureInPicture() {
+                    @Override
+                    public <T extends net.minecraft.client.renderer.state.gui.pip.PictureInPictureRenderState> void register(
+                            Class<T> stateClass,
+                            java.util.function.Supplier<net.minecraft.client.gui.render.pip.PictureInPictureRenderer<T>> factory) {
+                        e.register(stateClass, factory);
+                    }
+                }));
+        modBus.addListener((net.neoforged.neoforge.client.event.AddClientReloadListenersEvent e) ->
+                ClientEvents.fire(ClientEvents.ADD_RELOAD_LISTENERS, e::addListener));
+        modBus.addListener((net.neoforged.neoforge.client.event.RegisterFluidModelsEvent e) -> ClientEvents.fire(
+                ClientEvents.REGISTER_FLUID_MODELS, (still, flowing, tint, stillFluid, flowingFluid) -> e.register(
+                        new net.minecraft.client.renderer.block.FluidModel.Unbaked(
+                                new net.minecraft.client.resources.model.sprite.Material(still),
+                                new net.minecraft.client.resources.model.sprite.Material(flowing), null,
+                                (net.neoforged.neoforge.client.fluid.FluidTintSource) state -> tint),
+                        stillFluid, flowingFluid)));
     }
 }

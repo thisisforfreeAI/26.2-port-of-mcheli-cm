@@ -19,7 +19,7 @@ import net.neoforged.neoforge.transfer.item.VanillaContainerWrapper;
 /**
  * NeoForge entry point of McHeli CE (26.2 Port); the loader-neutral setup is in {@link McheliCePort}.
  *
- * <p>Client-only setup lives in {@link io.github.mcheliceport.client.McheliCePortClient}.
+ * <p>Client-only setup lives in {@link NeoForgeClientMod} and {@link io.github.mcheliceport.client.McheliCePortClient}.
  */
 @Mod(McheliCePort.MOD_ID)
 public final class NeoForgeMod {

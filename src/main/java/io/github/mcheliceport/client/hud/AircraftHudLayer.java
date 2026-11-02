@@ -38,7 +38,7 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.resources.Identifier;
-import net.neoforged.neoforge.client.event.RegisterRenderPipelinesEvent;
+import io.github.mcheliceport.platform.ClientRegistrars;
 
 /**
  * The helicopter HUD, drawn above vanilla's: upstream's {@code MCH_GuiHeli} and
@@ -76,7 +76,7 @@ public final class AircraftHudLayer implements io.github.mcheliceport.platform.H
         event.registerAboveAll(ID, new AircraftHudLayer());
     }
 
-    public static void registerPipelines(RegisterRenderPipelinesEvent event) {
+    public static void registerPipelines(ClientRegistrars.Pipelines event) {
         event.registerPipeline(GUI_TEXTURED_ADDITIVE);
     }
 

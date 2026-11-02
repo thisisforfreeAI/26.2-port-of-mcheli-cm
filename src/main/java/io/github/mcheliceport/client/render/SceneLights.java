@@ -16,8 +16,6 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.client.renderstate.RegisterRenderStateModifiersEvent;
-import com.google.common.reflect.TypeToken;
 
 /**
  * Brief client-side point lights from explosions, muzzle flashes, burning wrecks and flares. The
@@ -276,14 +274,13 @@ public final class SceneLights {
         return Math.round(15 * Math.min(1, best));
     }
 
-    public static void registerModifiers(RegisterRenderStateModifiersEvent event) {
-        event.registerEntityModifier(new TypeToken<LivingEntityRenderer<LivingEntity, LivingEntityRenderState, ?>>() { },
-                (LivingEntity entity, LivingEntityRenderState state) -> {
+    public static void registerModifiers() {
+        io.github.mcheliceport.platform.ClientEvents.LIVING_RENDER_STATE.add((LivingEntity entity, LivingEntityRenderState state, float partialTick) -> {
                     if (world == null || LIGHTS.isEmpty() || entity.level() != world || !enabled()) {
                         return;
                     }
-                    int lit = blockLight(entity.getPosition(state.partialTick).add(0, entity.getBbHeight() * 0.5, 0),
-                            state.partialTick);
+                    int lit = blockLight(entity.getPosition(partialTick).add(0, entity.getBbHeight() * 0.5, 0),
+                            partialTick);
                     int block = LightCoordsUtil.block(state.lightCoords);
                     if (lit > block) {
                         state.lightCoords = LightCoordsUtil.pack(lit, LightCoordsUtil.sky(state.lightCoords));
