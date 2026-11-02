@@ -1,0 +1,24 @@
+{
+  "parent": "mcheli_ce_port:main/root",
+  "criteria": {
+    "relief_supplies": {
+      "trigger": "mcheli_ce_port:relief_supplies"
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "mcheli_ce_port:container"
+    },
+    "title": {
+      "translate": "advancements.mcheli_ce_port.relief_supplies.title"
+    },
+    "description": {
+      "translate": "advancements.mcheli_ce_port.relief_supplies.description"
+    }
+  },
+  "requirements": [
+    [
+      "relief_supplies"
+    ]
+  ]
+}

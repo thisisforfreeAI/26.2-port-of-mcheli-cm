@@ -1,0 +1,9 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "io.github.mcheliceport.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": ["ChunkMapAccessor", "LevelPartsMixin", "ServerLevelPartsMixin", "ServerEntityCallbacksMixin", "ServerEntityMixin", "LongDistanceTrackingMixin", "UavChunkTrackingMixin", "UavEntityTrackingMixin"],
+  "client": ["ClientEntityCallbacksMixin", "client.CameraInvoker", "client.FarVehicleVisibilityMixin", "client.ClientLevelAccessor", "client.GameRendererInvoker", "client.GameRendererLevelMixin", "client.ItemRendererMixin", "client.KeyMappingAccessor", "client.LivingEntityRendererMixin", "client.MouseHandlerAccessor"],
+  "injectors": {"defaultRequire": 1}
+}

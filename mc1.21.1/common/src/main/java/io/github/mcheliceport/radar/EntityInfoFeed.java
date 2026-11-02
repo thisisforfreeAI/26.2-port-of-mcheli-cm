@@ -1,0 +1,99 @@
+package io.github.mcheliceport.radar;
+
+import io.github.mcheliceport.entity.aircraft.AircraftEntity;
+import io.github.mcheliceport.entity.flare.ChaffEntity;
+import io.github.mcheliceport.entity.flare.FlareEntity;
+import io.github.mcheliceport.entity.heli.HeliEntity;
+import io.github.mcheliceport.entity.plane.PlaneEntity;
+import io.github.mcheliceport.entity.weapon.AAMissileEntity;
+import io.github.mcheliceport.net.EntityInfoSyncPayload;
+import io.github.mcheliceport.net.ModNetwork;
+import io.github.mcheliceport.weather.FlightWeather;
+import java.util.ArrayList;
+import java.util.List;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.levelgen.Heightmap;
+
+/**
+ * Upstream's {@code EntityInfoManagerAsync}: every ten ticks each player is sent the players,
+ * vehicles, flares, chaff and air-to-air missiles within 2000 blocks of them, for the BVR and
+ * mortar radar HUDs. Planes, helicopters and chaff count only 30 blocks or more above the ground
+ * and moving at half a block a tick or more. Since M10e the range shrinks in rain and storms, and a
+ * vehicle whose radar lightning blanked gets nothing.
+ */
+public final class EntityInfoFeed {
+
+    private static final int INTERVAL = 10;
+    /** Horizontal range of the feed, which is also how far a BVR lock may reach. */
+    public static final double RANGE = 2000.0;
+    private static int tickCounter;
+    private static long snapshotSeq;
+
+    private EntityInfoFeed() {
+    }
+
+    public static void register() {
+        io.github.mcheliceport.platform.event.ModEvents.SERVER_TICK_POST.register(EntityInfoFeed::onServerTick);
+    }
+
+    private static void onServerTick(net.minecraft.server.MinecraftServer server) {
+        if (++tickCounter % INTERVAL != 0) {
+            return;
+        }
+        snapshotSeq++;
+        for (ServerLevel level : server.getAllLevels()) {
+            if (level.players().isEmpty()) {
+                continue;
+            }
+            List<EntityInfo> tracked = new ArrayList<>();
+            for (Entity entity : level.getAllEntities()) {
+                if (shouldTrack(level, entity)) {
+                    tracked.add(EntityInfo.of(entity));
+                }
+            }
+            for (ServerPlayer player : level.players()) {
+                AircraftEntity ridden = ModNetwork.riddenAircraft(player);
+                if (ridden != null && ridden.getRadarBlankTicks() > 0) {
+                    continue;
+                }
+                double range = rangeAt(player);
+                List<EntityInfo> visible = new ArrayList<>();
+                for (EntityInfo info : tracked) {
+                    double dx = player.getX() - info.x();
+                    double dz = player.getZ() - info.z();
+                    if (dx * dx + dz * dz <= range * range) {
+                        visible.add(info);
+                    }
+                }
+                if (!visible.isEmpty()) {
+                    ModNetwork.sendToPlayer(player, new EntityInfoSyncPayload(visible, snapshotSeq));
+                }
+            }
+        }
+    }
+
+    /** M10e: the feed's range for someone at {@code viewer}'s place, shorter in rain and storms. */
+    public static double rangeAt(Entity viewer) {
+        return RANGE * FlightWeather.sensorFactor(viewer.level(), viewer.position(), FlightWeather.Sensor.RADAR, true);
+    }
+
+    /** Upstream {@code shouldTrack}. */
+    public static boolean shouldTrack(ServerLevel level, Entity entity) {
+        if (entity.isRemoved() || !(entity instanceof Player || entity instanceof AircraftEntity
+                || entity instanceof ChaffEntity || entity instanceof FlareEntity
+                || entity instanceof AAMissileEntity)) {
+            return false;
+        }
+        if (entity instanceof PlaneEntity || entity instanceof HeliEntity || entity instanceof ChaffEntity) {
+            int ground = level.getHeight(Heightmap.Types.MOTION_BLOCKING, entity.getBlockX(), entity.getBlockZ());
+            if ((int) (entity.getY() - ground) < 30) {
+                return false;
+            }
+            return entity.getDeltaMovement().lengthSqr() >= 0.25;
+        }
+        return true;
+    }
+}

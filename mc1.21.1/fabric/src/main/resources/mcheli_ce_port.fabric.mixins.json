@@ -1,0 +1,30 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "io.github.mcheliceport.fabric.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "ServerLevelMixin",
+    "FolderRepositorySourceAccessor",
+    "PackRepositoryMixin",
+    "LevelChunkMixin"
+  ],
+  "client": [
+    "ClientLevelMixin",
+    "client.BossHealthOverlayMixin",
+    "client.CameraAccessor",
+    "client.CameraMixin",
+    "client.EntityRendererMixin",
+    "client.GameRendererMixin",
+    "client.GuiMixin",
+    "client.KeyMappingMixin",
+    "client.KeyboardHandlerMixin",
+    "client.MinecraftMixin",
+    "client.MouseHandlerMixin",
+    "client.ParticleEngineAccessor",
+    "client.ParticleEngineMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

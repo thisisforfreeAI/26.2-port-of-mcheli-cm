@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "id": "${mod_id}",
+  "version": "${mod_version}",
+  "name": "${mod_name}",
+  "description": "Adds realistic vehicles to Minecraft: an unofficial community port of McHeli: Community Edition (McHeli CE) to Minecraft 1.21.1. Not affiliated with or endorsed by Warfactory, the McHeli CE developers, or the original McHeli authors.",
+  "authors": ["EMB4", "Murachiki27", "RagexPrince683", "MrNorwood", "MovBlock", "thisisforfreeAI"],
+  "contact": {
+    "sources": "https://github.com/thisisforfreeAI/26.2-port-of-mcheli-cm",
+    "issues": "https://github.com/thisisforfreeAI/26.2-port-of-mcheli-cm/issues"
+  },
+  "license": "${mod_license}",
+  "environment": "*",
+  "entrypoints": {
+    "main": ["io.github.mcheliceport.fabric.McheliCePortFabric"],
+    "client": ["io.github.mcheliceport.fabric.McheliCePortFabricClient"]
+  },
+  "mixins": ["mcheli_ce_port.mixins.json", "mcheli_ce_port.fabric.mixins.json"],
+  "depends": {
+    "fabricloader": ">=${fabric_loader_version}",
+    "fabric-api": "*",
+    "forgeconfigapiport": "*",
+    "minecraft": "~${minecraft_version}",
+    "java": ">=${java_version}"
+  }
+}

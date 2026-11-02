@@ -1,0 +1,42 @@
+package io.github.mcheliceport.client.particle;
+
+import net.minecraft.client.multiplayer.ClientLevel;
+import io.github.mcheliceport.shim.client.LightCoordsUtil;
+
+/** A short, tiny ember using one cell of the existing flash sheet and the existing additive layer. */
+final class SparkParticle extends McheliParticle {
+    private final float radius;
+    SparkParticle(ClientLevel level, double x, double y, double z, double mx, double my, double mz, int life) {
+        this(level, x, y, z, mx, my, mz, life, 0.08F);
+    }
+    SparkParticle(ClientLevel level, double x, double y, double z, double mx, double my, double mz, int life, float radius) {
+        super(level, x, y, z, mx, my, mz, FlashParticle.POLISHED_TEXTURE);
+        this.radius = radius;
+        this.hasPhysics = false;
+        this.lifetime = life;
+        this.setColor(1, 0.65F, 0.22F);
+    }
+
+    @Override
+    public void tick() {
+        this.xo = this.x;
+        this.yo = this.y;
+        this.zo = this.z;
+        if (this.age++ >= this.lifetime) {
+            this.remove();
+            return;
+        }
+        this.move(this.xd, this.yd, this.zd);
+        this.xd *= 0.92;
+        this.zd *= 0.92;
+        this.yd -= 0.025;
+        this.alpha = EffectLook.glowAlpha(this.age, this.lifetime);
+    }
+
+    @Override public float getQuadSize(float partialTick) { return this.radius; }
+    @Override protected float getU0() { return this.frameU(0, 4, false); }
+    @Override protected float getU1() { return this.frameU(0, 4, true); }
+    @Override protected float getV1() { return this.sprite.getV(0.5F); }
+    @Override protected int getLightColor(float partialTick) { return LightCoordsUtil.FULL_BRIGHT; }
+    @Override protected Layer getLayer() { return ParticleLayers.ADDITIVE; }
+}

@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "conditions": [
+        {
+          "condition": "minecraft:survives_explosion"
+        }
+      ],
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "mcheli_ce_port:drafting_table"
+        }
+      ],
+      "rolls": 1.0
+    }
+  ],
+  "random_sequence": "mcheli_ce_port:blocks/lit_drafting_table"
+}

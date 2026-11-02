@@ -1,0 +1,117 @@
+package io.github.mcheliceport.client.particle;
+
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.resources.ResourceLocation;
+
+/**
+ * Upstream {@code MCH_EntityParticleExplode}: the bright 8-frame muzzle and explosion flash
+ * ({@code flash.png}, four frames by two), turned at a random angle, played over
+ * {@code (1 + age) % 7} ticks.
+ *
+ * <p>Upstream's flash never expired when that count was 0 (it was drawn as nothing until the
+ * particle limit dropped it); the port removes it at once.
+ */
+public class FlashParticle extends McheliParticle {
+
+    static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath("mcheli", "flash");
+    static final ResourceLocation POLISHED_TEXTURE = ResourceLocation.fromNamespaceAndPath("mcheli_ce_port", "m8_flash");
+    private static final int FULL_BRIGHT = 0xF000F0;
+
+    private int nowCount;
+    private final int endCount;
+    private final float size;
+    private int currentFrame;
+    /** M8: drawn additively, so the flash lights up what is behind it instead of painting over it. */
+    boolean enhanced;
+
+    public FlashParticle(ClientLevel level, double x, double y, double z, float size, double age) {
+        super(level, x, y, z, 0.0, 0.0, 0.0, TEXTURE);
+        this.enhanced = this.polished;
+        if (this.polished) {
+            this.setSprite(sprite(POLISHED_TEXTURE));
+        }
+        this.endCount = (1 + (int) age) % 7;
+        this.roll = -45.0F + this.random.nextFloat() * 90.0F;
+        if (this.polished) {
+            this.roll *= (float) (Math.PI / 180.0);
+        }
+        this.oRoll = this.roll;
+        this.size = size + this.random.nextFloat() * 0.2F;
+        this.hasPhysics = false;
+    }
+
+    @Override
+    public void tick() {
+        this.xo = this.x;
+        this.yo = this.y;
+        this.zo = this.z;
+        this.nowCount++;
+        if (this.nowCount == this.endCount || this.endCount == 0) {
+            this.remove();
+        }
+    }
+
+    private int frame(float partialTick) {
+        return this.endCount == 0 ? 8 : (int) ((this.nowCount + partialTick) * 7.0F / this.endCount);
+    }
+
+    @Override
+    public void extract(io.github.mcheliceport.shim.client.QuadParticleRenderState state,
+            net.minecraft.client.Camera camera, float partialTick) {
+        this.currentFrame = this.frame(partialTick);
+        if (this.currentFrame > 7) {
+            return;
+        }
+        float alpha = this.alpha;
+        if (this.polished) {
+            this.alpha *= 1.0F - this.progress(partialTick) * this.progress(partialTick);
+        }
+        super.extract(state, camera, partialTick);
+        this.alpha = alpha;
+    }
+
+    private float progress(float partialTick) {
+        return Math.clamp((this.nowCount + partialTick) / Math.max(1, this.endCount), 0.0F, 1.0F);
+    }
+
+    @Override
+    public float getQuadSize(float partialTick) {
+        return this.size * 1.2F * (this.polished ? 0.8F + 0.25F * this.progress(partialTick) : 1.0F);
+    }
+
+    @Override
+    protected float getU0() {
+        return this.cell(this.currentFrame % 4, 4, true);
+    }
+
+    @Override
+    protected float getU1() {
+        return this.cell(this.currentFrame % 4 + 1, 4, true);
+    }
+
+    @Override
+    protected float getV0() {
+        return this.cell(this.currentFrame / 4, 2, false);
+    }
+
+    @Override
+    protected float getV1() {
+        return this.cell(this.currentFrame / 4 + 1, 2, false);
+    }
+
+    private float cell(int index, int count, boolean u) {
+        float f = (float) index / count;
+        return u ? this.sprite.getU0() + (this.sprite.getU1() - this.sprite.getU0()) * f
+                : this.sprite.getV0() + (this.sprite.getV1() - this.sprite.getV0()) * f;
+    }
+
+    @Override
+    protected int getLightColor(float partialTick) {
+        return FULL_BRIGHT;
+    }
+
+    @Override
+    protected Layer getLayer() {
+        return this.enhanced ? ParticleLayers.ADDITIVE : super.getLayer();
+    }
+}

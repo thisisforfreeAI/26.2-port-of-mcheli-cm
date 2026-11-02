@@ -1,0 +1,24 @@
+{
+  "criteria": {
+    "put_aircraft": {
+      "trigger": "mcheli_ce_port:put_aircraft"
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "mcheli_ce_port:ah-64"
+    },
+    "title": {
+      "translate": "advancements.mcheli_ce_port.root.title"
+    },
+    "description": {
+      "translate": "advancements.mcheli_ce_port.root.description"
+    },
+    "background": "minecraft:gui/advancements/backgrounds/stone"
+  },
+  "requirements": [
+    [
+      "put_aircraft"
+    ]
+  ]
+}

@@ -1,0 +1,15 @@
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        maven { name = 'Fabric'; url = 'https://maven.fabricmc.net/' }
+        maven { name = 'NeoForged'; url = 'https://maven.neoforged.net/releases' }
+    }
+}
+
+plugins {
+    id 'org.gradle.toolchains.foojay-resolver-convention' version '1.0.0'
+}
+
+// McHeli CE port for Minecraft 1.21.1: one shared "common" module plus a thin module per loader.
+rootProject.name = 'mcheli_ce_port-1.21.1'
+include 'common', 'neoforge', 'fabric'

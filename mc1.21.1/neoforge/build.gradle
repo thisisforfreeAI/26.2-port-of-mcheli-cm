@@ -1,0 +1,61 @@
+plugins {
+    id 'net.neoforged.moddev'
+}
+
+neoForge {
+    version = neoforge_version
+
+    runs {
+        client {
+            client()
+            // Dev testing: -PquickJoin=localhost joins a running dev server straight away.
+            if (project.hasProperty('quickJoin')) programArguments.addAll('--quickPlayMultiplayer', project.property('quickJoin'))
+        }
+        server { server(); programArgument '--nogui' }
+        configureEach {
+            systemProperty 'forge.logging.markers', 'REGISTRIES'
+            logLevel = org.slf4j.event.Level.INFO
+        }
+    }
+
+    mods {
+        "${mod_id}" { sourceSet sourceSets.main }
+    }
+}
+
+configurations {
+    commonJava { canBeResolved = true; canBeConsumed = false }
+    commonResources { canBeResolved = true; canBeConsumed = false }
+}
+
+dependencies {
+    compileOnly project(':common')
+    commonJava project(path: ':common', configuration: 'commonJava')
+    commonResources project(path: ':common', configuration: 'commonResources')
+
+    // SnakeYAML parses the YAML content files; NeoForge does not ship it, so it rides in Jar-in-Jar.
+    jarJar(implementation("org.yaml:snakeyaml")) {
+        version { strictly '[2.5,3)'; prefer snakeyaml_version }
+    }
+    // Jar-in-Jar only applies to the built jar; dev runs need it on the classpath directly.
+    additionalRuntimeClasspath "org.yaml:snakeyaml:${snakeyaml_version}"
+}
+
+tasks.named('compileJava', JavaCompile) {
+    dependsOn configurations.commonJava
+    source configurations.commonJava
+}
+tasks.named('sourcesJar', Jar) {
+    dependsOn configurations.commonJava
+    from configurations.commonJava
+}
+
+processResources {
+    dependsOn configurations.commonResources
+    from configurations.commonResources
+    from(sharedAssets) { into 'assets' }
+    from(generatedResources)
+    inputs.properties modProperties
+    filesMatching('META-INF/neoforge.mods.toml') { expand modProperties }
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}

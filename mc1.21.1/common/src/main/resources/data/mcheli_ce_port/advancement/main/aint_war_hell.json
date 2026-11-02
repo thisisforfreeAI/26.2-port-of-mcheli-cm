@@ -1,0 +1,25 @@
+{
+  "parent": "mcheli_ce_port:main/root",
+  "criteria": {
+    "villager_hurt_bullet": {
+      "trigger": "mcheli_ce_port:villager_hurt_bullet"
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "minecraft:emerald"
+    },
+    "title": {
+      "translate": "advancements.mcheli_ce_port.aint_war_hell.title"
+    },
+    "description": {
+      "translate": "advancements.mcheli_ce_port.aint_war_hell.description"
+    },
+    "hidden": true
+  },
+  "requirements": [
+    [
+      "villager_hurt_bullet"
+    ]
+  ]
+}
