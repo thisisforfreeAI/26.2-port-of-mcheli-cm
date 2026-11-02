@@ -15,13 +15,14 @@ import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 
 /**
  * M9e, a port addition: once any engine, rotor or fuel tank of the vehicle the player rides is
- * hurt, a strip at the right of the screen below the wingman hint shows each one ({@code E1 E2 R T
- * F}) in green, amber or red.
+ * hurt, a strip in the top-right corner shows each one ({@code E1 E2 R T F}) in green, amber or
+ * red. The corner sits above upstream's key hints and clear of the HUD radars, which a strip
+ * lower down on the right overlapped.
  */
 public final class ComponentStatusLayer {
 
     public static final Identifier ID = Identifier.fromNamespaceAndPath(McheliCePort.MOD_ID, "component_status");
-    private static final int Y_OFFSET = 164;
+    private static final int Y_OFFSET = 4;
     private static final int GAP = 4;
 
     private ComponentStatusLayer() {

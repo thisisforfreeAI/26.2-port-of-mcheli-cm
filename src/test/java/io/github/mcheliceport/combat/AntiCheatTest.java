@@ -63,4 +63,17 @@ class AntiCheatTest {
         assertFalse(AntiCheat.aimValid(0.0F, Float.POSITIVE_INFINITY));
         assertFalse(AntiCheat.aimValid(0.0F, 91.0F));
     }
+
+    @Test
+    void accelerationAllowsStopsAndRealGainsButNotJumps() {
+        // A jet with a checked top speed of 6 blocks a tick may gain 1.2 a tick.
+        assertTrue(AntiCheat.accelerationPlausible(3.0, 0.0, 1, 6.0), "a crash may stop it at once");
+        assertTrue(AntiCheat.accelerationPlausible(3.0, 4.2, 1, 6.0));
+        assertFalse(AntiCheat.accelerationPlausible(0.0, 6.0, 1, 6.0), "not zero to top speed in a tick");
+        assertTrue(AntiCheat.accelerationPlausible(0.0, 6.0, 5, 6.0), "but in five ticks of lost packets");
+        assertFalse(AntiCheat.accelerationPlausible(0.0, 7.0, 500, 6.0), "a long stall earns no more than five");
+        // Slow vehicles still get a quarter block a tick.
+        assertTrue(AntiCheat.accelerationPlausible(0.0, 0.25, 1, 0.5));
+        assertFalse(AntiCheat.accelerationPlausible(0.0, 0.3, 1, 0.5));
+    }
 }

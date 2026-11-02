@@ -20,6 +20,7 @@ final class AntiCheatGameTests {
     static void register() {
         ModGameTests.test("anti_cheat_screens_fire_packets", 30, AntiCheatGameTests::fire);
         ModGameTests.test("anti_cheat_screens_bvr_locks", 30, AntiCheatGameTests::bvr);
+        ModGameTests.test("anti_cheat_records_pilot_acceleration", 10, AntiCheatGameTests::acceleration);
     }
 
     private static AircraftEntity heli(GameTestHelper h, Vec3 at) {
@@ -80,6 +81,22 @@ final class AntiCheatGameTests {
         other.setPos(o);
         GameTestSupport.cleanUp(heli);
         GameTestSupport.cleanUp(other);
+        h.succeed();
+    }
+
+    @SuppressWarnings("removal")
+    private static void acceleration(GameTestHelper h) {
+        AircraftEntity heli = heli(h, new Vec3(12, 2, 12));
+        ServerPlayer player = h.makeMockServerPlayerInLevel();
+        heli.setDeltaMovement(Vec3.ZERO);
+        double limit = heli.getMaxSpeedForChecks();
+        check(h, AntiCheat.checkAcceleration(player, heli, 0.1, 0.0, 0.0), "a gentle start passes");
+        check(h, AntiCheat.checkAcceleration(player, heli, 0.0, 0.0, 0.0), "so does a stop");
+        check(h, !AntiCheat.checkAcceleration(player, heli, limit, 0.0, 0.0), "top speed from a standstill does not");
+        var record = AntiCheat.recordOf(player.getUUID());
+        check(h, record != null && record.counts().get(AntiCheat.Check.ACCELERATION) == 1,
+                "and is recorded once: " + (record != null ? record.counts() : null));
+        GameTestSupport.cleanUp(heli);
         h.succeed();
     }
 }

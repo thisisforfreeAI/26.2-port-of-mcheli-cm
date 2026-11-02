@@ -11,6 +11,12 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 ## [Unreleased]
 
 ### Added
+- M9 follow-ups. Other players' fast jets and helicopters now turn toward the server's attitude as
+  one quaternion slerp with the roll, so a loop goes over the top and a barrel roll keeps rolling
+  instead of yaw, pitch and roll swinging apart. The anti-cheat records a pilot whose claimed speed
+  rises faster than a fifth of the vehicle's checked top speed a tick (at least 0.25 blocks), as
+  the new `ACCELERATION` check; it is only recorded, since the server already caps the speed. The
+  component strip moved to the top-right corner, where it no longer covers HUD radars.
 - Groundwork for a Fabric version (stage 1 of 5, see `docs/FABRIC_PLAN.md`): a `fabric/` Gradle
   subproject that builds against Minecraft 26.2 and Fabric API from the same sources, and a
   loader-neutral seam (`platform/Platform.java`) that registration, the fuel fluid, menus,
