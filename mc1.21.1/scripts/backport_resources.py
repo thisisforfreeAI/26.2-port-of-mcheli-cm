@@ -82,6 +82,10 @@ def main():
         dest = OUT / rel
         if parts[0] == 'data' and len(parts) > 2 and parts[2] == 'recipe':
             write(dest, recipe(json.loads(src.read_text())))
+        elif parts[0] == 'assets' and len(parts) > 2 and parts[2] == 'lang':
+            # The mod's name in the key categories and config screen titles.
+            dest.parent.mkdir(parents=True, exist_ok=True)
+            dest.write_text(src.read_text(encoding='utf-8').replace('(26.2 Port)', '(1.21.1 Port)'), encoding='utf-8')
         else:
             dest.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(src, dest)
