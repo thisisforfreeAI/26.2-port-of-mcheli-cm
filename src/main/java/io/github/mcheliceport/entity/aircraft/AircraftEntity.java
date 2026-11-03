@@ -188,7 +188,11 @@ public abstract class AircraftEntity extends SpawnDataEntity
     private static final SeatEntity[] NO_SEATS = new SeatEntity[0];
 
     protected @Nullable AircraftInfo info;
-    private final InterpolationHandler interpolation = new InterpolationHandler(this);
+    private final InterpolationHandler interpolation = new AttitudeInterpolation();
+    /** M9: the attitude the server last sent a watching client, and the ticks left to reach it. */
+    private float watchedYaw;
+    private float watchedPitch;
+    private int watchedAttitudeSteps;
     /** M9: the component health last seen, and the tick each slot last changed (-1: never). */
     private long lastComponentHealth = io.github.mcheliceport.damage.ComponentHealth.FULL;
     private final long[] componentChangeTicks = new long[io.github.mcheliceport.damage.ComponentHealth.SLOTS];
@@ -1938,6 +1942,64 @@ public abstract class AircraftEntity extends SpawnDataEntity
         return this.interpolation;
     }
 
+    /** Whether this client turns the vehicle toward the server's attitude itself (M9 slerp). */
+    private boolean slerpsWatchedAttitude() {
+        return this.level().isClientSide() && !this.isPilotLocalClient() && !this.isDestroyed();
+    }
+
+    /**
+     * Vanilla interpolation for the position; on a watching client the rotation is taken out and
+     * turned by {@link #turnWatchedAttitude()} as one quaternion with the roll.
+     */
+    private final class AttitudeInterpolation extends InterpolationHandler {
+        private int length = InterpolationHandler.DEFAULT_INTERPOLATION_STEPS;
+
+        AttitudeInterpolation() {
+            super(AircraftEntity.this);
+        }
+
+        @Override
+        public void setInterpolationLength(int steps) {
+            this.length = steps;
+            super.setInterpolationLength(steps);
+        }
+
+        @Override
+        public void interpolateTo(Vec3 position, float yRot, float xRot) {
+            AircraftEntity self = AircraftEntity.this;
+            if (!self.slerpsWatchedAttitude()) {
+                super.interpolateTo(position, yRot, xRot);
+                return;
+            }
+            self.watchedYaw = yRot;
+            self.watchedPitch = xRot;
+            self.watchedAttitudeSteps = Math.max(1, this.length);
+            if (this.length == 0) {
+                self.setRot(yRot, xRot);
+                self.watchedAttitudeSteps = 0;
+            }
+            super.interpolateTo(position, self.getYRot(), self.getXRot());
+        }
+    }
+
+    /**
+     * One tick of a watching client's turn: toward the server's yaw and pitch over the
+     * interpolation's steps, and toward the synced roll, as one slerp; with no new attitude it only
+     * eases the roll by a third, as before.
+     */
+    private void turnWatchedAttitude() {
+        float yawTo = this.watchedAttitudeSteps > 0 ? this.watchedYaw : this.getYRot();
+        float pitchTo = this.watchedAttitudeSteps > 0 ? this.watchedPitch : this.getXRot();
+        float alpha = this.watchedAttitudeSteps > 0 ? 1.0F / this.watchedAttitudeSteps : 1.0F / 3.0F;
+        if (this.watchedAttitudeSteps > 0) {
+            this.watchedAttitudeSteps--;
+        }
+        float[] a = io.github.mcheliceport.combat.WatcherMotion.attitudeStep(this.getYRot(), this.getXRot(),
+                this.getRoll(), yawTo, pitchTo, this.getSyncedRoll(), alpha);
+        this.setRot(a[0], a[1]);
+        this.setRoll(a[2]);
+    }
+
     /**
      * The server's check of a pilot's move in client-authoritative mode (decision D2): limits the
      * horizontal step to {@code Speed × 1.5} per tick and the climb to one block, which makes
@@ -2173,9 +2235,8 @@ public abstract class AircraftEntity extends SpawnDataEntity
             this.setYRot(yaw);
             this.setXRot(pitch);
         }
-        if (this.level().isClientSide() && !this.isPilotLocalClient() && !this.isDestroyed()) {
-            float diff = Mth.wrapDegrees(this.getSyncedRoll() - this.getRoll());
-            this.setRoll(this.getRoll() + diff / 3.0F);
+        if (this.slerpsWatchedAttitude()) {
+            this.turnWatchedAttitude();
         }
         if (this.level().isClientSide()) {
             this.setDeltaMovement(Vec3.ZERO);

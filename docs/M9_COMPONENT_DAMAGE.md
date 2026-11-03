@@ -91,7 +91,7 @@ so the pilot's client, which flies the vehicle, and the server agree.
 - Leaks run on the server and never set the vehicle on fire.
 - The HUD strip (`client.hud.ComponentStatusLayer`) appears only while some component is hurt:
   `E` (numbered when there are several), `R` main rotor, `T` tail rotor, `F` fuel tank, in green,
-  amber or red.
+  amber or red. It sits in the top-right corner; lower on the right it covered HUD radars.
 
 ## Not yet
 
