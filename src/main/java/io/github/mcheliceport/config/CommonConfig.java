@@ -65,6 +65,9 @@ public final class CommonConfig {
     public static final ModConfigSpec.BooleanValue WRECK_CRATERS;
     public static final ModConfigSpec.BooleanValue PERSISTENT_WRECKS;
     public static final ModConfigSpec.IntValue WRECK_LIFETIME;
+    public static final ModConfigSpec.IntValue MAX_WRECKS;
+    public static final ModConfigSpec.IntValue MAX_WRECKS_PER_AREA;
+    public static final ModConfigSpec.IntValue WRECK_AREA_RADIUS;
     public static final ModConfigSpec SPEC;
 
     static {
@@ -257,6 +260,17 @@ public final class CommonConfig {
         WRECK_LIFETIME = builder
                 .comment("Seconds a hulk stays when persistentWrecks is on. 0 keeps it until /mcheli clearwrecks.")
                 .defineInRange("wreckLifetime", 600, 0, 1000000);
+        MAX_WRECKS = builder
+                .comment("Most wrecks the whole server keeps at once, to protect TPS. When a vehicle is destroyed",
+                        "past the cap, the oldest wrecks are removed first. Wrecks a player sits in are kept. 0: no cap.")
+                .defineInRange("maxWrecks", 32, 0, 10000);
+        MAX_WRECKS_PER_AREA = builder
+                .comment("Most wrecks within wreckAreaRadius blocks of a newly destroyed vehicle; the oldest nearby",
+                        "wrecks are removed first. 0: no cap.")
+                .defineInRange("maxWrecksPerArea", 8, 0, 10000);
+        WRECK_AREA_RADIUS = builder
+                .comment("Radius in blocks of the area maxWrecksPerArea counts.")
+                .defineInRange("wreckAreaRadius", 128, 1, 4096);
         builder.pop();
 
         SPEC = builder.build();

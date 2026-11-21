@@ -91,6 +91,7 @@ public final class ModGameTests {
         PlannerGameTests.register();
         NpcBattleGameTests.register();
         McheliCommandGameTests.register();
+        WreckLimitGameTests.register();
         ProjectileChunkGameTests.register();
         AdvancementGameTests.register();
         LongDistanceGameTests.register();
