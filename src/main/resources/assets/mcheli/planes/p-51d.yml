@@ -129,3 +129,6 @@ Recepie:
   isShaped: true
   Pattern:
   - "\" G \",  \"IDI\",  \"I I\",  I,iron_block, D,diamond, P,paper, G,glass"
+Render:
+  Textures:
+  - p-51d_c

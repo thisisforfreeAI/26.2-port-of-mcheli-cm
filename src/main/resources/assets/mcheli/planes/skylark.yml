@@ -62,3 +62,6 @@ Recepie:
   isShaped: true
   Pattern:
   - "\" I \",  \" I \",  \" F \",  I,iron_ingot, F,furnace"
+Render:
+  Textures:
+  - skylark_camo

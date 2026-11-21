@@ -43,7 +43,19 @@ public final class AircraftAppearanceScreen extends Screen {
         }).bounds(x,y+124,108,20).build());apply.active=!aircraft.isDestroyed()&&aircraft.getCurrentThrottle()<=.05&&aircraft.getDeltaMovement().lengthSqr()<=.04;
         addRenderableWidget(Button.builder(Component.translatable("gui.cancel"),b->onClose()).bounds(x+112,y+124,108,20).build());
     }
-    private Component liveryLabel(){return Component.literal("Livery: "+font.plainSubstrByWidth(textures.get(texture),175));}
+    private Component liveryLabel(){
+        String name=liveryName(aircraft.getAcInfo().name,textures.get(texture));
+        String count=textures.size()>1?" ("+(texture+1)+"/"+textures.size()+")":"";
+        return Component.literal("Livery: "+font.plainSubstrByWidth(name,175-font.width(count))+count);
+    }
+    /** "f14d_razgriz" on the F-14D reads as "razgriz"; the vehicle's own texture reads as "Standard". */
+    static String liveryName(String vehicle,String texture){
+        if(texture.equalsIgnoreCase(vehicle))return "Standard";
+        if(texture.length()>vehicle.length()+1&&texture.regionMatches(true,0,vehicle,0,vehicle.length())
+                &&"_-".indexOf(texture.charAt(vehicle.length()))>=0)
+            return texture.substring(vehicle.length()+1).replace('_',' ').replace('-',' ');
+        return texture;
+    }
     private Component symbolLabel(){return Component.literal("Squadron mark: "+List.of("None","Chevron","Star","Bars").get(symbol));}
     private Component inkLabel(){return Component.literal(List.of("Pale paint","Low visibility","Olive paint").get(ink));}
     private Component wearLabel(){return Component.literal(List.of("Clean","Service wear","Worn paint").get(wear));}

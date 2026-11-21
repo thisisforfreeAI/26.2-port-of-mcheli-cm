@@ -190,3 +190,6 @@ Recepie:
   isShaped: true
   Pattern:
   - "\"X X\",  \" I \",  \"X X\",  X, iron_block, I, iron_ingot"
+Render:
+  Textures:
+  - mi28d

@@ -16,6 +16,9 @@ Camera:
 PhysicalProperties:
   Speed: 0.9
 Render:
+  Textures:
+  - f14d_vx9
+  - f14d_razgriz
   MachOneSpeed: 0.51
   ParticleScale: 0.7
   EnableSeaSurfaceParticle: true

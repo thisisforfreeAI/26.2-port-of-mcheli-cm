@@ -17,6 +17,10 @@ Camera:
 PhysicalProperties:
   Speed: 0.8
 Render:
+  Textures:
+  - penetrator_1
+  - penetrator_2
+  - penetrator_3
   ModelWidth: 0.8
   ModelHeight: 0.8
 Weapons:
