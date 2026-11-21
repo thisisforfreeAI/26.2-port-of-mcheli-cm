@@ -9,6 +9,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 
@@ -56,7 +58,8 @@ public class TvMissileEntity extends BaseBulletEntity {
             if (!this.level().isClientSide() && !this.isRemoved()) {
                 this.onUpdateMotion();
             }
-        } else if (!this.level().isClientSide()) {
+        } else if (!this.level().isClientSide() && !this.wasRestored()) {
+            // Loaded from disk without the player who steered it: it flies on unguided.
             this.discard();
         }
     }
@@ -188,5 +191,21 @@ public class TvMissileEntity extends BaseBulletEntity {
     @Override
     public String getDefaultBulletModelName() {
         return "asmissile";
+    }
+
+    @Override
+    protected void addAdditionalSaveData(ValueOutput output) {
+        super.addAdditionalSaveData(output);
+        output.putDouble("TargetPosX", this.targetPosX);
+        output.putDouble("TargetPosY", this.targetPosY);
+        output.putDouble("TargetPosZ", this.targetPosZ);
+    }
+
+    @Override
+    protected void readAdditionalSaveData(ValueInput input) {
+        super.readAdditionalSaveData(input);
+        this.targetPosX = input.getDoubleOr("TargetPosX", this.targetPosX);
+        this.targetPosY = input.getDoubleOr("TargetPosY", this.targetPosY);
+        this.targetPosZ = input.getDoubleOr("TargetPosZ", this.targetPosZ);
     }
 }

@@ -38,6 +38,7 @@ public final class McheliCePort {
         io.github.mcheliceport.platform.GameEvents.TAGS_UPDATED.add(io.github.mcheliceport.weapon.BlockList::clearCaches);
         io.github.mcheliceport.radar.EntityInfoFeed.register();
         io.github.mcheliceport.wingman.handler.WingmanTickHandler.register();
+        io.github.mcheliceport.wingman.wingman.WingmanPersistence.register();
         io.github.mcheliceport.combat.LagCompensation.register();
         io.github.mcheliceport.combat.WatcherMotion.register();
         io.github.mcheliceport.combat.AntiCheat.register();

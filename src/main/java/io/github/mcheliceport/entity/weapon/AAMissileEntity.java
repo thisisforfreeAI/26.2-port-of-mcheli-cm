@@ -28,9 +28,9 @@ public class AAMissileEntity extends BaseBulletEntity {
         if (this.getCountOnUpdate() > 4 && this.getInfo() != null && !this.getInfo().disableSmoke) {
             this.spawnParticle(this.getInfo().trajectoryParticleName, 3, 7.0F * this.getInfo().smokeSize * 0.5F);
         }
-        if (!this.level().isClientSide() && this.getInfo() != null && !this.isRemoved()) {
+        if (!this.level().isClientSide() && this.getInfo() != null && !this.isRemoved() && !this.isResolving()) {
             Entity target = this.targetEntity;
-            if (this.shootingEntity != null && target != null && target.isAlive()) {
+            if (this.hasGuidingShooter() && target != null && target.isAlive()) {
                 double d = this.distanceToSqr(target);
                 if (d > 3422500.0) {
                     this.discard();

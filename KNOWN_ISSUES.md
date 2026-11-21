@@ -197,7 +197,12 @@ These follow from how Minecraft 26.2 works or from decisions approved in PORTING
     afterwards. Upstream set its flag only on clients and never cleared it: there a vehicle that
     once used chaff could never be locked again, while on the server chaff did nothing.
 50. The close air support A-10 and its bombs belong to the shooter (decision D20).
-51. Projectiles are not saved with the world, except mines; throwables are not saved either.
+51. Missiles, rockets, bombs and torpedoes in flight are saved with the world and fly on when they
+    load again, where upstream discarded every projectile it read from disk. They look for their
+    shooter, its vehicle and their target by UUID for 2 seconds after loading, flying straight
+    meanwhile; a shooter who is not online is measured from where it was when the projectile was
+    saved, and a TV missile without its pilot flies on unguided. Gun rounds and throwables are not
+    saved, and projectiles saved by an older version are discarded as before.
     Projectiles live down to 10 blocks below the world's floor (upstream: y -10).
 52. A projectile whose shooter is gone uses its vehicle for its validity check; upstream crashed.
 53. Laser beams are depth tested, so walls hide them; upstream drew them through everything.
@@ -471,8 +476,10 @@ These follow from how Minecraft 26.2 works or from decisions approved in PORTING
     Formation tab still changes the values for the whole server, as upstream, but values that are
     not numbers are ignored and the distances stay within upstream's config ranges; on a screen too
     short for upstream's layout, its Apply button moves between Refresh and Close instead of
-    falling off the bottom. Wingmen are forgotten when the server stops, as upstream forgot them
-    on restart.
+    falling off the bottom. Wingmen are saved with the world, where upstream forgot them on
+    restart: after a restart, or when the leader's pilot logs out, a wingman waits for its leader
+    and rejoins it in its old slot with its old attack orders once both are loaded. It stops
+    waiting when a player takes its controls, or after 30 seconds loaded without its leader.
 96. Upstream's wingmen fired as their leader and along the leader's heading, so their shots left
     wherever the leader pointed, and seeking missiles fired at nothing; the port fires as the
     wingman, along its own heading, and gives seeking weapons the target, as the port's gunners
@@ -499,7 +506,10 @@ These follow from how Minecraft 26.2 works or from decisions approved in PORTING
 98. Upstream kept chunks loaded around every aircraft only with its `forceChunkload` option, off
     by default. The port always keeps the 5 by 5 chunks around an aircraft on a mission loaded,
     and no others, so a mission flies on away from players; they are released when the order
-    ends. Orders are not saved, so a mission ends when the server stops, as upstream.
+    ends. Orders and planner missions are saved with the world, where upstream lost them on
+    restart: after a restart the chunks around the aircraft's saved position are loaded again and
+    it flies on from the step it was at. An order whose aircraft is not found within 30 seconds of
+    loading is dropped.
 99. The base screen's Mission tab orders an aircraft only for a player who can reach and edit the
     base marker, takes the base from that marker, and orders only an aircraft within 512 blocks
     of it that no player flies and that is not destroyed; upstream took the base from the client

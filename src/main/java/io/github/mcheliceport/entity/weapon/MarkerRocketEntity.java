@@ -13,6 +13,8 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -171,5 +173,19 @@ public class MarkerRocketEntity extends BaseBulletEntity {
     @Override
     public String getDefaultBulletModelName() {
         return "rocket";
+    }
+
+    @Override
+    protected void addAdditionalSaveData(ValueOutput output) {
+        super.addAdditionalSaveData(output);
+        output.putInt("MarkerStatus", this.getMarkerStatus());
+        output.putInt("CountDown", this.countDown);
+    }
+
+    @Override
+    protected void readAdditionalSaveData(ValueInput input) {
+        super.readAdditionalSaveData(input);
+        this.setMarkerStatus(input.getIntOr("MarkerStatus", this.getMarkerStatus()));
+        this.countDown = input.getIntOr("CountDown", 0);
     }
 }

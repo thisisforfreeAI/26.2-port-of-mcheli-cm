@@ -70,8 +70,10 @@ import org.jspecify.annotations.Nullable;
  *
  * <p>Differences from upstream (docs/M5_PLAN.md section 10):
  * <ul>
- *   <li>Saved projectiles are discarded when their chunk loads again, as upstream did on reading
- *       them; only mines ({@link BombEntity}) are kept.</li>
+ *   <li>Missiles, rockets, bombs and torpedoes in flight are saved with the world and fly on when
+ *       their chunk loads again (KNOWN_ISSUES 51); upstream discarded every projectile it read
+ *       from disk. Gun rounds ({@link BulletEntity}) are still not saved. The shooter, its vehicle
+ *       and the target are found again by UUID once loaded; see {@link #isResolving}.</li>
  *   <li>Upstream's {@code checkValid} dropped projectiles below y -10, the old world's floor; the
  *       limit now follows the world's floor, so projectiles live in the deep caves and superflat
  *       worlds that reach down to y -64.</li>
@@ -125,6 +127,21 @@ public abstract class BaseBulletEntity extends Entity implements WeaponTargets.P
     private boolean airburstTriggered = false;
     private boolean aheadTriggered = false;
     private int spawnedBulletNum = 0;
+    /**
+     * Read from disk: the shooter, its vehicle and the target are looked up by these UUIDs for
+     * {@link #RESOLVE_TICKS} after loading, and the projectile only flies straight meanwhile.
+     */
+    private boolean restored;
+    private java.util.@Nullable UUID pendingShooter;
+    private java.util.@Nullable UUID pendingAircraft;
+    private java.util.@Nullable UUID pendingTarget;
+    private int resolveTicks;
+    /** Where the shooter was when the projectile was saved, standing in for it while it is not loaded. */
+    private double anchorX;
+    private double anchorY;
+    private double anchorZ;
+    /** How long a loaded projectile looks for its shooter and target, in ticks. */
+    public static final int RESOLVE_TICKS = 40;
     /** Where the projectile was at the start of the previous tick, for {@link #prevPosX2}. */
     private double lastXo;
     private double lastYo;
@@ -466,12 +483,21 @@ public abstract class BaseBulletEntity extends Entity implements WeaponTargets.P
      * blocks below the world's floor (upstream's y -10, when the floor was y 0).
      */
     public boolean checkValid() {
-        if (this.shootingEntity == null && this.shootingAircraft == null) {
+        double sx;
+        double sz;
+        if (this.shootingEntity != null || this.shootingAircraft != null) {
+            Entity shooter = this.shootingEntity != null ? this.shootingEntity : this.shootingAircraft;
+            sx = shooter.getX();
+            sz = shooter.getZ();
+        } else if (this.restored) {
+            // Loaded from disk without its shooter (a player who is offline): measure from where it was.
+            sx = this.anchorX;
+            sz = this.anchorZ;
+        } else {
             return false;
         }
-        Entity shooter = this.shootingEntity != null ? this.shootingEntity : this.shootingAircraft;
-        double x = this.getX() - shooter.getX();
-        double z = this.getZ() - shooter.getZ();
+        double x = this.getX() - sx;
+        double z = this.getZ() - sz;
         return x * x + z * z < 3.38724E7 && this.getY() > this.level().getMinY() - 10.0;
     }
 
@@ -486,6 +512,9 @@ public abstract class BaseBulletEntity extends Entity implements WeaponTargets.P
     @Override
     public void tick() {
         Level level = this.level();
+        if (level instanceof ServerLevel serverLevel && this.restored) {
+            this.resolveSaved(serverLevel);
+        }
         if (!level.isClientSide()) {
             WeaponInfo info = this.getInfo();
             if (info != null && this.shootingAircraft instanceof AircraftEntity ac && !this.speedAddedFromAircraft
@@ -1339,20 +1368,172 @@ public abstract class BaseBulletEntity extends Entity implements WeaponTargets.P
 
     // ---- saving ----
 
-    /** Upstream discarded projectiles read from disk; the port does not save them at all (mines aside). */
+    /**
+     * Missiles, rockets, bombs and torpedoes in flight are saved (KNOWN_ISSUES 51); upstream discarded
+     * every projectile it read from disk. Gun rounds live a few ticks and are not saved, nor are
+     * projectiles carried by something.
+     */
     @Override
     public boolean shouldBeSaved() {
-        return false;
+        return !(this instanceof BulletEntity) && this.getInfo() != null && !this.isRemoved() && !this.isPassenger();
     }
 
     @Override
     protected void addAdditionalSaveData(ValueOutput output) {
         output.putString("WeaponName", this.getInfoName());
+        if (!this.shouldBeSaved()) {
+            return;
+        }
+        output.putInt("McFlight", 1);
+        output.putInt("Age", this.tickCount);
+        output.putInt("CountOnUpdate", this.countOnUpdate);
+        output.putInt("Power", this.power);
+        output.putInt("ExplosionPower", this.explosionPower);
+        output.putInt("ExplosionPowerInWater", this.explosionPowerInWater);
+        output.putDouble("Acceleration", this.acceleration);
+        output.putDouble("AccelerationFactor", this.accelerationFactor);
+        output.putInt("Piercing", this.piercing);
+        output.putInt("DelayFuse", this.delayFuse);
+        output.putInt("SprinkleTime", this.sprinkleTime);
+        output.putByte("Bomblet", this.isBomblet);
+        output.putBoolean("AntiFlareUse", this.antiFlareUse);
+        output.putInt("AntiFlareTick", this.antiFlareTick);
+        output.putInt("LockedChaff", this.numLockedChaff);
+        output.putInt("AirburstDist", this.airburstDist);
+        output.putBoolean("TopAttack", this.doingTopAttack);
+        output.putBoolean("SpeedAdded", this.speedAddedFromAircraft);
+        output.putDouble("AirburstTravelled", this.airburstTravelled);
+        output.putBoolean("AirburstTriggered", this.airburstTriggered);
+        output.putBoolean("AheadTriggered", this.aheadTriggered);
+        output.putInt("SpawnedBullets", this.spawnedBulletNum);
+        java.util.@Nullable UUID shooter = this.shootingEntity != null ? this.shootingEntity.getUUID() : this.pendingShooter;
+        java.util.@Nullable UUID aircraft = this.shootingAircraft != null ? this.shootingAircraft.getUUID() : this.pendingAircraft;
+        java.util.@Nullable UUID target = this.targetEntity != null ? this.targetEntity.getUUID() : this.pendingTarget;
+        if (shooter != null) {
+            output.store("Shooter", net.minecraft.core.UUIDUtil.CODEC, shooter);
+        }
+        if (aircraft != null) {
+            output.store("ShooterVehicle", net.minecraft.core.UUIDUtil.CODEC, aircraft);
+        }
+        if (target != null) {
+            output.store("Target", net.minecraft.core.UUIDUtil.CODEC, target);
+        }
+        Entity anchor = this.shootingEntity != null ? this.shootingEntity : this.shootingAircraft;
+        boolean hasAnchor = anchor != null || this.restored;
+        output.putDouble("AnchorX", anchor != null ? anchor.getX() : hasAnchor ? this.anchorX : this.getX());
+        output.putDouble("AnchorY", anchor != null ? anchor.getY() : hasAnchor ? this.anchorY : this.getY());
+        output.putDouble("AnchorZ", anchor != null ? anchor.getZ() : hasAnchor ? this.anchorZ : this.getZ());
     }
 
     @Override
     protected void readAdditionalSaveData(ValueInput input) {
-        this.discard();
+        if (input.getIntOr("McFlight", 0) != 1) {
+            // Saved by an older version, which did not keep the flight: discard it, as before.
+            this.discard();
+            return;
+        }
+        this.setName(input.getStringOr("WeaponName", ""));
+        if (this.getInfo() == null) {
+            this.discard();
+            return;
+        }
+        this.tickCount = input.getIntOr("Age", 0);
+        this.countOnUpdate = input.getIntOr("CountOnUpdate", 0);
+        this.power = input.getIntOr("Power", this.power);
+        this.explosionPower = input.getIntOr("ExplosionPower", this.explosionPower);
+        this.explosionPowerInWater = input.getIntOr("ExplosionPowerInWater", this.explosionPowerInWater);
+        this.acceleration = input.getDoubleOr("Acceleration", this.acceleration);
+        this.accelerationFactor = input.getDoubleOr("AccelerationFactor", this.accelerationFactor);
+        this.piercing = input.getIntOr("Piercing", this.piercing);
+        this.delayFuse = input.getIntOr("DelayFuse", 0);
+        this.sprinkleTime = input.getIntOr("SprinkleTime", this.sprinkleTime);
+        this.isBomblet = input.getByteOr("Bomblet", this.isBomblet);
+        if (this.isBomblet == 1) {
+            this.entityData.set(BOMBLET_FLAG, (byte) 1);
+        }
+        this.antiFlareUse = input.getBooleanOr("AntiFlareUse", false);
+        this.antiFlareTick = input.getIntOr("AntiFlareTick", 0);
+        this.numLockedChaff = input.getIntOr("LockedChaff", 0);
+        this.airburstDist = input.getIntOr("AirburstDist", 0);
+        this.doingTopAttack = input.getBooleanOr("TopAttack", false);
+        this.speedAddedFromAircraft = input.getBooleanOr("SpeedAdded", true);
+        this.airburstTravelled = input.getDoubleOr("AirburstTravelled", 0.0);
+        this.airburstTriggered = input.getBooleanOr("AirburstTriggered", false);
+        this.aheadTriggered = input.getBooleanOr("AheadTriggered", false);
+        this.spawnedBulletNum = input.getIntOr("SpawnedBullets", 0);
+        this.pendingShooter = input.read("Shooter", net.minecraft.core.UUIDUtil.CODEC).orElse(null);
+        this.pendingAircraft = input.read("ShooterVehicle", net.minecraft.core.UUIDUtil.CODEC).orElse(null);
+        this.pendingTarget = input.read("Target", net.minecraft.core.UUIDUtil.CODEC).orElse(null);
+        this.anchorX = input.getDoubleOr("AnchorX", this.getX());
+        this.anchorY = input.getDoubleOr("AnchorY", this.getY());
+        this.anchorZ = input.getDoubleOr("AnchorZ", this.getZ());
+        Vec3 m = this.getDeltaMovement();
+        this.prevMotionX = m.x;
+        this.prevMotionY = m.y;
+        this.prevMotionZ = m.z;
+        this.lastXo = this.prevPosX2 = this.getX();
+        this.lastYo = this.prevPosY2 = this.getY();
+        this.lastZo = this.prevPosZ2 = this.getZ();
+        this.restored = true;
+        this.resolveTicks = 0;
+    }
+
+    /** Looks up the saved shooter, its vehicle and the target by UUID while {@link #isResolving}. */
+    private void resolveSaved(ServerLevel level) {
+        if (!this.isResolving()) {
+            return;
+        }
+        this.resolveTicks++;
+        if (this.pendingShooter != null) {
+            Entity e = level.getEntity(this.pendingShooter);
+            if (e != null) {
+                this.shootingEntity = e;
+                this.pendingShooter = null;
+            }
+        }
+        if (this.pendingAircraft != null) {
+            Entity e = level.getEntity(this.pendingAircraft);
+            if (e != null) {
+                this.shootingAircraft = e;
+                this.pendingAircraft = null;
+            }
+        }
+        if (this.pendingTarget != null) {
+            Entity e = level.getEntity(this.pendingTarget);
+            if (e != null) {
+                this.setTargetEntity(e);
+                this.pendingTarget = null;
+            }
+        }
+    }
+
+    /**
+     * Whether the projectile was just loaded from disk and is still looking for its shooter, vehicle
+     * or target. Guidance waits meanwhile, so a missile does not give up on a target that loads a
+     * tick after it.
+     */
+    public boolean isResolving() {
+        return this.restored && this.resolveTicks < RESOLVE_TICKS
+                && (this.pendingShooter != null || this.pendingAircraft != null || this.pendingTarget != null);
+    }
+
+    /**
+     * Whether a guided weapon may keep guiding: it has a shooter, or it was loaded from disk, where
+     * its shooter may be a player who is not online.
+     */
+    protected boolean hasGuidingShooter() {
+        return this.shootingEntity != null || this.restored;
+    }
+
+    /** Whether the projectile was loaded from disk (its shooter may then be unknown). */
+    public boolean wasRestored() {
+        return this.restored;
+    }
+
+    /** The shooter's height, or where it was when the projectile was saved while it is not loaded. */
+    public double shooterY() {
+        Entity shooter = this.shootingEntity != null ? this.shootingEntity : this.shootingAircraft;
+        return shooter != null ? shooter.getY() : this.restored ? this.anchorY : this.getY();
     }
 
     // ---- being hit ----
