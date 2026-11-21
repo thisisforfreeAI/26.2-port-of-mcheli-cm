@@ -90,8 +90,11 @@ These follow from how Minecraft 26.2 works or from decisions approved in PORTING
    never had; without it those bombs are hidden and other payload weapons explode normally. On Mesa's software Vulkan driver, CrankShaft (NTM Next's renderer) crashed the
    client when NTM effects appeared, also without McHeli; OpenGL is the supported backend.
 8. Vehicles past the render distance are drawn full size and without fog in the normal entity pass,
-   not in a second pass with upstream's own 3,000-block projection, so they disappear past vanilla's
-   far plane (four times the render distance or the cloud range, whichever is larger).
+   not in a second pass with upstream's own 3,000-block projection. Instead, while a vehicle is past
+   vanilla's far plane (four times the render distance or the cloud range), the camera's far plane
+   is pushed out to it, up to `render.farVehicleDistance`. Whether a vehicle behind a far hill that only
+   Distant Horizons draws is hidden by it depends on how Distant Horizons shares its depth; it may
+   show through.
 9. The pilot's client simulates its own vehicle (decision D2). Servers can switch back to upstream's
    server-authoritative model with `vehicles.serverAuthoritativeMovement`. UAV motion always runs
    on the server because its pilot remains physically seated at the station.

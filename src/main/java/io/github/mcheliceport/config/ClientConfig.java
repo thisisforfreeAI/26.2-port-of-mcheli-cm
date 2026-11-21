@@ -25,6 +25,7 @@ public final class ClientConfig {
     public static final ModConfigSpec.BooleanValue TILT_RIDERS;
     public static final ModConfigSpec.BooleanValue ON_DEMAND_MODELS;
     public static final ModConfigSpec.IntValue ON_DEMAND_MODEL_LIFETIME_SECONDS;
+    public static final ModConfigSpec.IntValue FAR_VEHICLE_DISTANCE;
     public static final ModConfigSpec.BooleanValue HUD_IN_THIRD_PERSON;
     public static final ModConfigSpec.BooleanValue HIDE_KEY_HINTS;
     public static final ModConfigSpec.BooleanValue LIGHT_WEAPON_AUTO_FIRE;
@@ -127,6 +128,13 @@ public final class ClientConfig {
                 .comment("Keep vehicle models on the graphics card and draw them from there, instead of sending every",
                         "triangle again each frame. Turn off if vehicles look wrong with your graphics driver. Not in upstream.")
                 .define("gpuModelBuffers", true);
+        FAR_VEHICLE_DISTANCE = builder
+                .comment("Blocks out to which vehicles the server sends are drawn. Vanilla stops drawing anything at four",
+                        "times the render distance, so with Distant Horizons (a short vanilla render distance and terrain",
+                        "kilometres away) jets would vanish in front of distant hills. The server's",
+                        "tracking.longDistanceRange (1,200 by default) still decides which vehicles this client knows about.",
+                        "0 keeps vanilla's limit. Not in upstream, which drew vehicles out to 3,000 blocks.")
+                .defineInRange("farVehicleDistance", 3000, 0, 8192);
         builder.pop();
 
         builder.comment("The vehicle HUD (upstream's lines of the same names in mcheli.cfg).").push("hud");

@@ -21,8 +21,12 @@ public final class LongDistanceTracking {
                 && ServerConfig.LONG_DISTANCE_TRACKING.get();
     }
 
-    /** Upstream {@code getRenderDistance}: the tracking range, unclamped for vehicles. */
+    /**
+     * Upstream {@code getRenderDistance}: unclamped for vehicles, and the configured
+     * {@code tracking.longDistanceRange} instead of the registered 1,200 blocks, so a server whose
+     * players run Distant Horizons can send vehicles as far as their terrain is drawn.
+     */
     public static int visibleRange(Entity entity, int trackingRange, int viewRange) {
-        return applies(entity) ? trackingRange : Math.min(trackingRange, viewRange);
+        return applies(entity) ? ServerConfig.LONG_DISTANCE_RANGE.get() : Math.min(trackingRange, viewRange);
     }
 }

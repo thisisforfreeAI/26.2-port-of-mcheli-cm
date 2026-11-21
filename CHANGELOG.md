@@ -117,6 +117,14 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
   or red. A repair now also heals components when the hull is already whole.
 
 ### Changed
+- Aircraft, tanks and ships stay visible far past the render distance, which matters with Distant
+  Horizons: vanilla stopped drawing anything at four times the render distance, so with a short
+  vanilla distance and terrain drawn kilometres away a jet vanished in front of the far hills. While
+  a vehicle is past that limit, the camera's far plane now reaches just beyond it, up to the new client
+  option `render.farVehicleDistance` (3,000 blocks, upstream's far-pass range; 0 keeps vanilla's).
+  Servers set how far vehicles are sent with the new `tracking.longDistanceRange` (1,200 blocks as
+  before, up to 4,096). Past the render distance, lamps' glow aside, a vehicle drops its markings, scars
+  and damage overlays, which showed there as sky-coloured patches.
 - A plane that loses its tail, in flight or in a crash, no longer drops the whole back of its fuselage.
   Only the fins and stabilisers snap off at their roots; the rear fuselage, engine nozzles and exhaust
   stay on the airframe. Parts are told apart by shape, so this works on every stock and add-on plane:
