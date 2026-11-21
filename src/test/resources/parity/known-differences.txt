@@ -15,7 +15,8 @@
 # rideRacks (a YAML map holds one rack per vehicle name), hudList (YAML sets HUDs per seat only),
 # ships' rotorList, a few rotor factors, category ("zzz" written out and upper-cased),
 # limitRotation, fuelSupplyInfinite, and in weapons damageFactor, bomblet*, isFAE, dispense*,
-# length/radius/angle/markTime (targeting pods).
+# length/radius/angle/markTime (targeting pods). The weapon fields are restored at server start when
+# stockContent.restoreWeaponData is on (mcheli_stock_fixes/weapons.yml); the YAML itself is unchanged.
 #
 # The port reads YAML onGroundPitch as stored (in-game pitch, negative = nose up), the way upstream's
 # converter wrote it; upstream negated it a second time, which pinned tail-draggers nose-down.

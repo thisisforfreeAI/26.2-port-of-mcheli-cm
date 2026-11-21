@@ -29,6 +29,15 @@ public final class McheliCePort {
         registerEvents();
     }
 
+    /** Restores the stock weapon settings upstream's YAML conversion lost, if the server config asks for it. */
+    private static void applyStockWeaponFixes() {
+        io.github.mcheliceport.content.weapon.StockWeaponFixes.prepare(
+                io.github.mcheliceport.content.ContentRegistries.weapon(),
+                info -> io.github.mcheliceport.content.addon.BuiltinAddonPack.DOMAIN.equals(info.location.addonDomain()));
+        io.github.mcheliceport.content.weapon.StockWeaponFixes.apply(
+                io.github.mcheliceport.config.ServerConfig.get(io.github.mcheliceport.config.ServerConfig.RESTORE_STOCK_WEAPON_DATA));
+    }
+
     /** The shared game-event listeners; each loader fires {@link io.github.mcheliceport.platform.GameEvents}. */
     private static void registerEvents() {
         io.github.mcheliceport.entity.uav.UavRemoteSession.register();
@@ -46,6 +55,7 @@ public final class McheliCePort {
         io.github.mcheliceport.command.ClientRequests.register();
         io.github.mcheliceport.effectrange.EffectsRange.register();
         io.github.mcheliceport.resources.ModPackFinders.register();
+        io.github.mcheliceport.platform.GameEvents.SERVER_STARTED.add(server -> applyStockWeaponFixes());
         io.github.mcheliceport.platform.GameEvents.REGISTER_COMMANDS.add(
                 io.github.mcheliceport.command.McheliCommand::register);
         io.github.mcheliceport.platform.GameEvents.REGISTER_COMMANDS.add(

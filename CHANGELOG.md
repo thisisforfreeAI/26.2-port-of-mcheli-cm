@@ -11,6 +11,13 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 ## [Unreleased]
 
 ### Added
+- Optional stock weapon fixes: the server setting `stockContent.restoreWeaponData` (on by default)
+  gives 65 stock weapons back the settings upstream's TXT to YAML conversion lost: damage factors
+  (anti-tank missiles do double damage to tanks again, AA missiles extra damage to aircraft), cluster
+  bomblets (CBU-87, CBU-100, AGM-154, MPSM rockets, canister and Type 3 shells), fuel-air explosives
+  (CBU-72, AN-M17), the items the fire, water, seed, fertilizer and boat dispensers use (they did
+  nothing before), and targeting pod ranges. Turn it off for upstream McHeli CE behaviour. Addons that
+  redefine a stock weapon keep their own values.
 - M9 follow-ups. Other players' fast jets and helicopters now turn toward the server's attitude as
   one quaternion slerp with the roll, so a loop goes over the top and a barrel roll keeps rolling
   instead of yaw, pitch and roll swinging apart. The anti-cheat records a pilot whose claimed speed
@@ -133,6 +140,9 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
   See `docs/M6B_PLAN.md`.
 
 ### Fixed
+- The HOVERING label of the stock helicopter HUDs now shows while hovering mode is on. The HUDs test
+  `hovering==1`, which never matched a true or false value; `hovering` is now read like the other
+  legacy true-or-false HUD variables, which also fixes addon HUDs that test it the same way.
 - A passenger's game no longer turns the aircraft: every frame it re-ran the pilot's attitude rules
   on its own copy of the vehicle, so crew saw the plane pointing the wrong way and their view could
   be locked to its heading. Only the pilot's mouse steers now.

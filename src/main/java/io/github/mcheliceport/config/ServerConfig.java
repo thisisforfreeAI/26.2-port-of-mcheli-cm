@@ -21,6 +21,7 @@ public final class ServerConfig {
     public static final ModConfigSpec.IntValue ROLL_LIMIT;
     public static final ModConfigSpec.BooleanValue ENABLE_CAM_DIST_CHANGE;
     public static final ModConfigSpec SPEC;
+    public static final ModConfigSpec.BooleanValue RESTORE_STOCK_WEAPON_DATA;
     public static final ModConfigSpec.IntValue MAX_PAIRED_UAVS;
     public static final ModConfigSpec.BooleanValue TABLET_NORMAL_UAVS;
     public static final ModConfigSpec.IntValue UAV_CONTROL_RANGE;
@@ -291,6 +292,17 @@ public final class ServerConfig {
                         "and ships), past the server's view distance and in chunks the player has not loaded.",
                         "false: vanilla's limit, the view distance. Upstream: ExperimentalRemoveClientTrackingRestrictions.")
                 .define("longDistance", true);
+        builder.pop();
+
+        builder.comment("Stock content that upstream's conversion from TXT to YAML lost (a port addition).")
+                .push("stockContent");
+        RESTORE_STOCK_WEAPON_DATA = builder
+                .comment("true: 65 stock weapons get back the settings the original mod gave them: damage factors (for",
+                        "example anti-tank missiles doing double damage to tanks), cluster bomblets, fuel-air explosives,",
+                        "the items the fire, water, seed and fertilizer dispensers use, and targeting pod ranges.",
+                        "false: the stock weapons behave as in upstream McHeli CE. Addons that redefine a stock weapon",
+                        "keep their own values either way. Takes effect when the server or world starts.")
+                .define("restoreWeaponData", true);
         builder.pop();
 
         builder.comment("The multiplay manager (M), a port addition.").push("teams");

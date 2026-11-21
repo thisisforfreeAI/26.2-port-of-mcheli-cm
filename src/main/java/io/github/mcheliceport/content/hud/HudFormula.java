@@ -17,7 +17,7 @@ public final class HudFormula {
      * booleans; comparisons with them are rewritten into plain boolean tests.
      */
     public static final List<String> LEGACY_VARS = List.of("reloading", "is_heat_wpn", "have_radar",
-            "dsp_mt_dist", "can_flare", "have_flare", "gunner_mode", "test_mode", "is_uav");
+            "dsp_mt_dist", "can_flare", "have_flare", "gunner_mode", "test_mode", "is_uav", "hovering");
 
     private HudFormula() {
     }
