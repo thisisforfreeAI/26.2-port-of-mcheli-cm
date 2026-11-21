@@ -181,8 +181,11 @@ These follow from how Minecraft 26.2 works or from decisions approved in PORTING
     upstream folded it into each vehicle's control packet. The server takes the rider's predicted
     shot position only within 16 blocks of the vehicle, and accepts flares, chaff and APS from the
     pilot and seat 1 only, as upstream's client did.
-43. Lock notifications (`PacketNotifyLock`) are not sent; the lock state each client shows comes
-    from its own seeker, as the HUD's `lock` variable does.
+43. Seekers lock on the shooter's client, which reports the entity it is locking to the server
+    (upstream's `PacketNotifyLock`); the riders of the locked vehicle hear upstream's `locked` tone
+    every second while the lock lasts, whatever the vehicle. Upstream sent the notice only to the
+    first two seats of a vehicle with flares. A player on foot is not notified. AI pilots and
+    gunners lock on the server without a lock phase, so their missiles are announced at launch.
 44. A weapon seat always uses its seat ID, and upstream's off-by-default quaternion aim
     (`ExperimentalQuaternionRotation`) is not ported.
 45. A weapon a set names that does not exist becomes a dummy weapon (with a log line). Round items
@@ -413,8 +416,9 @@ These follow from how Minecraft 26.2 works or from decisions approved in PORTING
 86. The ECM jammer has its own key (ECM Jammer, V like the other countermeasures), as upstream's
     `KeyECMJammer`. No stock vehicle carries one; addon vehicles with `ECM: Type: 2` strip radar
     and anti-radiation missiles within 80 blocks of their lock and deny radar locks while it
-    runs. Upstream's other types only hid the vehicle from radar warning displays, which are not
-    ported yet (M6). `PhotoelectricJammer` and `DIRCM` are read but did nothing upstream either.
+    runs. Upstream's other types only hid the vehicle from radar warning displays: a running jammer
+    or chaff hides it from search radars on the RWR (item 90), but not from locks.
+    `PhotoelectricJammer` and `DIRCM` are read but did nothing upstream either.
 87. The APS iron curtain (an APS with range 100) follows upstream: the vehicle takes no damage
     while it runs and its model pulses red. Upstream tinted vanilla clouds and block cracks red
     for the tank haze and for hits on the vehicle; vanilla particles take no tint in 26.2, so
@@ -432,12 +436,23 @@ These follow from how Minecraft 26.2 works or from decisions approved in PORTING
     in-world billboard onto the screen, so they keep upstream's size, place and colours but sit
     under the vehicle HUD instead of in the world. As upstream, only targets with no block in
     the way get one.
-90. The radar warning receiver shows its scope on vehicles with an `RWR` section, as upstream, and
-    the scope stays empty, as upstream: upstream's threat manager, which would have listed radars
-    scanning or locking the vehicle and missiles homing on it, was never run, and its warning
-    sounds never played. The radar switch (Radar Switch, `` ` ``) turns a vehicle's `Radar` on
-    and off as upstream, which shows or hides the mortar radar scope. Upstream's
-    `radar_on`/`radar_off` switch sounds were never in its assets and are left out.
+90. The radar warning receiver runs (upstream wrote `MCH_RWRThreatManager` but never ran it), with
+    these differences. No stock vehicle has an `RWR` or `Radar` section, so with the server option
+    `rwr.autoFit` (on by default) a vehicle with flares, chaff or an entity radar has a receiver,
+    and a crewed vehicle with an entity radar sweeps a 1,000-block cone ahead (120° by 60° for
+    aircraft, all round for ground vehicles); a `Radar` section with its switch on sweeps as
+    upstream. Upstream's search radars had to hit a target on several sweeps first; here a target
+    in the cone shows at once and stays 2 seconds. Stealth shortens the search range. A vehicle
+    whose content gives no `NameOnRWR` shows the number in its name ("29" for the MiG-29, else its
+    first three letters), where upstream drew nothing for it; a missile shows its weapon's
+    `NameOnRWR` (`MSL` by default) and a player's hand-held launcher `IR`. All locks show, not only
+    radar ones, so infrared seekers warn too. Missiles are listed one by one, at the missile, not
+    at the shooter. The direction is worked out each frame on the client from the emitter's
+    position. Upstream's `alert_radar` search sound was never in its assets; a new search radar
+    plays `pi` once. A LOCK or LAUNCH caption under the scope is a port addition. The radar switch
+    (Radar Switch, `` ` ``) turns a vehicle's `Radar` on and off as upstream, which shows or hides
+    the mortar radar scope. Upstream's `radar_on`/`radar_off` switch sounds were never in its
+    assets and are left out.
 91. The BVR scope and the mortar radar follow upstream, with these differences. Upstream looked
     for planes under their class name from before CE renamed it, so it never showed planes on the
     BVR scope and named them "?" on the mortar radar; planes are shown and named here, like

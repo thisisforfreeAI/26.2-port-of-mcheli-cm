@@ -21,6 +21,8 @@ public final class ServerConfig {
     public static final ModConfigSpec.IntValue ROLL_LIMIT;
     public static final ModConfigSpec.BooleanValue ENABLE_CAM_DIST_CHANGE;
     public static final ModConfigSpec SPEC;
+    public static final ModConfigSpec.BooleanValue RWR_ENABLED;
+    public static final ModConfigSpec.BooleanValue RWR_AUTO_FIT;
     public static final ModConfigSpec.IntValue MAX_PAIRED_UAVS;
     public static final ModConfigSpec.BooleanValue TABLET_NORMAL_UAVS;
     public static final ModConfigSpec.IntValue UAV_CONTROL_RANGE;
@@ -298,6 +300,18 @@ public final class ServerConfig {
                 .comment("true: every player can join a team, or leave theirs, with the manager's team buttons.",
                         "false: only game masters can, as with /team join. Upstream had no such buttons.")
                 .define("playersChooseTeam", true);
+        builder.pop();
+
+        builder.comment("The radar warning receiver (upstream wrote it but never ran it).").push("rwr");
+        RWR_ENABLED = builder
+                .comment("true: riders are warned when a radar sweeps their vehicle, a seeker locks it or a missile",
+                        "homes on it, with the direction on the RWR scope. false: no warnings, as upstream.")
+                .define("enabled", true);
+        RWR_AUTO_FIT = builder
+                .comment("true: a vehicle with flares, chaff or an entity radar has a warning receiver even without an",
+                        "RWR section (no bundled vehicle has one), and a crewed vehicle with an entity radar sweeps",
+                        "a 1,000-block cone ahead (all round for ground vehicles). false: only RWR and Radar sections.")
+                .define("autoFit", true);
         builder.pop();
         SPEC = builder.build();
     }

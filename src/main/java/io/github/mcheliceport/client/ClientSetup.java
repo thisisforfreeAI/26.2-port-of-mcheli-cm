@@ -14,6 +14,8 @@ public final class ClientSetup {
 
     public static void registerEvents() {
         ClientEvents.TICK_POST.add(io.github.mcheliceport.client.effect.BlastMarks::tick);
+        ClientEvents.TICK_POST.add(RwrClient::tick);
+        ClientEvents.LOGGING_OUT.add(RwrClient::reset);
         ClientEvents.SUBMIT_GEOMETRY.add(io.github.mcheliceport.client.effect.BlastMarks::submit);
         ClientEvents.TICK_POST.add(io.github.mcheliceport.client.effect.BloodStains::tick);
         ClientEvents.SUBMIT_GEOMETRY.add(io.github.mcheliceport.client.effect.BloodStains::submit);

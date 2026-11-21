@@ -11,6 +11,14 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 ## [Unreleased]
 
 ### Added
+- The radar warning receiver works. Riders are warned when a search radar sweeps their vehicle, a
+  seeker locks it or a missile homes on it: the threat's symbol appears on the RWR scope in its
+  direction (green for aircraft radars, amber for ground radars, red for locks, flashing red for
+  missiles), with a LOCK or LAUNCH caption, a lock tone and a missile alert. Riders of any vehicle
+  now hear the lock tone when locked, as upstream's lock notice intended. Since no stock vehicle has
+  an `RWR` section, vehicles with flares, chaff or an entity radar get a receiver, and crewed ones
+  with an entity radar sweep a 1,000-block cone ahead (server config `rwr.autoFit`; `rwr.enabled`
+  turns the warnings off).
 - M9 follow-ups. Other players' fast jets and helicopters now turn toward the server's attitude as
   one quaternion slerp with the roll, so a loop goes over the top and a barrel roll keeps rolling
   instead of yaw, pitch and roll swinging apart. The anti-cheat records a pilot whose claimed speed
