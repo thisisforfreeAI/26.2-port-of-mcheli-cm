@@ -11,6 +11,12 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 ## [Unreleased]
 
 ### Added
+- M9 follow-ups. Other players' fast jets and helicopters now turn toward the server's attitude as
+  one quaternion slerp with the roll, so a loop goes over the top and a barrel roll keeps rolling
+  instead of yaw, pitch and roll swinging apart. The anti-cheat records a pilot whose claimed speed
+  rises faster than a fifth of the vehicle's checked top speed a tick (at least 0.25 blocks), as
+  the new `ACCELERATION` check; it is only recorded, since the server already caps the speed. The
+  component strip moved to the top-right corner, where it no longer covers HUD radars.
 - Groundwork for a Fabric version (stage 1 of 5, see `docs/FABRIC_PLAN.md`): a `fabric/` Gradle
   subproject that builds against Minecraft 26.2 and Fabric API from the same sources, and a
   loader-neutral seam (`platform/Platform.java`) that registration, the fuel fluid, menus,
@@ -130,6 +136,12 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 - A passenger's game no longer turns the aircraft: every frame it re-ran the pilot's attitude rules
   on its own copy of the vehicle, so crew saw the plane pointing the wrong way and their view could
   be locked to its heading. Only the pilot's mouse steers now.
+- Fast aircraft no longer freeze a dedicated server. When a plane flew into chunks the server was
+  still generating, its collision check (and vanilla's check after a pilot's move) waited for that
+  generation on the server thread, and on a modpack with slow world generation that wait passed
+  the 60 second watchdog and stopped the server. The server now skips terrain collision for a
+  vehicle over chunks that are not loaded yet: a pilot's move is taken as the client sent it, and a
+  vehicle the server moves itself waits at the edge until the terrain is there.
 - Wings, tails and control surfaces shot off a plane now visibly break away and fall from combat range.
   Before, a section torn off a plane more than about 40 blocks away simply vanished from it, and a
   falling section disappeared once it was 40 blocks from the camera. Sections now break away, fall

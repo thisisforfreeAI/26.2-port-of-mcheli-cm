@@ -6,6 +6,7 @@ import io.github.mcheliceport.content.ContentLocation;
 import io.github.mcheliceport.content.ContentType;
 import io.github.mcheliceport.content.aircraft.PlaneInfo;
 import io.github.mcheliceport.config.ServerConfig;
+import io.github.mcheliceport.entity.aircraft.LoadedTerrain;
 import io.github.mcheliceport.entity.plane.PlaneEntity;
 import io.github.mcheliceport.item.AircraftItem;
 import io.github.mcheliceport.net.HeliControlPayload;
@@ -41,6 +42,7 @@ final class PlaneGameTests {
         ModGameTests.test("plane_vtol_takes_off", 240, PlaneGameTests::takeOff);
         ModGameTests.test("plane_movement_authority", 30, PlaneGameTests::movementAuthority);
         ModGameTests.test("plane_default_vtol_save", 30, PlaneGameTests::defaultVtolSave);
+        ModGameTests.test("plane_move_never_waits_for_terrain", 20, PlaneGameTests::unloadedTerrainMove);
     }
 
     /** Check the entity call cadence as well as the formula: upstream moves once per tick. */
@@ -224,6 +226,38 @@ final class PlaneGameTests {
             GameTestSupport.cleanUp(plane);
             helper.getLevel().getServer().getPlayerList().remove(pilot);
         }
+        helper.succeed();
+    }
+
+    /**
+     * A move into chunks the server has not finished loading must not load them on the server
+     * thread (two watchdog crashes on a modpack with slow world generation): a pilot's step is
+     * taken as sent, and a server-moved vehicle waits at the edge.
+     */
+    private static void unloadedTerrainMove(GameTestHelper helper) {
+        var level = helper.getLevel();
+        PlaneEntity plane = new PlaneEntity(io.github.mcheliceport.registry.ModEntityTypes.PLANE.get(), level);
+        plane.setAircraftTypeName("harrier_en");
+        Vec3 near = helper.absoluteVec(new Vec3(12.5, 30, 12.5));
+        plane.setPos(near);
+        check(helper, LoadedTerrain.isReady(level, plane.getBoundingBox()), "the test area counts as loaded");
+        check(helper, !plane.touchingUnloadedChunk(), "a plane in the test area touches no unloaded chunk");
+        int far = 2_900_000;
+        int chunk = far >> 4;
+        check(helper, level.getChunkSource().getChunkNow(chunk, chunk) == null, "the far chunk starts unloaded");
+        plane.setPos(far + 8.5, 2000.0, far + 8.5);
+        check(helper, !LoadedTerrain.isReady(level, plane.getBoundingBox()), "the far chunk counts as not loaded");
+        check(helper, plane.touchingUnloadedChunk(), "a plane over the far chunk touches an unloaded chunk");
+        Vec3 before = plane.position();
+        plane.move(MoverType.PLAYER, new Vec3(0.5, -0.25, 0.0));
+        check(helper, plane.position().subtract(before).distanceTo(new Vec3(0.5, -0.25, 0.0)) < 1.0E-9,
+                "the pilot's step is taken without terrain collision");
+        before = plane.position();
+        plane.move(MoverType.SELF, new Vec3(0.5, 0.0, 0.0));
+        check(helper, plane.position().equals(before), "a server-moved plane waits for the terrain");
+        check(helper, level.getChunkSource().getChunkNow(chunk, chunk) == null && !level.getChunkSource().hasChunk(chunk, chunk),
+                "the far chunk was not loaded");
+        plane.discard();
         helper.succeed();
     }
 }

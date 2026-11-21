@@ -42,3 +42,15 @@ nearby player while it flies. Slow and parked vehicles send nothing extra.
   never-received value), the extrapolation limit, payload validation.
 - The client-side smoothing needs two real clients and was not exercised by the GameTests, which
   run on a server without clients.
+
+## Attitude (follow-up)
+
+A watching client used to interpolate yaw and pitch through vanilla's Euler lerp and ease the
+roll by a third each tick, separately. In a loop or a roll the three swung apart: a jet going over
+the top could swing sideways at the midpoint. Now `AircraftEntity` keeps the attitude from each
+server update itself (vanilla's interpolation still moves the position), and each tick turns toward
+the server's yaw and pitch and the synced roll as one quaternion slerp
+(`WatcherMotion#attitudeStep`), over the same steps as the position. Yaw and roll come back
+unwrapped, so a roll through 180 degrees keeps going. The pilot's own client and destroyed
+vehicles are unchanged.
+
