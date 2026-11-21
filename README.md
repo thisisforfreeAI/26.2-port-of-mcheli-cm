@@ -166,7 +166,7 @@ its pilot, crew and team, and any damaged or failed engines, rotors, tanks, wing
 optional and its "MC Heli vehicles" line can be turned off in Jade's plugin settings.
 
 Paint schemes: the wrench (sneak and right-click) or **Appearance** in the vehicle menu cycles a
-vehicle's liveries. Upstream's own alternate paint, 138 schemes across 57 aircraft, helicopters,
+vehicle's liveries. Upstream's own alternate paint, 144 schemes across 57 aircraft, helicopters,
 tanks, guns and ships (the F-14D's Razgriz and VX-9, the AH-64's national schemes, the T-4's display
 teams and more), is selectable again.
 

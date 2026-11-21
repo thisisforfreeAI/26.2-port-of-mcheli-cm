@@ -19,7 +19,7 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 - Optional Jade integration: looking at a vehicle shows hull, fuel or charge, pilot, crew, team and
   damaged or failed components. Client-only; uses values already synced.
 - Upstream's alternate liveries are selectable again: its YAML conversion dropped every
-  `AddTexture`, so 138 shipped paint schemes on 57 stock vehicles could not be picked. The stock
+  `AddTexture`, so 144 paint schemes on 57 stock vehicles could not be picked. The stock
   definitions list them in upstream's order (the TXT/YAML parity baseline loses those 57 entries),
   the T-4's three upper-case texture files are renamed to valid lower-case names, the Appearance
   screen shows "razgriz (3/3)" instead of the raw texture name, and canopy glass detection
