@@ -39,8 +39,15 @@ final class PlaneFlightGameTests {
     }
 
     private static void tick(GameTestHelper helper, PlaneEntity plane) {
-        // Scripted ticks can cross the normal GameTest arena; load the next collision chunk.
-        helper.getLevel().getChunk(plane.blockPosition().getX() >> 4, plane.blockPosition().getZ() >> 4);
+        // Scripted ticks can cross the normal GameTest arena; load the chunks around the plane,
+        // since a plane no longer loads unloaded terrain itself when it collides.
+        int cx = plane.blockPosition().getX() >> 4;
+        int cz = plane.blockPosition().getZ() >> 4;
+        for (int x = cx - 1; x <= cx + 1; x++) {
+            for (int z = cz - 1; z <= cz + 1; z++) {
+                helper.getLevel().getChunk(x, z);
+            }
+        }
         plane.tick();
     }
 

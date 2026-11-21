@@ -1868,6 +1868,15 @@ public abstract class AircraftEntity extends SpawnDataEntity
         return true;
     }
 
+    /**
+     * Vanilla's own check counts a chunk that is still generating as loaded, and the block reads it
+     * guards (fall damage after a pilot's move, fluid pushing) would then wait for that generation.
+     */
+    @Override
+    public boolean touchingUnloadedChunk() {
+        return super.touchingUnloadedChunk() || !LoadedTerrain.isReady(this.level(), this.getBoundingBox());
+    }
+
     @Override
     public @Nullable ItemStack getPickResult() {
         AircraftItem item = this.getItem();
@@ -1962,7 +1971,29 @@ public abstract class AircraftEntity extends SpawnDataEntity
                 this.logRejectedMove();
             }
         }
+        if (!this.level().isClientSide() && !LoadedTerrain.isReady(this.level(), this.getBoundingBox().expandTowards(movement))) {
+            // Colliding here would make the server wait for the chunks ahead to finish generating,
+            // which can freeze the whole server (watchdog crash) when worldgen is slow.
+            this.logUnloadedTerrain();
+            if (type == MoverType.PLAYER) {
+                // The pilot's client already collided with the terrain it has; take its step.
+                this.setPos(this.getX() + movement.x, this.getY() + movement.y, this.getZ() + movement.z);
+            }
+            // A vehicle the server moves itself waits at the edge until the terrain is there.
+            return;
+        }
         super.move(type, movement);
+    }
+
+    private long lastUnloadedLogTime;
+
+    private void logUnloadedTerrain() {
+        long now = this.level().getGameTime();
+        if (now - this.lastUnloadedLogTime >= 1200 || this.lastUnloadedLogTime == 0) {
+            this.lastUnloadedLogTime = now;
+            LOGGER.info("Vehicle {} of {} flew into chunks that are still generating; skipping its terrain collision there",
+                    this.getAircraftTypeName(), this.getPilot() != null ? this.getPilot().getPlainTextName() : "nobody");
+        }
     }
 
     private long lastRejectLogTime;
