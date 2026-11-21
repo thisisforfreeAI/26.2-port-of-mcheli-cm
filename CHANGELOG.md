@@ -133,6 +133,9 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
   See `docs/M6B_PLAN.md`.
 
 ### Fixed
+- A passenger's game no longer turns the aircraft: every frame it re-ran the pilot's attitude rules
+  on its own copy of the vehicle, so crew saw the plane pointing the wrong way and their view could
+  be locked to its heading. Only the pilot's mouse steers now.
 - Fast aircraft no longer freeze a dedicated server. When a plane flew into chunks the server was
   still generating, its collision check (and vanilla's check after a pilot's move) waited for that
   generation on the server thread, and on a modpack with slow world generation that wait passed

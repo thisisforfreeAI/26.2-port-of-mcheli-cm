@@ -52,7 +52,8 @@ public final class MouseFlight {
     public static void onPassengerTurned(AircraftEntity aircraft, Entity passenger) {
         if (aircraft.isPassenger()) { return; }
         Minecraft mc = Minecraft.getInstance();
-        if (passenger != mc.player || !aircraft.canMouseRot()) {
+        // Only the pilot steers: a crew member's mouse never turns the vehicle.
+        if (passenger != mc.player || !aircraft.canMouseRot() || !aircraft.isPilot(passenger)) {
             return;
         }
         turnedThisFrame = true;
@@ -98,7 +99,12 @@ public final class MouseFlight {
         dampStick(stickMode);
     }
 
-    /** A frame in which vanilla did not turn the player (a screen is open): the stick holds still. */
+    /**
+     * A frame in which vanilla did not turn the player (a screen is open): the stick holds still.
+     * Only for the pilot: vanilla turns a crew member through their seat, never through the vehicle,
+     * so without the check every frame of a passenger's game re-ran the attitude rules on their copy
+     * of the vehicle and turned it away from where the pilot was flying it.
+     */
     public static void onFrameWithoutTurn() {
         boolean turned = turnedThisFrame;
         turnedThisFrame = false;
@@ -106,7 +112,7 @@ public final class MouseFlight {
         Player player = mc.player;
         AircraftEntity aircraft = player != null ? io.github.mcheliceport.net.ModNetwork.riddenAircraft(player) : null;
         if (turned || player == null || aircraft == null
-                || !aircraft.canMouseRot()) {
+                || !aircraft.canMouseRot() || !aircraft.isPilot(player)) {
             if (!turned) {
                 prevNanoTime = 0L;
             }
