@@ -221,11 +221,10 @@ public class BombEntity extends BaseBulletEntity {
         return super.interact(player, hand, location);
     }
 
-    /** Mines are kept with the world; other bombs are not saved. */
+    /** Mines are kept with the world, and falling bombs too, as every projectile in flight (KNOWN_ISSUES 51). */
     @Override
     public boolean shouldBeSaved() {
-        WeaponInfo info = this.getInfo();
-        return info != null && info.isMine() && !this.isRemoved() && !this.isPassenger();
+        return super.shouldBeSaved();
     }
 
     @Override

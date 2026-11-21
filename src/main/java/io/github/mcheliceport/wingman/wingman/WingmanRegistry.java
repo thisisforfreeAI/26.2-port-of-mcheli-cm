@@ -10,8 +10,8 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * Upstream's {@code WingmanRegistry}: the wingman aircraft's UUID to its entry, in assignment
- * order. As upstream it lives only while the server runs; the port also empties it when the
- * server stops, so a world reopened in the same game starts without wingmen.
+ * order. It is emptied when the server stops; upstream forgot it then, the port saves it with the
+ * world and restores it when the server starts ({@link WingmanPersistence}).
  */
 public final class WingmanRegistry {
 

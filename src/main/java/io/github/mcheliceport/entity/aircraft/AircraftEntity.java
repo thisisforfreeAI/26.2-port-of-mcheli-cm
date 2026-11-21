@@ -3481,6 +3481,7 @@ public abstract class AircraftEntity extends SpawnDataEntity
     public void remove(Entity.RemovalReason reason) {
         if (reason.shouldDestroy() && this.level() instanceof net.minecraft.server.level.ServerLevel sl && this.isUAV()) { io.github.mcheliceport.entity.uav.UavPositionIndex.get(sl).remove(getUUID()); }
         if (reason.shouldDestroy() && !this.level().isClientSide()) {
+            io.github.mcheliceport.wingman.wingman.WingmanPersistence.forget(this.getUUID());
             for (SeatEntity seat : this.seats) {
                 if (seat != null) {
                     seat.ejectPassengers();

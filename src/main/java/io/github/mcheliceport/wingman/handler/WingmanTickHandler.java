@@ -20,6 +20,7 @@ import io.github.mcheliceport.wingman.ai.TerrainAvoidance;
 import io.github.mcheliceport.wingman.config.WingmanConfig;
 import io.github.mcheliceport.wingman.mission.AutonomousState;
 import io.github.mcheliceport.wingman.wingman.WingmanEntry;
+import io.github.mcheliceport.wingman.wingman.WingmanPersistence;
 import io.github.mcheliceport.wingman.wingman.WingmanRegistry;
 import io.github.mcheliceport.wingman.wingman.WingmanState;
 import java.util.ArrayList;
@@ -473,6 +474,11 @@ public final class WingmanTickHandler {
             UUID id = e.getKey();
             WingmanEntry entry = e.getValue();
             if (!entry.isAutonomous() && !entry.parkingHold && (entry.leader == null || entry.leader.isRemoved())) {
+                if (entry.leader != null && WingmanPersistence.leaderUnloaded(entry.leader)) {
+                    // Its pilot logged out or it left the loaded world: wait for it rather than forget it.
+                    WingmanPersistence.waitForLeader(id, entry, entry.leader);
+                    continue;
+                }
                 WingmanRegistry.remove(id);
                 McheliCePort.LOGGER.info("[Wingman] {} unregistered - leader gone", id);
                 continue;

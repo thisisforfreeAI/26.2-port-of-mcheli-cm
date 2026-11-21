@@ -22,7 +22,8 @@ import org.jspecify.annotations.Nullable;
  * found the chunks at its last position stay loaded, as upstream; they are released when its order
  * ends. Upstream loaded chunks only with its {@code forceChunkload} option, off by default, and then
  * around every aircraft; the port always loads them, and only for missions (KNOWN_ISSUES 98).
- * Forced chunks are dropped when the world loads again, since the missions are not saved.
+ * Forced chunks are dropped when the world loads again; {@code WingmanPersistence} loads them again
+ * around each restored mission's saved position ({@link #restore}).
  */
 public final class MissionChunkLoader {
 
@@ -79,6 +80,12 @@ public final class MissionChunkLoader {
                 it.remove();
             }
         }
+    }
+
+    /** Loads the chunks around a restored mission aircraft's saved position, so it loads and flies on. */
+    public static void restore(ServerLevel level, UUID id, ChunkPos center) {
+        force(level, id, center, true);
+        LOADED.put(id, new Loaded(level.dimension(), center));
     }
 
     /** The chunks loaded for the aircraft, or null. */

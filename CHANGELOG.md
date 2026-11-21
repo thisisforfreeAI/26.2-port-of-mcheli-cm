@@ -11,6 +11,14 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 ## [Unreleased]
 
 ### Added
+- Server restarts no longer lose the air war. Wingmen, base orders, planner missions and
+  `/wingman order park` holds are saved with the world: an aircraft on a mission carries on where
+  it was (its chunks are loaded again so it keeps flying with nobody nearby), and a wingman rejoins
+  its leader in its old slot with its old attack orders once the leader is back, usually when its
+  pilot logs in. A wingman whose leader's pilot logs out while the server runs now waits for the
+  leader the same way instead of being dropped. Missiles, rockets, bombs and torpedoes in flight are
+  saved too and fly on after loading, finding their shooter and target again; gun rounds are still
+  not saved (KNOWN_ISSUES 51, 95, 98).
 - M9 follow-ups. Other players' fast jets and helicopters now turn toward the server's attitude as
   one quaternion slerp with the roll, so a loop goes over the top and a barrel roll keeps rolling
   instead of yaw, pitch and roll swinging apart. The anti-cheat records a pilot whose claimed speed

@@ -4,6 +4,8 @@ import io.github.mcheliceport.content.weapon.WeaponInfo;
 import io.github.mcheliceport.registry.ModEntityTypes;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.phys.EntityHitResult;
 
 /**
@@ -34,10 +36,10 @@ public class ATMissileEntity extends BaseBulletEntity {
         if (this.getCountOnUpdate() > 4 && !info.disableSmoke) {
             this.spawnParticle(info.trajectoryParticleName, 3, 7.0F * info.smokeSize * 0.5F);
         }
-        if (this.level().isClientSide()) {
+        if (this.level().isClientSide() || this.isResolving()) {
             return;
         }
-        if (this.shootingEntity != null && this.targetEntity != null && this.targetEntity.isAlive()) {
+        if (this.hasGuidingShooter() && this.targetEntity != null && this.targetEntity.isAlive()) {
             this.processGuidance(info);
         } else if (info.activeRadar && this.tickCount % info.scanInterval == 0) {
             this.scanForTargets();
@@ -66,10 +68,10 @@ public class ATMissileEntity extends BaseBulletEntity {
         float accel = age < startTime + info.trajectoryParticleStartTick ? 0.5F : 1.0F;
         if (age <= startTime + 20) {
             this.doingTopAttack = true;
-            this.guidanceToTarget(this.targetEntity.getX(), this.shootingEntity.getY() + 100.0,
+            this.guidanceToTarget(this.targetEntity.getX(), this.shooterY() + 100.0,
                     this.targetEntity.getZ(), accel);
         } else if (age <= startTime + 30) {
-            this.guidanceToTarget(this.targetEntity.getX(), this.shootingEntity.getY(), this.targetEntity.getZ(),
+            this.guidanceToTarget(this.targetEntity.getX(), this.shooterY(), this.targetEntity.getZ(),
                     accel);
         } else {
             if (age == startTime + 35) {
@@ -97,5 +99,17 @@ public class ATMissileEntity extends BaseBulletEntity {
     @Override
     public String getDefaultBulletModelName() {
         return "asmissile";
+    }
+
+    @Override
+    protected void addAdditionalSaveData(ValueOutput output) {
+        super.addAdditionalSaveData(output);
+        output.putInt("GuidanceType", this.guidanceType);
+    }
+
+    @Override
+    protected void readAdditionalSaveData(ValueInput input) {
+        super.readAdditionalSaveData(input);
+        this.guidanceType = input.getIntOr("GuidanceType", this.guidanceType);
     }
 }

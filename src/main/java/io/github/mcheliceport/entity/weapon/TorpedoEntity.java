@@ -3,6 +3,8 @@ package io.github.mcheliceport.entity.weapon;
 import io.github.mcheliceport.registry.ModEntityTypes;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.phys.Vec3;
 
 /**
@@ -84,5 +86,23 @@ public class TorpedoEntity extends BaseBulletEntity {
     @Override
     public String getDefaultBulletModelName() {
         return "torpedo";
+    }
+
+    @Override
+    protected void addAdditionalSaveData(ValueOutput output) {
+        super.addAdditionalSaveData(output);
+        output.putDouble("TargetPosX", this.targetPosX);
+        output.putDouble("TargetPosY", this.targetPosY);
+        output.putDouble("TargetPosZ", this.targetPosZ);
+        output.putDouble("AccelerationInWater", this.accelerationInWater);
+    }
+
+    @Override
+    protected void readAdditionalSaveData(ValueInput input) {
+        super.readAdditionalSaveData(input);
+        this.targetPosX = input.getDoubleOr("TargetPosX", this.targetPosX);
+        this.targetPosY = input.getDoubleOr("TargetPosY", this.targetPosY);
+        this.targetPosZ = input.getDoubleOr("TargetPosZ", this.targetPosZ);
+        this.accelerationInWater = input.getDoubleOr("AccelerationInWater", this.accelerationInWater);
     }
 }
