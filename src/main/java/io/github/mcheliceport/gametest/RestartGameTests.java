@@ -39,7 +39,9 @@ final class RestartGameTests {
     static void register() {
         ModGameTests.testAlone("restart_keeps_orders_and_wingmen", 120, RestartGameTests::ordersAndWingmen);
         ModGameTests.testAlone("restart_wingman_waits_for_unloaded_leader", 120, RestartGameTests::leaderUnloads);
-        ModGameTests.test("restart_keeps_missiles_in_flight", 60, RestartGameTests::missiles);
+        // In a batch of its own: other tests' blasts (NTM Next bombs among them) could destroy its
+        // target first, and its missile would lease chunks that the "alone" batch's lease test counts.
+        ModGameTests.testInBatch("restart_missiles", "restart_keeps_missiles_in_flight", 60, RestartGameTests::missiles);
     }
 
     private static CompoundTag save(GameTestHelper h, Entity e) {
@@ -223,7 +225,8 @@ final class RestartGameTests {
             // it flies into afterwards.
             copy.tick();
             try {
-                check(h, copy.targetEntity == target, "the target was not found again");
+                check(h, copy.targetEntity == target, "the target was not found again (target removed: "
+                        + target.getRemovalReason() + ", found " + copy.targetEntity + ")");
                 check(h, copy.shootingEntity == shooter && copy.shootingAircraft == shooter,
                         "the shooter was not found again");
                 check(h, !copy.isResolving(), "the missile still looks for what it found");
