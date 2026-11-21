@@ -11,6 +11,18 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 ## [Unreleased]
 
 ### Added
+- Guidance modes that upstream read from weapon files but never flew (KNOWN_ISSUES 88). GPS
+  missiles and bombs (`IsGPSMissile`) need a GPS point from the GPS panel and fly to it without a
+  lock, ignoring flares and chaff; GPS bombs glide towards it as they fall. Semi-active radar
+  missiles (`SemiActiveRadar`) need the shooter to keep the target near the nose: looked away for
+  longer than `PassiveRadarLockOutCount` ticks, they lose it for good. Data-link missiles
+  (`EnableDataLink`) keep their target through hard turns while the launcher tracks it, take the
+  launcher's new BVR target in flight, and wait for one when fired without; with `OnlyDataLink` they
+  need the launcher's track all the way. Anti-radiation missiles (`AntiRadiationMissile` and the
+  `ARM` settings) home on vehicles whose radar is on, or crewed vehicles with an `EntityRadar`,
+  remember a radar that goes quiet for `MemoryTimeTick` ticks, and can loft towards distant radars
+  (`CruiseEnable`). No stock weapon uses these settings; addon weapons do. See the `MissileGuidance`
+  class comment for the exact rules.
 - M9 follow-ups. Other players' fast jets and helicopters now turn toward the server's attitude as
   one quaternion slerp with the roll, so a loop goes over the top and a barrel roll keeps rolling
   instead of yaw, pitch and roll swinging apart. The anti-cheat records a pilot whose claimed speed

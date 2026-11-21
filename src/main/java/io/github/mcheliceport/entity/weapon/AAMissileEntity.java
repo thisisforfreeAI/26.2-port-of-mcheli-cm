@@ -8,8 +8,10 @@ import net.minecraft.world.phys.EntityHitResult;
 
 /**
  * An air-to-air missile chasing its target after {@code RigidityTime} ticks; it is lost to flares
- * near the target, or when the target is gone or more than 1,850 blocks away. Ported from upstream
- * {@code MCH_EntityAAMissile} (its passive-radar beyond-visual-range fields come in M6).
+ * near the target, or when the target is gone or more than 1,850 blocks away. A GPS missile flies at
+ * its point instead, and active radar, anti-radiation and data-link missiles fly on without a target
+ * while they search or wait for one (see {@code MissileGuidance}). Ported from upstream
+ * {@code MCH_EntityAAMissile}.
  */
 public class AAMissileEntity extends BaseBulletEntity {
 
@@ -29,8 +31,17 @@ public class AAMissileEntity extends BaseBulletEntity {
             this.spawnParticle(this.getInfo().trajectoryParticleName, 3, 7.0F * this.getInfo().smokeSize * 0.5F);
         }
         if (!this.level().isClientSide() && this.getInfo() != null && !this.isRemoved()) {
+            if (this.pointTarget != null) {
+                this.guidanceToPoint(this.pointTarget);
+                return;
+            }
             Entity target = this.targetEntity;
-            if (this.shootingEntity != null && target != null && target.isAlive()) {
+            if (this.shootingEntity != null && (target == null || !target.isAlive()) && this.keepsSearching()) {
+                if (this.getInfo().activeRadar && this.getInfo().scanInterval > 0
+                        && this.tickCount % this.getInfo().scanInterval == 0) {
+                    this.scanForTargets();
+                }
+            } else if (this.shootingEntity != null && target != null && target.isAlive()) {
                 double d = this.distanceToSqr(target);
                 if (d > 3422500.0) {
                     this.discard();
@@ -51,6 +62,14 @@ public class AAMissileEntity extends BaseBulletEntity {
                 this.discard();
             }
         }
+    }
+
+    /**
+     * Whether the missile flies on without a target: an active radar, anti-radiation or data-link
+     * missile searches or waits for one, where upstream's air-to-air missile was lost at once.
+     */
+    private boolean keepsSearching() {
+        return this.getInfo().activeRadar || this.guidance != null && this.guidance.keepsSearching();
     }
 
     @Override

@@ -95,6 +95,7 @@ public class ModLanguageProvider extends LanguageProvider {
         add("message.mcheli_ce_port.chain.connected", "Tow chain connected. Right-click either end to disconnect.");
         add("message.mcheli_ce_port.chain.disconnected", "Tow chain disconnected.");
         add("message.mcheli_ce_port.chain.range", "Chain endpoints must be 2 to 16 blocks apart.");
+        add("message.mcheli_ce_port.gps_no_point", "No GPS point set. Open the GPS panel and enter one first.");
         addItem(ModItems.PARACHUTE, "Parachute");
         addItem(ModItems.CONTAINER, "Container");
         addItem(ModItems.UAV_STATION, "UAV Station");
