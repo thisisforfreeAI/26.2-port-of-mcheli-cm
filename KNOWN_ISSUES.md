@@ -643,7 +643,7 @@ These follow from how Minecraft 26.2 works or from decisions approved in PORTING
 
 ## Upstream content issues kept as they are
 
-Except for restoring searchlight alpha and stock crafting recipes, the port preserves what upstream's conversion of
+Except for restoring searchlight alpha, stock crafting recipes and (optionally) weapon settings, the port preserves what upstream's conversion of
 its stock content from TXT to YAML lost or changed (the full list, checked by a test, is in
 `src/test/resources/parity/known-differences.txt`):
 
@@ -652,9 +652,14 @@ its stock content from TXT to YAML lost or changed (the full list, checked by a 
   ammo supply box retain their deliberate lack of survival recipes. The drafting table lists the
   restored recipes. Existing installations refresh their extracted stock pack on restart.
 - Some weapons lost their damage factors, bomblet, fuel-air explosive, dispenser and targeting pod
-  settings; some racks lost their fixed angles.
-- The stock helicopter HUD tests `hovering==1`, but `hovering` is true or false, so the HOVERING
-  label never shows, as upstream.
+  settings. The server setting `stockContent.restoreWeaponData` (on by default) restores them for
+  the 65 affected stock weapons from upstream's TXT values (`mcheli_stock_fixes/weapons.yml`); with it
+  off, the weapons behave as upstream. The fertilizer and boat dispensers use bone meal and the oak
+  boat, the 26.2 names of their 1.12 items. Some racks lost their fixed angles; those are kept as
+  upstream.
+- The stock helicopter HUD tests `hovering==1`, but `hovering` is true or false. Upstream's HOVERING
+  label never showed; the port reads `hovering` like the other legacy true-or-false HUD variables,
+  so the label shows.
 - The UH-1C names a `camera0` part that its model file does not have; nothing is drawn for it,
   as upstream. Upstream adds each first canopy twice, as `canopy0` and `canopy`, so a model may
   name it either way; the unused name draws nothing, as upstream.
