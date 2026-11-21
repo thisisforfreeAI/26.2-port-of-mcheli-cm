@@ -219,11 +219,18 @@ final class RestartGameTests {
             Entity legacy = load(h, old);
             check(h, legacy == null || legacy.isRemoved(), "a projectile from an older save was kept");
 
-            h.succeedWhen(() -> {
+            // One tick of its own, so the check does not depend on where the level ticks it or what
+            // it flies into afterwards.
+            copy.tick();
+            try {
                 check(h, copy.targetEntity == target, "the target was not found again");
-                check(h, copy.shootingEntity == shooter, "the shooter was not found again");
+                check(h, copy.shootingEntity == shooter && copy.shootingAircraft == shooter,
+                        "the shooter was not found again");
+                check(h, !copy.isResolving(), "the missile still looks for what it found");
+            } finally {
                 copy.discard();
-            });
+            }
+            h.succeed();
         });
     }
 }
