@@ -127,6 +127,12 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
   See `docs/M6B_PLAN.md`.
 
 ### Fixed
+- Fast aircraft no longer freeze a dedicated server. When a plane flew into chunks the server was
+  still generating, its collision check (and vanilla's check after a pilot's move) waited for that
+  generation on the server thread, and on a modpack with slow world generation that wait passed
+  the 60 second watchdog and stopped the server. The server now skips terrain collision for a
+  vehicle over chunks that are not loaded yet: a pilot's move is taken as the client sent it, and a
+  vehicle the server moves itself waits at the edge until the terrain is there.
 - Wings, tails and control surfaces shot off a plane now visibly break away and fall from combat range.
   Before, a section torn off a plane more than about 40 blocks away simply vanished from it, and a
   falling section disappeared once it was 40 blocks from the camera. Sections now break away, fall
