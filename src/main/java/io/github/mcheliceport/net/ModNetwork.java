@@ -662,6 +662,11 @@ public final class ModNetwork {
                 || !aircraft.isPilot(player) || !aircraft.followsPilot()) {
             return;
         }
+        if (player instanceof ServerPlayer sp && Double.isFinite(p.motionX()) && Double.isFinite(p.motionY())
+                && Double.isFinite(p.motionZ())) {
+            io.github.mcheliceport.combat.AntiCheat.checkAcceleration(sp, aircraft, p.motionX(), p.motionY(),
+                    p.motionZ());
+        }
         applyPilotMotion(aircraft, p);
     }
 

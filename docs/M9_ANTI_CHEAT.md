@@ -21,6 +21,7 @@ BVR locks by `ModNetwork#applyBvrLock`.
 | Aim | Yaw and pitch finite, pitch within ±90° | Shot dropped |
 | Fire origin | Within 3 blocks plus 2 ticks of the vehicle's own travel of where it was at some tick in the shooter's lag-compensation window plus 4 ticks (M9a history) | Shot fires from the vehicle's server position |
 | BVR lock | Target alive, within the radar feed's 2000 blocks, not the shooter, its vehicle or anyone aboard | Lock refused |
+| Acceleration (follow-up) | A pilot's claimed speed rises by at most max(0.25, 0.2 × checked top speed) blocks a tick since the last motion packet, crediting at most 5 ticks of gap; slowing down is never checked | Recorded only (weight 1): the server's speed cap already bounds the vehicle |
 
 ## Violations
 

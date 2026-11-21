@@ -33,7 +33,8 @@ public final class AntiCheat {
         PACKET_RATE(1.0),
         FIRE_ORIGIN(2.0),
         AIM(2.0),
-        LOCK_TARGET(2.0);
+        LOCK_TARGET(2.0),
+        ACCELERATION(1.0);
 
         public final double weight;
 
@@ -60,6 +61,14 @@ public final class AntiCheat {
     public static final double ORIGIN_SLACK_TICKS = 2.0;
     /** Ticks of history searched beyond the shooter's lag-compensation rewind. */
     public static final int ORIGIN_EXTRA_TICKS = 4;
+    /**
+     * Pilot speed gain allowed per tick: the larger of these blocks and this share of the vehicle's
+     * checked top speed. Stock flight models gain well under a tenth of that.
+     */
+    public static final double ACCEL_BLOCKS = 0.25;
+    public static final double ACCEL_SHARE = 0.2;
+    /** Longest gap between motion packets credited to one claim, so a stall does not excuse a jump. */
+    public static final int ACCEL_MAX_TICKS = 5;
     private static final int RECENT = 10;
 
     private static final Map<UUID, Record> RECORDS = new HashMap<>();
@@ -78,6 +87,7 @@ public final class AntiCheat {
         long lastAlertTick = Long.MIN_VALUE / 2;
         double tokens = BURST;
         long tokenTick = Long.MIN_VALUE;
+        long motionTick = Long.MIN_VALUE;
         final EnumMap<Check, Integer> counts = new EnumMap<>(Check.class);
         final ArrayDeque<Entry> recent = new ArrayDeque<>();
 
@@ -141,6 +151,18 @@ public final class AntiCheat {
         return false;
     }
 
+    /**
+     * Whether a pilot's claimed speed is reachable from the last one in {@code ticks} ticks. Only
+     * a gain counts: collisions and crashes may stop a vehicle at once.
+     */
+    public static boolean accelerationPlausible(double prevSpeed, double nextSpeed, int ticks, double limit) {
+        if (!(nextSpeed > prevSpeed)) {
+            return true;
+        }
+        int t = Math.clamp(ticks, 1, ACCEL_MAX_TICKS);
+        return nextSpeed - prevSpeed <= t * Math.max(ACCEL_BLOCKS, ACCEL_SHARE * limit) + 1e-9;
+    }
+
     /** Whether an aim is a real direction: finite, pitch within straight up and down. */
     public static boolean aimValid(float yaw, float pitch) {
         return Float.isFinite(yaw) && Float.isFinite(pitch) && Math.abs(pitch) <= 90.0F;
@@ -183,6 +205,28 @@ public final class AntiCheat {
         }
         violation(player, Check.FIRE_ORIGIN, String.format("fired from %.1f blocks off %s",
                 new Vec3(x, y, z).distanceTo(vehicle.position()), vehicle.getAircraftTypeName()));
+        return false;
+    }
+
+    /**
+     * Checks a pilot's claimed velocity against the vehicle's current one; an implausible gain is
+     * recorded only. The server's speed cap already bounds where the vehicle can go.
+     */
+    public static boolean checkAcceleration(ServerPlayer player,
+            io.github.mcheliceport.entity.aircraft.AircraftEntity vehicle, double mx, double my, double mz) {
+        long now = player.level().getGameTime();
+        Record r = record(player);
+        int ticks = r.motionTick == Long.MIN_VALUE || now <= r.motionTick ? 1 : (int) Math.min(now - r.motionTick,
+                ACCEL_MAX_TICKS);
+        r.motionTick = now;
+        double prev = vehicle.getDeltaMovement().length();
+        double next = Math.sqrt(mx * mx + my * my + mz * mz);
+        double limit = vehicle.getMaxSpeedForChecks();
+        if (accelerationPlausible(prev, next, ticks, limit)) {
+            return true;
+        }
+        violation(player, Check.ACCELERATION, String.format("gained %.2f blocks/tick in %d tick(s) in %s",
+                next - prev, ticks, vehicle.getAircraftTypeName()));
         return false;
     }
 

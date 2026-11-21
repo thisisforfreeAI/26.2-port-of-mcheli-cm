@@ -56,6 +56,25 @@ public final class WatcherMotion {
     }
 
     /** Whether to send this tick: every {@link #SEND_INTERVAL} ticks, for fast vehicles only. */
+    /**
+     * One tick of a watched vehicle's turn toward the attitude the server last sent: a quaternion
+     * slerp by {@code alpha}, so a jet rolling or looping turns the short way about its own axes
+     * instead of swinging yaw, pitch and roll apart. Yaw and roll come back unwrapped next to the
+     * start, so a roll through 180 degrees keeps going instead of spinning back.
+     *
+     * @return {yaw, pitch, roll} in degrees
+     */
+    public static float[] attitudeStep(float yaw, float pitch, float roll, float yawTo, float pitchTo, float rollTo,
+            float alpha) {
+        float a = Math.clamp(alpha, 0.0F, 1.0F);
+        float[] out = io.github.mcheliceport.util.McheliMath.slerpOrientationYPR(yaw, pitch, roll, yawTo, pitchTo,
+                rollTo, a);
+        out[0] = yaw + net.minecraft.util.Mth.wrapDegrees(out[0] - yaw);
+        out[1] = Math.clamp(out[1], -90.0F, 90.0F);
+        out[2] = roll + net.minecraft.util.Mth.wrapDegrees(out[2] - roll);
+        return out;
+    }
+
     public static boolean shouldSend(long tick, double speedSqr) {
         return Math.floorMod(tick, SEND_INTERVAL) == 0 && speedSqr >= MIN_SPEED_SQR;
     }
