@@ -127,6 +127,9 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
   See `docs/M6B_PLAN.md`.
 
 ### Fixed
+- A passenger's game no longer turns the aircraft: every frame it re-ran the pilot's attitude rules
+  on its own copy of the vehicle, so crew saw the plane pointing the wrong way and their view could
+  be locked to its heading. Only the pilot's mouse steers now.
 - Wings, tails and control surfaces shot off a plane now visibly break away and fall from combat range.
   Before, a section torn off a plane more than about 40 blocks away simply vanished from it, and a
   falling section disappeared once it was 40 blocks from the camera. Sections now break away, fall
