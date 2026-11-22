@@ -185,3 +185,8 @@ Recepie:
   isShaped: true
   Pattern:
   - "\" X \",\"XXX\",\"WXW\",X,iron_block,W,dye,7"
+Render:
+  Textures:
+  - md90_2
+  - md90_3
+  - md90_4

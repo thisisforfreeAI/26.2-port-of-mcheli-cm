@@ -165,3 +165,9 @@ Recepie:
   isShaped: true
   Pattern:
   - "\" X \",  \"XIX\",  \"X X\",  X, iron_block, I, iron_ingot"
+Render:
+  Textures:
+  - mh-53e-us1
+  - mh-53e-us2
+  - mh-53e-gr
+  - mh-53e-jp

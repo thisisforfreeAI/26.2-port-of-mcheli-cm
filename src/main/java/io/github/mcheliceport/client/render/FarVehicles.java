@@ -43,7 +43,29 @@ public final class FarVehicles {
                     .sortOnUpload()
                     .createRenderSetup()));
 
+    /** Extra depth past the farthest vehicle, so its far side and its smoke are not clipped. */
+    private static final float MARGIN = 96.0F;
+    /** The farthest vehicle (not a passenger) from the camera last tick, in blocks. */
+    private static double farthest;
+
     private FarVehicles() {
+    }
+
+    /**
+     * The camera's far plane: vanilla's, or pushed out to the farthest vehicle the client has while
+     * one is past it, never beyond {@code render.farVehicleDistance}. Only stretched while needed,
+     * so terrain keeps vanilla's depth precision the rest of the time.
+     */
+    public static float depthFar(float vanilla) {
+        return depthFar(vanilla, farthest, io.github.mcheliceport.config.ClientConfig.get(
+                io.github.mcheliceport.config.ClientConfig.FAR_VEHICLE_DISTANCE));
+    }
+
+    static float depthFar(float vanilla, double farthest, int limit) {
+        if (limit <= 0 || farthest + MARGIN <= vanilla) {
+            return vanilla;
+        }
+        return Math.max(vanilla, (float) Math.min(farthest + MARGIN, limit));
     }
 
     public static void registerPipelines(ClientRegistrars.Pipelines event) {
@@ -76,16 +98,25 @@ public final class FarVehicles {
     public static void onClientTick() {
         Minecraft mc = Minecraft.getInstance();
         ClientLevel level = mc.level;
-        if (level == null || mc.isPaused()) {
+        if (level == null) {
+            farthest = 0;
+            return;
+        }
+        if (mc.isPaused()) {
             return;
         }
         List<AircraftEntity> idle = new ArrayList<>();
+        net.minecraft.world.phys.Vec3 camera = mc.gameRenderer.mainCamera().position();
+        double far = 0;
         for (Entity entity : level.entitiesForRendering()) {
-            if (entity instanceof AircraftEntity vehicle && !vehicle.isRemoved() && !vehicle.isPassenger()
-                    && !level.isTickingEntity(vehicle) && !level.tickRateManager().isEntityFrozen(vehicle)) {
-                idle.add(vehicle);
+            if (entity instanceof AircraftEntity vehicle && !vehicle.isRemoved() && !vehicle.isPassenger()) {
+                far = Math.max(far, vehicle.position().distanceToSqr(camera));
+                if (!level.isTickingEntity(vehicle) && !level.tickRateManager().isEntityFrozen(vehicle)) {
+                    idle.add(vehicle);
+                }
             }
         }
+        farthest = Math.sqrt(far);
         for (AircraftEntity vehicle : idle) {
             level.guardEntityTick(level::tickNonPassenger, vehicle);
         }

@@ -16,6 +16,11 @@ Camera:
 PhysicalProperties:
   Speed: 0.9
 Render:
+  Textures:
+  - tornado-ids_germany1
+  - tornado-ids_germany2
+  - tornado-ids_italy
+  - tornado-ids_italy2
   MachOneSpeed: 0.55
   ParticleScale: 0.7
   EnableSeaSurfaceParticle: true

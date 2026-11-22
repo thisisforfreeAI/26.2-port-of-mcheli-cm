@@ -18,6 +18,9 @@ PhysicalProperties:
       Min: -50.0
       Max: 0.0
 Render:
+  Textures:
+  - mim-23_tan
+  - mim-23_white
   HideRiders: true
 Weapons:
 - Type: hawk

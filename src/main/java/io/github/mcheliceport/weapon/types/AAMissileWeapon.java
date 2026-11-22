@@ -9,8 +9,9 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * Air-to-air missile: locks on to a flying target (radar ones fire without a lock). Ported from
- * upstream {@code MCH_WeaponAAMissile}.
+ * Air-to-air missile: locks on to a flying target (radar ones fire without a lock). GPS ones fly to
+ * the shooter's GPS point and anti-radiation ones at the radar emitter nearest their line of sight,
+ * both without a lock. Ported from upstream {@code MCH_WeaponAAMissile}.
  */
 public class AAMissileWeapon extends EntitySeekerWeapon {
 
@@ -31,10 +32,19 @@ public class AAMissileWeapon extends EntitySeekerWeapon {
 
     private boolean handleServerShot(WeaponParam prm) {
         WeaponInfo info = this.getInfo();
-        boolean isRadar = info.passiveRadar || info.activeRadar;
+        boolean isRadar = GuidedShots.firesWithoutLock(info);
+        Vec3 gps = null;
+        if (info.isGPSMissile && (gps = GuidedShots.serverGpsPoint(prm)) == null) {
+            return false;
+        }
         Entity target = this.guidanceSystem.getTarget();
         if (target == null) {
             target = this.world.getEntity(prm.option1);
+        }
+        if (gps != null) {
+            target = null;
+        } else if (info.antiRadiationMissile) {
+            target = GuidedShots.antiRadiationTarget(this.world, prm, info, target);
         }
         if (!isRadar && (target == null || !target.isAlive())) {
             return false;
@@ -46,6 +56,7 @@ public class AAMissileWeapon extends EntitySeekerWeapon {
                 motion.z, rot[0], rot[1], this.acceleration);
         missile.setName(this.name);
         missile.setParameterFromWeapon(this, prm.entity, prm.user);
+        missile.pointTarget = gps;
         if (target != null) {
             missile.setTargetEntity(target);
         }
@@ -55,7 +66,11 @@ public class AAMissileWeapon extends EntitySeekerWeapon {
 
     private boolean handleClientShot(WeaponParam prm) {
         WeaponInfo info = this.getInfo();
-        if (info.passiveRadar || info.activeRadar) {
+        if (info.isGPSMissile) {
+            return GuidedShots.clientHasGpsPoint(prm.user);
+        }
+        if (GuidedShots.firesWithoutLock(info)) {
+            this.optionParameter1 = 0;
             return true;
         }
         if (prm.user != null && this.guidanceSystem.lock(prm.user) && this.guidanceSystem.lastLockEntity != null) {

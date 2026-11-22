@@ -31,7 +31,8 @@ import net.minecraft.world.phys.Vec3;
  * A free-fall bomb (air drag, water drag, an optional proximity fuse against living things,
  * cluster bomblets), or a mine: it settles where it lands, arms after {@code MineArmDelay} ticks
  * and goes off when a player (not creative, not sneaking unless within a block) or a vehicle comes
- * within {@code MineRange}. The mine defuser removes it. Mines are saved with the world. Ported
+ * within {@code MineRange}. The mine defuser removes it. Mines are saved with the world. A GPS bomb
+ * ({@code IsGPSMissile}) glides towards its GPS point as it falls. Ported
  * from upstream {@code MCH_EntityBomb}.
  */
 public class BombEntity extends BaseBulletEntity {
@@ -79,6 +80,9 @@ public class BombEntity extends BaseBulletEntity {
                 m = m.scale(info.velocityInWater);
             }
             this.setDeltaMovement(m);
+            if (this.pointTarget != null) {
+                this.glideToPoint(this.pointTarget);
+            }
             float dist = info.proximityFuseDist;
             if (dist > 0.1F && this.getCountOnUpdate() % 10 == 0) {
                 for (Entity entity : this.level().getEntities(this, this.getBoundingBox().inflate(dist))) {
@@ -92,6 +96,35 @@ public class BombEntity extends BaseBulletEntity {
             }
         }
         this.onUpdateBomblet();
+    }
+
+    /**
+     * A GPS bomb's tail fins: each tick the horizontal velocity turns a tenth of the way towards the
+     * velocity that lands it on the point by the time it falls to the point's height, no faster than
+     * it already flies (or a block per tick, if that is more).
+     */
+    public void glideToPoint(Vec3 point) {
+        Vec3 m = this.getDeltaMovement();
+        double g = Math.abs(this.getBulletGravity());
+        double drop = this.getY() - point.y;
+        double t;
+        if (drop <= 0.0) {
+            t = 1.0;
+        } else if (g < 1.0e-4) {
+            t = drop / Math.max(-m.y, 0.1);
+        } else {
+            t = (m.y + Math.sqrt(m.y * m.y + 2.0 * g * drop)) / g;
+        }
+        t = Math.max(t, 1.0);
+        double wantX = (point.x - this.getX()) / t;
+        double wantZ = (point.z - this.getZ()) / t;
+        double maxSpeed = Math.max(Math.sqrt(m.x * m.x + m.z * m.z), 1.0);
+        double want = Math.sqrt(wantX * wantX + wantZ * wantZ);
+        if (want > maxSpeed) {
+            wantX *= maxSpeed / want;
+            wantZ *= maxSpeed / want;
+        }
+        this.setDeltaMovement(m.x + (wantX - m.x) * 0.1, m.y, m.z + (wantZ - m.z) * 0.1);
     }
 
     public boolean isMineLanded() {

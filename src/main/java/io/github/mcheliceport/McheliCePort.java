@@ -45,6 +45,7 @@ public final class McheliCePort {
         io.github.mcheliceport.weather.FlightWeather.register();
         io.github.mcheliceport.command.ClientRequests.register();
         io.github.mcheliceport.effectrange.EffectsRange.register();
+        io.github.mcheliceport.platform.GameEvents.PLAYER_LOGGED_OUT.add(io.github.mcheliceport.weapon.GpsPosition::forget);
         io.github.mcheliceport.resources.ModPackFinders.register();
         io.github.mcheliceport.platform.GameEvents.REGISTER_COMMANDS.add(
                 io.github.mcheliceport.command.McheliCommand::register);

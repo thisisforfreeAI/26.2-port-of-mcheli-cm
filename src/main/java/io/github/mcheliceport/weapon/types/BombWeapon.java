@@ -10,8 +10,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * Free-fall bombs and mines, released with the vehicle's velocity. Ported from upstream
- * {@code MCH_WeaponBomb}.
+ * Free-fall bombs and mines, released with the vehicle's velocity; a GPS bomb ({@code IsGPSMissile})
+ * needs the shooter's GPS point and glides towards it. Ported from upstream {@code MCH_WeaponBomb}.
  *
  * <p>A {@code Destruct} bomb blows up the crewless UAV helicopter carrying it, which goes with it; on
  * any other vehicle it does nothing but still uses its ammunition, as upstream.
@@ -41,6 +41,15 @@ public class BombWeapon extends WeaponBase {
             }
             return true;
         }
+        Vec3 gps = null;
+        if (this.getInfo() != null && this.getInfo().isGPSMissile) {
+            if (this.world.isClientSide()) {
+                return GuidedShots.clientHasGpsPoint(prm.user);
+            }
+            if ((gps = GuidedShots.serverGpsPoint(prm)) == null) {
+                return false;
+            }
+        }
         if (!this.world.isClientSide() && prm.entity != null) {
             this.playSound(prm.entity);
             Vec3 motion = prm.entity.getDeltaMovement();
@@ -49,6 +58,7 @@ public class BombWeapon extends WeaponBase {
             e.setName(this.name);
             e.setParameterFromWeapon(this, prm.entity, prm.user);
             e.setDeltaMovement(motion);
+            e.pointTarget = gps;
             this.world.addFreshEntity(e);
         }
         return true;

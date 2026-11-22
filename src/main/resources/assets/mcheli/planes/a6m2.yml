@@ -20,6 +20,9 @@ PhysicalProperties:
   Speed: 0.95
   OnGroundPitch: -14.3
 Render:
+  Textures:
+  - a6m2_2
+  - a6m2_3
   ModelWidth: 0.8
   ModelHeight: 0.8
 Weapons:

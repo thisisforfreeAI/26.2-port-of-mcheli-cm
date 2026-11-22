@@ -151,6 +151,25 @@ rocket launcher and rear gun respectively. An occupied gunner seat takes control
 gunners on or off (on for new vehicles). Seat a gunner with the Gunner item: it aims and fires its
 seat's weapon at nearby monsters, or at players of other teams, and uses flares and chaff.
 
+Joysticks, HOTAS and gamepads: set `joystick.enabled = true` in `config/mcheli_ce_port-client.toml`
+(or Mods > MC Heli > Config in game). The stick's pitch and roll move the same control stick the
+mouse does, the rudder axis acts as **A/D**, and the throttle axis either sets the power directly
+(`LEVER`, a HOTAS throttle) or works like **W/S** (`RATE`, a gamepad stick); `AUTO` picks `RATE` for
+gamepads. In a tank or car the stick drives and steers. Known gamepads use the standard layout
+(left stick flies, right stick is rudder and throttle, RB fires, LB switches weapon, A drops flares).
+Buttons press whatever a control is bound to, as `button=key.name` entries. Turn on
+`joystick.showInputs` to see your device's axis and button numbers above the hotbar while riding.
+Nothing extra is sent to the server, so it works on any server running this build.
+
+With [Jade](https://modrinth.com/mod/jade) installed, looking at a vehicle shows its hull and fuel,
+its pilot, crew and team, and any damaged or failed engines, rotors, tanks, wings or tail. Jade is
+optional and its "MC Heli vehicles" line can be turned off in Jade's plugin settings.
+
+Paint schemes: the wrench (sneak and right-click) or **Appearance** in the vehicle menu cycles a
+vehicle's liveries. Upstream's own alternate paint, 144 schemes across 57 aircraft, helicopters,
+tanks, guns and ships (the F-14D's Razgriz and VX-9, the AH-64's national schemes, the T-4's display
+teams and more), is selectable again.
+
 Teams: **M** opens the multiplay manager, in singleplayer too. Under each team's list a **Join**
 button puts you in that team, and **Leave team** takes you out; holding **L** shows the lists.
 

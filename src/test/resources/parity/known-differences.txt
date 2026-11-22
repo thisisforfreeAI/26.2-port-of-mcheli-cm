@@ -183,14 +183,12 @@ helicopters/ah-1z.bbZmax: -11.0 vs -1.0
 helicopters/ah-1z.bbZ: -12.0 vs -7.0
 helicopters/ah-1z.engineOutlets: size 0 vs 2
 helicopters/ah-1z.author: '' vs 'EMB4'
-helicopters/ah-6.textureNameList: size 2 vs 1
 helicopters/ah-6.itemID: 28801 vs 0
 helicopters/ah-6.markerWidth: 2.0 vs 0.6
 helicopters/ah-6.bbZmax: 1.0 vs 1.2
 helicopters/ah-6.bbZ: -0.100000024 vs 0.0
 helicopters/ah-6.author: '' vs 'EMB4'
 helicopters/ah-64.rideRacks: size 2 vs 1
-helicopters/ah-64.textureNameList: size 6 vs 1
 helicopters/ah-64.itemID: 28800 vs 0
 helicopters/ah-64.bbZmax: -11.0 vs -1.0
 helicopters/ah-64.bbZ: -12.0 vs -7.0
@@ -202,17 +200,14 @@ helicopters/ah-6x.markerWidth: 2.0 vs 0.6
 helicopters/ah-6x.bbZmax: 1.0 vs 1.2
 helicopters/ah-6x.bbZ: -0.100000024 vs 0.0
 helicopters/ah-6x.author: '' vs 'EMB4'
-helicopters/bell206l.textureNameList: size 8 vs 1
 helicopters/bell206l.itemID: 28806 vs 0
 helicopters/bell206l.bbZmax: -11.0 vs 2.7
 helicopters/bell206l.bbZ: -11.5 vs -4.65
 helicopters/bell206l.author: '' vs 'EMB4'
-helicopters/bell207.textureNameList: size 3 vs 1
 helicopters/bell207.itemID: 28829 vs 0
 helicopters/bell207.bbZmax: -8.0 vs -0.5
 helicopters/bell207.bbZ: -9.0 vs -5.25
 helicopters/bell207.author: '' vs 'EMB4'
-helicopters/bell47g.textureNameList: size 3 vs 1
 helicopters/bell47g.itemID: 28807 vs 0
 helicopters/bell47g.markerWidth: 2.0 vs 0.6
 helicopters/bell47g.bbZmax: 1.0 vs 1.2
@@ -223,13 +218,11 @@ helicopters/bell47gf.markerWidth: 2.0 vs 0.6
 helicopters/bell47gf.bbZmax: 1.0 vs 1.2
 helicopters/bell47gf.bbZ: -0.100000024 vs 0.0
 helicopters/bell47gf.author: '' vs 'EMB4'
-helicopters/ch47.textureNameList: size 4 vs 1
 helicopters/ch47.itemID: 28811 vs 0
 helicopters/ch47.bbZmax: -11.0 vs 0.25
 helicopters/ch47.bbZ: -12.0 vs -6.375
 helicopters/ch47.engineOutlets: size 0 vs 2
 helicopters/ch47.author: '' vs 'EMB4'
-helicopters/ec665.textureNameList: size 2 vs 1
 helicopters/ec665.itemID: 28802 vs 0
 helicopters/ec665.bbZmax: -9.0 vs 0.0
 helicopters/ec665.bbZ: -10.0 vs -5.5
@@ -239,36 +232,30 @@ helicopters/fl282.markerWidth: 2.0 vs 0.75
 helicopters/fl282.bbZmax: 1.0 vs 1.5
 helicopters/fl282.bbZ: -0.25 vs 0.0
 helicopters/fl282.author: '' vs 'EMB4'
-helicopters/ka-27.textureNameList: size 3 vs 1
 helicopters/ka-27.itemID: 28804 vs 0
 helicopters/ka-27.bbZmax: -5.0 vs 0.0
 helicopters/ka-27.bbZ: -6.0 vs -3.5
 helicopters/ka-27.author: '' vs 'EMB4'
-helicopters/ka-29.textureNameList: size 2 vs 1
 helicopters/ka-29.itemID: 28826 vs 0
 helicopters/ka-29.bbZmax: -5.0 vs 0.0
 helicopters/ka-29.bbZ: -6.0 vs -3.5
 helicopters/ka-29.author: '' vs 'EMB4'
-helicopters/ka50n.textureNameList: size 2 vs 1
 helicopters/ka50n.itemID: 28818 vs 0
 helicopters/ka50n.bbZmax: -3.5 vs 1.0
 helicopters/ka50n.bbZ: -4.0 vs -1.75
 helicopters/ka50n.author: '' vs 'EMB4'
-helicopters/ka52.textureNameList: size 2 vs 1
 helicopters/ka52.itemID: 28819 vs 0
 helicopters/ka52.bbZmax: -3.5 vs 1.0
 helicopters/ka52.bbZ: -4.0 vs -1.75
 helicopters/ka52.author: '' vs 'EMB4'
 helicopters/mh-53e.seatList[18].fixYaw: 180.0 vs 0.0
 helicopters/mh-53e.seatList[19].fixYaw: 180.0 vs 0.0
-helicopters/mh-53e.textureNameList: size 5 vs 1
 helicopters/mh-53e.itemID: 28828 vs 0
 helicopters/mh-53e.bbZmax: -21.0 vs -0.6
 helicopters/mh-53e.bbZ: -22.5 vs -12.3
 helicopters/mh-53e.author: '' vs 'EMB4'
 helicopters/mh-6.itemID: 28805 vs 0
 helicopters/mh-6.author: '' vs 'EMB4'
-helicopters/mh-60g.textureNameList: size 2 vs 1
 helicopters/mh-60g.itemID: 28816 vs 0
 helicopters/mh-60g.bbZmax: -13.5 vs -0.6
 helicopters/mh-60g.bbZ: -14.5 vs -8.05
@@ -279,17 +266,14 @@ helicopters/mh-60l_dap.bbZmax: -13.5 vs -0.6
 helicopters/mh-60l_dap.bbZ: -14.5 vs -8.05
 helicopters/mh-60l_dap.engineOutlets: size 0 vs 2
 helicopters/mh-60l_dap.author: '' vs 'EMB4'
-helicopters/mi-24.textureNameList: size 2 vs 1
 helicopters/mi-24.itemID: 28809 vs 0
 helicopters/mi-24.bbZmax: -10.32 vs 5.59
 helicopters/mi-24.bbZ: -11.42 vs -3.4650002
 helicopters/mi-24.author: '' vs 'EMB4'
-helicopters/mi-24ps.textureNameList: size 2 vs 1
 helicopters/mi-24ps.itemID: 28831 vs 0
 helicopters/mi-24ps.bbZmax: -10.32 vs 5.59
 helicopters/mi-24ps.bbZ: -11.42 vs -3.4650002
 helicopters/mi-24ps.author: '' vs 'EMB4'
-helicopters/mi28.textureNameList: size 2 vs 1
 helicopters/mi28.itemID: 28817 vs 0
 helicopters/mi28.bbZmax: -12.0 vs 0.100000024
 helicopters/mi28.bbZ: -13.0 vs -6.95
@@ -298,49 +282,39 @@ helicopters/mq-8b.itemID: 28812 vs 0
 helicopters/mq-8b.bbZmax: -6.0 vs 0.70000005
 helicopters/mq-8b.bbZ: -6.5 vs -3.15
 helicopters/mq-8b.author: '' vs 'EMB4'
-helicopters/nh90.textureNameList: size 4 vs 1
 helicopters/nh90.itemID: 28997 vs 0
 helicopters/nh90.bbZmax: -7.0 vs 5.75
 helicopters/nh90.bbZ: -8.0 vs -1.625
 helicopters/nh90.author: '' vs 'EMB4'
-helicopters/oh-1.textureNameList: size 5 vs 1
 helicopters/oh-1.itemID: 28827 vs 0
 helicopters/oh-1.bbZmax: -8.0 vs -1.25
 helicopters/oh-1.bbZ: -9.0 vs -5.625
 helicopters/oh-1.author: '' vs 'EMB4'
-helicopters/penetrator.textureNameList: size 4 vs 1
 helicopters/penetrator.itemID: 28830 vs 0
 helicopters/penetrator.bbZmax: -11.0 vs -0.6
 helicopters/penetrator.bbZ: -12.0 vs -6.8
 helicopters/penetrator.author: '' vs 'EMB4'
-helicopters/rc-goblin.textureNameList: size 3 vs 1
 helicopters/rc-goblin.itemID: 28814 vs 0
 helicopters/rc-goblin.author: '' vs 'EMB4'
-helicopters/rc-goblin-bomb.textureNameList: size 3 vs 1
 helicopters/rc-goblin-bomb.itemID: 28813 vs 0
 helicopters/rc-goblin-bomb.markerWidth: 2.0 vs 0.375
 helicopters/rc-goblin-bomb.markerHeight: 1.0 vs 0.75
 helicopters/rc-goblin-bomb.bbZmin: -1.0 vs -0.75
 helicopters/rc-goblin-bomb.bbZ: -0.125 vs 0.0
 helicopters/rc-goblin-bomb.author: '' vs 'EMB4'
-helicopters/robinson_r44.textureNameList: size 6 vs 1
 helicopters/robinson_r44.itemID: 28822 vs 0
 helicopters/robinson_r44.recipeString[0]: '"IRI",  " G ",  "IFI",  R, IRON_BLOCK,  I, IRON_INGOT,  G, GLASS,  B,  BOAT' vs '"IRI",  " G ",  "IFI",  R, IRON_BLOCK,  I, IRON_INGOT,  G, GLASS,  F, BOAT'
 helicopters/robinson_r44.author: '' vs 'EMB4'
-helicopters/robinson_r44f.textureNameList: size 6 vs 1
 helicopters/robinson_r44f.itemID: 28823 vs 0
 helicopters/robinson_r44f.author: '' vs 'EMB4'
-helicopters/sh-3.textureNameList: size 5 vs 1
 helicopters/sh-3.itemID: 28820 vs 0
 helicopters/sh-3.bbZmax: -13.5 vs -0.79999995
 helicopters/sh-3.bbZ: -14.5 vs -8.15
 helicopters/sh-3.author: '' vs 'EMB4'
-helicopters/sh-60.textureNameList: size 4 vs 1
 helicopters/sh-60.itemID: 28803 vs 0
 helicopters/sh-60.bbZmax: -13.5 vs -0.6
 helicopters/sh-60.bbZ: -14.5 vs -8.05
 helicopters/sh-60.author: '' vs 'EMB4'
-helicopters/uh-1c.textureNameList: size 5 vs 1
 helicopters/uh-1c.itemID: 28821 vs 0
 helicopters/uh-1c.bbZmax: -11.0 vs -0.6
 helicopters/uh-1c.bbZ: -12.0 vs -6.8
@@ -349,13 +323,11 @@ helicopters/w3.bbZmax: -9.0 vs 1.0
 helicopters/w3.bbZ: -10.0 vs -5.0
 helicopters/w3.author: '' vs 'EMB4'
 planes/a-10.searchLights: size 0 vs 1
-planes/a-10.textureNameList: size 2 vs 1
 planes/a-10.itemID: 28705 vs 0
 planes/a-10.bbZmax: -7.2 vs -1.6
 planes/a-10.bbZ: -9.2 vs -6.4
 planes/a-10.flightLamps: size 0 vs 5
 planes/a-10.author: '' vs 'EMB4'
-planes/a6m2.textureNameList: size 3 vs 1
 planes/a6m2.itemID: 28708 vs 0
 planes/a6m2.markerWidth: 2.0 vs 1.96
 planes/a6m2.bbZmax: 1.0 vs 1.3
@@ -365,7 +337,6 @@ planes/ac-130.itemID: 28713 vs 0
 planes/ac-130.bbZmax: -9.6 vs 0.4
 planes/ac-130.bbZ: -11.6 vs -6.6000004
 planes/ac-130.author: '' vs 'EMB4'
-planes/an2.textureNameList: size 5 vs 1
 planes/an2.itemID: 28732 vs 0
 planes/an2.bbZmax: -2.66 vs 2.68
 planes/an2.bbZ: -3.4099998 vs -0.7399999
@@ -408,20 +379,17 @@ planes/e767.itemID: 28747 vs 0
 planes/e767.bbZmax: -31.7 vs -0.7
 planes/e767.bbZ: -35.7 vs -20.2
 planes/e767.author: '' vs 'EMB4'
-planes/emb314.textureNameList: size 4 vs 1
 planes/emb314.itemID: 28703 vs 0
 planes/emb314.bbZmax: -1.7 vs -1.2
 planes/emb314.bbZ: -2.9499998 vs -2.6999998
 planes/emb314.author: '' vs 'EMB4'
 planes/f-15e.searchLights: size 0 vs 1
-planes/f-15e.textureNameList: size 2 vs 1
 planes/f-15e.itemID: 28740 vs 0
 planes/f-15e.bbZmax: -10.3 vs -1.3
 planes/f-15e.bbZ: -11.8 vs -7.3
 planes/f-15e.flightLamps: size 0 vs 5
 planes/f-15e.machOneSpeed: 0.0 vs 0.44
 planes/f-15e.author: '' vs 'EMB4'
-planes/f-15s_mtd.textureNameList: size 6 vs 1
 planes/f-15s_mtd.itemID: 28734 vs 0
 planes/f-15s_mtd.bbZmax: -10.3 vs -1.3
 planes/f-15s_mtd.bbZ: -11.8 vs -7.3
@@ -453,7 +421,6 @@ planes/f-35c.bbZmax: -8.8 vs -1.3
 planes/f-35c.bbZ: -9.8 vs -6.05
 planes/f-35c.machOneSpeed: 0.0 vs 0.75
 planes/f-35c.author: '' vs 'EMB4'
-planes/f14d.textureNameList: size 3 vs 1
 planes/f14d.itemID: 28714 vs 0
 planes/f14d.bbZmax: -10.0 vs -1.0
 planes/f14d.bbZ: -11.5 vs -7.0
@@ -464,7 +431,6 @@ planes/f1m.markerWidth: 2.0 vs 1.96
 planes/f1m.bbZmax: 1.0 vs 2.3
 planes/f1m.bbZ: 0.0 vs 0.65
 planes/f1m.author: '' vs 'EMB4'
-planes/f22a.textureNameList: size 2 vs 1
 planes/f22a.itemID: 28726 vs 0
 planes/f22a.bbZmax: -10.3 vs -1.3
 planes/f22a.bbZ: -11.8 vs -7.3
@@ -480,7 +446,6 @@ planes/fa18f.bbZmax: -6.5 vs 0.5
 planes/fa18f.bbZ: -8.0 vs -4.5
 planes/fa18f.machOneSpeed: 0.0 vs 0.61
 planes/fa18f.author: '' vs 'EMB4'
-planes/fi167.textureNameList: size 3 vs 1
 planes/fi167.itemID: 28712 vs 0
 planes/fi167.markerWidth: 2.0 vs 1.96
 planes/fi167.bbZmax: -2.2 vs 1.8
@@ -494,24 +459,20 @@ planes/h8k.itemID: 28719 vs 0
 planes/h8k.bbZmax: -11.0 vs 0.5
 planes/h8k.bbZ: -12.5 vs -6.75
 planes/h8k.author: '' vs 'EMB4'
-planes/harrier.textureNameList: size 3 vs 1
 planes/harrier.itemID: 28700 vs 0
 planes/harrier.bbZmax: -4.1 vs -1.6
 planes/harrier.bbZ: -5.6 vs -4.35
 planes/harrier.author: '' vs 'EMB4'
-planes/harrier_en.textureNameList: size 3 vs 1
 planes/harrier_en.itemID: 28702 vs 0
 planes/harrier_en.bbZmax: -4.1 vs -1.6
 planes/harrier_en.bbZ: -5.6 vs -4.35
 planes/harrier_en.author: '' vs 'EMB4'
 planes/macchi_m33.hudList: size 4 vs 2
-planes/macchi_m33.textureNameList: size 2 vs 1
 planes/macchi_m33.itemID: 28710 vs 0
 planes/macchi_m33.author: '' vs 'EMB4'
 planes/macchi_mc72.hudList: size 4 vs 2
 planes/macchi_mc72.itemID: 28718 vs 0
 planes/macchi_mc72.author: '' vs 'EMB4'
-planes/md90.textureNameList: size 4 vs 1
 planes/md90.itemID: 28727 vs 0
 planes/md90.bbZmax: -48.0 vs 0.5
 planes/md90.bbZ: -49.5 vs -25.25
@@ -531,7 +492,6 @@ planes/mqm170.bbZmax: 1.0 vs 2.5
 planes/mqm170.bbZ: -0.75 vs 0.0
 planes/mqm170.author: '' vs 'EMB4'
 planes/mv-22.seatList[14].fixYaw: 180.0 vs 0.0
-planes/mv-22.textureNameList: size 6 vs 1
 planes/mv-22.itemID: 28701 vs 0
 planes/mv-22.bbZmax: -6.5 vs 0.29999995
 planes/mv-22.bbZ: -8.0 vs -4.6
@@ -540,7 +500,6 @@ planes/n1k1.itemID: 28704 vs 0
 planes/n1k1.bbZmax: -3.5 vs 3.25
 planes/n1k1.bbZ: -4.5 vs -1.125
 planes/n1k1.author: '' vs 'EMB4'
-planes/p-51d.textureNameList: size 2 vs 1
 planes/p-51d.itemID: 30202 vs 0
 planes/p-51d.bbZmax: -7.2 vs 2.25
 planes/p-51d.bbZ: -8.4 vs -3.6750002
@@ -549,13 +508,11 @@ planes/p180.itemID: 28737 vs 0
 planes/p180.bbZmax: -2.3 vs 9.74
 planes/p180.bbZ: -3.2800002 vs 2.7399998
 planes/p180.author: '' vs 'EMB4'
-planes/pzl-m18.textureNameList: size 2 vs 1
 planes/pzl-m18.itemID: 28733 vs 0
 planes/pzl-m18.recipeString[0]: '" PI",  "FXI",  "HSB",  X,IRON_BLOCK, I,IRON_INGOT, F,FURNACE, W,WATER_BUCKET, H,STONE_HOE, S,WHEAT_SEEDS, B,DYE,15' vs '" PI",  "FXI",  "HSB",  X,IRON_BLOCK, I,IRON_INGOT, F,FURNACE, P,WATER_BUCKET, H,STONE_HOE, S,WHEAT_SEEDS, B,DYE,15'
 planes/pzl-m18.bbZmax: -2.65 vs 2.65
 planes/pzl-m18.bbZ: -3.4 vs -0.75
 planes/pzl-m18.author: '' vs 'EMB4'
-planes/skylark.textureNameList: size 2 vs 1
 planes/skylark.itemID: 28745 vs 0
 planes/skylark.author: '' vs 'EMB4'
 planes/su-33.itemID: 28716 vs 0
@@ -568,30 +525,25 @@ planes/su-47.bbZmax: -7.5 vs 0.0
 planes/su-47.bbZ: -9.0 vs -5.25
 planes/su-47.machOneSpeed: 0.0 vs 0.73
 planes/su-47.author: '' vs 'EMB4'
-planes/su37.textureNameList: size 4 vs 1
 planes/su37.itemID: 28731 vs 0
 planes/su37.bbZmax: -7.0 vs 0.0
 planes/su37.bbZ: -8.5 vs -5.0
 planes/su37.machOneSpeed: 0.0 vs 0.51
 planes/su37.author: '' vs 'EMB4'
-planes/t-4.textureNameList: size 11 vs 1
 planes/t-4.itemID: 28730 vs 0
 planes/t-4.bbZmax: -3.0900002 vs 5.43
 planes/t-4.bbZ: -4.09 vs 0.16999984
 planes/t-4.author: '' vs 'EMB4'
-planes/tornado-gr4.textureNameList: size 3 vs 1
 planes/tornado-gr4.itemID: 28721 vs 0
 planes/tornado-gr4.bbZmax: -6.5 vs -0.05
 planes/tornado-gr4.bbZ: -8.0 vs -4.775
 planes/tornado-gr4.machOneSpeed: 0.0 vs 0.55
 planes/tornado-gr4.author: '' vs 'EMB4'
-planes/tornado-ids.textureNameList: size 5 vs 1
 planes/tornado-ids.itemID: 28720 vs 0
 planes/tornado-ids.bbZmax: -6.5 vs -0.05
 planes/tornado-ids.bbZ: -8.0 vs -4.775
 planes/tornado-ids.machOneSpeed: 0.0 vs 0.55
 planes/tornado-ids.author: '' vs 'EMB4'
-planes/us-2.textureNameList: size 3 vs 1
 planes/us-2.itemID: 28711 vs 0
 planes/us-2.recipeString[0]: '"GPG",  "XIX",  "XXX",  X,IRON_BLOCK, G,DYE,4, P,GLASS,  I,POTION,8193' vs '"GPG",  "XIX",  "XXX",  X,IRON_BLOCK, G,DYE,4, P,GLASS,  I,POTION'
 planes/us-2.bbZmax: 0.029999971 vs 12.03
@@ -613,7 +565,6 @@ ships/cb90.author: '' vs 'EMB4'
 ships/mark5.rotorList: size 1 vs 0
 ships/mark5.seatList[6].fixPitch: -15.0 vs 0.0
 ships/mark5.rideRacks: size 2 vs 1
-ships/mark5.textureNameList: size 3 vs 1
 ships/mark5.itemID: 28742 vs 0
 ships/mark5.category: 'zzz' vs 'ZZZ'
 ships/mark5.bbZmax: -2.5 vs 4.25
@@ -633,7 +584,6 @@ ships/stinger_390x.bbZ: -2.45 vs 0.44999993
 ships/stinger_390x.author: '' vs 'EMB4'
 ships/zodiac.itemID: 28743 vs 0
 ships/zodiac.author: '' vs 'EMB4'
-tanks/bnr32.textureNameList: size 4 vs 1
 tanks/bnr32.itemID: 28745 vs 0
 tanks/bnr32.limitRotation: true vs false
 tanks/bnr32.author: '' vs 'EMB4'
@@ -643,7 +593,6 @@ tanks/centauro.bbZmax: -0.29999995 vs 5.7
 tanks/centauro.bbZ: -2.0 vs 0.9999999
 tanks/centauro.author: '' vs 'EMB4'
 tanks/growler.rideRacks: size 5 vs 3
-tanks/growler.textureNameList: size 4 vs 1
 tanks/growler.itemID: 28766 vs 0
 tanks/growler.limitRotation: true vs false
 tanks/growler.author: '' vs 'EMB4'
@@ -661,7 +610,6 @@ tanks/m1129.bbZmax: -0.29999995 vs 5.7
 tanks/m1129.bbZ: -2.0 vs 0.9999999
 tanks/m1129.author: '' vs 'EMB4'
 tanks/m1a2.rideRacks: size 2 vs 1
-tanks/m1a2.textureNameList: size 2 vs 1
 tanks/m1a2.itemID: 30100 vs 0
 tanks/m1a2.category: 'zzz' vs 'ZZZ'
 tanks/m1a2.bbZmax: -3.3 vs 3.9
@@ -686,14 +634,12 @@ tanks/mxtmv.bbZmax: -0.20000005 vs 2.8
 tanks/mxtmv.bbZ: -1.5 vs 0.0
 tanks/mxtmv.limitRotation: true vs false
 tanks/mxtmv.author: '' vs 'EMB4'
-tanks/t-90.textureNameList: size 2 vs 1
 tanks/t-90.category: 'zzz' vs 'ZZZ'
 tanks/t-90.markerWidth: 2.0 vs 1.75
 tanks/t-90.bbZmax: 0.79999995 vs 3.5
 tanks/t-90.bbZ: -1.2 vs 0.14999998
 tanks/t-90.author: '' vs 'EMB4'
 tanks/t84.hudList[1]: 'mbt_hud' vs 'none'
-tanks/t84.textureNameList: size 4 vs 1
 tanks/t84.itemID: 30100 vs 0
 tanks/t84.category: 'zzz' vs 'ZZZ'
 tanks/t84.markerWidth: 2.0 vs 1.75
@@ -728,7 +674,6 @@ vehicles/ammo_box.itemID: 28611 vs 0
 vehicles/ammo_box.category: 'zzz' vs 'ZZZ'
 vehicles/ammo_box.author: '' vs 'EMB4'
 vehicles/ammo_cart: only in YAML
-vehicles/bofors40mml60.textureNameList: size 2 vs 1
 vehicles/bofors40mml60.itemID: 28610 vs 0
 vehicles/bofors40mml60.markerWidth: 2.0 vs 0.5
 vehicles/bofors40mml60.author: '' vs 'EMB4'
@@ -737,7 +682,6 @@ vehicles/krupp_c_34.markerWidth: 2.0 vs 1.25
 vehicles/krupp_c_34.bbZmax: 1.0 vs 2.5
 vehicles/krupp_c_34.bbZ: -0.75 vs 0.0
 vehicles/krupp_c_34.author: '' vs 'EMB4'
-vehicles/mim-23.textureNameList: size 3 vs 1
 vehicles/mim-23.itemID: 28613 vs 0
 vehicles/mim-23.markerWidth: 2.0 vs 0.5
 vehicles/mim-23.author: '' vs 'EMB4'
@@ -759,7 +703,6 @@ vehicles/oto76mm.markerWidth: 2.0 vs 0.75
 vehicles/oto76mm.bbZmax: 1.0 vs 1.5
 vehicles/oto76mm.bbZ: -0.25 vs 0.0
 vehicles/oto76mm.author: '' vs 'EMB4'
-vehicles/s-75.textureNameList: size 2 vs 1
 vehicles/s-75.itemID: 28612 vs 0
 vehicles/s-75.markerWidth: 2.0 vs 0.5
 vehicles/s-75.author: '' vs 'EMB4'

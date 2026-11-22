@@ -129,3 +129,7 @@ Recepie:
   isShaped: true
   Pattern:
   - "\" X \",  \"XFX\",  \" X \",  X, iron_block, F, fish"
+Render:
+  Textures:
+  - fi167_2ton
+  - fi167_green

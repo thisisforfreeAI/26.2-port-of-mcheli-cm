@@ -156,3 +156,8 @@ Recepie:
   Pattern:
   - "\" X \",  \"X X\",  \"X X\",  X, iron_block"
   - "\" X \",  \"F X\",  \"X X\",  X, iron_block, F, fish"
+Render:
+  Textures:
+  - sh60-us-1
+  - sh60-jp-1
+  - sh60-jp-2

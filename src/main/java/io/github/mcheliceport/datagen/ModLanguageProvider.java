@@ -32,6 +32,25 @@ public class ModLanguageProvider extends LanguageProvider {
     }
 
     private void english() {
+        add("mcheli_ce_port.joystick.connected", "Joystick: %s");
+        // Jade vehicle tooltip (compat/jade).
+        add("config.jade.plugin_mcheli_ce_port.vehicle", "MC Heli vehicles");
+        add("mcheli_ce_port.jade.destroyed", "Destroyed");
+        add("mcheli_ce_port.jade.hull", "Hull: %s");
+        add("mcheli_ce_port.jade.fuel", "Fuel: %s");
+        add("mcheli_ce_port.jade.charge", "Charge: %s");
+        add("mcheli_ce_port.jade.pilot", "Pilot: %s");
+        add("mcheli_ce_port.jade.no_pilot", "No pilot");
+        add("mcheli_ce_port.jade.crew", "Crew: %s / %s seats");
+        add("mcheli_ce_port.jade.team", "Team: %s");
+        add("mcheli_ce_port.jade.component.damaged", "%s damaged");
+        add("mcheli_ce_port.jade.component.disabled", "%s out");
+        add("mcheli_ce_port.jade.part.engine", "Engine");
+        add("mcheli_ce_port.jade.part.main_rotor", "Main rotor");
+        add("mcheli_ce_port.jade.part.tail_rotor", "Tail rotor");
+        add("mcheli_ce_port.jade.part.fuel_tank", "Fuel tank");
+        add("mcheli_ce_port.jade.part.wing", "Wing");
+        add("mcheli_ce_port.jade.part.airframe_tail", "Tail");
         add("mcheli_ce_port.configuration.aircraftCustomization", "Aircraft markings and wear");
         add("mcheli_ce_port.configuration.weaponMechanisms", "Weapon mechanisms");
         add("mcheli_ce_port.configuration.nightFlightLighting", "Night-flight lighting");
@@ -95,6 +114,7 @@ public class ModLanguageProvider extends LanguageProvider {
         add("message.mcheli_ce_port.chain.connected", "Tow chain connected. Right-click either end to disconnect.");
         add("message.mcheli_ce_port.chain.disconnected", "Tow chain disconnected.");
         add("message.mcheli_ce_port.chain.range", "Chain endpoints must be 2 to 16 blocks apart.");
+        add("message.mcheli_ce_port.gps_no_point", "No GPS point set. Open the GPS panel and enter one first.");
         addItem(ModItems.PARACHUTE, "Parachute");
         addItem(ModItems.CONTAINER, "Container");
         addItem(ModItems.UAV_STATION, "UAV Station");
@@ -226,6 +246,26 @@ public class ModLanguageProvider extends LanguageProvider {
         add(prefix + "mouseSensitivity", "Mouse Sensitivity");
         add(prefix + "mouseControlStickModeHeli", "Stick Mode (Helicopters)");
         add(prefix + "mouseControlFlightSimMode", "Flight Sim Mode");
+        add(prefix + "joystick", "Joystick Flight");
+        add(prefix + "enabled", "Use a Joystick or Gamepad");
+        add(prefix + "device", "Device");
+        add(prefix + "gamepadLayout", "Standard Gamepad Layout");
+        add(prefix + "rollAxis", "Roll Axis");
+        add(prefix + "pitchAxis", "Pitch Axis");
+        add(prefix + "yawAxis", "Rudder Axis");
+        add(prefix + "throttleAxis", "Throttle Axis");
+        add(prefix + "invertRoll", "Invert Roll");
+        add(prefix + "invertPitch", "Invert Pitch");
+        add(prefix + "invertYaw", "Invert Rudder");
+        add(prefix + "invertThrottle", "Invert Throttle");
+        add(prefix + "deadzone", "Dead Zone");
+        add(prefix + "responseCurve", "Response Curve");
+        add(prefix + "stickRange", "Stick Range");
+        add(prefix + "digitalThreshold", "Rudder and Rate Threshold");
+        add(prefix + "throttleMode", "Throttle Mode");
+        add(prefix + "gamepadButtons", "Gamepad Buttons");
+        add(prefix + "buttons", "Joystick Buttons");
+        add(prefix + "showInputs", "Show Device Inputs");
         add(prefix + "privacy", "Privacy");
         add(prefix + "allowScreenCapture", "Allow Screen Capture");
         add(prefix + "render", "Rendering");

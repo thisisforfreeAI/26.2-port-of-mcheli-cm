@@ -19,6 +19,8 @@ PhysicalProperties:
       Min: -50.0
       Max: 0.0
 Render:
+  Textures:
+  - s-75_tan
   HideRiders: true
 Weapons:
 - Type: sa-2

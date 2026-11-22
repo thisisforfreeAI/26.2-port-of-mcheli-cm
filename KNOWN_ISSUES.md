@@ -90,8 +90,11 @@ These follow from how Minecraft 26.2 works or from decisions approved in PORTING
    never had; without it those bombs are hidden and other payload weapons explode normally. On Mesa's software Vulkan driver, CrankShaft (NTM Next's renderer) crashed the
    client when NTM effects appeared, also without McHeli; OpenGL is the supported backend.
 8. Vehicles past the render distance are drawn full size and without fog in the normal entity pass,
-   not in a second pass with upstream's own 3,000-block projection, so they disappear past vanilla's
-   far plane (four times the render distance or the cloud range, whichever is larger).
+   not in a second pass with upstream's own 3,000-block projection. Instead, while a vehicle is past
+   vanilla's far plane (four times the render distance or the cloud range), the camera's far plane
+   is pushed out to it, up to `render.farVehicleDistance`. Whether a vehicle behind a far hill that only
+   Distant Horizons draws is hidden by it depends on how Distant Horizons shares its depth; it may
+   show through.
 9. The pilot's client simulates its own vehicle (decision D2). Servers can switch back to upstream's
    server-authoritative model with `vehicles.serverAuthoritativeMovement`. UAV motion always runs
    on the server because its pilot remains physically seated at the station.
@@ -420,14 +423,34 @@ These follow from how Minecraft 26.2 works or from decisions approved in PORTING
     for the tank haze and for hits on the vehicle; vanilla particles take no tint in 26.2, so
     McHeli's own smoke particle is tinted instead. The APS takes its settings on the vehicle's
     first tick, so, as upstream, it cannot fire on the tick the vehicle appears.
-88. Content settings that upstream read but never acted on stay inert: `DataLink`/`OnlyDataLink`,
-    the anti-radiation missile tuning (`ARM*`; anti-radiation missiles only fall to a type 2 ECM
-    jammer, as upstream), `PassiveRadarLockOutCount`, `SemiActiveRadar`,
+88. Content settings that upstream read but never acted on stay inert:
     `PDHDNMaxDegreeLockOutCount`, the aircraft-level `PassiveRadar` and `EnableBVR`, and the
-    weapon's `HasMortarRadar`. GPS missiles do not steer to the GPS point, as upstream. A
-    `PassiveRadar` missile fires without a lock and flies at the BVR target, if any, as upstream;
-    upstream's in-flight retargeting from the shooter's lock (`lock`/`onUnlock` with
-    `PacketLockTarget`) had no callers and is not ported.
+    weapon's `HasMortarRadar`. A `PassiveRadar` missile fires without a lock and flies at the BVR
+    target, if any, as upstream. The port flies these modes upstream never did, with rules of its
+    own (the `MissileGuidance` class comment has them in full; no stock weapon uses them):
+    - GPS missiles and bombs (`IsGPSMissile`) need the shooter's GPS point (item 92) and fly to it
+      without a lock; flares and chaff do not fool them. Without a point they do not fire and the
+      action bar says so. A GPS bomb glides towards the point as it falls. An air-to-surface GPS
+      missile flies to the point even where no block is, where upstream's needed one.
+    - Semi-active radar missiles (`SemiActiveRadar`) need the launcher to keep the target within
+      twice the weapon's lock angle of where the shooter looks, in range and in sight (or as its
+      BVR target); chaff breaks it. Unlit for longer than `PassiveRadarLockOutCount` ticks, the
+      missile loses its target for good.
+    - Data-link missiles (`EnableDataLink`) turn past their own seeker angle while the launcher
+      tracks the target (in its radar's track cone, 60 degrees without a `Radar` section), take
+      the launcher's new BVR target in flight (upstream's unported `lock`/`onUnlock` retargeting),
+      and fly on waiting for a target when fired without one. With `OnlyDataLink` they lose the
+      target for good once the launcher has not tracked it for `PassiveRadarLockOutCount` ticks.
+    - Anti-radiation missiles (`AntiRadiationMissile`, `ARM*`) home on radar emitters: a vehicle
+      with a `Radar` section switched on (or flown by a non-player), or a crewed vehicle with an
+      `EntityRadar`. They fire without a lock at the emitter nearest the line of sight and search
+      their own lock cone while they have none. A quiet emitter is tracked for
+      `EmitterLostGraceTick` ticks, then its last position for `MemoryTimeTick` more. With
+      `CruiseEnable`, one launched more than `CruiseStartDistance` blocks away lofts towards a
+      point above the emitter (at most `CruiseTerminalHeight` blocks above it) until within
+      `CruiseTerminalRadius` blocks, then dives. A type 2 ECM jammer still breaks them, as upstream.
+    - Air-to-air missiles with `ActiveRadar`, anti-radiation or data-link guidance fly on without a
+      target while they search or wait for one, where upstream's air-to-air missile was lost at once.
 89. Lock boxes (upstream's `renderEntityMarker`) are drawn on the HUD by projecting upstream's
     in-world billboard onto the screen, so they keep upstream's size, place and colours but sit
     under the vehicle HUD instead of in the world. As upstream, only targets with no block in
@@ -450,8 +473,8 @@ These follow from how Minecraft 26.2 works or from decisions approved in PORTING
     Upstream drew the GPS marker with world transforms inside its 2D overlay pass, which put it at
     a screen position equal to the point's offset in blocks, and with a texture
     (`gps_position.png`) missing from its assets; the marker is projected onto the point here and
-    drawn as a square outline. As upstream, the server keeps each player's point but nothing reads
-    it (GPS missiles do not steer, item 88), and the point goes inactive off a vehicle.
+    drawn as a square outline. The server keeps each player's point, which GPS weapons fly to
+    (item 88), and forgets it when the player leaves; the point goes inactive off a vehicle.
 93. The wingman marker screen saves only for a player who can reach and edit the marker (within
     block reach plus four blocks, not a spectator, outside spawn protection); upstream accepted
     the save from any player for any marker. Changing the type keeps what was typed into the

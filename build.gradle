@@ -32,12 +32,11 @@ repositories {
         url = 'https://www.cursemaven.com'
         content { includeGroup 'curse.maven' }
     }
-    if (providers.gradleProperty('withHbm').isPresent()) {
-        // CrankShaft, NTM Next's required client dependency.
-        maven {
-            url = 'https://api.modrinth.com/maven'
-            content { includeGroup 'maven.modrinth' }
-        }
+    // Jade (an optional info-overlay integration, src/main/java/.../compat/jade) and CrankShaft,
+    // NTM Next's required client dependency.
+    maven {
+        url = 'https://api.modrinth.com/maven'
+        content { includeGroup 'maven.modrinth' }
     }
     // Just Enough Items, an optional client integration (src/main/java/.../compat/jei).
     maven {
@@ -163,6 +162,12 @@ dependencies {
     compileOnly "mezz.jei:jei-${minecraft_version}-common-api:${jei_version}"
     if (providers.gradleProperty('withJei').isPresent()) {
         localRuntime "mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}"
+    }
+    // Jade is optional as well: the vehicle tooltip compiles against Jade 26.2.10 (Modrinth version
+    // GBES6etT) and Jade loads it only when present. -PwithJade adds Jade to the runs.
+    compileOnly "maven.modrinth:jade:${jade_version}"
+    if (providers.gradleProperty('withJade').isPresent()) {
+        localRuntime "maven.modrinth:jade:${jade_version}"
     }
     // NTM Next is optional too: the payload bridge compiles against 1.0.3 (CurseForge file 9130786)
     // and only loads when the hbm mod is present. -PwithHbm adds it and CrankShaft to the runs.
