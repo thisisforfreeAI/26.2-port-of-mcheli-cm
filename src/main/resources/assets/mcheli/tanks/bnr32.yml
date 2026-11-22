@@ -152,3 +152,8 @@ Recepie:
   isShaped: true
   Pattern:
   - "\" G \",  \"I I\",  \"RIR\",   G, glass, I, iron_ingot, R, redstone"
+Render:
+  Textures:
+  - bnr32_1
+  - bnr32_2
+  - bnr32_3

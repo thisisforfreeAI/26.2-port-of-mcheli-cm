@@ -10,13 +10,15 @@ import net.minecraft.server.packs.resources.ResourceManager;
 
 /** Loader-only alpha evidence for mixed glass/frame canopies; never guesses from paint color. */
 final class VehicleCanopyFinish {
+    /** The stock T-4 has eleven paint schemes; each is decoded once at model load. */
+    static final int MAX_LIVERIES=16;
     private VehicleCanopyFinish() {}
     static boolean canopy(String name) { return name.toLowerCase(Locale.ROOT).replace("$", "").startsWith("canopy"); }
 
     static List<VehicleGlassAlpha.Mask> load(ResourceManager resources, String dir, AircraftInfo info) {
         var textures=info.getTextureNames();
         // Shared model colors must be correct for every selectable livery. Unsupported packs stay paint.
-        if(textures.isEmpty() || textures.size()>8)return List.of();
+        if(textures.isEmpty() || textures.size()>MAX_LIVERIES)return List.of();
         List<VehicleGlassAlpha.Mask> result=new ArrayList<>(textures.size());
         for(String name:textures){
             var id=Identifier.tryParse("mcheli:textures/"+dir+"/"+name+".png");

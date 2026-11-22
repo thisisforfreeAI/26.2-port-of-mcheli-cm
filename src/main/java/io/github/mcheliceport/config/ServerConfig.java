@@ -67,6 +67,7 @@ public final class ServerConfig {
     public static final ModConfigSpec.ConfigValue<List<? extends String>> COMMAND_PERMISSIONS;
     public static final ModConfigSpec.BooleanValue ENABLE_DEBUG_BOUNDING_BOX;
     public static final ModConfigSpec.BooleanValue LONG_DISTANCE_TRACKING;
+    public static final ModConfigSpec.IntValue LONG_DISTANCE_RANGE;
     public static final ModConfigSpec.BooleanValue PLAYERS_CHOOSE_TEAM;
 
     static {
@@ -289,10 +290,15 @@ public final class ServerConfig {
 
         builder.push("tracking");
         LONG_DISTANCE_TRACKING = builder
-                .comment("true: players see McHeli vehicles up to their tracking range (1,200 blocks for aircraft, tanks",
+                .comment("true: players see McHeli vehicles up to their tracking range (longDistanceRange for aircraft, tanks",
                         "and ships), past the server's view distance and in chunks the player has not loaded.",
                         "false: vanilla's limit, the view distance. Upstream: ExperimentalRemoveClientTrackingRestrictions.")
                 .define("longDistance", true);
+        LONG_DISTANCE_RANGE = builder
+                .comment("Blocks within which players are sent McHeli aircraft, tanks and ships when longDistance is on.",
+                        "Raise it with Distant Horizons (or a similar mod) so jets stay visible over far terrain; each",
+                        "vehicle in range costs every such player about 10 small packets a second. Upstream: 1,200.")
+                .defineInRange("longDistanceRange", 1200, 128, 4096);
         builder.pop();
 
         builder.comment("The multiplay manager (M), a port addition.").push("teams");

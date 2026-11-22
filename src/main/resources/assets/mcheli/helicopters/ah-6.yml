@@ -95,3 +95,6 @@ Recepie:
   isShaped: true
   Pattern:
   - "\" Y \",  \"YXY\",  \" Y \",  X, iron_block, Y, iron_ingot"
+Render:
+  Textures:
+  - ah-6_jp

@@ -40,3 +40,7 @@ Recepie:
   isShaped: true
   Pattern:
   - "\" G \",  \"IXI\",  \" I \",  X, iron_block, G, glass, I, iron_ingot"
+Render:
+  Textures:
+  - bell47g_k
+  - bell47g_w

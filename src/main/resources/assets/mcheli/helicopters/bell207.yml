@@ -129,3 +129,7 @@ Recepie:
   isShaped: true
   Pattern:
   - "\" G \",  \"IXI\",  \"IYI\",  X, iron_block, Y, gunpowder, G, glass, I, iron_ingot"
+Render:
+  Textures:
+  - bell207_1
+  - bell207_2

@@ -166,3 +166,8 @@ Recepie:
   isShaped: true
   Pattern:
   - "\" G \",  \"IXI\",  \"DID\",  X, iron_block, G, glass, I, iron_ingot, D, dispenser"
+Render:
+  Textures:
+  - emb314_plain
+  - emb314_usa
+  - emb314_xe

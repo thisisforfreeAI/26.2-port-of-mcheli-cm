@@ -33,6 +33,9 @@ PhysicalProperties:
       Min: -60.0
       Max: 60.0
 Render:
+  Textures:
+  - us-2_9901
+  - us-2_9902
   SplashParticles:
   - Position: [1.0, 0.97, 13.19]
     Count: 3

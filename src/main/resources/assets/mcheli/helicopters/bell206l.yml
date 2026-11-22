@@ -51,3 +51,12 @@ Recepie:
   isShaped: true
   Pattern:
   - "\" R \",  \"X X\",  \"X X\",  X, iron_block,  R, redstone_block"
+Render:
+  Textures:
+  - bell206l_bw
+  - bell206l_go
+  - bell206l_rw
+  - bell206l_wb
+  - bell206l_wr
+  - bell206l_t
+  - bell206l_mp

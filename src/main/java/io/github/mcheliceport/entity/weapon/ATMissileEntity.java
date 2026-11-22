@@ -9,7 +9,9 @@ import net.minecraft.world.phys.EntityHitResult;
 /**
  * An anti-tank missile: straight at its target, or (guidance type 1) up 100 blocks above the
  * shooter, level, then down onto the target with 20% more power. Active-radar ones search for a
- * target while they have none. Ported from upstream {@code MCH_EntityATMissile}.
+ * target while they have none. A GPS missile, or an anti-radiation missile remembering a quiet emitter,
+ * flies at a fixed point instead (see {@code MissileGuidance}). Ported from upstream
+ * {@code MCH_EntityATMissile}.
  */
 public class ATMissileEntity extends BaseBulletEntity {
 
@@ -37,9 +39,11 @@ public class ATMissileEntity extends BaseBulletEntity {
         if (this.level().isClientSide()) {
             return;
         }
-        if (this.shootingEntity != null && this.targetEntity != null && this.targetEntity.isAlive()) {
+        if (this.pointTarget != null) {
+            this.guidanceToPoint(this.pointTarget);
+        } else if (this.shootingEntity != null && this.targetEntity != null && this.targetEntity.isAlive()) {
             this.processGuidance(info);
-        } else if (info.activeRadar && this.tickCount % info.scanInterval == 0) {
+        } else if (info.activeRadar && info.scanInterval > 0 && this.tickCount % info.scanInterval == 0) {
             this.scanForTargets();
         }
     }

@@ -20,6 +20,9 @@ Sound:
 PhysicalProperties:
   Speed: 0.4
 Render:
+  Textures:
+  - rc-goblin-1
+  - rc-goblin-2
   ParticleScale: 0.2
 Seats:
 - Position: [0.0, 2.0, 0.0]

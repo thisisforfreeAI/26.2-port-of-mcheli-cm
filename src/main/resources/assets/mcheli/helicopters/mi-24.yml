@@ -340,3 +340,6 @@ Recepie:
   isShaped: true
   Pattern:
   - "\"XYX\", \"XGX\", \"DID\", X, iron_block, Y, glass, G, feather, I, iron_ingot, D, dispenser"
+Render:
+  Textures:
+  - mi-24_close

@@ -32,6 +32,9 @@ PhysicalProperties:
       Min: 0.0
       Max: 0.0
 Render:
+  Textures:
+  - mark5-camo1
+  - mark5-camo2
   SplashParticles:
   - Position: [1.6, -0.18, 1.0]
     Count: 3

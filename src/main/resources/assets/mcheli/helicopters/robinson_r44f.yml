@@ -59,3 +59,10 @@ Recepie:
   isShaped: true
   Pattern:
   - "\"IRI\",  \" G \",  \"BFB\",  R, iron_block,  I, iron_ingot,  G, Glass,  B,  boat,  F, iron_bars,"
+Render:
+  Textures:
+  - robinson_r44_b
+  - robinson_r44_g
+  - robinson_r44_y
+  - robinson_r44_fire
+  - robinson_r44_j4m
