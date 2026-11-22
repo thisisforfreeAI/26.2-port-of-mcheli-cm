@@ -153,6 +153,10 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
   See `docs/M6B_PLAN.md`.
 
 ### Fixed
+- McHeli vehicles no longer drain NTM Next's force field emitter shields. The shield charges each
+  non-player entity that crosses it by its box size times its speed, and a vehicle's box is many
+  blocks wide, so one touch emptied it. Vehicles, their hitboxes, seats and riders now cost the
+  shield nothing and are still pushed back; weapons fired from vehicles keep NTM's normal damage.
 - A passenger's game no longer turns the aircraft: every frame it re-ran the pilot's attitude rules
   on its own copy of the vehicle, so crew saw the plane pointing the wrong way and their view could
   be locked to its heading. Only the pilot's mouse steers now.

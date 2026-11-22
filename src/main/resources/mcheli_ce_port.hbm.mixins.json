@@ -1,0 +1,8 @@
+{
+  "required": false,
+  "minVersion": "0.8",
+  "package": "io.github.mcheliceport.mixin.hbm",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": ["ForceFieldVehicleImpactMixin"],
+  "injectors": {"defaultRequire": 0}
+}

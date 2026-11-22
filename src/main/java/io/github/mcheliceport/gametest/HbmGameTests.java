@@ -2,6 +2,8 @@ package io.github.mcheliceport.gametest;
 
 import static io.github.mcheliceport.gametest.GameTestSupport.check;
 
+import com.hbm.blockentity.machine.BlockEntityForceField;
+import com.hbm.blocks.ModBlocks;
 import com.hbm.entity.effect.EntityFireLingering;
 import com.hbm.entity.effect.EntityMist;
 import com.hbm.entity.effect.EntityNukeTorex;
@@ -18,14 +20,18 @@ import io.github.mcheliceport.content.weapon.hbm.MistContainer;
 import io.github.mcheliceport.content.weapon.hbm.MukeContainer;
 import io.github.mcheliceport.content.weapon.hbm.NTSettingContainer;
 import io.github.mcheliceport.content.weapon.hbm.VNTSettingContainer;
+import io.github.mcheliceport.entity.heli.HeliEntity;
 import io.github.mcheliceport.entity.weapon.RocketEntity;
+import java.lang.reflect.Method;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.monster.zombie.Husk;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -50,6 +56,39 @@ final class HbmGameTests {
         ModGameTests.testAlone("ntm_mini_nuke", 40, HbmGameTests::miniNuke);
         ModGameTests.testAlone("ntm_vnt", 40, HbmGameTests::vnt);
         ModGameTests.testAlone("ntm_nt", 40, HbmGameTests::nt);
+        ModGameTests.test("ntm_force_field_ignores_vehicles", 20, HbmGameTests::forceFieldIgnoresVehicles);
+    }
+
+    /**
+     * The force field emitter's shield takes no damage from a McHeli vehicle crossing it, and still
+     * takes NTM's normal damage from a mob doing the same. Calls the field's own impact formula.
+     */
+    private static void forceFieldIgnoresVehicles(GameTestHelper h) {
+        BlockPos pos = h.absolutePos(new BlockPos(2, 1, 2));
+        BlockEntityForceField field = new BlockEntityForceField(pos, ModBlocks.MACHINE_FORCEFIELD.get().defaultBlockState());
+        Method impact;
+        try {
+            impact = BlockEntityForceField.class.getDeclaredMethod("impact", Entity.class);
+            impact.setAccessible(true);
+        } catch (ReflectiveOperationException e) {
+            throw new IllegalStateException("NTM Next's force field has no impact(Entity) any more", e);
+        }
+        HeliEntity heli = GameTestSupport.spawn(h, "ah-64", new Vec3(12.5, 1.0, 12.5), 0.0F);
+        Husk husk = h.spawnWithNoFreeWill(EntityTypes.HUSK, new Vec3(4.5, 1.0, 4.5));
+        try {
+            heli.setDeltaMovement(1.0, 0.0, 0.0);
+            husk.setDeltaMovement(1.0, 0.0, 0.0);
+            int vehicle = (Integer) impact.invoke(field, heli);
+            int mob = (Integer) impact.invoke(field, husk);
+            check(h, vehicle == 0, "a helicopter crossing the force field dealt it " + vehicle + " damage");
+            check(h, mob > 0, "a husk crossing the force field dealt it no damage");
+        } catch (ReflectiveOperationException e) {
+            throw new IllegalStateException(e);
+        } finally {
+            GameTestSupport.cleanUp(heli);
+            husk.discard();
+        }
+        h.succeed();
     }
 
     private static WeaponInfo weapon(String name, WeaponInfo.Payload payload, boolean effectOnly) {

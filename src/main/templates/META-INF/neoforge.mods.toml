@@ -35,6 +35,10 @@ file="META-INF/accesstransformer.cfg"
 [[mixins]]
 config="mcheli_ce_port.mixins.json"
 
+# NTM Next compatibility; its targets are @Pseudo, so it does nothing without NTM Next.
+[[mixins]]
+config="mcheli_ce_port.hbm.mixins.json"
+
 [[dependencies.${mod_id}]]
     modId="neoforge"
     type="required"
