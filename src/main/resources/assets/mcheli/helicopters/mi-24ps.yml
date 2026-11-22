@@ -143,3 +143,6 @@ Recepie:
   isShaped: true
   Pattern:
   - "\"XYX\", \"XGX\", \"DI \", X, iron_block, Y, glass, G, feather, I, iron_ingot, D, redstone_lamp"
+Render:
+  Textures:
+  - mi-24ps_close

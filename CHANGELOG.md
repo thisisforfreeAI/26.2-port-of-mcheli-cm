@@ -11,6 +11,19 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 ## [Unreleased]
 
 ### Added
+- Joystick, HOTAS and gamepad flight (client config `joystick`, off by default). Pitch and roll
+  axes set the mouse flight's control stick each frame; the rudder and throttle axes act as held
+  A/D and W/S, the throttle as a lever (chasing the synced throttle) or as a rate; ground vehicles
+  drive and steer from the stick. Configurable axes, inversion, dead zone, response curve, stick
+  range and button-to-control bindings, with a live input readout. No protocol change.
+- Optional Jade integration: looking at a vehicle shows hull, fuel or charge, pilot, crew, team and
+  damaged or failed components. Client-only; uses values already synced.
+- Upstream's alternate liveries are selectable again: its YAML conversion dropped every
+  `AddTexture`, so 144 paint schemes on 57 stock vehicles could not be picked. The stock
+  definitions list them in upstream's order (the TXT/YAML parity baseline loses those 57 entries),
+  the T-4's three upper-case texture files are renamed to valid lower-case names, the Appearance
+  screen shows "razgriz (3/3)" instead of the raw texture name, and canopy glass detection
+  accepts up to 16 liveries (was 8).
 - M9 follow-ups. Other players' fast jets and helicopters now turn toward the server's attitude as
   one quaternion slerp with the roll, so a loop goes over the top and a barrel roll keeps rolling
   instead of yaw, pitch and roll swinging apart. The anti-cheat records a pilot whose claimed speed

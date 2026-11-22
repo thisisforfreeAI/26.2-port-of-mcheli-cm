@@ -2,6 +2,7 @@ package io.github.mcheliceport.config;
 
 import io.github.mcheliceport.registry.ModTab;
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
 import net.neoforged.neoforge.common.ModConfigSpec;
 
@@ -20,6 +21,25 @@ public final class ClientConfig {
     public static final ModConfigSpec.BooleanValue MOUSE_CONTROL_STICK_MODE_HELI;
     public static final ModConfigSpec.BooleanValue MOUSE_CONTROL_STICK_MODE_PLANE;
     public static final ModConfigSpec.BooleanValue MOUSE_CONTROL_FLIGHT_SIM_MODE;
+    public static final ModConfigSpec.BooleanValue JOYSTICK_ENABLED;
+    public static final ModConfigSpec.IntValue JOYSTICK_DEVICE;
+    public static final ModConfigSpec.BooleanValue JOYSTICK_GAMEPAD_LAYOUT;
+    public static final ModConfigSpec.IntValue JOYSTICK_ROLL_AXIS;
+    public static final ModConfigSpec.IntValue JOYSTICK_PITCH_AXIS;
+    public static final ModConfigSpec.IntValue JOYSTICK_YAW_AXIS;
+    public static final ModConfigSpec.IntValue JOYSTICK_THROTTLE_AXIS;
+    public static final ModConfigSpec.BooleanValue JOYSTICK_INVERT_ROLL;
+    public static final ModConfigSpec.BooleanValue JOYSTICK_INVERT_PITCH;
+    public static final ModConfigSpec.BooleanValue JOYSTICK_INVERT_YAW;
+    public static final ModConfigSpec.BooleanValue JOYSTICK_INVERT_THROTTLE;
+    public static final ModConfigSpec.DoubleValue JOYSTICK_DEADZONE;
+    public static final ModConfigSpec.DoubleValue JOYSTICK_CURVE;
+    public static final ModConfigSpec.DoubleValue JOYSTICK_STICK_RANGE;
+    public static final ModConfigSpec.DoubleValue JOYSTICK_DIGITAL_THRESHOLD;
+    public static final ModConfigSpec.EnumValue<io.github.mcheliceport.client.input.JoystickMapping.ThrottleMode> JOYSTICK_THROTTLE_MODE;
+    public static final ModConfigSpec.ConfigValue<List<? extends String>> JOYSTICK_GAMEPAD_BUTTONS;
+    public static final ModConfigSpec.ConfigValue<List<? extends String>> JOYSTICK_BUTTONS;
+    public static final ModConfigSpec.BooleanValue JOYSTICK_SHOW_INPUTS;
     public static final ModConfigSpec.BooleanValue TEST_MODE;
     public static final ModConfigSpec.BooleanValue SMOOTH_SHADING;
     public static final ModConfigSpec.BooleanValue TILT_RIDERS;
@@ -107,6 +127,70 @@ public final class ClientConfig {
         SWITCH_WEAPON_WITH_MOUSE_WHEEL = builder
                 .comment("The mouse wheel switches weapons while riding a vehicle. Upstream: SwitchWeaponWithMouseWheel.")
                 .define("switchWeaponWithMouseWheel", true);
+        builder.pop();
+
+        builder.comment("Flying with a joystick, HOTAS or gamepad. Off by default. Turn on showInputs to see",
+                "which axis and button numbers your device reports while you sit in a vehicle.").push("joystick");
+        JOYSTICK_ENABLED = builder
+                .comment("Read a joystick or gamepad while piloting. The mouse still looks around.")
+                .define("enabled", false);
+        JOYSTICK_DEVICE = builder
+                .comment("Which device to use: -1 picks the first one connected, 0 to 15 pick that GLFW joystick slot.")
+                .defineInRange("device", -1, -1, 15);
+        JOYSTICK_GAMEPAD_LAYOUT = builder
+                .comment("Use the standard gamepad layout when the device is a known gamepad (Xbox, PlayStation and so on).",
+                        "Axes are then 0 left X, 1 left Y, 2 right X, 3 right Y, 4 left trigger, 5 right trigger, and",
+                        "buttons 0 A, 1 B, 2 X, 3 Y, 4 LB, 5 RB, 6 Back, 7 Start, 9 left stick, 10 right stick,",
+                        "11 to 14 the d-pad (up, right, down, left). Off, or for a flight stick, the raw numbers are used.")
+                .define("gamepadLayout", true);
+        JOYSTICK_ROLL_AXIS = builder.comment("Axis that rolls (or turns, in a ground vehicle). -1: none.")
+                .defineInRange("rollAxis", 0, -1, 15);
+        JOYSTICK_PITCH_AXIS = builder.comment("Axis that pitches (or drives forward and back, in a ground vehicle). -1: none.")
+                .defineInRange("pitchAxis", 1, -1, 15);
+        JOYSTICK_YAW_AXIS = builder.comment("Axis for the rudder (yaw). -1: none.")
+                .defineInRange("yawAxis", 2, -1, 15);
+        JOYSTICK_THROTTLE_AXIS = builder.comment("Axis for the throttle. -1: none.")
+                .defineInRange("throttleAxis", 3, -1, 15);
+        JOYSTICK_INVERT_ROLL = builder.define("invertRoll", false);
+        JOYSTICK_INVERT_PITCH = builder.comment("Off: pushing the stick forward puts the nose down.")
+                .define("invertPitch", false);
+        JOYSTICK_INVERT_YAW = builder.define("invertYaw", false);
+        JOYSTICK_INVERT_THROTTLE = builder.comment("Off: pushing the throttle forward (or up) adds power.")
+                .define("invertThrottle", false);
+        JOYSTICK_DEADZONE = builder.comment("Stick movement near the centre that is ignored, as a share of full travel.")
+                .defineInRange("deadzone", 0.1, 0.0, 0.9);
+        JOYSTICK_CURVE = builder.comment("Response curve: 1 is linear, higher is gentler near the centre and full at the edge.")
+                .defineInRange("responseCurve", 1.5, 1.0, 3.0);
+        JOYSTICK_STICK_RANGE = builder.comment("How far full deflection moves the control stick, from 0.1 to 1 (all the way).")
+                .defineInRange("stickRange", 1.0, 0.1, 1.0);
+        JOYSTICK_DIGITAL_THRESHOLD = builder
+                .comment("How far the rudder, a rate throttle or a ground vehicle's stick must move to act like a held key.")
+                .defineInRange("digitalThreshold", 0.35, 0.05, 0.95);
+        JOYSTICK_THROTTLE_MODE = builder
+                .comment("LEVER: the throttle axis sets the power directly (a HOTAS throttle or slider).",
+                        "RATE: pushing it adds power and pulling it removes power, like W and S (a gamepad stick).",
+                        "AUTO: RATE for gamepads, LEVER for other devices.")
+                .defineEnum("throttleMode", io.github.mcheliceport.client.input.JoystickMapping.ThrottleMode.AUTO);
+        JOYSTICK_GAMEPAD_BUTTONS = builder
+                .comment("Buttons on a gamepad (gamepadLayout on), as \"button=key\". The key is any control's name from",
+                        "options.txt without its \"key_\" prefix, such as key.mcheli_ce_port.flare or key.jump. The button",
+                        "presses whatever is bound to that control, so it must be bound to something.")
+                .defineListAllowEmpty("gamepadButtons", List.of(
+                        "5=key.mcheli_ce_port.use_weapon", "4=key.mcheli_ce_port.switch_weapon_1",
+                        "0=key.mcheli_ce_port.flare", "1=key.mcheli_ce_port.zoom", "2=key.mcheli_ce_port.reload_weapon",
+                        "3=key.mcheli_ce_port.camera_mode", "9=key.mcheli_ce_port.free_look",
+                        "10=key.mcheli_ce_port.switch_hovering", "11=key.mcheli_ce_port.gear_up_down",
+                        "13=key.mcheli_ce_port.switch_weapon_mode", "6=key.mcheli_ce_port.gui"),
+                        () -> "0=key.mcheli_ce_port.use_weapon", ClientConfig::isButtonBinding);
+        JOYSTICK_BUTTONS = builder
+                .comment("Buttons on any other device (a flight stick or HOTAS), in the same form.")
+                .defineListAllowEmpty("buttons", List.of(
+                        "0=key.mcheli_ce_port.use_weapon", "1=key.mcheli_ce_port.switch_weapon_1",
+                        "2=key.mcheli_ce_port.flare", "3=key.mcheli_ce_port.zoom"),
+                        () -> "0=key.mcheli_ce_port.use_weapon", ClientConfig::isButtonBinding);
+        JOYSTICK_SHOW_INPUTS = builder
+                .comment("Show the device's live axis values and pressed buttons above the hotbar while riding.")
+                .define("showInputs", false);
         builder.pop();
 
         builder.comment("Drawing vehicles (upstream's lines of the same names in mcheli.cfg).").push("render");
@@ -298,5 +382,9 @@ public final class ClientConfig {
             return "";
         }
         return SPEC.isLoaded() ? value.get() : tab.defaultIcon;
+    }
+
+    private static boolean isButtonBinding(Object value) {
+        return value instanceof String s && io.github.mcheliceport.client.input.JoystickMapping.parseButton(s) != null;
     }
 }

@@ -27,6 +27,12 @@ PhysicalProperties:
       Min: -60.0
       Max: 60.0
 Render:
+  Textures:
+  - mv-22-us-1
+  - mv-22-us-2
+  - mv-22-us-3
+  - mv-22-us-4
+  - mv-22-jp-1
   ParticleScale: 0.7
   EnableSeaSurfaceParticle: true
 Seats:

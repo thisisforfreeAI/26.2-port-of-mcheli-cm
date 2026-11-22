@@ -20,6 +20,10 @@ PhysicalProperties:
     Pitch: 8.5
     Roll: 0.5
 Render:
+  Textures:
+  - su37_2
+  - su37_3
+  - su37_yellow13
   MachOneSpeed: 0.51
   ParticleScale: 0.7
   EnableSeaSurfaceParticle: true

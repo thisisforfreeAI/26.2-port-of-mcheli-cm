@@ -94,9 +94,24 @@ public final class MouseFlight {
         mouseRollDeltaX += mouseDeltaX;
         mouseRollDeltaY += mouseDeltaY * inv;
         clampStick();
+        boolean joystick = joystickStick();
 
         apply(aircraft, player, yawBefore, pitchBefore, vanillaInvertY ? -1 : 1);
-        dampStick(stickMode);
+        if (!joystick) {
+            dampStick(stickMode);
+        }
+    }
+
+    /** A connected joystick holds the stick where it is deflected; the mouse then only looks around. */
+    private static boolean joystickStick() {
+        double[] stick = JoystickInput.stick(MAX_STICK_LENGTH);
+        if (stick == null) {
+            return false;
+        }
+        mouseRollDeltaX = stick[0];
+        mouseRollDeltaY = stick[1];
+        clampStick();
+        return true;
     }
 
     /**
@@ -122,8 +137,11 @@ public final class MouseFlight {
         prevMouseDeltaY = mouseDeltaY;
         mouseDeltaX = 0.0;
         mouseDeltaY = 0.0;
+        boolean joystick = mc.gui.screen() == null && joystickStick();
         apply(aircraft, player, player.getYRot(), player.getXRot(), 1);
-        dampStick(isStickMode(aircraft));
+        if (!joystick) {
+            dampStick(isStickMode(aircraft));
+        }
     }
 
     private static void clampStick() {

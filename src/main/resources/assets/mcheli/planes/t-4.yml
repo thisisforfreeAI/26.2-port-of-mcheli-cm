@@ -16,6 +16,17 @@ Camera:
 PhysicalProperties:
   Speed: 1.0
 Render:
+  Textures:
+  - t-4_1
+  - t-4_2
+  - t-4_3
+  - t-4_4
+  - t-4_5
+  - t-4_6
+  - t-4_red
+  - t-4_air
+  - t-4_f1
+  - t-4_sea
   ParticleScale: 0.7
   EnableSeaSurfaceParticle: true
 Weapons:

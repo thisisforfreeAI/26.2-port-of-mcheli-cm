@@ -109,3 +109,9 @@ Recepie:
   isShaped: true
   Pattern:
   - "\"I X\",  \"IX \",  \"I X\",  X, iron_block, I, iron_ingot"
+Render:
+  Textures:
+  - oh-1-n1
+  - oh-1-p1
+  - oh-1-p2
+  - oh-1-sn

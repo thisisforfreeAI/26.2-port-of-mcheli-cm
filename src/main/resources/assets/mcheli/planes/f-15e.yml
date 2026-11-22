@@ -17,6 +17,8 @@ PhysicalProperties:
   Speed: 1.1
   RotationSnapValue: 0.0
 Render:
+  Textures:
+  - f-15e_il
   FlightLamps:
   - Type: NAVIGATION
     Position: [7.3, 2.49, -10.93]
