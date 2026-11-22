@@ -53,6 +53,9 @@ final class CombatGameTests {
         Husk husk = EntityTypes.HUSK.create(h.getLevel(), EntitySpawnReason.COMMAND);
         Vec3 pos = h.absoluteVec(relative);
         husk.setNoAi(true);
+        // Otherwise vanilla despawns it at once whenever the nearest player in the level (another test's
+        // mock player) is more than 128 blocks away.
+        husk.setPersistenceRequired();
         husk.snapTo(pos.x, pos.y, pos.z, 0.0F, 0.0F);
         h.getLevel().addFreshEntity(husk);
         return husk;
