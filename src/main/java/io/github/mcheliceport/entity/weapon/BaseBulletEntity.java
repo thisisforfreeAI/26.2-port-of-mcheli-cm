@@ -100,6 +100,13 @@ public abstract class BaseBulletEntity extends Entity implements WeaponTargets.P
     public double acceleration;
     public double accelerationFactor;
     public @Nullable Entity targetEntity;
+    /**
+     * A fixed point the missile flies at instead of {@link #targetEntity}: a GPS missile's point, or an
+     * anti-radiation missile's memory of a quiet emitter. Server only.
+     */
+    public @Nullable Vec3 pointTarget;
+    /** Data link, semi-active radar or anti-radiation guidance, when the weapon uses one. Server only. */
+    public io.github.mcheliceport.weapon.guidance.@Nullable MissileGuidance guidance;
     public int piercing;
     public int delayFuse;
     public int sprinkleTime;
@@ -336,6 +343,9 @@ public abstract class BaseBulletEntity extends Entity implements WeaponTargets.P
         this.shootingEntity = user;
         this.airburstDist = w.airburstDist;
         this.rewindTicks = io.github.mcheliceport.combat.LagCompensation.rewindTicksFor(user);
+        if (!this.level().isClientSide()) {
+            this.guidance = io.github.mcheliceport.weapon.guidance.MissileGuidance.create(w.getInfo());
+        }
     }
 
     public void setParameterFromWeapon(BaseBulletEntity b, @Nullable Entity entity, @Nullable Entity user) {
@@ -389,6 +399,14 @@ public abstract class BaseBulletEntity extends Entity implements WeaponTargets.P
         if (this.targetEntity == null || !this.targetEntity.isAlive()) {
             return;
         }
+        boolean beyondSeeker = this.doingTopAttack;
+        if (this.guidance != null) {
+            Vec3 aim = this.guidance.adjustAim(this, targetPosX, targetPosY, targetPosZ);
+            targetPosX = aim.x;
+            targetPosY = aim.y;
+            targetPosZ = aim.z;
+            beyondSeeker |= this.guidance.overridesSeekerLimit();
+        }
         Vec3 motion = this.getDeltaMovement();
         Vec3 targetMotion = this.targetEntity.getDeltaMovement();
         if (info.predictTargetPos) {
@@ -406,13 +424,10 @@ public abstract class BaseBulletEntity extends Entity implements WeaponTargets.P
         double ty = targetPosY - this.getY();
         double tz = targetPosZ - this.getZ();
         double d = Math.sqrt(tx * tx + ty * ty + tz * tz);
-        double mx = tx * this.acceleration / d;
-        double my = ty * this.acceleration / d;
-        double mz = tz * this.acceleration / d;
         Vector3f missileDir = new Vector3f((float) motion.x, (float) motion.y, (float) motion.z);
         Vector3f targetDir = new Vector3f((float) tx, (float) ty, (float) tz);
         float angle = missileDir.angle(targetDir);
-        if (angle > Math.toRadians(info.maxDegreeOfMissile) && !this.doingTopAttack) {
+        if (angle > Math.toRadians(info.maxDegreeOfMissile) && !beyondSeeker) {
             this.setTargetEntity(null);
             return;
         }
@@ -426,6 +441,46 @@ public abstract class BaseBulletEntity extends Entity implements WeaponTargets.P
             this.setTargetEntity(null);
             return;
         }
+        this.steerTowards(tx, ty, tz, d);
+    }
+
+    /**
+     * Turns the velocity towards a fixed point (a GPS point, an anti-radiation missile's memory) by the
+     * definition's turning factor, after {@code RigidityTime}; within {@code ProximityFuseDist} it
+     * goes off. Server only.
+     */
+    public void guidanceToPoint(Vec3 point) {
+        WeaponInfo info = this.getInfo();
+        if (info == null || this.getCountOnUpdate() <= info.rigidityTime) {
+            return;
+        }
+        double tx = point.x - this.getX();
+        double ty = point.y - this.getY();
+        double tz = point.z - this.getZ();
+        double d = Math.sqrt(tx * tx + ty * ty + tz * tz);
+        if (info.proximityFuseDist >= 0.1F && d < info.proximityFuseDist) {
+            this.onImpact(new BlockHitResult(this.position(), Direction.DOWN, this.blockPosition(), false), 1.0F);
+            return;
+        }
+        if (d < 1.0e-6) {
+            return;
+        }
+        if (this.guidance != null) {
+            Vec3 aim = this.guidance.adjustAim(this, point.x, point.y, point.z);
+            tx = aim.x - this.getX();
+            ty = aim.y - this.getY();
+            tz = aim.z - this.getZ();
+            d = Math.sqrt(tx * tx + ty * ty + tz * tz);
+        }
+        this.steerTowards(tx, ty, tz, d);
+    }
+
+    private void steerTowards(double tx, double ty, double tz, double d) {
+        WeaponInfo info = this.getInfo();
+        Vec3 motion = this.getDeltaMovement();
+        double mx = tx * this.acceleration / d;
+        double my = ty * this.acceleration / d;
+        double mz = tz * this.acceleration / d;
         double factor = info.turningFactor;
         double curSpeed = motion.length();
         double nmx;
@@ -505,6 +560,9 @@ public abstract class BaseBulletEntity extends Entity implements WeaponTargets.P
                     this.setTargetEntity(null);
                     this.antiFlareUse = false;
                 }
+            }
+            if (this.guidance != null && info != null) {
+                this.guidance.tick(this);
             }
             if (level instanceof ServerLevel serverLevel && ProjectileChunkLoader.isEnabledFor(info)) {
                 ProjectileChunkLoader.requestPath(serverLevel, this);
@@ -1436,6 +1494,11 @@ public abstract class BaseBulletEntity extends Entity implements WeaponTargets.P
         } else {
             this.targetEntity = closestTarget;
         }
+    }
+
+    /** Whether {@code target} is the shooter, its vehicle or on the shooter's side. */
+    public boolean isFriendlyTarget(Entity target) {
+        return this.isFriendlyFire(target);
     }
 
     private boolean isFriendlyFire(Entity target) {

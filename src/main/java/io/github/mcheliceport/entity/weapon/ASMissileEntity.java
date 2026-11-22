@@ -11,13 +11,16 @@ import net.minecraft.world.phys.Vec3;
 /**
  * An air-to-surface missile flying to a fixed point (climbing for its first ten ticks when it has
  * no gravity); within {@code ProximityFuseDist} it explodes or releases its bomblets. Ported from
- * upstream {@code MCH_EntityASMissile}.
+ * upstream {@code MCH_EntityASMissile}. A GPS missile flies to its GPS point and an anti-radiation
+ * missile to its radar emitter, wherever they are (see {@code MissileGuidance}).
  */
 public class ASMissileEntity extends BaseBulletEntity {
 
     public double targetPosX;
     public double targetPosY;
     public double targetPosZ;
+    /** A GPS missile: it steers to its point even where no solid block is (upstream needed one). */
+    public boolean gpsGuided;
 
     public ASMissileEntity(EntityType<? extends ASMissileEntity> type, Level level) {
         super(type, level);
@@ -56,8 +59,23 @@ public class ASMissileEntity extends BaseBulletEntity {
     }
 
     private void guideMissile(WeaponInfo info) {
+        boolean fixedPoint = this.gpsGuided;
+        if (this.guidance != null && this.guidance.isAntiRadiation()) {
+            // An anti-radiation missile steers at its emitter, or the emitter's last position.
+            Vec3 aim = this.pointTarget;
+            if (aim == null && this.targetEntity != null && this.targetEntity.isAlive()) {
+                aim = new Vec3(this.targetEntity.getX(), this.targetEntity.getY() + this.targetEntity.getBbHeight() / 2.0,
+                        this.targetEntity.getZ());
+            }
+            if (aim != null) {
+                this.targetPosX = aim.x;
+                this.targetPosY = aim.y;
+                this.targetPosZ = aim.z;
+                fixedPoint = true;
+            }
+        }
         BlockPos targetPos = BlockPos.containing(this.targetPosX, this.targetPosY, this.targetPosZ);
-        if (!this.level().getBlockState(targetPos).isSolid()) {
+        if (!fixedPoint && !this.level().getBlockState(targetPos).isSolid()) {
             return;
         }
         double distanceToTarget = Math.sqrt(this.distanceToSqr(this.targetPosX, this.targetPosY, this.targetPosZ));
@@ -72,9 +90,12 @@ public class ASMissileEntity extends BaseBulletEntity {
             this.discard();
             return;
         }
-        double dirX = this.targetPosX - this.getX();
-        double dirY = this.targetPosY - this.getY();
-        double dirZ = this.targetPosZ - this.getZ();
+        Vec3 steer = this.guidance != null && this.guidance.isAntiRadiation()
+                ? this.guidance.adjustAim(this, this.targetPosX, this.targetPosY, this.targetPosZ)
+                : new Vec3(this.targetPosX, this.targetPosY, this.targetPosZ);
+        double dirX = steer.x - this.getX();
+        double dirY = steer.y - this.getY();
+        double dirZ = steer.z - this.getZ();
         if (this.getBulletGravity() == 0.0) {
             dirY += this.getCountOnUpdate() < 10 ? 20.0 : 0.0;
             double length = Math.sqrt(dirX * dirX + dirY * dirY + dirZ * dirZ);
