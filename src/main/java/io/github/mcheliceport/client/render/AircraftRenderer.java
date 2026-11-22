@@ -181,6 +181,13 @@ public abstract class AircraftRenderer<T extends AircraftEntity> extends EntityR
         io.github.mcheliceport.client.particle.VehicleWeaponHeat.extract(entity,state);
         FlightLighting.extract(entity,state,partialTicks);
         AircraftMarkings.extract(entity,state);
+        if (state.far) {
+            // Past the render distance these fogged overlays would show as sky-coloured patches on the
+            // fogless airframe, and they are too small to make out there anyway.
+            state.detailDraws.clear();
+            state.impactDraws.clear();
+            state.markingDraws.clear();
+        }
     }
 
     protected abstract String directory();
