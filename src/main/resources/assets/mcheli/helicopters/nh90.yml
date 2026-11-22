@@ -113,3 +113,8 @@ Recepie:
   isShaped: true
   Pattern:
   - "\"CXC\",  \"XIX\",  \"I I\",  X, iron_block, I, iron_ingot, C,coal_block"
+Render:
+  Textures:
+  - nh90_fi
+  - nh90_ge
+  - nh90_bg

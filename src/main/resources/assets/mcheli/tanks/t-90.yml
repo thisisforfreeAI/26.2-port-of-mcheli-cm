@@ -35,6 +35,8 @@ PhysicalProperties:
       Min: -14.0
       Max: 5.0
 Render:
+  Textures:
+  - t-90_2
   HideRiders: true
 Armor:
   ArmorDamageFactor: 0.98

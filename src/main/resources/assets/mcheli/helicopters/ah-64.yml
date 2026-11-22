@@ -17,6 +17,12 @@ PhysicalProperties:
   Speed: 0.7
   OnGroundPitch: -3.5
 Render:
+  Textures:
+  - ah-64-il
+  - ah-64-us-1
+  - ah-64-us-2
+  - ah-64-jp
+  - ah-64-en
   EngineOutlets:
   - Position: [1.16, 2.51, -5.10]
     Direction: [0.15, 0.08, -1.0]

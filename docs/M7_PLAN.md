@@ -142,8 +142,10 @@ on by default; the port's switch is the server config's `tracking.longDistance`,
 - Client drawing: `FarVehicleVisibilityMixin` lets `LevelExtractor#isEntityVisible` accept such a
   vehicle when it is in the frustum, as vanilla draws entities only in compiled sections. Past
   the render distance, `AircraftRenderer` draws with the `far_vehicle` pipeline, vanilla's entity
-  shader without fog, as upstream's far pass turned fog off. Vanilla's far plane (four times the
-  render distance or the cloud range) replaces upstream's own 3,000-block projection.
+  shader without fog, as upstream's far pass turned fog off. Instead of upstream's own 3,000-block
+  projection, `FarVehicleDepthMixin` pushes the camera's far plane (vanilla: four times the render
+  distance or the cloud range) out to the farthest vehicle while one is past it, up to the client's
+  `render.farVehicleDistance`. The server's range is `tracking.longDistanceRange`.
 - `AircraftEntity#shouldRenderAtSqrDistance` is always true: upstream drew every vehicle the client
   had (`VehicleRenderHook`); vanilla's size-based test hid vehicles past about 150 blocks even
   inside the view distance.

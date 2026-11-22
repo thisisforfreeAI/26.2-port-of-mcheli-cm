@@ -125,3 +125,6 @@ Recepie:
   isShaped: true
   Pattern:
   - "\"X X\",  \"X X\",  \"GXG\",  X, iron_block, G, gunpowder"
+Render:
+  Textures:
+  - ka-29-1

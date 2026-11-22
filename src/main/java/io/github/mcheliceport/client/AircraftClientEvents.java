@@ -42,6 +42,8 @@ public final class AircraftClientEvents {
             }
         });
         io.github.mcheliceport.platform.ClientEvents.TICK_POST.add(() -> {
+            // First, so the keys its buttons press are seen by every control below in the same tick.
+            io.github.mcheliceport.client.input.JoystickInput.tick();
             AircraftCameraClient.handleKeys();
             io.github.mcheliceport.client.hud.TeamListOverlay.handleKeys();
             WeaponClientControl.onClientTick();

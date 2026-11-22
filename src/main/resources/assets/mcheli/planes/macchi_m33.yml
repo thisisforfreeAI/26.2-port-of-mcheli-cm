@@ -25,6 +25,8 @@ PhysicalProperties:
     Pitch: 5.0
     Roll: 3.0
 Render:
+  Textures:
+  - macchi_m33_2
   SplashParticles:
   - Position: [0.3, -0.1, 5.5]
     Count: 3

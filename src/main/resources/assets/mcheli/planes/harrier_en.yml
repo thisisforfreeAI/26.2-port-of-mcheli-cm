@@ -16,6 +16,9 @@ Camera:
 PhysicalProperties:
   Speed: 1.0
 Render:
+  Textures:
+  - harrier_en2
+  - harrier_en3
   ParticleScale: 0.7
   EnableSeaSurfaceParticle: true
 Weapons:

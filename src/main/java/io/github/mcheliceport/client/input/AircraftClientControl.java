@@ -238,6 +238,11 @@ public final class AircraftClientControl {
             boolean down = ModKeyMappings.DOWN.isDown();
             boolean right = ModKeyMappings.RIGHT.isDown();
             boolean left = ModKeyMappings.LEFT.isDown();
+            JoystickInput.Digital joy = JoystickInput.digital(aircraft instanceof GroundVehicleEntity, aircraft.getThrottle());
+            up |= joy.up();
+            down |= joy.down();
+            right |= joy.right();
+            left |= joy.left();
             if (aircraft.ropes().active()) { up = down = right = left = false; }
             if (aircraft instanceof TankEntity tank) {
                 boolean brake = ModKeyMappings.SWITCH_HOVERING.isDown();

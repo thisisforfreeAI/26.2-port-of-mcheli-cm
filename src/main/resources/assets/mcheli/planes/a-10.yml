@@ -20,6 +20,8 @@ PhysicalProperties:
     Pitch: 0.7
     Roll: 0.6
 Render:
+  Textures:
+  - a-10_1
   FlightLamps:
   - Type: NAVIGATION
     Position: [9.82, 2.93, -5.93]

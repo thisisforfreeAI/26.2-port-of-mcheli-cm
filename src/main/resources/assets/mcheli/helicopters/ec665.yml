@@ -139,3 +139,6 @@ Recepie:
   isShaped: true
   Pattern:
   - "\" X \",  \"X X\",  \" X \",  X, iron_block"
+Render:
+  Textures:
+  - ec665_black

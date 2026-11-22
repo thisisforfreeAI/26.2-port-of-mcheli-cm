@@ -20,6 +20,11 @@ PhysicalProperties:
   Speed: 0.9
   OnGroundPitch: -12.31
 Render:
+  Textures:
+  - an2_2
+  - an2_3
+  - an2_4
+  - an2_5
   ModelWidth: 0.9
   ModelHeight: 0.9
   ParticleScale: 0.7

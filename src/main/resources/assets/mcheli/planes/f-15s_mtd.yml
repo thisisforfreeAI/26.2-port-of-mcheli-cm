@@ -17,6 +17,12 @@ PhysicalProperties:
   Speed: 1.1
   RotationSnapValue: 0.0
 Render:
+  Textures:
+  - f-15s_mtd_ac
+  - f-15s_mtd_1
+  - f-15s_mtd_2
+  - f-15s_mtd_3
+  - f-15s_mtd_4
   MachOneSpeed: 0.55
   ParticleScale: 0.7
   EnableSeaSurfaceParticle: true

@@ -19,6 +19,8 @@ PhysicalProperties:
       Min: -89.0
       Max: 5.0
 Render:
+  Textures:
+  - bofors40mml60_2
   HideRiders: true
 Armor:
   DamageFactor: 0.3

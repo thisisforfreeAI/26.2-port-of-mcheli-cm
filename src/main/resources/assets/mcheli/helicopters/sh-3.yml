@@ -96,3 +96,9 @@ Recepie:
   isShaped: true
   Pattern:
   - "\" D \",  \"X X\",  \"X X\", D,dye,1, X,iron_block"
+Render:
+  Textures:
+  - sh-3-en-1
+  - sh-3-en-2
+  - sh-3-jp-1
+  - sh-3-jp-2

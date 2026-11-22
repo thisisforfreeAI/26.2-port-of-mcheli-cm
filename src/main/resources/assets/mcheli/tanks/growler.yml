@@ -27,6 +27,10 @@ PhysicalProperties:
     Pitch: 15.0
     Roll: 5.2
 Render:
+  Textures:
+  - growler_1
+  - growler_2
+  - growler_3
   ModelWidth: 0.9
   ModelHeight: 0.9
 Armor:

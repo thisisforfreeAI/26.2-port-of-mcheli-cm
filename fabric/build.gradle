@@ -38,6 +38,8 @@ def sharedSources = tasks.register('sharedSources', Sync) {
         exclude 'io/github/mcheliceport/datagen/**'
         exclude 'io/github/mcheliceport/compat/hbm/NtmBridge.java'
         exclude 'io/github/mcheliceport/compat/hbm/VntProcessors.java'
+        // The Jade plugin is built against Jade's NeoForge jar.
+        exclude 'io/github/mcheliceport/compat/jade/**'
         exclude neoforgeOnly
         exclude clientPending
     }

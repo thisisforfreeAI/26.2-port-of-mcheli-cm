@@ -1,5 +1,9 @@
 Author: EMB4
 Render:
+  Textures:
+  - ch47_2
+  - ch47_3
+  - ch47_4
   EngineOutlets:
   - Position: [1.30, 3.75, -12.55]
     Direction: [0.0, 0.02, -1.0]

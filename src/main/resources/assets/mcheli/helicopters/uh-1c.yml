@@ -169,3 +169,9 @@ Recepie:
   isShaped: true
   Pattern:
   - "\" X \",  \"XGX\",  \"I I\",  X, iron_block, G, gunpowder, I, iron_ingot"
+Render:
+  Textures:
+  - uh-1c-usam1
+  - uh-1c-usam2
+  - uh-1c-usmc
+  - uh-1c-usnv
