@@ -43,7 +43,7 @@ final class RwrGameTests {
     private static ServerPlayer board(GameTestHelper h, HeliEntity heli) {
         ServerPlayer pilot = h.makeMockServerPlayerInLevel();
         pilot.setGameMode(GameType.SURVIVAL);
-        pilot.snapTo(heli.getX(), heli.getY(), heli.getZ() - 3.0, 0.0F, 0.0F);
+        pilot.snapTo(heli.getX(), heli.getY(), heli.getZ(), 0.0F, 0.0F);
         heli.interact(pilot, InteractionHand.MAIN_HAND, Vec3.ZERO);
         return pilot;
     }
@@ -54,8 +54,8 @@ final class RwrGameTests {
      * the search radar, and without autoFit an AH-64 (no RWR section) has no receiver.
      */
     private static void warns(GameTestHelper h) {
-        HeliEntity target = GameTestSupport.spawn(h, AH64, new Vec3(8.5, 2, 4.5), 0.0F);
-        HeliEntity emitter = GameTestSupport.spawn(h, AH64, new Vec3(8.5, 2, 28.5), 180.0F);
+        HeliEntity target = GameTestSupport.spawn(h, AH64, new Vec3(12.5, 2, 3.5), 0.0F);
+        HeliEntity emitter = GameTestSupport.spawn(h, AH64, new Vec3(12.5, 2, 20.5), 180.0F);
         h.runAfterDelay(2, () -> {
             ServerPlayer targetPilot = board(h, target);
             ServerPlayer emitterPilot = board(h, emitter);
@@ -85,7 +85,7 @@ final class RwrGameTests {
             check(h, !has(RwrThreatManager.threatsFor(emitter.getId()), target.getId(), RwrThreat.LOCK),
                     "the shooter is warned of its own lock");
 
-            Vec3 from = target.position().add(0.0, 6.0, 12.0);
+            Vec3 from = target.position().add(0.0, 6.0, 8.0);
             ATMissileEntity missile = new ATMissileEntity(h.getLevel(), from.x, from.y, from.z, 0.0, 0.0, 0.0, 0.0F,
                     0.0F, 0.0F) {
                 @Override
@@ -111,6 +111,10 @@ final class RwrGameTests {
 
             missile.discard();
             RwrThreatManager.clear();
+            targetPilot.stopRiding();
+            emitterPilot.stopRiding();
+            targetPilot.discard();
+            emitterPilot.discard();
             GameTestSupport.cleanUp(target);
             GameTestSupport.cleanUp(emitter);
             h.succeed();
