@@ -235,6 +235,8 @@ public abstract class AircraftEntity extends SpawnDataEntity
     public boolean moveRight;
     private int commonStatus;
     private int despawnCount;
+    /** Game time this vehicle became a wreck, for {@link WreckLimit}'s oldest-first order. Server only. */
+    private long wreckSince;
     private int countOnUpdate;
     private int modeSwitchCooldown;
     public int timeSinceHit;
@@ -1095,6 +1097,10 @@ public abstract class AircraftEntity extends SpawnDataEntity
 
     public void setDespawnCount(int count) {
         this.despawnCount = count;
+    }
+
+    public long getWreckSince() {
+        return this.wreckSince;
     }
 
     public int getCountOnUpdate() {
@@ -3187,11 +3193,16 @@ public abstract class AircraftEntity extends SpawnDataEntity
                 this.switchCameraMode(player, AircraftCamera.MODE_NORMAL);
             }
         }
+        boolean wasWreck = this.isDestroyed();
         this.setDespawnCount(wreckTicks());
         this.rotDestroyedPitch = this.random.nextFloat() - 0.5F;
         this.rotDestroyedRoll = (this.random.nextFloat() - 0.5F) * 0.5F;
         this.rotDestroyedYaw = 0.0F;
         if (this.level() instanceof ServerLevel level) {
+            if (!wasWreck) {
+                this.wreckSince = level.getGameTime();
+                WreckLimit.enforce(level, this);
+            }
             float dmg = CommonConfig.KILL_PASSENGERS_WHEN_DESTROYED.get() ? 100000.0F : 0.001F;
             DamageSource source;
             if (level.getDifficulty() == Difficulty.PEACEFUL) {
@@ -3897,6 +3908,7 @@ public abstract class AircraftEntity extends SpawnDataEntity
     protected void readAdditionalSaveData(ValueInput input) {
         this.pairedController = input.read("PairedUavController", net.minecraft.core.UUIDUtil.CODEC).orElse(null);
         this.setDespawnCount(input.getIntOr("AcDespawnCount", 0));
+        this.wreckSince = input.getLongOr("AcWreckSince", 0L);
         this.setTextureName(input.getStringOr("TextureName", ""));
         this.setAppearance(io.github.mcheliceport.appearance.AircraftAppearance.unpack(input.getIntOr("M8Appearance", 0)));
         this.setRoll(input.getFloatOr("AcRoll", 0.0F));
@@ -3957,6 +3969,7 @@ public abstract class AircraftEntity extends SpawnDataEntity
         output.putInt("AcFuel", this.getFuel());
         output.putString("AcFuelType", this.getFuelType());
         output.putInt("AcDespawnCount", this.getDespawnCount());
+        output.putLong("AcWreckSince", this.wreckSince);
         output.putFloat("AcRoll", this.getRoll());
         output.putFloat("AcLastRYaw", this.lastRiderYaw);
         output.putFloat("AcLastRPitch", this.lastRiderPitch);

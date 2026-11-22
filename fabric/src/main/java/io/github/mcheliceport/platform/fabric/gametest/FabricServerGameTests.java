@@ -1,6 +1,7 @@
 package io.github.mcheliceport.platform.fabric.gametest;
 
 import io.github.mcheliceport.McheliCePort;
+import io.github.mcheliceport.config.CommonConfig;
 import io.github.mcheliceport.content.ContentType;
 import io.github.mcheliceport.entity.aircraft.AircraftEntity;
 import io.github.mcheliceport.item.AircraftItem;
@@ -26,6 +27,12 @@ public final class FabricServerGameTests {
 
     @GameTest(maxTicks = 100)
     public void everyStockVehicleSpawns(GameTestHelper helper) {
+        // Over a hundred vehicles stacked in one column crash into each other; the wreck caps would
+        // then remove the oldest wrecks, which this test counts as vehicles gone. Lift the caps for it.
+        int maxWrecks = CommonConfig.MAX_WRECKS.get();
+        int maxWrecksPerArea = CommonConfig.MAX_WRECKS_PER_AREA.get();
+        CommonConfig.MAX_WRECKS.set(0);
+        CommonConfig.MAX_WRECKS_PER_AREA.set(0);
         List<AircraftEntity> spawned = new ArrayList<>();
         int i = 0;
         for (ModItems.ContentItem content : ModItems.contentItems()) {
@@ -40,9 +47,14 @@ public final class FabricServerGameTests {
         }
         helper.assertTrue(spawned.size() > 100, "only " + spawned.size() + " stock vehicles");
         helper.runAfterDelay(20, () -> {
-            for (AircraftEntity aircraft : spawned) {
-                helper.assertTrue(!aircraft.isRemoved(), aircraft.getAircraftTypeName() + " is gone after 20 ticks");
-                aircraft.discard();
+            try {
+                for (AircraftEntity aircraft : spawned) {
+                    helper.assertTrue(!aircraft.isRemoved(), aircraft.getAircraftTypeName() + " is gone after 20 ticks");
+                    aircraft.discard();
+                }
+            } finally {
+                CommonConfig.MAX_WRECKS.set(maxWrecks);
+                CommonConfig.MAX_WRECKS_PER_AREA.set(maxWrecksPerArea);
             }
             helper.succeed();
         });

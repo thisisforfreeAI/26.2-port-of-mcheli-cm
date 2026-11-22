@@ -42,6 +42,10 @@ and follows the existing Enhanced quality and vehicle damage details settings.
    in every level, or within a radius of the caller. The scars, debris and rested sections stay as
    long as the hulk and fade over 10 seconds after it goes. Turning `persistentWrecks` off restores
    upstream's `despawnCount`.
+   To protect TPS the number of hulks is capped: when a vehicle is destroyed, the oldest wrecks are
+   removed until the server holds at most `wrecks.maxWrecks` (default 32) and the area within
+   `wrecks.wreckAreaRadius` blocks (default 128) of the new wreck at most `wrecks.maxWrecksPerArea`
+   (default 8). Wrecks a player still sits in are kept; 0 turns a cap off.
 
 ## Budgets
 

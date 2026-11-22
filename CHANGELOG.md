@@ -19,6 +19,10 @@ listed in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
   an `RWR` section, vehicles with flares, chaff or an entity radar get a receiver, and crewed ones
   with an entity radar sweep a 1,000-block cone ahead (server config `rwr.autoFit`; `rwr.enabled`
   turns the warnings off).
+- Wreck limit: the server keeps at most `wrecks.maxWrecks` wrecks (default 32), and at most
+  `wrecks.maxWrecksPerArea` (default 8) within `wrecks.wreckAreaRadius` blocks (default 128) of a
+  newly destroyed vehicle. Past a cap the oldest wrecks are removed first, so long battles no longer
+  pile up burning hulks that drag down TPS. Wrecks a player sits in are kept; 0 turns a cap off.
 - M9 follow-ups. Other players' fast jets and helicopters now turn toward the server's attitude as
   one quaternion slerp with the roll, so a loop goes over the top and a barrel roll keeps rolling
   instead of yaw, pitch and roll swinging apart. The anti-cheat records a pilot whose claimed speed
