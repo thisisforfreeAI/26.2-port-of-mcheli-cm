@@ -124,6 +124,14 @@ public final class ModNetwork {
                         new io.github.mcheliceport.weapon.GpsPosition.Point(p.x(), p.y(), p.z(), p.active())));
         registrar.playToServer(BvrLockPayload.TYPE, BvrLockPayload.CODEC,
                 (p, context) -> applyBvrLock(context.player(), p.targetId()));
+        registrar.playToServer(RwrLockPayload.TYPE, RwrLockPayload.CODEC, (p, context) -> {
+            if (context.player() instanceof ServerPlayer sp) {
+                io.github.mcheliceport.radar.RwrThreatManager.reportLock(sp, p.targetId());
+            }
+        });
+        registrar.playToClient(RwrThreatPayload.TYPE, RwrThreatPayload.CODEC,
+                (p, context) -> io.github.mcheliceport.radar.RwrClientTracker.update(p.receiverId(), p.fitted(),
+                        p.threats()));
         registrar.playToClient(OpenMarkerScreenPayload.TYPE, OpenMarkerScreenPayload.CODEC,
                 (p, context) -> io.github.mcheliceport.wingman.WingmanClientHooks.openMarkerScreen(p));
         registrar.playToServer(MarkerUpdatePayload.TYPE, MarkerUpdatePayload.CODEC,
@@ -432,6 +440,10 @@ public final class ModNetwork {
                     return;
                 }
                 gs.setTarget(target);
+                if (player instanceof ServerPlayer sp) {
+                    // Upstream fed BVR locks to its (unrun) threat manager the same way.
+                    io.github.mcheliceport.radar.RwrThreatManager.reportLock(sp, targetId);
+                }
             }
         }
     }

@@ -84,6 +84,7 @@ public final class ModGameTests {
         EcmGameTests.register();
         RadarGameTests.register();
         RadarFeedGameTests.register();
+        RwrGameTests.register();
         CombatGameTests.register();
         WingmanMarkerGameTests.register();
         WingmanGameTests.register();
